@@ -36,9 +36,10 @@ def start_or_stop_graphic_debugger(controllers: Controllers):
         controllers.game.stop()
         controllers.debugger.start()
 
-def on_exit(game_controller: GameController):
-    Logger.info(f'Force Exit')
+def on_exit(game_controller: GameController,  stand_still="capslock"):
+    Logger.info("Exit key pressed, shutting down bot")
     try:
+        keyboard.release(stand_still)
         restore_d2r_window_visibility()
     except:
         pass
@@ -93,7 +94,7 @@ def main():
     keyboard.add_hotkey(config.advanced_options['restore_settings_from_backup_key'], lambda: restore_settings_from_backup())
     keyboard.add_hotkey(config.advanced_options['settings_backup_key'], lambda: backup_settings())
     keyboard.add_hotkey(config.advanced_options['resume_key'], lambda: start_or_pause_bot(controllers))
-    keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: on_exit(game_controller))
+    keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: on_exit(game_controller, config.char["stand_still"]))
     keyboard.wait()
 
 

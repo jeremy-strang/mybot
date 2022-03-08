@@ -51,7 +51,7 @@ game_state = StateMonitor(['Mephisto'],self._pather,self._api)
 
 ## Getting started & Prequists
 - D2r needs to be in English Language,
-- Botty currently works with 720p D2r window (will be adjusted automatically on auto settings)
+- MyBot currently works with 720p D2r window (will be adjusted automatically on auto settings)
 
 ### 1) Graphics and Gameplay Settings
 
@@ -66,13 +66,13 @@ Check the documentation for **param.ini** further down. Different Sorc builds, H
 
 Open up D2R and wait till you are at the hero selection screen. Make sure the char you running with is selected and will be in any of Act 3, 4 or 5 in the respective difficulty you set in the **param.ini** once the bot starts the game.
 
-### 4) Start Botty
+### 4) Start MyBot
 
-You can either run from python. Follow [development.md](development.md) for that. Or you download the a prebuilt release [here](https://github.com/aeon0/botty/releases) (the .rar file!). Start `main.exe` in the botty folder. Focus your D2R window and press the start key (default f11). You can always force stop botty with f12. Note: Botty will use the /nopickup command in the first game to avoid pickup up trash while traversing. This command will only allow item pickup when "show items" is active.
+You can either run from python. Follow [development.md](development.md) for that. Or you download the a prebuilt release [here](https://github.com/aeon0/MyBot/releases) (the .rar file!). Start `main.exe` in the MyBot folder. Focus your D2R window and press the start key (default f11). You can always force stop MyBot with f12. Note: MyBot will use the /nopickup command in the first game to avoid pickup up trash while traversing. This command will only allow item pickup when "show items" is active.
 
 ## Graphic Debugger
 
-To check if you graphic settings are good and if the bot would pick up items there is a **Graphic Debugger Mode**. Start botty and press F10 (Default key). This will open up a (mostly black) window. Start a game in D2R and go to A5. You should see some templates with blue circles detected and scores printed out to the console. To check item finding, throw some items of different types on the ground. The debug window should show the item names with black background. If you throw an item on the ground that should be picked up, it will have a red circle. The console will print out the scores for each item that would be picked up. Scores should be well above 0.9 for these items.</br>
+To check if you graphic settings are good and if the bot would pick up items there is a **Graphic Debugger Mode**. Start MyBot and press F10 (Default key). This will open up a (mostly black) window. Start a game in D2R and go to A5. You should see some templates with blue circles detected and scores printed out to the console. To check item finding, throw some items of different types on the ground. The debug window should show the item names with black background. If you throw an item on the ground that should be picked up, it will have a red circle. The console will print out the scores for each item that would be picked up. Scores should be well above 0.9 for these items.</br>
 <img src="assets/docs/graphic_debugger.png" width="900">
 
 ## Development
@@ -81,7 +81,7 @@ Check out the [development.md](development.md) docu for infos on how to build fr
 
 ## param.ini
 
-All botty configuration files are located in the __config__ folder. To ease the switch to new botty versions, you can also overwrite any of the .ini fields in a **custom.ini** file. When a new version of botty is released you just copy the file to the new version without having to port all your **param.ini** changes to the new version. Example:
+All MyBot configuration files are located in the __config__ folder. To ease the switch to new MyBot versions, you can also overwrite any of the .ini fields in a **custom.ini** file. When a new version of MyBot is released you just copy the file to the new version without having to port all your **param.ini** changes to the new version. Example:
 
 ```ini
 ; custom.ini - overwrites 3 params in the param.ini
@@ -96,20 +96,20 @@ run_shenk=0
 | [general]                | Descriptions              |
 | --------------------     | --------------------------|
 | name                     | Name used in terminal and discord messages |
-| custom_message_hook      | Add your own message hook here to get messages about drops and botty status updates, discord webhook is default  |
+| custom_message_hook      | Add your own message hook here to get messages about drops and MyBot status updates, discord webhook is default  |
 | logger_lvl               | Can be any of [info, debug] and determines how much output you see on the command line |
-| max_game_length_s        | Botty will attempt to stop whatever its doing and try to restart a new game. Note if this fails, botty will attempt to shut down D2R and Bnet     |
-| max_consecutive_fails    | Botty will stop making games if the number of consecutive fails reaches this max value     |
+| max_game_length_s        | MyBot will attempt to stop whatever its doing and try to restart a new game. Note if this fails, MyBot will attempt to shut down D2R and Bnet     |
+| max_consecutive_fails    | MyBot will stop making games if the number of consecutive fails reaches this max value     |
 | randomize_runs           | 0: the order will be as seen in the params.ini. 1: the order will be random |
 | difficulty               | Set to `normal` `nightmare` or `hell` for game difficulty |
-| message_api_type         | Which api to use to send botty messages.  Supports "generic_api" (basic discord), or "discord" (discord embeds with images).
+| message_api_type         | Which api to use to send MyBot messages.  Supports "generic_api" (basic discord), or "discord" (discord embeds with images).
 | discord_status_count     | Number of games between discord status messges being sent. Leave empty for no status reports.
 | discord_status_condensed | Toggles condensed view of Discord status messages. 0 Full text, 1 Condensed text.
 | info_screenshots         | If 1, the bot takes a screenshot with timestamp on every stuck / chicken / timeout / inventory full event. This is 1 by Default, so remember to clean up the folder every once in a while |
 | loot_screenshots         | If 1, the bot takes a screenshot with timestamp everytime he presses show_items button and saves it to loot_screenshots folder. Remember to clear them once in a while... |
 | saved_games_folder       | Optional folder path of Diablo 2 : Ressurrected saved games that will be used to overwrite when running the "auto settings" |
 | d2r_path                 | Optional path to find the d2r.exe, if not set will be default to "C:\Program Files (x86)\Diablo II Resurrected\D2R.exe" when attempting to restart |
-| restart_d2r_when_stuck   | Set to `1` and botty will attempt to restart d2r in the case that botty is unable to recover its state (e.g: game crash) |
+| restart_d2r_when_stuck   | Set to `1` and MyBot will attempt to restart d2r in the case that MyBot is unable to recover its state (e.g: game crash) |
 
 | [routes]     | Descriptions                                                             |
 | ------------ | ------------------------------------------------------------------------ |
@@ -251,7 +251,7 @@ run_shenk=0
 | [dclone]             | Descriptions                                                          |
 | -------------------- | --------------------------------------------------------------------- |
 | region_ips           | Start of the region ip you want to filter for. e.g. EU Server = 37.244.11, 37.244.48 |
-| dclone_hotip         | Hot ip you are looking for. Botty will stay in game and message you if a message_hook is set |
+| dclone_hotip         | Hot ip you are looking for. MyBot will stay in game and message you if a message_hook is set |
 
 | [advanced_options]   | Descriptions                                                          |
 | -------------------- | --------------------------------------------------------------------- |

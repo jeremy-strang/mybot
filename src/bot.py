@@ -480,8 +480,7 @@ class Bot:
             self._tps_left = 0
         self.trigger_or_stop("end_game", failed=True)
 
-    # All the runs go here
-    # ==================================
+    # ========================== All the runs go here =========================
     def _ending_run_helper(self, res: Union[bool, tuple[Location, bool]]):
         self._game_stats._run_counter += 1
         # either fill member variables with result data or mark run as failed
