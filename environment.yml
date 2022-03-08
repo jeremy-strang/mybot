@@ -1,0 +1,41 @@
+name: botty-r
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pywin32
+  - pip
+  - leptonica
+  - tesseract>=5.0.1
+  - pkg-config
+  - pip:
+    - dearpygui
+    - pyinstaller
+    - opencv-python
+    - transitions
+    - mss
+    - numpy
+    - mouse
+    - keyboard
+    - beautifultable
+    - pytweening
+    - requests
+    - coverage
+    - pytest
+    - pytest-env
+    - pytest-pythonpath
+    - graphviz
+    - psutil
+    - cryptography
+    - pillow
+    - discord.py
+    - parse
+    - dependencies/tesserocr-2.5.2-cp39-cp39-win_amd64.whl
+    - pygame
+    - pymem
+    - termcolor
+    - pyastar2d
+    - scipy
+    - pythonnet
+    - GitPython
+    - pyee
