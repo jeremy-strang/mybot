@@ -76,9 +76,9 @@ class DiscordEmbeds(GenericApi):
 
     def _send_embed(self, e, file = None):
         if self._config.active_branch:
-            e.set_footer(text=f'v.{__version__} by Aeon, branch: {self._config.active_branch}, commit: {self._config.latest_commit_sha[:7]}')
+            e.set_footer(text=f'MyBot, by Pokz, branch: {self._config.active_branch}, commit: {self._config.latest_commit_sha[:7]}')
         else:
-            e.set_footer(text=f'Botty-r v.{__version__} by Aeon (')
+            e.set_footer(text=f'MyBot, by Pokz')
         e.timestamp=datetime.datetime.now(datetime.timezone.utc)
         try:
             self._webhook.send(embed=e, file=file, username=self._config.general['name'])

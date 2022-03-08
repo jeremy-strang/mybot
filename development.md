@@ -6,10 +6,10 @@
 
 ## Getting started
 ```bash
-git clone https://github.com/aeon0/botty.git
-cd botty
+git clone https://github.com/pokzcodes/mybot.git
+cd mybot
 conda env create environment.yml
-conda activate botty
+conda activate mybot
 python src/main.py
 ```
 Important info for Powershell users:
@@ -21,7 +21,7 @@ conda init powershell
 ## Tests
 All automated tests can be found within the **/test/*** folder. The file and folder structure is supposed to mimic the src folder.
 ```bash
-conda activate botty
+conda activate mybot
 # To run all tests: (-s to see stdout, -v for verbose)
 pytest -s -v
 # To see std output:

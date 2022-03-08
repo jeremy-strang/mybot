@@ -244,7 +244,7 @@ class Necro(IChar):
         keyboard.send(self._char_config["stand_still"], do_press=False)
 
 
-    def pre_buff(self):
+    def pre_buff(self, switch_back=True):
         #only CTA if pre trav
         if self._char_config["cta_available"]:
             self._pre_buff_cta()

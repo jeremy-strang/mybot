@@ -96,9 +96,7 @@ class ZerkerBarb(Barbarian):
             else:
                 dist = 10
         self.post_attack()
-        wait(0.1, 0.15)
-        self.do_hork(unique_only=True)
-        self.verify_active_weapon_tab()
+        self.do_hork(unique_only=True, disable_swap=True)
         return True
 
     def kill_council(self, game_state: StateMonitor = None) -> bool:

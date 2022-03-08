@@ -78,7 +78,7 @@ class SingerBarb(Barbarian):
          else:
             Logger.warning("Find Item unbound or missing. Skipping hork")	
 
-    def pre_buff(self):
+    def pre_buff(self, switch_back=True):
         keyboard.send(self._char_config["battle_command"])
         wait(0.08, 0.19)
         mouse.click(button="right")

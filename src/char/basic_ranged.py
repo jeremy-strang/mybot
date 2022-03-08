@@ -46,7 +46,7 @@ class Basic_Ranged(IChar):
             mouse.move(*cast_pos_monitor)
             mouse.click(button="right")
 
-    def pre_buff(self):
+    def pre_buff(self, switch_back=True):
         if self._skill_hotkeys["buff_1"]:
             keyboard.send(self._skill_hotkeys["buff_1"])
             wait(0.5, 0.15)

@@ -11,6 +11,7 @@ import sys
 from npc_manager import Npc
 from obs import obs_recorder
 from run.pit import Pit
+from run.trav import Trav
 
 from screen import Screen
 from bot import Bot
@@ -86,6 +87,7 @@ if __name__ == "__main__":
         # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
         char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
         pit = Pit(screen, template_finder, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
+        trav = Trav(template_finder, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
         
         char.discover_capabilities(force=True)
         npc_manager = bot._town_manager.a3._npc_manager
@@ -133,8 +135,7 @@ if __name__ == "__main__":
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
         print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
         
-        pather_v2.traverse("Pit Level 1", char)
-        pather_v2.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=True)
+        trav.battle(True)
 
         # trade_with_npc(Npc.ORMUS)
         # # ormus = find_npc(Npc.ORMUS)

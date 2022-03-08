@@ -76,7 +76,7 @@ def main():
     print(f"\nActive branch:        {config.active_branch}")
     print(  f"Latest Commit Sha:    {config.latest_commit_sha}")
 
-    print("\nFor gettings started and documentation\nplease read https://github.com/aeon0/botty\n")
+    print("\nFor gettings started and documentation\nplease see https://github.com/pokzcodes/mybot\n")
     table = BeautifulTable()
     table.rows.append([config.advanced_options['restore_settings_from_backup_key'], "Restore D2R settings from backup"])
     table.rows.append([config.advanced_options['settings_backup_key'], "Backup D2R current settings"])

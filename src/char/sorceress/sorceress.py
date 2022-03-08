@@ -72,7 +72,7 @@ class Sorceress(IChar):
         # In case telekinesis fails, try again with the base implementation
         return super().select_by_template(template_type, success_func, time_out, threshold)
 
-    def pre_buff(self):
+    def pre_buff(self, switch_back=True):
         if self._char_config["cta_available"]:
             self._pre_buff_cta()
         if self._skill_hotkeys["energy_shield"]:

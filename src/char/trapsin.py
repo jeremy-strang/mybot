@@ -38,7 +38,7 @@ class Trapsin(IChar):
         elif fcr >= 8: frames = 15
         return frames
 
-    def pre_buff(self):
+    def pre_buff(self, switch_back=True):
         if self._char_config["cta_available"]:
             self._pre_buff_cta()
         if self._skill_hotkeys["fade"]:

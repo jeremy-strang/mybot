@@ -46,7 +46,7 @@ class Basic(IChar):
         wait(0.01, 0.05)
         keyboard.send(self._char_config["stand_still"], do_press=False)
 
-    def pre_buff(self):
+    def pre_buff(self, switch_back=True):
         if self._skill_hotkeys["buff_1"]:
             keyboard.send(self._skill_hotkeys["buff_1"])
             wait(0.5, 0.15)

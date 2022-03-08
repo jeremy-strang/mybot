@@ -98,9 +98,9 @@ class Barbarian(IChar):
                 keyboard.send(self._char_config["stand_still"], do_press=False)
             wait(0.1, 0.15)
 
-    def do_hork(self, names: list[str] = None, boundary: list[int] = None, time_out: float = 15.0, unique_only: bool = False) -> bool:
+    def do_hork(self, names: list[str] = None, boundary: list[int] = None, time_out: float = 15.0, unique_only: bool = False, disable_swap: bool = False) -> bool:
         Logger.debug("Beginning hork...")
-        if self._char_config["barb_pre_hork_weapon_swap"]:
+        if self._char_config["barb_pre_hork_weapon_swap"] and not disable_swap:
             self.switch_weapon()
         m = self.get_next_corpse(names, boundary, unique_only = unique_only)
         start = time.time()
@@ -132,11 +132,11 @@ class Barbarian(IChar):
             last_monster_id = m_id
             last_pos = data["player_pos_world"]
             m = self.get_next_corpse(names, boundary, skip_ids=skip_ids, unique_only=unique_only)
-        if self._char_config["barb_pre_hork_weapon_swap"]:
+        if self._char_config["barb_pre_hork_weapon_swap"] and not disable_swap:
             self.switch_weapon()
         Logger.debug(f"Finished horking corpses after {round(time.time() - start, 2)} sec")
 
-    def pre_buff_swap(self):
+    def pre_buff_swap(self, switch_back=True):
         # Try to switch weapons and select bo until we find the skill on the right skill slot
         self.switch_weapon()
         keyboard.send(self._char_config["battle_command"])
@@ -152,13 +152,16 @@ class Barbarian(IChar):
         mouse.click(button="right")
         wait(self._cast_duration, self._cast_duration + 0.03)
         # Make sure the switch back to the original weapon is good
-        if not self._char_config["teleport_weapon_swap"]:
+        if switch_back:
+            print("switching back...")
             self.switch_weapon()
             self.verify_active_weapon_tab()
+        else:
+            print("not switching back...")
 
-    def pre_buff(self):
+    def pre_buff(self, switch_back=True):
         if self._char_config["barb_pre_buff_weapon_swap"]:
-            self.pre_buff_swap()
+            self.pre_buff_swap(switch_back)
         else:
           keyboard.send(self._char_config["battle_command"])
           wait(0.08, 0.19)

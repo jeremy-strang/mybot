@@ -1,4 +1,4 @@
-name: botty-r
+name: mybot
 channels:
   - conda-forge
 dependencies:

@@ -573,7 +573,6 @@ class PatherV2:
         Traverse to another location
         :param end: Either world coordinates as tuple [x, y] or a string e.g. 'Worldstone Keep Level 3'
         :param char: IChar
-        :param randomize: how much randomization a move should have in pixel
         :return: bool if successfull
         """
         print(f"Traversing to {end}...")
@@ -609,7 +608,6 @@ class PatherV2:
                     elif repeated_pos_count > 18:
                         Logger.warning("Got stuck during pathing")
                         char._cast_duration = tmp_duration
-                        Logger.debug("Returning false 1")
                         return False
                 else:
                     repeated_pos_count = 0
@@ -695,8 +693,7 @@ class PatherV2:
                         density = self._config.char["density"]
                         area = self._config.char["area"]
                         monster = char.kill_around(self._api, density, area,True)
-                        if monster: 
-                            Logger.debug(f"Returning monster: {monster}")
+                        if monster:
                             return monster
                         if do_pre_move:
                             char.pre_move()

@@ -440,7 +440,7 @@ class IChar:
         dist = math.dist(player_p, monster["position"]) - (offset [0] + offset [1]) 
         return dist
 
-    def pre_buff(self):
+    def pre_buff(self, switch_back=True):
         pass
 
     def kill_pindle(self) -> bool:
