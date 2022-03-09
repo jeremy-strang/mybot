@@ -335,6 +335,18 @@ class PatherV2:
         y_m = pos_m[1]
         adjusted_pos_m = [x_m - 5, y_m - 35] if dist < 25 else [x_m, y_m]
         mouse.move(*adjusted_pos_m, delay_factor=[0.1, 0.2])
+    
+    def move_to_monster(self, char: IChar, monster: dict) -> bool:
+        self.move_mouse_to_abs_pos(monster["abs_screen_position"], monster["dist"])
+        if monster is not None:
+            if char.capabilities.can_teleport_natively:
+                char.pre_move()
+                mouse.click(button="right")
+                wait(char._cast_duration)
+            else:
+                mouse.click(button="left")
+                wait(0.7)
+        return True
 
     def create_route(self, target_pos_world: tuple[int, int]):
         data = self._api.get_data()

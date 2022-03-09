@@ -480,7 +480,8 @@ class Hammerdin(IChar):
                             proceed = proceed and not any(m["name"].startswith(startstr) for startstr in ignore_names)
                         if proceed and (boundary is None or is_in_roi(boundary, area_pos)):
                             dist = math.dist(area_pos, data["player_pos_area"])
-                            self._pather_v2.traverse(area_pos, self, randomize=10)
+                            # self._pather_v2.traverse(area_pos, self, time_out=1.0)
+                            self._pather_v2.move_to_monster(self, m)
                             if dist < 8:
                                 self._cast_hammers(self._cast_duration * 3)
                             wait(0.1)

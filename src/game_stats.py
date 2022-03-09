@@ -84,7 +84,7 @@ class GameStats:
                 self._send_status_update()
         self._game_counter += 1
         self._timer = time.time()
-        Logger.info(f"Starting game #{self._game_counter}")
+        Logger.info(f"\nStarting game #{self._game_counter}\n")
 
     def log_end_game(self, failed: bool = False):
         elapsed_time = 0
