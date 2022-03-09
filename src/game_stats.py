@@ -84,7 +84,14 @@ class GameStats:
                 self._send_status_update()
         self._game_counter += 1
         self._timer = time.time()
-        Logger.info(f"\nStarting game #{self._game_counter}\n")
+        print("\n="*80)
+        Logger.info(f"Starting game #{self._game_counter}\n")
+        items = self._location_stats["totals"]["items"]
+        chickens = self._location_stats["totals"]["chickens"]
+        merc_deaths = self._location_stats["totals"]["merc_deaths"]
+        failed_runs = self._location_stats["totals"]["failed_runs"]
+        Logger.info(f"Items: {items}, chickens: {chickens}, merc_deaths: {merc_deaths}, failed_runs: {failed_runs}")
+        print("="*80)
 
     def log_end_game(self, failed: bool = False):
         elapsed_time = 0
