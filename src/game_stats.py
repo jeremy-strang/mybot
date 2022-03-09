@@ -84,7 +84,7 @@ class GameStats:
                 self._send_status_update()
         self._game_counter += 1
         self._timer = time.time()
-        print("\n="*80)
+        print("="*80)
         Logger.info(f"Starting game #{self._game_counter}\n")
         items = self._location_stats["totals"]["items"]
         chickens = self._location_stats["totals"]["chickens"]
