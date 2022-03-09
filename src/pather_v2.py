@@ -20,7 +20,11 @@ import collections
 import keyboard
 from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
-from utils.misc import unit_vector
+from utils.misc import unit_vector, clip_abs_point
+
+def clip_point(point):
+    x = np.clip(point[0], -638, 638)
+    y = np.clip(point[1], -350, 225)
 
 class PatherV2:
     def __init__(self, screen: Screen, api: MapAssistApi):
@@ -683,21 +687,16 @@ class PatherV2:
 
                 for i in range(len(route_list)):
                     # this is our new route node
-                    r = np.array(route_list[i])
-                    world_r = [r[1], r[0]]
+                    node = np.array(route_list[i])
+                    node_pos_w = [node[1], node[0]]
                     data = self._api.get_data()
-                    player_p = data['player_pos_area']+data['player_offset']
-                    # game space to world space
-                    new_pos_mon = world_to_abs(world_r,player_p)
-                    x = np.clip(new_pos_mon[0],-638,638)
-                    y = np.clip(new_pos_mon[1],-350,225)
-                    sc = [x, y]
-                    move_to = self._screen.convert_abs_to_monitor(sc)
+                    player_pos = data['player_pos_area']+data['player_offset']
+                    node_pos_abs = world_to_abs(node_pos_w, player_pos)
+                    node_pos_m = self._screen.convert_abs_to_monitor(node_pos_abs, clip_input=True)
 
-                    move_to = (move_to[0], move_to[1])
-                    if math.dist(player_p, world_r) < 10:
+                    if math.dist(player_pos, node_pos_w) < 10:
                         continue
-                    char.move(move_to,force_move=force)
+                    char.move((node_pos_m[0], node_pos_m[1]), force_move=force)
                     if i > len(route_list)-4:
                         #slow down on the last few jumps for accuracy, there might be a better way but ???
                         time.sleep(.4)
@@ -710,8 +709,8 @@ class PatherV2:
                         if do_pre_move:
                             char.pre_move()
                 data = self._api.get_data()
-                player_p = data['player_pos_area']+data['player_offset']
-                recalc_dist = math.dist(player_p,map_pos)
+                player_pos = data['player_pos_area'] + data['player_offset']
+                recalc_dist = math.dist(player_pos, map_pos)
                 if recalc_dist < 15 and verify_location:
                     Logger.warning(f"Done traversing to {end}, distance to target is {round(recalc_dist, 2)}")
                     return True

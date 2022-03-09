@@ -198,3 +198,8 @@ def points_equal(pos_a: Tuple[int, int], pos_b: Tuple[int, int], num_decimals = 
     b = round_point(pos_b, num_decimals)
     print(f'Checking points equal: {a} and {b}')
     return a[0] == b[0] and a[1] == b[1]
+
+def clip_abs_point(point: Tuple[int, int]) -> Tuple[float, float]:
+    x = np.clip(point[0], -638, 638)
+    y = np.clip(point[1], -350, 225)
+    return (x, y)

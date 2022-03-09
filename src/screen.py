@@ -6,9 +6,8 @@ import time
 from logger import Logger
 from typing import Tuple
 from config import Config
-from utils.misc import find_d2r_window
+from utils.misc import find_d2r_window, clip_abs_point
 import os
-
 
 class Screen:
     """Grabs images from screen and converts different coordinate systems to each other"""
@@ -57,7 +56,9 @@ class Screen:
     def convert_screen_to_abs(self, screen_coord: Tuple[float, float]) -> Tuple[float, float]:
         return (screen_coord[0] - (self._monitor_roi["width"] // 2), screen_coord[1] - (self._monitor_roi["height"] // 2))
 
-    def convert_abs_to_monitor(self, abs_coord: Tuple[float, float]) -> Tuple[float, float]:
+    def convert_abs_to_monitor(self, abs_coord: Tuple[float, float], clip_input: bool = False) -> Tuple[float, float]:
+        if clip_input:
+            abs_coord = clip_abs_point(abs_coord)
         screen_coord = self.convert_abs_to_screen(abs_coord)
         monitor_coord = self.convert_screen_to_monitor(screen_coord)
         return monitor_coord
