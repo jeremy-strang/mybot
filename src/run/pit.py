@@ -58,10 +58,7 @@ class Pit:
         return Location.A1_PIT_WP
     
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        tele_swap = self._config.char["teleport_weapon_swap"]
-        if do_pre_buff:
-            self._char.pre_buff(switch_back=not tele_swap)
-
+        self._char.pre_travel(do_pre_buff)
         if not self._pather_v2.traverse("Monastery Gate", self._char): return False
         if not self._pather_v2.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3): return False
 
@@ -70,10 +67,7 @@ class Pit:
     
         if not self._pather_v2.traverse("Pit Level 1", self._char): return False
         if not self._pather_v2.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=True, randomize=4): return False
-        
-        if tele_swap:
-            self._char.switch_weapon()
-            self._char.verify_active_weapon_tab()
+        self._char.post_travel()
 
         for poi in ["Pit Level 2", "SparklyChest"]:
             monster = self._pather_v2.traverse(poi, self._char, kill=True, verify_location=True)

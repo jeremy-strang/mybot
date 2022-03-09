@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from lib2to3.pytree import Base
 import keyboard
 import os
+import sys
 from beautifultable import BeautifulTable
 import logging
 import traceback
@@ -19,6 +21,15 @@ from utils.restart import kill_game
 class Controllers():
     game: GameController
     debugger: GraphicDebuggerController
+
+def check_arg(arg: str) -> bool:
+    args = sys.argv
+    if len(args) > 1:
+        for i in range(1, len(args)):
+            print(args[i])
+            if args[i] == arg:
+                show_options = True
+                break
 
 def start_or_pause_bot(controllers: Controllers):
     if controllers.game.is_running:
@@ -52,6 +63,8 @@ def on_exit(game_controller: GameController,  stand_still="capslock"):
     os._exit(1)
 
 def main():
+    show_options = check_arg("options")
+
     controllers = Controllers(
         GameController(),
         GraphicDebuggerController()
@@ -66,28 +79,32 @@ def main():
         Logger.error(f"ERROR: Unkown logg_lvl {config.advanced_options['logg_lvl']}. Must be one of [info, debug]")
 
     # Create folder for debug screenshots if they dont exist yet
-    if not os.path.exists("stats"):
-        os.system("mkdir stats")
-    if not os.path.exists("info_screenshots") and (config.general["info_screenshots"] or config.general["message_api_type"] == "discord"):
-        os.system("mkdir info_screenshots")
-    if not os.path.exists("loot_screenshots") and (config.general["loot_screenshots"] or config.general["message_api_type"] == "discord"):
-        os.system("mkdir loot_screenshots")
+    try:
+        if not os.path.exists("stats"):
+            os.system("mkdir stats")
+        if not os.path.exists("info_screenshots") and (config.general["info_screenshots"] or config.general["message_api_type"] == "discord"):
+            os.system("mkdir info_screenshots")
+        if not os.path.exists("loot_screenshots") and (config.general["loot_screenshots"] or config.general["message_api_type"] == "discord"):
+            os.system("mkdir loot_screenshots")
+    except BaseException as e:
+        print(f"Error creating directories: {e}")
 
-    print(f"============ Botty-r {__version__} [name: {config.general['name']}] ============")
+    print(f"============ MyBot {__version__} [name: {config.general['name']}] ============")
     print(f"\nActive branch:        {config.active_branch}")
-    print(  f"Latest Commit Sha:    {config.latest_commit_sha}")
+    print(f"Latest Commit Sha:    {config.latest_commit_sha}")
 
-    print("\nFor gettings started and documentation\nplease see https://github.com/pokzcodes/mybot\n")
-    table = BeautifulTable()
-    table.rows.append([config.advanced_options['restore_settings_from_backup_key'], "Restore D2R settings from backup"])
-    table.rows.append([config.advanced_options['settings_backup_key'], "Backup D2R current settings"])
-    table.rows.append([config.advanced_options['auto_settings_key'], "Adjust D2R settings"])
-    table.rows.append([config.advanced_options['graphic_debugger_key'], "Start / Stop Graphic debugger"])
-    table.rows.append([config.advanced_options['resume_key'], "Start / Pause Botty"])
-    table.rows.append([config.advanced_options['exit_key'], "Stop bot"])
-    table.columns.header = ["hotkey", "action"]
-    print(table)
-    print("\n")
+    if show_options:
+        print("\nFor gettings started and documentation\nplease see https://github.com/pokzcodes/mybot\n")
+        table = BeautifulTable()
+        table.rows.append([config.advanced_options['restore_settings_from_backup_key'], "Restore D2R settings from backup"])
+        table.rows.append([config.advanced_options['settings_backup_key'], "Backup D2R current settings"])
+        table.rows.append([config.advanced_options['auto_settings_key'], "Adjust D2R settings"])
+        table.rows.append([config.advanced_options['graphic_debugger_key'], "Start / Stop Graphic debugger"])
+        table.rows.append([config.advanced_options['resume_key'], "Start / Pause Botty"])
+        table.rows.append([config.advanced_options['exit_key'], "Stop bot"])
+        table.columns.header = ["hotkey", "action"]
+        print(table)
+        print("\n")
 
     keyboard.add_hotkey(config.advanced_options['auto_settings_key'], lambda: adjust_settings())
     keyboard.add_hotkey(config.advanced_options['graphic_debugger_key'], lambda: start_or_stop_graphic_debugger(controllers))
@@ -95,8 +112,9 @@ def main():
     keyboard.add_hotkey(config.advanced_options['settings_backup_key'], lambda: backup_settings())
     keyboard.add_hotkey(config.advanced_options['resume_key'], lambda: start_or_pause_bot(controllers))
     keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: on_exit(game_controller, config.char["stand_still"]))
+    if not show_options:
+        start_or_pause_bot(controllers)
     keyboard.wait()
-
 
 if __name__ == "__main__":
     # To avoid cmd just closing down, except any errors and add a input() to the end

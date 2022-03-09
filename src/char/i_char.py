@@ -256,6 +256,8 @@ class IChar:
             return None
 
     def pre_move(self):
+        if not self.capabilities:
+            self.discover_capabilities(True)
         # if teleport hotkey is set and if teleport is not already selected
         if self.capabilities.can_teleport_natively:
             self.select_tp()
@@ -340,6 +342,15 @@ class IChar:
             if is_in_roi(roi_mouse_move, pos_screen):
                 mouse.move(*pos_away, randomize=40, delay_factor=[0.8, 1.4])
         return False
+
+    def pre_travel(self, do_pre_buff=True):
+        if do_pre_buff:
+            self.pre_buff(switch_back=not self._config.char["teleport_weapon_swap"])
+
+    def post_travel(self):
+        if self._config.char["teleport_weapon_swap"]:
+            self.switch_weapon()
+            self.verify_active_weapon_tab()
 
     def _pre_buff_cta(self, extra_cast_delay: float = 0.0):
         # Save current skill img
@@ -498,7 +509,7 @@ if __name__ == "__main__":
     char_config = config.char
     screen = Screen()
     template_finder = TemplateFinder(screen)
-    ui_manager = UiManager(screen, template_finder, obs_recorder)
+    ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._pather_v2, self._game_stats)
     ocr = Ocr()
 
     i_char = IChar({}, screen, template_finder, ui_manager)

@@ -78,7 +78,7 @@ if __name__ == "__main__":
         pather = Pather(screen, template_finder)
         pather_v2 = PatherV2(screen, api)
         item_finder = ItemFinder()
-        ui_manager = UiManager(screen, template_finder, game_stats)
+        ui_manager = UiManager(screen, template_finder, obs_recorder, pather_v2, game_stats)
         belt_manager = BeltManager(screen, template_finder)
         
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager)
@@ -97,7 +97,7 @@ if __name__ == "__main__":
                 f.write(json.dumps(json.loads(data_str), indent=4, sort_keys=True))
                 f.close()
 
-        def find_updated_monster(id: int) -> dict:
+        def find_monster(id: int) -> dict:
             data = api.get_data()
             if data is not None and "monsters" in data and type(data["monsters"]) is list:
                 for m in data["monsters"]:
@@ -124,7 +124,7 @@ if __name__ == "__main__":
                     menu_open = False
                     start = time.time()
                     while not menu_open and time.time() - start < 10:
-                        m = find_updated_monster(m["id"])
+                        m = find_monster(m["id"])
                         move_mouse_to_monster(m)
                         if m is not None:
                             mouse.click(button="left")

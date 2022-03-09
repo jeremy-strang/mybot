@@ -326,7 +326,7 @@ class PatherV2:
                 if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:
                     queue.append(path + [(x2, y2)])
                     seen.add((x2, y2))
-        
+
     def move_mouse_to_abs_pos(self, abs_screen_position, dist):
         x = np.clip(abs_screen_position[0], -638, 638)
         y = np.clip(abs_screen_position[1], -350, 225)

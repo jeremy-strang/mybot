@@ -32,6 +32,7 @@ class HealthManager:
         self._callback = None
         self._pausing = True
         self._last_chicken_screenshot = None
+        self._last_location = ""
 
     def stop_monitor(self):
         self._do_monitor = False
@@ -50,14 +51,16 @@ class HealthManager:
         self._pausing = True
 
     def update_location(self, loc: Location):
+        if self._last_location != loc:
+            Logger.debug(f"Location changed from {self._last_location} to {loc}")
         if loc is not None and type(loc) == str:
-
-            bosses = ["shenk", "eldritch", "pindle", "nihlathak", "trav", "arc", "diablo","andy","meph","tower","baal", "pit", "stony"]
+            bosses = ["shenk", "eldritch", "pindle", "nihlathak", "trav", "arc", "diablo", "andy", "meph", "tower", "baal", "pit", "stony"]
             prev_value = self._pausing
             self._pausing = not any(substring in loc for substring in bosses)
             if self._pausing != prev_value:
                 debug_str = "pausing" if self._pausing else "active"
                 Logger.info(f"Health Manager is now {debug_str}")
+        self._last_location = loc
 
     @staticmethod
     def get_health(img: np.ndarray) -> float:
@@ -152,7 +155,7 @@ class HealthManager:
                         self._belt_manager.drink_potion("mana", stats=[health_percentage, mana_percentage])
                         self._last_mana = time.time()
                 # check merc
-                merc_alive = self._template_finder.search(["MERC_A2","MERC_A1","MERC_A5","MERC_A3"], img, roi=self._config.ui_roi["merc_icon"]).valid
+                merc_alive = self._template_finder.search(["MERC_A2", "MERC_A1", "MERC_A5", "MERC_A3"], img, roi=self._config.ui_roi["merc_icon"]).valid
                 if merc_alive:
                     merc_health_percentage = self.get_merc_health(img)
                     last_drink = time.time() - self._last_merc_healh

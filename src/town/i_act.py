@@ -1,8 +1,30 @@
+import time
 from typing import Union
 from pather import Location
-
+from char import IChar
+from screen import Screen
+from config import Config
+from npc_manager import NpcManager, Npc
+from pather import Pather, Location
+from pather_v2 import PatherV2
+from api import MapAssistApi
+from typing import Union
+from template_finder import TemplateFinder
+from utils.misc import wait
+from utils.monsters import find_monster, find_npc
+from utils.custom_mouse import mouse
 
 class IAct:
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, pather: Pather, char: IChar, npc_manager: NpcManager, pather_v2: PatherV2, api: MapAssistApi):
+        self._config = Config()
+        self._screen = screen
+        self._pather = pather
+        self._char = char
+        self._npc_manager = npc_manager
+        self._template_finder = template_finder
+        self._pather_v2 = pather_v2
+        self._api = api
+
     # Open waypoint menu
     def open_wp(self, curr_loc: Location) -> bool: return False
     # Get Location that is closest to waypoint to continue pathing from there
@@ -31,3 +53,21 @@ class IAct:
     def open_trade_and_repair_menu(self, curr_loc: Location) -> Union[Location, bool]: return False
     def identify(self, curr_loc: Location) -> Union[Location, bool]: return False
     def gamble (self, curr_loc: Location) -> Union[Location, bool]: return False
+
+    def trade_with_npc(self, npc: Npc) -> bool:
+        m = find_npc(npc, self._api)
+        if m is not None:
+            menu_open = False
+            start = time.time()
+            while not menu_open and time.time() - start < 10:
+                m = find_monster(m["id"], self._api)
+                self._pather_v2.move_mouse_to_abs_pos(m["abs_screen_position"], m["dist"])
+                if m is not None:
+                    mouse.click(button="left")
+                    wait(1.3)
+                    data = self._api.get_data()
+                    menu_open = data is not None and data["menus"]["NpcInteract"]
+                    if menu_open:
+                        self._npc_manager.press_npc_btn(npc, "trade")
+                        return True
+        return False

@@ -10,6 +10,7 @@ import os
 import sys
 from npc_manager import Npc
 from obs import obs_recorder
+from run.andy import Andy
 from run.pit import Pit
 from run.trav import Trav
 
@@ -83,14 +84,14 @@ if __name__ == "__main__":
         
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager)
 
-        bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
         # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
         char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
+        char.discover_capabilities(force=True)
+        bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
         pit = Pit(screen, template_finder, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
         trav = Trav(template_finder, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
+        andy = Andy(screen, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
         
-        char.discover_capabilities(force=True)
-        npc_manager = bot._town_manager.a3._npc_manager
 
         def write_data_to_file(data, data_str):
             current_area = data["current_area"]
@@ -98,44 +99,13 @@ if __name__ == "__main__":
                 f.write(json.dumps(json.loads(data_str), indent=4, sort_keys=True))
                 f.close()
 
-        def find_updated_monster(id: int) -> dict:
-            data = api.get_data()
-            if data is not None and "monsters" in data and type(data["monsters"]) is list:
-                for m in data["monsters"]:
-                    if m["id"] == id:
-                        return m
-            return None
-
-        def find_npc(npc: Npc):
-            data = api.get_data()
-            write_data_to_file(data, api._raw_data_str)
-            for m in data["monsters"]:
-                name = m["name"]
-                if name.lower() == npc.lower():
-                    return m
-            return None
-
-        def trade_with_npc(npc: Npc):
-            m = find_npc(npc)
-            if m is not None:
-                menu_open = False
-                start = time.time()
-                while not menu_open and time.time() - start < 10:
-                    m = find_updated_monster(m["id"])
-                    pather_v2.move_mouse_to_abs_pos(m["abs_screen_position"], m["dist"])
-                    if m is not None:
-                        mouse.click(button="left")
-                        wait(1.3)
-                        data = api.get_data()
-                        menu_open = data is not None and data["menus"]["NpcInteract"]
-                        if menu_open: npc_manager.press_npc_btn(npc, "trade")
         
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: trade_with_npc(Npc.ORMUS)) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
         print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
         
-        trav.battle(True)
+        bot._town_manager.a1.open_trade_menu(None)
 
         # trade_with_npc(Npc.ORMUS)
         # # ormus = find_npc(Npc.ORMUS)

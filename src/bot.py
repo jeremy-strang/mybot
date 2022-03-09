@@ -23,7 +23,7 @@ from ui import UiManager, char_selector
 from ui import BeltManager
 from ui import CharSelector
 from pather import Pather, Location
-from npc_manager import NpcManager
+from npc_manager import NpcManager, Npc
 from health_manager import HealthManager
 from death_manager import DeathManager
 from char.sorceress import LightSorc, BlizzSorc, NovaSorc
@@ -46,6 +46,7 @@ from utils.dclone_ip import get_d2r_game_ip
 #mapassist api + new pather
 from pather_v2 import PatherV2
 from api import MapAssistApi
+from utils.monsters import find_npc, find_monster
 
 class Bot:
 
@@ -102,14 +103,15 @@ class Bot:
 
         # Create Town Manager
         npc_manager = NpcManager(screen, self._template_finder)
-        a5 = A5(self._screen, self._template_finder, self._pather, self._char, npc_manager,self._pather_v2)
-        a4 = A4(self._screen, self._template_finder, self._pather, self._char, npc_manager,self._pather_v2)
-        a3 = A3(self._screen, self._template_finder, self._pather, self._char, npc_manager,self._pather_v2)
-        a2 = A2(self._screen, self._template_finder, self._pather, self._char, npc_manager)
-        a1 = A1(self._screen, self._template_finder, self._pather, self._char, npc_manager,self._pather_v2)
+        a5 = A5(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
+        a4 = A4(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
+        a3 = A3(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
+        a2 = A2(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
+        a1 = A1(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
         self._town_manager = TownManager(self._template_finder, self._ui_manager, self._item_finder, a1, a2, a3, a4, a5)
         self._route_config = self._config.routes
         self._route_order = self._config.routes_order
+        self._npc_manager = npc_manager
 
         # Create runs
         if self._route_config["run_shenk"] and not self._route_config["run_eldritch"]:
@@ -192,13 +194,13 @@ class Bot:
         ]
         self.machine = Machine(model=self, states=self._states, initial="initialization", transitions=self._transitions, queued=True)
         self._transmute = Transmute(self._screen, self._template_finder, self._game_stats, self._ui_manager)
-
+    
     def draw_graph(self):
         # Draw the whole graph, graphviz binaries must be installed and added to path for this!
         from transitions.extensions import GraphMachine
         self.machine = GraphMachine(model=self, states=self._states, initial="initialization", transitions=self._transitions, queued=True)
         self.machine.get_graph().draw('my_state_diagram.png', prog='dot')
-
+        
     def get_belt_manager(self) -> BeltManager:
         return self._belt_manager
 

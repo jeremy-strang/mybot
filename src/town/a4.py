@@ -5,20 +5,15 @@ from config import Config
 from npc_manager import NpcManager, Npc
 from pather import Pather, Location
 from pather_v2 import PatherV2
+from api import MapAssistApi
 from typing import Union
 from template_finder import TemplateFinder
 from utils.misc import wait
 
 
 class A4(IAct):
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, pather: Pather, char: IChar, npc_manager: NpcManager, pather_v2: PatherV2):
-        self._config = Config()
-        self._screen = screen
-        self._pather = pather
-        self._char = char
-        self._npc_manager = npc_manager
-        self._template_finder = template_finder
-        self._pather_v2 = pather_v2
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, pather: Pather, char: IChar, npc_manager: NpcManager, pather_v2: PatherV2, api: MapAssistApi):
+        super().__init__(screen, template_finder, pather, char, npc_manager, pather_v2, api)
 
     def get_wp_location(self) -> Location: return Location.A4_WP
     def can_resurrect(self) -> bool: return True
