@@ -36,12 +36,6 @@ class ZerkerBarb(Barbarian):
         self._kill_mobs(game_state, atk_len)
         return True
 
-    def move_to_monster(self, monster, offset) -> bool: # TODO
-        self.pre_move()
-        monster = self._pather_v2.traverse([offset[0]+monster['position'][0]- self._api.data["area_origin"][0], offset[1]+monster["position"][1]- self._api.data["area_origin"][1]], self)
-        wait(0.05, 0.1)
-        return monster
-
     def distance(self, monster, offset):
         player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
         dist = math.dist(player_p, monster["position"]) -(offset [0] + offset [1]) 
@@ -74,7 +68,7 @@ class ZerkerBarb(Barbarian):
         mouse.move(*pos_monitor)
 
     def kill_uniques(self, monster, aura: str = "concentration", offset = [-1, -1]) -> bool:
-        if not self.move_to_monster(monster, offset): return False
+        if not self._pather_v2.move_to_monster(self, monster): return False
         dist = self.distance(monster, offset)
         counter = 0
         while dist > 7 and counter < 5:
