@@ -64,7 +64,7 @@ class IAct:
                 self._pather_v2.move_mouse_to_abs_pos(m["abs_screen_position"], m["dist"])
                 if m is not None:
                     mouse.click(button="left")
-                    wait(1.3)
+                    wait(1.0)
                     data = self._api.get_data()
                     menu_open = data is not None and data["menus"]["NpcInteract"]
                     if menu_open:
