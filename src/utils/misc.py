@@ -229,7 +229,6 @@ def cluster_nodes(nodes):
         x = 0
         y += 1
     features[0, 0:-1, ...] = features[0, 1:, ...]
-
     cluster_count = int(features.size / 3000)
     while features.size > 2048:
         features = np.delete(features, list(range(0, features.shape[0], 2)), axis=0)

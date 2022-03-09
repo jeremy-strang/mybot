@@ -353,9 +353,22 @@ class PatherV2:
 
     def create_cluster_route(self):
         data = self._api.get_data()
+        route = []
         if data is not None:
+            player_x_local = data["player_pos_world"][0] - data["area_origin"][0]
+            player_y_local = data["player_pos_world"][1] - data["area_origin"][1]
+            start = (int(player_x_local + 1), int(player_y_local + 1))
+            map_w = len(data["map"])
+            map_h = len(data["map"][0])
             clusters = cluster_nodes(data["map"])
-            print(clusters)
+            for cluster in clusters:
+                end = (cluster[0], cluster[1])
+                next_route = self.bfs(start, end, map_h, map_w, data["map"])
+                route += next_route
+                start = end
+        print(f"type of route: {type(route)}, length: {len(route)}")
+        self._api._current_path = route
+        return route
 
     def create_route(self, target_pos_world: tuple[int, int]):
         data = self._api.get_data()
@@ -367,8 +380,9 @@ class PatherV2:
             map = data["map"]
             map_w = len(map)
             map_h = len(map[0])
-            route = self.bfs((int(player_x_local + 1), int(player_y_local + 1)),
-                (target_x_local, target_y_local), map_h, map_w,map)
+            start = (int(player_x_local + 1), int(player_y_local + 1))
+            end = (target_x_local, target_y_local)
+            route = self.bfs(start, end, map_h, map_w, map)
             return route
         return None
 

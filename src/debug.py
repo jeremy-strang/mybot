@@ -106,6 +106,7 @@ if __name__ == "__main__":
         # bot._town_manager.a1.open_trade_menu(None)
         # pather_v2.create_cluster_route()
         overlay = start_overlay(bot, game_stats)
+        pather_v2.create_cluster_route()
         # trade_with_npc(Npc.ORMUS)
         # # ormus = find_npc(Npc.ORMUS)
         # # if ormus is not None:
