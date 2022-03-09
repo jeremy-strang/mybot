@@ -407,68 +407,6 @@ class PatherV2:
                 dist = math.dist([wp_x, wp_y], [player_pos_world[0], player_pos_world[1]])
                 if dist < 25: next = route.pop(0)
 
-    def traverse_route_walking(self, target, char, threshold=10):
-        end_node = target[-1]
-        moves = 0
-        while len(target)>0:            
-            try:
-                data = self._api.get_data()
-            except:
-                pass
-            player_x = data["player_pos_world"][0]
-            player_y = data["player_pos_world"][1]
-
-            wp_x = target[0][0]+data["area_origin"][0]
-            wp_y = target[0][1]+data["area_origin"][1]
-
-            odist = math.dist([wp_x,wp_y],[player_x,player_y])
-
-            end_x = end_node[0]+data["area_origin"][0]
-            end_y = end_node[1]+data["area_origin"][1]
-            end_dist = math.dist([end_x,end_y],[player_x,player_y])
-
-            #distance threshold to target
-            if end_dist < end_dist:
-                sucess = True
-                keyboard.send(self._char_config["force_move"], do_press=False)
-                Logger.info('Walked to destination')
-                return True
-                #break
-
-            #how close to a node before we remove it
-            if odist < threshold:
-                try:
-                    target.pop(0)
-                except:
-                    pass
-                try:
-                    target.pop(0)
-                except:
-                    pass
-
-            #out of paths to traverse
-            if len(target) < 1:
-                keyboard.send(char._char_config["force_move"], do_press=False)
-                return True
-
-            player_p = data['player_pos_area']+data['player_offset']
-            player_offset = data['player_offset']
-            new_pos_mon = world_to_abs([target[0][0],target[0][1]],player_p+data['player_offset'])
-            zero = self._screen.convert_abs_to_monitor([new_pos_mon[0],new_pos_mon[1]])
-            if moves != 0:
-                #average paths with previous point
-                zero = [(zero[0]+pp[0])/2,(zero[1]+pp[1])/2]
-            else:
-                pp = zero
-            _mouse.move(*zero, duration=.025)
-            pp = zero
-            moves += 1
-            if moves > 330:
-                sucess = True
-                keyboard.send(char._char_config["force_move"], do_press=False)
-                return False
-        return False
-
     def traverse_walking(self, end: Union[str, tuple[int, int]], char: IChar, obj: bool = False,x: int = 0,y: int = 0, threshold = 4,static_npc = False,end_dist=19):
         """
         
