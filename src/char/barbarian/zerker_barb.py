@@ -40,7 +40,7 @@ class ZerkerBarb(Barbarian):
         self.pre_move()
         monster = self._pather_v2.traverse([offset[0]+monster['position'][0]- self._api.data["area_origin"][0], offset[1]+monster["position"][1]- self._api.data["area_origin"][1]], self)
         wait(0.05, 0.1)
-        return monster 
+        return monster
 
     def distance(self, monster, offset):
         player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
@@ -77,15 +77,14 @@ class ZerkerBarb(Barbarian):
         if not self.move_to_monster(monster, offset): return False
         dist = self.distance(monster, offset)
         counter = 0
-        while dist >7 and counter <5:
+        while dist > 7 and counter < 5:
             counter += 1
             wait(0.1, 0.2)
             monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
-            if not self.move_to_monster(monster, offset): return False
-            wait(0.1, 0.2)
-            dist=self.distance(monster, offset)
+            self._pather_v2.move_to_monster(self, monster)
+            dist = self.distance(monster, offset)
         
-        while type(monster) != bool and dist<=7:
+        while type(monster) != bool and dist <= 7:
             self.prepare_attack()
             self.mouse_follow_unit(monster, offset)
             wait(0.8, 1.0)
