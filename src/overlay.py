@@ -1,4 +1,5 @@
 from obs import obs_recorder
+from utils.misc import cluster_nodes
 import win32gui
 import win32api
 import win32con
@@ -158,8 +159,6 @@ class Overlay:
 
 
             if self._current_area is not None:
-
-
                 #draw txt?
                 #print("current area")
                 offset_w = self._mini_map_w
@@ -247,6 +246,13 @@ class Overlay:
                         #dead
                         #pygame.draw.rect(map_surface, (255,255,255), pygame.Rect(x, y, 3,3))
                         dpg.draw_circle((1+x, 1+y), 2, color=(255, 255, 255, 255),parent="monsters")
+                
+                for node in cluster_nodes(data["map"]):
+                    x = node[0]
+                    y = node[1]
+                    #pygame.draw.rect(map_surface, (0,0,255), pygame.Rect(x,y, 2,2))
+                    dpg.draw_circle((1+x, 1+y), 2, color=(0, 0, 255, 255),parent="monsters")
+                
                 dpg.apply_transform("root_scale", dpg.create_scale_matrix([2,2])*dpg.create_translation_matrix([-center/2,-center/2]))
 
                 pass

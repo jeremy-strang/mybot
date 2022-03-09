@@ -92,21 +92,20 @@ if __name__ == "__main__":
         trav = Trav(template_finder, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
         andy = Andy(screen, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
         
-
         def write_data_to_file(data, data_str):
             current_area = data["current_area"]
             with open(f"../botty_data_{current_area}.json", "w") as f:
                 f.write(json.dumps(json.loads(data_str), indent=4, sort_keys=True))
                 f.close()
 
-        
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: trade_with_npc(Npc.ORMUS)) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
         print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
         
-        bot._town_manager.a1.open_trade_menu(None)
-
+        # bot._town_manager.a1.open_trade_menu(None)
+        # pather_v2.create_cluster_route()
+        overlay = start_overlay(bot, game_stats)
         # trade_with_npc(Npc.ORMUS)
         # # ormus = find_npc(Npc.ORMUS)
         # # if ormus is not None:

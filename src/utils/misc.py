@@ -14,6 +14,9 @@ from win32con import HWND_TOPMOST, SWP_NOMOVE, SWP_NOSIZE, HWND_NOTOPMOST
 from win32gui import GetWindowText, SetWindowPos, EnumWindows, GetClientRect, ClientToScreen
 from win32api import GetMonitorInfo, MonitorFromWindow
 from win32process import GetWindowThreadProcessId
+from scipy.spatial.distance import cdist
+from scipy.spatial.distance import cityblock
+from scipy.cluster.vq import kmeans
 import psutil
 
 
@@ -209,3 +212,30 @@ def pad_str_sides(text, pad_char, length=80):
     left = ceil((length - len_text) / 2)
     right = floor((length - len_text) / 2)
     return f"{pad_char * left} {text} {pad_char * right}"
+
+def closest_node(node, nodes):
+    return nodes[cdist([node], nodes).argmin()]
+
+def cluster_nodes(nodes):
+    features = np.array([[0, 0]])
+    clusters = np.array([[0, 0]])
+    x = 0
+    y = 0
+    for node in nodes:
+        for key in node:
+            if key:
+                features = np.concatenate((features, [np.array([x,y])]))
+            x += 1
+        x = 0
+        y += 1
+    features[0, 0:-1, ...] = features[0, 1:, ...]
+
+    cluster_count = int(features.size / 3000)
+    while features.size > 2048:
+        features = np.delete(features, list(range(0, features.shape[0], 2)), axis=0)
+    clusters_k, distortion = kmeans(features.astype(float), cluster_count,iter=5)
+    for c in clusters_k:
+        closest = closest_node(c, features)
+        clusters = np.concatenate((clusters, [closest]))
+    clusters = np.delete(clusters, 0, 0)
+    return clusters

@@ -20,11 +20,8 @@ import collections
 import keyboard
 from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
-from utils.misc import unit_vector, clip_abs_point
-
-def clip_point(point):
-    x = np.clip(point[0], -638, 638)
-    y = np.clip(point[1], -350, 225)
+from scipy.cluster.vq import kmeans
+from utils.misc import unit_vector, clip_abs_point, cluster_nodes
 
 class PatherV2:
     def __init__(self, screen: Screen, api: MapAssistApi):
@@ -354,6 +351,12 @@ class PatherV2:
             return False
         return True
 
+    def create_cluster_route(self):
+        data = self._api.get_data()
+        if data is not None:
+            clusters = cluster_nodes(data["map"])
+            print(clusters)
+
     def create_route(self, target_pos_world: tuple[int, int]):
         data = self._api.get_data()
         if data is not None:
@@ -564,7 +567,6 @@ class PatherV2:
 
     @staticmethod
     def _closest_node(node, nodes):
-        
         return nodes[cdist([node], nodes).argmin()]
 
     @staticmethod
