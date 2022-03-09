@@ -13,7 +13,7 @@ from config import Config
 from logger import Logger
 from game_controller import GameController
 from utils.graphic_debugger import GraphicDebuggerController
-from utils.misc import restore_d2r_window_visibility
+from utils.misc import restore_d2r_window_visibility, pad_str_sides
 from utils.auto_settings import adjust_settings, backup_settings, restore_settings_from_backup
 from utils.restart import kill_game
 
@@ -63,7 +63,7 @@ def on_exit(game_controller: GameController,  stand_still="capslock"):
     os._exit(1)
 
 def main():
-    show_options = check_arg("options")
+    show_options = False # check_arg("options")
 
     controllers = Controllers(
         GameController(),
@@ -89,9 +89,10 @@ def main():
     except BaseException as e:
         print(f"Error creating directories: {e}")
 
-    print(f"============ MyBot {__version__} [name: {config.general['name']}] ============")
-    print(f"\nActive branch:        {config.active_branch}")
+    print(pad_str_sides(f"MyBot {__version__} [name: {config.general['name']}]", "="))
+    print(f"Active branch:        {config.active_branch}")
     print(f"Latest Commit Sha:    {config.latest_commit_sha}")
+    print("="*80)
 
     if show_options:
         print("\nFor gettings started and documentation\nplease see https://github.com/pokzcodes/mybot\n")
@@ -112,8 +113,6 @@ def main():
     keyboard.add_hotkey(config.advanced_options['settings_backup_key'], lambda: backup_settings())
     keyboard.add_hotkey(config.advanced_options['resume_key'], lambda: start_or_pause_bot(controllers))
     keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: on_exit(game_controller, config.char["stand_still"]))
-    if not show_options:
-        start_or_pause_bot(controllers)
     keyboard.wait()
 
 if __name__ == "__main__":

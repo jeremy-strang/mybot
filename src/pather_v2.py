@@ -341,8 +341,8 @@ class PatherV2:
         mouse.move(*adjusted_pos_m, delay_factor=[0.1, 0.2])
     
     def move_to_monster(self, char: IChar, monster: dict) -> bool:
-        self.move_mouse_to_abs_pos(monster["abs_screen_position"], monster["dist"])
         if monster is not None and type(monster) is dict:
+            self.move_mouse_to_abs_pos(monster["abs_screen_position"], monster["dist"])
             if char.capabilities.can_teleport_natively:
                 char.pre_move()
                 mouse.click(button="right")

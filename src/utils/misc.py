@@ -8,7 +8,7 @@ from logger import Logger
 import cv2
 from typing import List, Tuple
 import os
-from math import cos, sin, dist
+from math import ceil, cos, floor, sin, dist
 import subprocess
 from win32con import HWND_TOPMOST, SWP_NOMOVE, SWP_NOSIZE, HWND_NOTOPMOST
 from win32gui import GetWindowText, SetWindowPos, EnumWindows, GetClientRect, ClientToScreen
@@ -203,3 +203,9 @@ def clip_abs_point(point: Tuple[int, int]) -> Tuple[float, float]:
     x = np.clip(point[0], -638, 638)
     y = np.clip(point[1], -350, 225)
     return (x, y)
+
+def pad_str_sides(text, pad_char, length=80):
+    len_text = len(text) + 2
+    left = ceil((length - len_text) / 2)
+    right = floor((length - len_text) / 2)
+    return f"{pad_char * left} {text} {pad_char * right}"
