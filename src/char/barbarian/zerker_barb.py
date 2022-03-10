@@ -37,9 +37,11 @@ class ZerkerBarb(Barbarian):
         return True
 
     def distance(self, monster, offset):
-        player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
-        dist = math.dist(player_p, monster["position"]) -(offset [0] + offset [1]) 
-        return dist
+        if type(monster) is dict:
+            player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
+            dist = math.dist(player_p, monster["position"]) -(offset [0] + offset [1]) 
+            return dist
+        return 0
 
     def prepare_attack(self):
         wait(0.05, 0.1)

@@ -18,10 +18,11 @@ import mouse as _mouse
 from logger import Logger
 import collections
 import keyboard
+from utils.misc import unit_vector, clip_abs_point, cluster_nodes
 from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
-from utils.misc import unit_vector, clip_abs_point, cluster_nodes
+from scipy.ndimage.filters import gaussian_filter
 
 class PatherV2:
     def __init__(self, screen: Screen, api: MapAssistApi):
@@ -408,6 +409,230 @@ class PatherV2:
                 if dist < 25: next = route.pop(0)
 
     def traverse_walking(self, end: Union[str, tuple[int, int]], char: IChar, obj: bool = False,x: int = 0,y: int = 0, threshold = 4,static_npc = False,end_dist=19):
+        """slightly different traversal for moving in town/walking"""
+        char.pre_move()
+        data = None
+        sucess = False
+        start = time.time()
+        rand = [0,0]
+        random_offset=0
+
+        while time.time() - start < 50 or sucess is False: 
+            data = self._api.get_data()
+            if data is not None:
+                if data is not None and "map" in data and data["map"] is not None:
+                    if type(end) is str and obj is False:
+                        if static_npc == True:
+                            for p in data["static_npcs"]:
+                                if p["name"].startswith(end):
+                                    map_pos = p["position"] - data["area_origin"]
+                                    x=map_pos[0]
+                                    y=map_pos[1]
+                                    break
+                        else:
+                            for p in data["poi"]:
+                                if p["label"].startswith(end):
+                                    map_pos = p["position"] - data["area_origin"]
+                                    x=map_pos[0]
+                                    y=map_pos[1]
+                                    break
+                            for p in data["monsters"]:
+                                if p["name"].startswith(end):
+                                    map_pos = p["position"] - data["area_origin"]
+                                    x=map_pos[0]
+                                    y=map_pos[1]
+                                    break
+                    elif obj is True:
+                        for p in data["objects"]:
+                            if p["name"].startswith(end):
+                                map_pos = p["position"] - data["area_origin"]
+                                x=map_pos[0]
+                                y=map_pos[1]
+                                break
+                    else:
+                        x=end[0]
+                        y=end[1]
+
+
+                    end_p = [x,y]
+
+                    current_dist = 999999
+
+                    x = end_p[0]
+                    y = end_p[1]
+
+                    target_x = x+data["area_origin"][0]
+                    target_y = y+data["area_origin"][1]
+                    player_x = data["player_pos_world"][0]
+                    player_y = data["player_pos_world"][1]
+
+                    player_x_local = data["player_pos_world"][0] - data["area_origin"][0]
+                    player_y_local = data["player_pos_world"][1] - data["area_origin"][1]
+
+                    odist = math.dist([target_x,target_y],[player_x,player_y])
+
+                    map_h = 0
+                    map_w = 0
+                    for node in data['map'][0]:
+                        map_h +=1
+                    current_area = data['current_area']
+                    map_w = len(data['map'])
+
+                    #make paths
+                    if data['map'] is not None:
+                        #x=x+rand[0]
+                        #y=y+rand[1]
+                        #random.seed()
+                        #RX = random.randint(-random_offset*2, +random_offset*2)
+                        #random.seed()
+                        #RY = random.randint(-random_offset*2, +random_offset*2)
+                        #player_x_local=player_x_local
+                        #player_y_local=player_y_local
+                        #path_data = self.bfs((int(player_x_local),int(player_y_local)),(int(x),int(y)),map_h,map_w,data['map'])
+
+                        player_local = (int(player_y_local),int(player_x_local))
+                        dest = (int(y),int(x))
+
+                        float_map = data['map'].astype(np.float32)
+
+                        float_map[float_map == 0] = 999999.0
+                        float_map[float_map == 1] = 0.0
+
+
+                        #smooth transitions, less local wandering with this
+                        #we should prob store it somewhere on map load?
+                        blurred_map = gaussian_filter(float_map, sigma=7)
+                        
+                        comp =np.maximum(blurred_map*.001,float_map)
+                        out = (comp)*.00001
+                        comp=comp+1
+                        
+                        path_data = pyastar2d.astar_path(comp.astype(np.float32), player_local, dest, allow_diagonal=True)
+                        path_data = np.flip(path_data, 1)
+                        path_data = path_data.tolist()
+
+
+                        if path_data is not None:
+                            target = path_data
+                            end_click_pt = target[-1]
+                            random_offset=0
+                        else:
+                            random_offset +=1
+                            Logger.debug('invalid path increasing search')
+                            random.seed(random_offset+123)
+                            RX = random.randint(-random_offset, +random_offset)
+                            random.seed(random_offset-43)
+                            RY = random.randint(-random_offset, +random_offset)
+                            rand = np.array([RX,RY])
+                            if random_offset>15:
+                                return False
+                            continue
+                    else:
+                        continue
+
+                    if path_data is not None:
+                        keyboard.send(char._char_config["force_move"], do_release=False)
+
+
+                    self._api._current_path = target
+                    moves =0 
+                    if target is None:
+                        Logger.debug('invalid path -> '+ str(target_x)+''+str(target_y))
+                        sucess = True
+                        return False
+                    pp = [0,0]
+                    randomize = 0
+                    prev_p = [0,0]
+                    delta_p=0
+                    while len(target)>0:            
+                        try:
+                            data = self._api.get_data()
+                        except:
+                            pass
+                        player_x = data["player_pos_world"][0]
+                        player_y = data["player_pos_world"][1]
+
+                        delta_p = math.dist(prev_p,data["player_pos_world"])
+
+                        wp_x = target[0][0]+data["area_origin"][0]
+                        wp_y = target[0][1]+data["area_origin"][1]
+
+                        odist = math.dist([wp_x,wp_y],[player_x,player_y])
+
+                        end_x = end_click_pt[0]+data["area_origin"][0]
+                        end_y = end_click_pt[1]+data["area_origin"][1]
+
+
+                        end = math.dist([end_x,end_y],[player_x,player_y])
+
+                        #distance threshold to target
+                        if end<end_dist:
+                            sucess = True
+                            keyboard.send(char._char_config["force_move"], do_press=False)
+                            Logger.info('Walked to destination')
+                            return True
+                            #break
+
+                        #how close to a node before we remove it
+                        if odist<threshold:
+                            try:
+                                target.pop(0)
+                            except:
+                                pass
+                            try:
+                                target.pop(0)
+                            except:
+                                pass
+
+                        #out of paths to traverse
+                        if len(target)<1:
+                            keyboard.send(char._char_config["force_move"], do_press=False)
+                            return True
+
+                        player_p = data['player_pos_area']+data['player_offset']
+
+                        player_offset = data['player_offset']
+
+                        new_pos_mon = world_to_abs([target[0][0],target[0][1]],player_p+data['player_offset'])
+                        random.seed()
+                        
+                        new_pos_mon = (new_pos_mon[0] + random.randint(-randomize, +randomize), new_pos_mon[1] + random.randint(-randomize, +randomize))
+                        if delta_p<1:
+                            #increase random offset to get around stuck
+                            randomize+=5
+                        else:
+                            randomize=0
+                        prev_p = data["player_pos_world"]
+
+                        zero = self._screen.convert_abs_to_monitor([new_pos_mon[0]-9.5,new_pos_mon[1]-39.5])
+
+                        
+
+
+
+                        if moves != 0:
+                            #average paths with previous point
+                            zero = [(zero[0]+pp[0])/2,(zero[1]+pp[1])/2]
+                        else:
+                            pp = zero
+
+                        _mouse.move(*zero,duration=.025)
+
+                        pp = zero
+                        moves+=1
+
+                        if moves>530:
+                            sucess = True
+                            keyboard.send(char._char_config["force_move"], do_press=False)
+                            return False
+
+                    keyboard.send(char._char_config["force_move"], do_press=False)
+                    return True
+                    
+        keyboard.send(char._char_config["force_move"], do_press=False)
+        return True
+
+    def traverse_walking_old(self, end: Union[str, tuple[int, int]], char: IChar, obj: bool = False,x: int = 0,y: int = 0, threshold = 4,static_npc = False,end_dist=19):
         """
         
         slightly different traversal for moving in town
