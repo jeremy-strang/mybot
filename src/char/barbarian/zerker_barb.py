@@ -102,7 +102,7 @@ class ZerkerBarb(Barbarian):
             MonsterPriorityRule(names = ["CouncilMember"]),
             MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[120, 50, 81, 50])
+        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[120, 80, 50, 50])
         self._kill_mobs(game_state, reposition_pos_world=(156, 113))
         game_state.stop()
         return True
