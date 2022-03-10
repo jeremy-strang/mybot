@@ -191,6 +191,11 @@ def rotate_vec(vec: np.ndarray, deg: float) -> np.ndarray:
 def unit_vector(vec: np.ndarray) -> np.ndarray:
     return vec / dist(vec, (0, 0))
 
+def clip_abs_point(point: Tuple[int, int]) -> Tuple[float, float]:
+    x = np.clip(point[0], -638, 638)
+    y = np.clip(point[1], -350, 225)
+    return (x, y)
+
 def round_point(pos: Tuple[int, int], num_decimals = 0) -> Tuple[float, float]:
     x = round(pos[0], num_decimals)
     y = round(pos[1], num_decimals)
@@ -202,39 +207,8 @@ def points_equal(pos_a: Tuple[int, int], pos_b: Tuple[int, int], num_decimals = 
     print(f'Checking points equal: {a} and {b}')
     return a[0] == b[0] and a[1] == b[1]
 
-def clip_abs_point(point: Tuple[int, int]) -> Tuple[float, float]:
-    x = np.clip(point[0], -638, 638)
-    y = np.clip(point[1], -350, 225)
-    return (x, y)
-
 def pad_str_sides(text, pad_char, length=80):
     len_text = len(text) + 2
     left = ceil((length - len_text) / 2)
     right = floor((length - len_text) / 2)
     return f"{pad_char * left} {text} {pad_char * right}"
-
-def closest_node(node, nodes):
-    return nodes[cdist([node], nodes).argmin()]
-
-def cluster_nodes(nodes):
-    features = np.array([[0, 0]])
-    clusters = np.array([[0, 0]])
-    x = 0
-    y = 0
-    for node in nodes:
-        for key in node:
-            if key:
-                features = np.concatenate((features, [np.array([x,y])]))
-            x += 1
-        x = 0
-        y += 1
-    features[0, 0:-1, ...] = features[0, 1:, ...]
-    cluster_count = int(features.size / 3000)
-    while features.size > 2048:
-        features = np.delete(features, list(range(0, features.shape[0], 2)), axis=0)
-    clusters_k, distortion = kmeans(features.astype(float), cluster_count,iter=5)
-    for c in clusters_k:
-        closest = closest_node(c, features)
-        clusters = np.concatenate((clusters, [closest]))
-    clusters = np.delete(clusters, 0, 0)
-    return clusters

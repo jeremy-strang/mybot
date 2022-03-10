@@ -1,5 +1,5 @@
 from obs import obs_recorder
-from utils.misc import cluster_nodes
+from routing.graph import cluster_nodes
 import win32gui
 import win32api
 import win32con

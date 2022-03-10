@@ -98,29 +98,19 @@ if __name__ == "__main__":
                 f.write(json.dumps(json.loads(data_str), indent=4, sort_keys=True))
                 f.close()
 
-        def trade_with_npc():
-            bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
+        def do_stuff():
+            route, clusters = pather_v2.create_cluster_route()
+            api._current_path = route
+            # for c in clusters:
+            #     pather_v2.traverse_walking(c, char, obj=False, threshold=10)
+            bot._town_manager.a3.open_trade_menu(Location.A3_TOWN_START)
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
-        keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: trade_with_npc()) #lambda: pit.battle(True))
+        keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
         print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
         
-        # bot._town_manager.a1.open_trade_menu(None)
-        # pather_v2.create_cluster_route()
         overlay = start_overlay(bot, game_stats)
-        # route, clusters = pather_v2.create_cluster_route()
-        # for c in clusters:
-        #     pather_v2.traverse_walking(c, char, obj=False, threshold=10)
-        
-        
-        # trade_with_npc(Npc.ORMUS)
-        # # ormus = find_npc(Npc.ORMUS)
-        # # if ormus is not None:
-        # #     route = pather_v2.create_route(ormus["position"])
-        # #     pather_v2.traverse_route(route, char)
-        # #     # api._current_path = route
-        # #     # overlay = start_overlay(bot, game_stats)
 
         keyboard.wait()
 
