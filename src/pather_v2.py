@@ -939,7 +939,7 @@ class PatherV2:
                 data = self._api.get_data()
                 player_pos = data['player_pos_area'] + data['player_offset']
                 recalc_dist = math.dist(player_pos, map_pos)
-                if recalc_dist < 15 and verify_location:
+                if recalc_dist < 18 and verify_location:
                     Logger.warning(f"Done traversing to {end}, distance to target is {round(recalc_dist, 2)}")
                     return True
                 elif verify_location is False:
