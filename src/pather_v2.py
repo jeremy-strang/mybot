@@ -9,7 +9,6 @@ import time
 from typing import Union
 import random
 from api import MapAssistApi
-from char import IChar
 from screen import Screen
 from config import Config
 from utils.misc import is_in_roi, wait
@@ -22,8 +21,8 @@ from utils.misc import unit_vector, clip_abs_point, cluster_nodes
 from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
+from utils.misc import unit_vector, clip_abs_point, cluster_nodes
 from scipy.ndimage.filters import gaussian_filter
-
 
 class PatherV2:
     def __init__(self, screen: Screen, api: MapAssistApi):
@@ -277,7 +276,7 @@ class PatherV2:
                    entrance_in_wall: bool = True,
                    randomize: int = 0,
                    time_out: float = 10.0,
-                   char: IChar = None
+                   char = None
                    ) -> bool:
         start = time.time()
         while time.time() - start < 20:
@@ -371,7 +370,7 @@ class PatherV2:
         adjusted_pos_m = [x_m - 5, y_m - 35] if dist < 25 else [x_m, y_m]
         mouse.move(*adjusted_pos_m, delay_factor=[0.1, 0.2])
 
-    def move_to_monster(self, char: IChar, monster: dict) -> bool:
+    def move_to_monster(self, char, monster: dict) -> bool:
         if monster is not None and type(monster) is dict:
             self.move_mouse_to_abs_pos(
                 monster["abs_screen_position"], monster["dist"])
@@ -451,7 +450,7 @@ class PatherV2:
                 if dist < 25:
                     next = route.pop(0)
 
-    def traverse_walking(self, end: Union[str, tuple[int, int]], char: IChar, obj: bool = False, x: int = 0, y: int = 0, threshold=4, static_npc=False, end_dist=19):
+    def traverse_walking(self, end: Union[str, tuple[int, int]], char, obj: bool = False, x: int = 0, y: int = 0, threshold=4, static_npc=False, end_dist=19):
         """slightly different traversal for moving in town/walking"""
         char.pre_move()
         data = None
@@ -684,7 +683,7 @@ class PatherV2:
         keyboard.send(char._char_config["force_move"], do_press=False)
         return True
 
-    def traverse_walking_old(self, end: Union[str, tuple[int, int]], char: IChar, obj: bool = False, x: int = 0, y: int = 0, threshold=4, static_npc=False, end_dist=19):
+    def traverse_walking_old(self, end: Union[str, tuple[int, int]], char, obj: bool = False, x: int = 0, y: int = 0, threshold=4, static_npc=False, end_dist=19):
         """
 
         slightly different traversal for moving in town
@@ -870,7 +869,7 @@ class PatherV2:
 
     def traverse(self,
                  end: Union[str, tuple[int, int]],
-                 char: IChar,
+                 char,
                  randomize: int = 0,
                  do_pre_move: bool = True,
                  obj: bool = False,
@@ -883,7 +882,7 @@ class PatherV2:
         """
         Traverse to another location
         :param end: Either world coordinates as tuple [x, y] or a string e.g. 'Worldstone Keep Level 3'
-        :param char: IChar
+        :param char
         :return: bool if successfull
         """
         print(f"Traversing to {end}...")
