@@ -108,7 +108,7 @@ if __name__ == "__main__":
         
         # bot._town_manager.a1.open_trade_menu(None)
         # pather_v2.create_cluster_route()
-        # overlay = start_overlay(bot, game_stats)
+        overlay = start_overlay(bot, game_stats)
         # route, clusters = pather_v2.create_cluster_route()
         # for c in clusters:
         #     pather_v2.traverse_walking(c, char, obj=False, threshold=10)

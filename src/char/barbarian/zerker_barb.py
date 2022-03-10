@@ -102,7 +102,7 @@ class ZerkerBarb(Barbarian):
             MonsterPriorityRule(names = ["CouncilMember"]),
             MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True)
+        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[120, 50, 81, 50])
         self._kill_mobs(game_state, reposition_pos_world=(156, 113))
         game_state.stop()
         return True
@@ -129,7 +129,8 @@ class ZerkerBarb(Barbarian):
                     wait(0.1)
                     last_move = time.time()
                 else:
-                    self.cast_melee("berserk", atk_len, target_pos)
+                    # self.cast_melee("berserk", atk_len, target_pos)
+                    if not self.cast_melee_to_monster("berserk", atk_len, game_state._target): wait(0.2)
             elapsed = time.time() - start
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._char_config["battle_orders"])

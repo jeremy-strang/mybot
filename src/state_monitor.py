@@ -11,7 +11,7 @@ from config import Config
 from logger import Logger
 import threading
 from pather_v2 import PatherV2
-from utils.misc import kill_thread
+from utils.misc import is_in_roi, kill_thread
 import time
 
 class MonsterType:
@@ -65,7 +65,7 @@ def monster_score(monster: dict, priority_rules: list[MonsterPriorityRule]):
     return score
 
 class StateMonitor:
-    def __init__(self, names: list, api: MapAssistApi, super_unique: bool = False, unique_id: int=-1, many=False, do_corpses=False):
+    def __init__(self, names: list, api: MapAssistApi, super_unique: bool = False, unique_id: int=-1, many=False, do_corpses=False, boundary=None):
         self._loop_delay = .08
         self._game_thread = None
         self._game=None
@@ -86,6 +86,7 @@ class StateMonitor:
         self._unique_id = unique_id
         self._many = many
         self._do_corpses = do_corpses
+        self._boundary = boundary
         #print(self._names)
         self.start()
 
@@ -108,12 +109,15 @@ class ApiThread:
         self._sm = state
         Logger.debug("Opened API thread...")
 
-    def _scored_monsters(self, data):
+    def _scored_monsters(self, data, boundary=None):
+        monsters = []
         if data is not None:
             monsters = data["monsters"]
+            if boundary is not None:
+                monsters = list(filter(lambda m: is_in_roi(boundary, m["position"] - data["area_origin"]), monsters))
             if len(self._sm._rules) > 0:
                 monsters.sort(key=lambda m: monster_score(m, self._sm._rules))
-                monsters = filter(lambda m: m["score"] > 0, monsters)
+                monsters = list(filter(lambda m: m["score"] > 0, monsters))
         return monsters
 
     def _update_status(self):
@@ -122,7 +126,7 @@ class ApiThread:
         '''
         data = self._sm._api.get_data()
         if data is not None:
-            for m in self._scored_monsters(data):
+            for m in self._scored_monsters(data, self._sm._boundary):
                 proceed = True
                 correct_id = False
                 if self._sm._super_unique:
@@ -162,24 +166,22 @@ class ApiThread:
                         #time.sleep(.25)
                         if self._sm._many is False:
                             self._sm._dead = 1
-                            status = str(self._sm._names) + " is dead"
-                            self._sm._status = status
-                            Logger.debug(str(self._sm._names) + " is dead")
+                            self._sm._status = "Monsters are dead"
+                            Logger.debug(self._sm._status)
 
                         else:
                             data = self._sm._api.get_data()
                             more = -1
-                            for l in self._scored_monsters(data):
+                            for l in self._scored_monsters(data, self._sm._boundary):
                                 # If we are targeting corpses, make sure it's dead, otherwise make sure it's alive
                                 is_correct_mode = (self._sm._do_corpses and l["is_targetable_corpse"]) or (not self._sm._do_corpses and l["mode"] != 12)
                                 if monster_score(l, self._sm._rules) > 0 and is_correct_mode:
                                     more += 1
 
-                            if more<0:
+                            if more < 0:
                                 self._sm._dead = 1
-                                status = str(self._sm._names) + " is dead"
-                                self._sm._status = status
-                                Logger.debug(str(self._sm._names) + " is dead")
+                                self._sm._status = "Monsters are dead"
+                                Logger.debug(self._sm._status)
                             else:
                                 self._sm._unique_id = -1
                     self._sm._ready = True
