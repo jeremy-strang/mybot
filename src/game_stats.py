@@ -88,9 +88,8 @@ class GameStats:
         Logger.info(f"Starting game #{self._game_counter}\n")
         items = self._location_stats["totals"]["items"]
         chickens = self._location_stats["totals"]["chickens"]
-        merc_deaths = self._location_stats["totals"]["merc_deaths"]
         failed_runs = self._location_stats["totals"]["failed_runs"]
-        Logger.info(f"Items: {items}, chickens: {chickens}, merc_deaths: {merc_deaths}, failed_runs: {failed_runs}")
+        Logger.info(f"Items: {items}, chickens: {chickens}, fails: {failed_runs}")
         print("="*80)
 
     def log_end_game(self, failed: bool = False):
