@@ -7,6 +7,7 @@ import keyboard
 import numpy as np
 from char.capabilities import CharacterCapabilities
 import obs
+from state_monitor import MonsterType
 from utils.custom_mouse import mouse
 from utils.misc import wait, cut_roi, is_in_roi, color_filter
 
@@ -404,13 +405,13 @@ class IChar:
         boss = False
         for monster in monsterlist:
             if monster["bossID"] != 0 and monster["corpse"] == False:
-                filtered_monster.append (monster)
+                filtered_monster.append(monster)
                 boss = True    
             if monster["dist"] < area and monster["corpse"] == False:
-                filtered_monster.append (monster)
+                filtered_monster.append(monster)
         return filtered_monster, boss
     
-    def special_mobtype(self, filtered_monster, mobtype : list):    
+    def special_mobtype(self, filtered_monster, mobtype: list):    
         if type(filtered_monster) == list:
             if len(filtered_monster) > 0:
                 if(filtered_monster[0]["type"] in mobtype):    
@@ -429,7 +430,14 @@ class IChar:
         if type(density) == int:
             filtered_monster, boss = self.filter_monster(monsterlist, area)
             if special:
-                kill = self.special_mobtype(filtered_monster, ["SuperUnique", "Unique", "Champion"])
+                kill = self.special_mobtype(filtered_monster, [
+                    MonsterType.SUPER_UNIQUE,
+                    MonsterType.UNIQUE,
+                    MonsterType.CHAMPION,
+                    MonsterType.POSSESSED,
+                    MonsterType.GHOSTLY,
+                    MonsterType.MINION
+                    ])
                 if len(filtered_monster)>density or kill or boss: 
                     return filtered_monster[0]
                 else:
