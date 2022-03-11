@@ -441,9 +441,6 @@ class PatherV2:
                         y = end[1]
 
                     end_p = [x, y]
-
-                    current_dist = 999999
-
                     x = end_p[0]
                     y = end_p[1]
 
