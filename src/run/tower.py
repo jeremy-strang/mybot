@@ -5,7 +5,7 @@ from pather import Location, Pather
 from typing import Union
 from item.pickit import PickIt
 from api import MapAssistApi
-from pather_v2 import PatherV2
+from pathing.pather_v2 import PatherV2
 from town.town_manager import TownManager
 from ui import UiManager
 from utils.misc import wait, is_in_roi
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     from bot import Bot
     from config import Config
     from game_stats import GameStats
-    from pather_v2 import PatherV2
+    from pathing.pather_v2 import PatherV2
     from api import MapAssistApi
     import threading
     from template_finder import TemplateFinder

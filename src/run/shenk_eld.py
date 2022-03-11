@@ -10,7 +10,7 @@ from town.town_manager import TownManager
 from ui import UiManager
 from utils.misc import wait
 from state_monitor import StateMonitor
-from pather_v2 import PatherV2
+from pathing.pather_v2 import PatherV2
 from obs import ObsRecorder
 
 class ShenkEld:

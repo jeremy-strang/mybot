@@ -5,7 +5,7 @@ from logger import Logger
 from pather import Location, Pather
 from typing import Union
 from item.pickit import PickIt
-from pather_v2 import PatherV2
+from pathing.pather_v2 import PatherV2
 import state_monitor
 from template_finder import TemplateFinder
 from town.town_manager import TownManager

@@ -11,7 +11,7 @@ import time
 from pather import Pather, Location
 
 from api.mapassist import MapAssistApi
-from pather_v2 import PatherV2
+from pathing.pather_v2 import PatherV2
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 

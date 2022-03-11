@@ -5,7 +5,7 @@ from pather import Location, Pather
 from typing import Union
 from item.pickit import PickIt
 from api.mapassist import MapAssistApi
-from pather_v2 import PatherV2
+from pathing.pather_v2 import PatherV2
 from town.town_manager import TownManager
 from ui import UiManager
 from utils.misc import wait, is_in_roi

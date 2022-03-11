@@ -44,7 +44,7 @@ from messages import Messenger
 from utils.dclone_ip import get_d2r_game_ip
 
 #mapassist api + new pather
-from pather_v2 import PatherV2
+from pathing import PatherV2
 from api import MapAssistApi
 from utils.monsters import find_npc, find_monster
 
