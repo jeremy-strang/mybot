@@ -10,7 +10,7 @@ from api import MapAssistApi
 from config import Config
 from logger import Logger
 import threading
-from pathing.pather_v2 import PatherV2
+from pathing import PatherV2
 from utils.misc import is_in_roi, kill_thread
 import time
 

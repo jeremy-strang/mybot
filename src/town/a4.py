@@ -4,7 +4,7 @@ from screen import Screen
 from config import Config
 from npc_manager import NpcManager, Npc
 from pather import Pather, Location
-from pathing.pather_v2 import PatherV2
+from pathing import PatherV2
 from api import MapAssistApi
 from typing import Union
 from template_finder import TemplateFinder

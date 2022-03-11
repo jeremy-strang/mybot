@@ -19,7 +19,7 @@ from bot import Bot
 from config import Config
 from game_stats import GameStats
 from pather import Location, Pather
-from pathing.pather_v2 import PatherV2
+from pathing import PatherV2
 from api import MapAssistApi
 import threading
 from state_monitor import StateMonitor

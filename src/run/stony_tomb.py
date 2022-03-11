@@ -15,7 +15,7 @@ from utils.custom_mouse import mouse
 from screen import Screen
 import math
 from api.mapassist import MapAssistApi
-from pathing.pather_v2 import PatherV2
+from pathing import PatherV2
 from obs import ObsRecorder
 
 

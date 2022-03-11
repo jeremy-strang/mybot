@@ -17,7 +17,7 @@ import numpy as np
 import random
 
 from api.mapassist import MapAssistApi
-from pathing.pather_v2 import PatherV2
+from pathing import PatherV2
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 

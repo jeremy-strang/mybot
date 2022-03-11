@@ -301,7 +301,7 @@ if __name__ == "__main__":
     from bot import Bot
     from config import Config
     from game_stats import GameStats
-    from pathing.pather_v2 import PatherV2
+    from pathing import PatherV2
     from api import MapAssistApi
     import threading
     from template_finder import TemplateFinder
