@@ -374,7 +374,6 @@ class Bot:
         # Stash stuff, either when item was picked up or after X runs without stashing because of unwanted loot in inventory
         if self._picked_up_items or force_stash:
             # Check config/gold and see if we need to enable/disable gold pickup
-            self._check_gold_pickup()
             if self._config.char["id_items"]:
                 Logger.info("Identifying items")
                 self._curr_loc = self._town_manager.identify(self._curr_loc)
@@ -382,6 +381,7 @@ class Bot:
                     return self.trigger_or_stop("end_game", failed=True)
             Logger.info("Stashing items")
             self._curr_loc = self._town_manager.stash(self._curr_loc)
+            self._check_gold_pickup()
             Logger.info("Running transmutes")
             self._transmute.run_transmutes(force=False)
             keyboard.send("esc")

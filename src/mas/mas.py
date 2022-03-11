@@ -132,15 +132,10 @@ class MAS(Thread):
 		px_int = int(data["player_pos"]["X"])
 		py_int = int(data["player_pos"]["Y"])
 
-
-
 		botty_data["area_origin"] = np.array([int(data["area_origin"]["X"]), int(data["area_origin"]["Y"])])
 		botty_data["player_pos_world"] = np.array([px_int, py_int])
 		self._player_pos = botty_data["player_pos_world"]
 		botty_data["player_pos_area"] = botty_data["player_pos_world"] - botty_data["area_origin"]
-
-		#print(botty_data['player_pos_area'])
-		#print(botty_data['player_pos_area'])
 
 		px_float = float(data["player_pos"]["X"])-float(px_int)
 		py_float = float(data["player_pos"]["Y"])-float(py_int)
@@ -154,7 +149,6 @@ class MAS(Thread):
 				p = np.array([int(p["X"]), int(p["Y"])])
 				npc['position'] = p
 			botty_data["static_npcs"].append(npc)
-
 
 		# Monsters
 		# ===========================
