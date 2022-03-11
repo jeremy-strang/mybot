@@ -103,7 +103,7 @@ if __name__ == "__main__":
             pf = PathFinder(api)
             path = pf.solve_tsp()
             for node in path:
-                pather_v2.traverse_walking(node, char)
+                pather_v2.traverse_walking(node, char, threshold=8)
                 print(f"Pathing to node {node}")
             # api._current_path = path
             # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
