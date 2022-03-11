@@ -71,8 +71,7 @@ namespace MapAssist.Botty
                 lock (_lock)
                 {
                     (_gameData, _areaData, _pointsOfInterest, _) = _gameDataReader.Get();
-
-
+                    
                     if (_gameData != null && _areaData != null && _pointsOfInterest != null)
                     {
                         Dictionary<Stat, int> stats = _gameData.PlayerUnit.Stats;
@@ -104,8 +103,7 @@ namespace MapAssist.Botty
                             item != null && (item.ItemBaseName ?? "").Contains("Mana Potion")).Count();
                         var belt_rejuv_pots = flattenedBelt.Where(item =>
                             item != null && (item.ItemBaseName ?? "").Contains("Rejuvenation Potion")).Count();
-
-
+                        
                         var msg = new
                         {
                             success = true,
@@ -135,10 +133,8 @@ namespace MapAssist.Botty
                             belt_health_pots, // number of health pots in player's belt
                             belt_mana_pots, // number of mana pots in player's belt
                             belt_rejuv_pots, // number of rejuv pots in player's belt
-
-                        // uncomment next line if more details about belt are needed
-                        // player_belt_items = _gameData.PlayerUnit.BeltItems, 
-                    };
+                            player_unit = _gameData.PlayerUnit,
+                        };
                         foreach (var m in _areaData.NPCs)
                         {
 
