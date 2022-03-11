@@ -266,7 +266,8 @@ class PatherV2:
                    time_out: float = 20.0,
                    char = None
                    ) -> bool:
-        Logger.debug(f"Going to POI: {poi}, location: {end_loc}")
+        Logger.debug(f"Going to area: {poi}, location: {end_loc}...")
+        num_clicks = 0
         start = time.time()
         while time.time() - start < time_out:
             data = self._api.get_data()
@@ -312,7 +313,6 @@ class PatherV2:
                     else:
                         pos_monitor = None
 
-                num_clicks = 0
                 if pos_monitor is not None:
                     random.seed()
                     pos_monitor = (pos_monitor[0] + random.randint(-randomize, +randomize),
@@ -325,10 +325,10 @@ class PatherV2:
                     mouse.release(button="left")
                     num_clicks += 1
                     if num_clicks == 10: randomize += 1
-                    if num_clicks == 15: randomize += 3
-                    if num_clicks == 20: randomize += 5
+                    if num_clicks == 15: randomize += 2
+                    if num_clicks == 20: randomize += 3
                 if data["current_area"] == end_loc:
-                    Logger.debug(f"Finished going to area, end location: {end_loc}")
+                    Logger.debug(f"Done going to area {end_loc} after {time.time() - start} sec")
                     return True
         Logger.debug(f"Failed to confirm arrival at {end_loc}")
         return False
@@ -620,12 +620,12 @@ class PatherV2:
         while time.time() - start < time_out:
             data = self._api.get_data()
             if data is None:
-                Logger.warning(f"Couldnt get api data retrying...")
+                Logger.warning(f"Couldnt get api data retrying")
                 continue
             if data is not None and "map" in data and data["map"] is not None:
                 player_pos_area = data["player_pos_area"]
                 if data["used_skill"] == "SKILL_TELEPORT":
-                    Logger.debug("Used teleport...")
+                    Logger.debug("Used teleport")
                     time.sleep(0.18)
                     continue
 
@@ -727,15 +727,13 @@ class PatherV2:
                 player_pos = data['player_pos_area'] + data['player_offset']
                 recalc_dist = math.dist(player_pos, map_pos)
                 if recalc_dist < dest_distance and verify_location:
-                    Logger.warning(
-                        f"Done traversing to {end}, distance to target is {round(recalc_dist, 2)}")
+                    Logger.debug(f"Traverse to {end} completed ({round(recalc_dist, 2)} from destination)")
                     return True
                 elif verify_location is False:
-                    Logger.warning("Pathing completed without verification")
+                    Logger.debug(f"Traverse completed without verification ({round(recalc_dist, 2)} from destination)")
                     return True
                 else:
-                    Logger.warning(
-                        "Ended too early recalculating pathing... "+str(recalc_dist))
+                    Logger.warning(f"Ended too early, recalculating pathing..." + str(recalc_dist))
 
             time.sleep(0.02)
             self._api._astar_current_path = None

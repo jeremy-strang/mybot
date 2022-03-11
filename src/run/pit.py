@@ -66,7 +66,7 @@ class Pit:
         if not self._pather_v2.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4): return False
     
         self._obs_recorder.start_recording_if_enabled()
-        if not self._pather_v2.traverse("Pit Level 1", self._char, dest_distance=10): return False
+        if not self._pather_v2.traverse("Pit Level 1", self._char, verify_location=True, dest_distance=10): return False
         if not self._pather_v2.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=5): return False
         self._char.post_travel()
 
