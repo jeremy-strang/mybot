@@ -427,17 +427,17 @@ class IChar:
         filtered_monster = []
         kill = False
         count = 0
+        special_types = [
+            MonsterType.SUPER_UNIQUE,
+            MonsterType.UNIQUE,
+            MonsterType.CHAMPION,
+            MonsterType.POSSESSED,
+            MonsterType.GHOSTLY
+        ]
         if type(density) == int:
             filtered_monster, boss = self.filter_monster(monsterlist, area)
             if special:
-                kill = self.special_mobtype(filtered_monster, [
-                    MonsterType.SUPER_UNIQUE,
-                    MonsterType.UNIQUE,
-                    MonsterType.CHAMPION,
-                    MonsterType.POSSESSED,
-                    MonsterType.GHOSTLY,
-                    MonsterType.MINION
-                    ])
+                kill = self.special_mobtype(filtered_monster, special_types)
                 if len(filtered_monster)>density or kill or boss: 
                     return filtered_monster[0]
                 else:
@@ -447,7 +447,7 @@ class IChar:
             for dens in density:
                 filtered_monster, boss = self.filter_monster(monsterlist, area[counter])
                 if special:
-                    kill = self.special_mobtype(filtered_monster, ["SuperUnique", "Unique", "Champion"])            
+                    kill = self.special_mobtype(filtered_monster, special_types)            
                 if len(filtered_monster)>density[counter] or kill or boss: 
                     return filtered_monster[0]
                 counter += 1

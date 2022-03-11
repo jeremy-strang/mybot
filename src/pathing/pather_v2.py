@@ -459,8 +459,10 @@ class PatherV2:
                     if data['map'] is not None:
                         player_local = (int(player_y_local), int(player_x_local))
                         dest = (int(y), int(x))
-                        path_data = make_path_astar(player_local, dest, data["map"])
-
+                        # path_data = make_path_astar(player_local, dest, data["map"])
+                        pf = PathFinder(self._api)
+                        path_data = pf.make_path_astar(player_local, dest)
+                        self._api._current_path = path_data
                         if path_data is not None:
                             target = path_data
                             end_click_pt = target[-1]

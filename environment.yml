@@ -39,3 +39,4 @@ dependencies:
     - pythonnet
     - GitPython
     - pyee
+    - python-tsp

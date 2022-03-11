@@ -10,6 +10,7 @@ import os
 import sys
 from npc_manager import Npc
 from obs import obs_recorder
+from pathing import PathFinder
 from run.andy import Andy
 from run.pit import Pit
 from run.trav import Trav
@@ -99,19 +100,21 @@ if __name__ == "__main__":
                 f.close()
 
         def do_stuff():
-            route, clusters = pather_v2.create_cluster_route()
-            api._current_path = route
-            # for c in clusters:
-            #     pather_v2.traverse_walking(c, char, obj=False, threshold=10)
-            # bot._town_manager.a3.open_trade_menu(Location.A3_TOWN_START)
+            pf = PathFinder(api)
+            path = pf.solve_tsp()
+            for node in path:
+                pather_v2.traverse_walking(node, char)
+                print(f"Pathing to node {node}")
+            # api._current_path = path
+            # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
-        print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
         
         overlay = start_overlay(bot, game_stats)
 
+        print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
         keyboard.wait()
 
         print("Press Enter to exit ...")
