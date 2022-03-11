@@ -51,7 +51,7 @@ class ItemFinder:
             filename = filename.lower()
             if filename.endswith('.png'):
                 item_name = filename[:-4]
-                # assets with bl__ are black listed items and will not be picke up
+                # assets with bl__ are black listed items and will not be picked up
                 blacklist_item = item_name.startswith("bl__")
                 # these items will be searched for regardless of pickit setting (e.g. for runes to avoid mixup)
                 force_search = item_name.startswith("rune_")
