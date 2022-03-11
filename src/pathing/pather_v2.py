@@ -127,25 +127,19 @@ class PatherV2:
                                     pos_monitor = None
 
                     else:
-                        #pos_monitor = self._api.world_to_abs_screen(poi)
-                        #player_p = data['player_pos_area']
-                        #pos_monitor = world_to_abs(ap,player_p)
                         player_p = data['player_pos_area']
-                        new_pos_mon = world_to_abs(
-                            (poi-data["area_origin"]), player_p+data['player_offset'])
+                        new_pos_mon = world_to_abs((obj-data["area_origin"]), player_p+data['player_offset'])
                         pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
 
                         if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                            pos_monitor = self._screen.convert_abs_to_monitor(
-                                pos_monitor)
+                            pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                         else:
                             pos_monitor = None
                     if pos_monitor is not None:
                         if is_wp and wp_menu:
                             return True
                         if is_wp and not wp_menu:
-                            pos_monitor = [pos_monitor[0] -
-                                           9.5, pos_monitor[1]-39.5]
+                            pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1]-39.5]
                             mouse.move(*pos_monitor)
                             time.sleep(0.5)
                             mouse.click("left")
@@ -244,8 +238,7 @@ class PatherV2:
                             time.sleep(0.75)
                             if counter == 2:
                                 if char is not None:
-                                    monster = char.kill_around(
-                                        self._api, 1, 5, True)
+                                    monster = char.kill_around(self._api, 1, 5, True)
                                     if type(monster) == dict:
                                         char.kill_uniques(monster)
                             elif counter > 5:
@@ -273,6 +266,7 @@ class PatherV2:
                    time_out: float = 10.0,
                    char = None
                    ) -> bool:
+        Logger.debug(f"Going to POI: {poi}, location: {end_loc}")
         start = time.time()
         while time.time() - start < 20:
             data = self._api.get_data()
@@ -285,17 +279,13 @@ class PatherV2:
                             if entrance_in_wall:
                                 ap = p["position"] - data["area_origin"]
                                 if data["map"][ap[1] - 1][ap[0]] == 1:
-                                    ap = [p["position"][0],
-                                          p["position"][1] + 2]
+                                    ap = [p["position"][0], p["position"][1] + 2]
                                 elif data["map"][ap[1] + 1][ap[0]] == 1:
-                                    ap = [p["position"][0],
-                                          p["position"][1] - 2]
+                                    ap = [p["position"][0], p["position"][1] - 2]
                                 elif data["map"][ap[1]][ap[0] - 1] == 1:
-                                    ap = [p["position"][0] +
-                                          2, p["position"][1]]
+                                    ap = [p["position"][0] + 2, p["position"][1]]
                                 elif data["map"][ap[1]][ap[0] + 1] == 1:
-                                    ap = [p["position"][0] -
-                                          2, p["position"][1]]
+                                    ap = [p["position"][0] - 2, p["position"][1]]
                                 else:
                                     ap = p["position"]
                             else:
@@ -310,18 +300,15 @@ class PatherV2:
                                 (ap-data["area_origin"]), player_p+data['player_offset'])
                             pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
                             if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                                pos_monitor = self._screen.convert_abs_to_monitor(
-                                    pos_monitor*mult)
+                                pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor*mult)
                             else:
                                 pos_monitor = None
                 else:
                     player_p = data['player_pos_area']
-                    new_pos_mon = world_to_abs(
-                        (poi-data["area_origin"]), player_p+data['player_offset'])
+                    new_pos_mon = world_to_abs((poi-data["area_origin"]), player_p + data['player_offset'])
                     pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
                     if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                        pos_monitor = self._screen.convert_abs_to_monitor(
-                            pos_monitor)
+                        pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                     else:
                         pos_monitor = None
                 if pos_monitor is not None:
@@ -335,7 +322,9 @@ class PatherV2:
                     time.sleep(.1)
                     mouse.release(button="left")
                 if data["current_area"] == end_loc:
+                    Logger.debug(f"Finished going to area, end location: {end_loc}")
                     return True
+        Logger.debug(f"Failed to confirm arrival at {end_loc}")
         return False
 
     def move_mouse_to_abs_pos(self, abs_screen_position, dist):

@@ -75,14 +75,14 @@ class Baal:
         if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
             self._char.switch_weapon()
 
-        if not self._pather_v2.traverse("Worldstone Keep Level 3", self._char,verify_location=True): return False
+        if not self._pather_v2.traverse("Worldstone Keep Level 3", self._char, verify_location=True): return False
         if not self._pather_v2.go_to_area("Worldstone Keep Level 3", "TheWorldStoneKeepLevel3"): return False
 
         if self._config.char["teleport_weapon_swap"]:
             self._char.switch_weapon()
             self._char.verify_active_weapon_tab()
             
-        if not self._pather_v2.traverse("Throne of Destruction", self._char,verify_location=True): return False
+        if not self._pather_v2.traverse("Throne of Destruction", self._char, verify_location=True): return False
 
         if self._check_dangerous_monsters(): return False
         if not self._pather_v2.go_to_area("Throne of Destruction", "ThroneOfDestruction"): return False
