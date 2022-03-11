@@ -54,12 +54,15 @@ def on_exit(game_controller: GameController,  stand_still="capslock"):
         restore_d2r_window_visibility()
     except:
         pass
-    try:
         if game_controller is not None and game_controller.obs_recorder is not None:
-            game_controller.obs_recorder.stop_recording_if_enabled()
-            game_controller.obs_recorder.stop_replaybuffer_if_enabled()
-    except:
-        pass
+            try:
+                game_controller.obs_recorder.stop_recording_if_enabled()
+            except:
+                pass
+            try:
+                game_controller.obs_recorder.stop_replaybuffer_if_enabled()
+            except:
+                pass
     os._exit(1)
 
 def main():
