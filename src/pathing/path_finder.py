@@ -88,7 +88,7 @@ class PathFinder:
         self._current_area = None
         self._clusters = None
         self._weighted_map = None
-        self._player_node = None
+        self.player_node = None
         self.update_map()
     
     def update_map(self):
@@ -97,7 +97,7 @@ class PathFinder:
         if data is not None:
             player_x_local = data["player_pos_world"][0] - data["area_origin"][0]
             player_y_local = data["player_pos_world"][1] - data["area_origin"][1]
-            self._player_node = (int(player_x_local + 1), int(player_y_local + 1))
+            self.player_node = (int(player_x_local + 1), int(player_y_local + 1))
             if data["current_area"] != self._current_area:
                 self._map = data["map"]
                 self._current_area = data["current_area"]
@@ -108,7 +108,10 @@ class PathFinder:
                 blurred_map = gaussian_filter(float_map, sigma=7)
                 self._weighted_map = np.maximum(blurred_map * .001, float_map) + 1
 
-    def make_path_astar(self, start, end):
+    def make_path_astar(self, start, end, reverse_coords=False):
+        if reverse_coords:
+            start = (start[1], start[0])
+            end = (end[1], end[0])
         weighted = self._weighted_map.astype(np.float32)
         path = pyastar2d.astar_path(weighted, start, end, allow_diagonal=True)
         path = np.flip(path, 1)
@@ -138,7 +141,7 @@ class PathFinder:
     def solve_tsp(self, end=None):
         self.update_map()
         queue = deque(self._clusters)
-        queue.appendleft(self._player_node)
+        queue.appendleft(self.player_node)
         if end is not None:
             end = (end[0], end[1])
             queue.append(end)
@@ -161,25 +164,4 @@ class PathFinder:
         for i in permutation:
             path.append(nodes[i])
         return path
-
-    def create_cluster_route(self):
-        route = []
-        clusters = []
-        self.update_map()
-        data = self._data
-        if data is not None:
-            # player_x_local = data["player_pos_world"][0] - data["area_origin"][0]
-            # player_y_local = data["player_pos_world"][1] - data["area_origin"][1]
-            # start = (int(player_x_local + 1), int(player_y_local + 1))
-            start = self._player_node
-            clusters = cluster_nodes(self._map)
-            for cluster in clusters:
-                end = (cluster[0], cluster[1])
-                next_route = self.make_path_astar(start, end)
-                if next_route is not None:
-                    route += next_route
-                    start = end
-        return (route, clusters)
-
-
 

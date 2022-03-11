@@ -82,7 +82,6 @@ if __name__ == "__main__":
         item_finder = ItemFinder()
         ui_manager = UiManager(screen, template_finder, game_stats)
         belt_manager = BeltManager(screen, template_finder)
-        
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager)
 
         # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
@@ -100,15 +99,20 @@ if __name__ == "__main__":
                 f.close()
 
         def do_stuff():
-            pather_v2.traverse("Pit Level 1", char)
-            pather_v2.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4)
+            print("Doing stuff...")
+            # pickit.pick_up_items(char, False)
+            # pather_v2.traverse("Pit Level 1", char)
+            pather_v2.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
+            print("Done doing stuff")
             # pf = PathFinder(api)
+            # start = pf.player_node
             # path = pf.solve_tsp()
+            # api._current_path = []
             # for node in path:
-            #     print(f"Pathing to node {node}...")
-            #     pather_v2.traverse_walking(node, char, threshold=8, end_dist=10)
-            #     print("  arrived!")
-            #     wait(0.2)
+            #     # pather_v2.traverse_walking(node, char, threshold=8, end_dist=10)
+            #     api._current_path += pf.make_path_astar(start, node, True)
+            #     start = node
+
             # api._current_path = path
             # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
 
@@ -116,7 +120,7 @@ if __name__ == "__main__":
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
         
-        # overlay = start_overlay(bot, game_stats)
+        overlay = start_overlay(bot, game_stats)
 
         print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
         keyboard.wait()

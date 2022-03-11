@@ -263,12 +263,12 @@ class PatherV2:
                    end_loc: str,
                    entrance_in_wall: bool = True,
                    randomize: int = 0,
-                   time_out: float = 10.0,
+                   time_out: float = 20.0,
                    char = None
                    ) -> bool:
         Logger.debug(f"Going to POI: {poi}, location: {end_loc}")
         start = time.time()
-        while time.time() - start < 20:
+        while time.time() - start < time_out:
             data = self._api.get_data()
             if data is not None:
                 pos_monitor = None
@@ -311,6 +311,8 @@ class PatherV2:
                         pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                     else:
                         pos_monitor = None
+
+                num_clicks = 0
                 if pos_monitor is not None:
                     random.seed()
                     pos_monitor = (pos_monitor[0] + random.randint(-randomize, +randomize),
@@ -321,6 +323,10 @@ class PatherV2:
                     mouse.press(button="left")
                     time.sleep(.1)
                     mouse.release(button="left")
+                    num_clicks += 1
+                    if num_clicks == 10: randomize += 1
+                    if num_clicks == 15: randomize += 3
+                    if num_clicks == 20: randomize += 5
                 if data["current_area"] == end_loc:
                     Logger.debug(f"Finished going to area, end location: {end_loc}")
                     return True
@@ -352,12 +358,6 @@ class PatherV2:
         else:
             return False
         return True
-
-    def create_cluster_route(self):
-        pf = PathFinder(self._api)
-        route, clusters = pf.create_cluster_route()
-        # self._api._current_path = route
-        return (route, clusters)
 
     def traverse_route(self, route, char, time_out=10):
         if route is not None:
@@ -596,7 +596,8 @@ class PatherV2:
                  kill: bool = False,
                  pickit=None,
                  verify_location=False,
-                 time_out=20.0
+                 time_out=20.0,
+                 dest_distance=15
                  ):
         """
         Traverse to another location
@@ -675,14 +676,12 @@ class PatherV2:
                 start_pos = np.array([player_pos_area[1], player_pos_area[0]])
                 end_pos = np.array([map_pos[1], map_pos[0]])
                 weighted_map[end_pos[0]][end_pos[1]] = 1
-                route = pyastar2d.astar_path(
-                    weighted_map, start_pos, end_pos, allow_diagonal=False)
+                route = pyastar2d.astar_path(weighted_map, start_pos, end_pos, allow_diagonal=False)
 
                 route_list = route.tolist()
                 decimation = []
 
                 jump_dist = 15
-
                 prev_node = route_list[0]
                 for node in route_list:
                     # manhattan distance from our current step to the next node
@@ -707,8 +706,7 @@ class PatherV2:
                     data = self._api.get_data()
                     player_pos = data['player_pos_area']+data['player_offset']
                     node_pos_abs = world_to_abs(node_pos_w, player_pos)
-                    node_pos_m = self._screen.convert_abs_to_monitor(
-                        node_pos_abs, clip_input=True)
+                    node_pos_m = self._screen.convert_abs_to_monitor(node_pos_abs, clip_input=True)
 
                     if math.dist(player_pos, node_pos_w) < 10:
                         continue
@@ -728,7 +726,7 @@ class PatherV2:
                 data = self._api.get_data()
                 player_pos = data['player_pos_area'] + data['player_offset']
                 recalc_dist = math.dist(player_pos, map_pos)
-                if recalc_dist < 18 and verify_location:
+                if recalc_dist < dest_distance and verify_location:
                     Logger.warning(
                         f"Done traversing to {end}, distance to target is {round(recalc_dist, 2)}")
                     return True

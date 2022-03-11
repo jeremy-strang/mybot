@@ -59,14 +59,15 @@ class Pit:
     
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         self._char.pre_travel(do_pre_buff)
-        if not self._pather_v2.traverse("Monastery Gate", self._char): return False
+        if not self._pather_v2.traverse("Monastery Gate", self._char, dest_distance=10): return False
         if not self._pather_v2.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3): return False
 
-        if not self._pather_v2.traverse("Tamoe Highland", self._char): return False
+        if not self._pather_v2.traverse("Tamoe Highland", self._char, dest_distance=10): return False
         if not self._pather_v2.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4): return False
     
-        if not self._pather_v2.traverse("Pit Level 1", self._char): return False
-        if not self._pather_v2.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4): return False
+        self._obs_recorder.start_recording_if_enabled()
+        if not self._pather_v2.traverse("Pit Level 1", self._char, dest_distance=10): return False
+        if not self._pather_v2.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=5): return False
         self._char.post_travel()
 
         for poi in ["Pit Level 2", "SparklyChest"]:
@@ -74,10 +75,11 @@ class Pit:
             while type(monster) is dict:
                 self._char.kill_uniques(monster)
                 picked_up_items = self._pickit.pick_up_items(self._char)  
-                monster = self._pather_v2.traverse(poi, self._char, kill=True, verify_location=True, time_out=5.0)
+                monster = self._pather_v2.traverse(poi, self._char, kill=True, verify_location=True, time_out=8.0)
             while self._api.data["current_area"] != poi.replace(" ",""):
                 if "Pit Level" in poi:
-                    self._pather_v2.go_to_area(poi, poi)
+                    self._pather_v2.go_to_area(poi, poi.replace(" ",""), entrance_in_wall=False, randomize=5, time_out=25)
+                    self._obs_recorder.stop_recording_if_enabled()
                 elif poi == "SparklyChest":
                     self._pather_v2.activate_poi(poi, poi, char=self._char, offset=[-4, -6]) 
                     wait(0.5, 1.0)

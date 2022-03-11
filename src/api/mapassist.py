@@ -18,8 +18,8 @@ def sleep(duration, get_now=time.perf_counter):
 class MapAssistApi:
     def __init__(self):
         self.data=None
-        self._current_path = None
-        self._astar_current_path = None
+        self._current_path = []
+        self._astar_current_path = []
         self._player_pos = None
         self._num_updates = 0
         self._initial_time = 0
