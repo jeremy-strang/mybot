@@ -22,7 +22,7 @@ from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from utils.misc import unit_vector, clip_abs_point
 from scipy.ndimage.filters import gaussian_filter
-from routing.graph import make_route_bfs, make_route_astar, create_cluster_route, cluster_nodes
+from pathing.path_finder import PathFinder, make_path_bfs, make_path_astar, cluster_nodes
 
 class PatherV2:
     def __init__(self, screen: Screen, api: MapAssistApi):
@@ -75,11 +75,6 @@ class PatherV2:
         return abs_pos
 
     def activate_waypoint(self, obj: Union[tuple[int, int], str], char, entrance_in_wall: bool = True, is_wp: bool = True) -> bool:
-        """
-
-        activate a waypoint in town
-
-        """
         start = time.time()
         wp_menu = None
         data = None
@@ -370,25 +365,10 @@ class PatherV2:
         return True
 
     def create_cluster_route(self):
-        route, clusters = create_cluster_route(self._api.get_data())
+        pf = PathFinder(self._api)
+        route, clusters = pf.create_cluster_route()
         # self._api._current_path = route
         return (route, clusters)
-
-    # def create_route(self, target_pos_world: tuple[int, int]):
-    #     data = self._api.get_data()
-    #     if data is not None:
-    #         target_x_local = target_pos_world[0] - data["area_origin"][0]
-    #         target_y_local = target_pos_world[1] - data["area_origin"][1]
-    #         player_x_local = data["player_pos_world"][0] - data["area_origin"][0]
-    #         player_y_local = data["player_pos_world"][1] - data["area_origin"][1]
-    #         map = data["map"]
-    #         map_w = len(map)
-    #         map_h = len(map[0])
-    #         start = (int(player_x_local + 1), int(player_y_local + 1))
-    #         end = (target_x_local, target_y_local)
-    #         route = make_route_bfs(start, end, map_h, map_w, map)
-    #         return route
-    #     return None
 
     def traverse_route(self, route, char, time_out=10):
         if route is not None:
@@ -467,8 +447,8 @@ class PatherV2:
                     x = end_p[0]
                     y = end_p[1]
 
-                    target_x = x+data["area_origin"][0]
-                    target_y = y+data["area_origin"][1]
+                    target_x = x + data["area_origin"][0]
+                    target_y = y + data["area_origin"][1]
                     player_x = data["player_pos_world"][0]
                     player_y = data["player_pos_world"][1]
 
@@ -482,7 +462,7 @@ class PatherV2:
                     if data['map'] is not None:
                         player_local = (int(player_y_local), int(player_x_local))
                         dest = (int(y), int(x))
-                        path_data = make_route_astar(player_local, dest, data["map"])
+                        path_data = make_path_astar(player_local, dest, data["map"])
 
                         if path_data is not None:
                             target = path_data
@@ -509,8 +489,7 @@ class PatherV2:
                     self._api._current_path = target
                     moves = 0
                     if target is None:
-                        Logger.debug('invalid path -> ' +
-                                     str(target_x)+''+str(target_y))
+                        Logger.debug('Invalid path: ' + str(target_x) + ' ' + str(target_y))
                         sucess = True
                         return False
                     pp = [0, 0]

@@ -103,7 +103,7 @@ if __name__ == "__main__":
             api._current_path = route
             # for c in clusters:
             #     pather_v2.traverse_walking(c, char, obj=False, threshold=10)
-            bot._town_manager.a3.open_trade_menu(Location.A3_TOWN_START)
+            # bot._town_manager.a3.open_trade_menu(Location.A3_TOWN_START)
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
