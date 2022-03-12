@@ -104,7 +104,7 @@ class PathFinder:
             if data["current_area"] != self._current_area:
                 self._map = data["map"]
                 self._current_area = data["current_area"]
-                self._clusters = cluster_nodes(self._map, 12)
+                self._clusters = cluster_nodes(self._map, 10)
                 print(self._clusters)
                 float_map = self._map.astype(np.float32)
                 float_map[float_map == 0] = 999999.0
@@ -143,6 +143,7 @@ class PathFinder:
         return []
     
     def solve_tsp(self, end=None, exact=False):
+        start = time.time()
         self.update_map()
         queue = deque(self._clusters)
         queue.appendleft(self.player_node)
@@ -164,17 +165,21 @@ class PathFinder:
                     # dist_matrix[i, j] = len(path_ij)
                     dist_matrix[i, j] = cityblock(nodes[i], nodes[j])
         if end_given: dist_matrix[0, N-1] = 0
+        elapsed = time.time() - start
+        print(f"Calculated distance matrix in {elapsed} seconds")
         print(dist_matrix)
         permutation = None
         if exact:
             permutation, distance = solve_tsp_dynamic_programming(dist_matrix)
         else:
             permutation, distance = solve_tsp_local_search(dist_matrix)
-        print(permutation)
         path = []
         for i in permutation:
             if not end_given or (end_given and i != N-1):
                 path.append(nodes[i])
+        elapsed = time.time() - start
+        print(f"Done solving TSP in {elapsed} seconds")
+        print(permutation)
         return path
 
 
