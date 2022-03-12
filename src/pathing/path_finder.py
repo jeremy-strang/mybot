@@ -19,12 +19,13 @@ from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from scipy.ndimage.filters import gaussian_filter
 from utils.misc import unit_vector, clip_abs_point
+from python_tsp.heuristics import solve_tsp_simulated_annealing, solve_tsp_local_search
 from python_tsp.exact import solve_tsp_dynamic_programming
 
 def closest_node(node, nodes):
     return nodes[cdist([node], nodes).argmin()]
 
-def cluster_nodes(nodes):
+def cluster_nodes(nodes, max_cluster_ct = None):
     features = np.array([[0, 0]])
     clusters = np.array([[0, 0]])
     x = 0
@@ -38,6 +39,8 @@ def cluster_nodes(nodes):
         y += 1
     features[0, 0:-1, ...] = features[0, 1:, ...]
     cluster_count = int(features.size / 3000)
+    if max_cluster_ct is not None:
+        cluster_count = min(max_cluster_ct, cluster_count)
     while features.size > 2048:
         features = np.delete(features, list(range(0, features.shape[0], 2)), axis=0)
     clusters_k, distortion = kmeans(features.astype(float), cluster_count,iter=5)
@@ -101,7 +104,8 @@ class PathFinder:
             if data["current_area"] != self._current_area:
                 self._map = data["map"]
                 self._current_area = data["current_area"]
-                self._clusters = cluster_nodes(self._map)
+                self._clusters = cluster_nodes(self._map, 12)
+                print(self._clusters)
                 float_map = self._map.astype(np.float32)
                 float_map[float_map == 0] = 999999.0
                 float_map[float_map == 1] = 0.0
@@ -138,30 +142,68 @@ class PathFinder:
                     seen.add((x2, y2))
         return []
     
-    def solve_tsp(self, end=None):
+    def solve_tsp(self, end=None, exact=False):
         self.update_map()
         queue = deque(self._clusters)
         queue.appendleft(self.player_node)
-        if end is not None:
+
+        end_given = end is not None
+        if end_given:
             end = (end[0], end[1])
             queue.append(end)
         nodes = np.asarray(queue)
         N = len(nodes)
-        dist_matrix = np.zeros((N, N))
+        if end_given: N += 1
+
         # Find distance in number of nodes between each node i, j
+        dist_matrix = np.zeros((N, N))
         for i in range(N):
             for j in range(N):
-                start = (nodes[i][1], nodes[i][0]) # y x (backwards)
-                end = (nodes[j][1], nodes[j][0]) # y x (backwards)
-                path_ij = self.make_path_astar(start, end)
-                dist_matrix[i, j] = len(path_ij)
-        print("Computed distance matrix using astar path node length:")
+                if not end_given or (i != N-1 and j != N-1):
+                    # path_ij = self.make_path_astar(nodes[i], nodes[j], reverse_coords=True)
+                    # dist_matrix[i, j] = len(path_ij)
+                    dist_matrix[i, j] = cityblock(nodes[i], nodes[j])
+        if end_given: dist_matrix[0, N-1] = 0
         print(dist_matrix)
-        permutation, distance = solve_tsp_dynamic_programming(dist_matrix)
-        print(f"Solved TSP, distance: {distance}, permutation:")
+        permutation = None
+        if exact:
+            permutation, distance = solve_tsp_dynamic_programming(dist_matrix)
+        else:
+            permutation, distance = solve_tsp_local_search(dist_matrix)
         print(permutation)
         path = []
         for i in permutation:
-            path.append(nodes[i])
+            if not end_given or (end_given and i != N-1):
+                path.append(nodes[i])
+        return path
+
+
+    def _solve_tsp(self, end=None):
+        self.update_map()
+        queue = deque(self._clusters)
+        queue.appendleft(self.player_node)
+
+        end_given = end is not None
+        if end_given:
+            end = (end[0], end[1])
+            queue.append(end)
+        nodes = np.asarray(queue)
+        N = len(nodes)
+        if end_given: N += 1
+
+        # Find distance in number of nodes between each node i, j
+        dist_matrix = np.zeros((N, N))
+        for i in range(N):
+            for j in range(N):
+                if not end_given or (i != 0 and j != N-1):
+                    path_ij = self.make_path_astar(nodes[i], nodes[j], reverse_coords=True)
+                    dist_matrix[i, j] = len(path_ij)
+        if end_given: dist_matrix[0, N-1] = 0
+        print(dist_matrix)
+        permutation, distance = solve_tsp_dynamic_programming(dist_matrix)
+        print(permutation)
+        path = []
+        for i in permutation:
+            if i != N-1: path.append(nodes[i])
         return path
 

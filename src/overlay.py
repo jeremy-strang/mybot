@@ -33,7 +33,7 @@ class Overlay:
         self._texture_data = None
 
     def update_map(self):
-        Logger.info("Updating map overlay...")
+        Logger.info("Updating map overlay")
 
         #map_surface.fill((0,0,0))
         nodes = self._api.data['map']
@@ -66,7 +66,6 @@ class Overlay:
 
 
     def init(self):
-        Logger.info("Started overlay...")
         fuchsia = (255,0,255)  # Transparency color
 
         dpg.create_context()
@@ -81,7 +80,7 @@ class Overlay:
         dpg.add_texture_registry(label="txt_con", tag="_txt",show=False)
         dpg.add_static_texture(self._mini_map_w,self._mini_map_h, self._texture_data,parent="_txt", tag="texture_tag")
 
-        with dpg.window(label="stats",width=220,height=220,pos=(1060,0), tag="main",no_resize=True,no_scrollbar=True,no_title_bar=True,no_move=True,no_collapse=True):
+        with dpg.window(label="stats",width=300,height=300,pos=(980,0), tag="main",no_resize=True,no_scrollbar=True,no_title_bar=True,no_move=True,no_collapse=True):
             #dpg.draw_circle((250,250),500,color=(55,55,55,255),fill=[55,55,55],parent="main")
 
             with dpg.draw_node(tag="root_scale"):
@@ -97,7 +96,7 @@ class Overlay:
                 dpg.draw_text((0, 0), '0', color=(255, 55, 75, 255),size=14,parent="no_scale")
 
 
-        with dpg.window(label="static entities",width=220,height=220,pos=(1060,220), tag="entities_main",no_resize=True,no_scrollbar=False,no_title_bar=False,no_move=True,no_collapse=False):
+        with dpg.window(label="static entities",width=300,height=300,pos=(980,300), tag="entities_main",no_resize=True,no_scrollbar=False,no_title_bar=False,no_move=True,no_collapse=False):
             with dpg.table(header_row=False,tag="entity_table"):
                 dpg.add_table_column()
                 for i in range(0, 2):
@@ -106,7 +105,7 @@ class Overlay:
                             dpg.add_text(f"Row{i} Column{j}")
 
 
-        dpg.create_viewport(title='overlay', width=1280, height=720,decorated=False,clear_color=[255,0,255])
+        dpg.create_viewport(title='overlay', width=1280, height=720, decorated=False, clear_color=[255,0,255])
         dpg.setup_dearpygui()
         dpg.show_viewport()
 
@@ -183,19 +182,25 @@ class Overlay:
                 self._draw_path = self._api._current_path
 
                 if self._draw_path is not None:
+                    n = 0
                     for node in self._draw_path:
                         #these are flipped, unfortunate ha
                         x = node[0]
                         y = node[1]
+                        node_color = (0, 0, 255, 255)
+                        if n < 5: node_color = (0, 255, 0, 255)
+                        if n >= len(self._draw_path) - 5: node_color = (255, 0, 0, 255)
+                        node_radius = 5 if n < 5 or n >= len(self._draw_path) - 5 else 3
+
                         #pygame.draw.rect(map_surface, (0,0,255), pygame.Rect(x,y, 2,2))
-                        dpg.draw_circle((1+x, 1+y), 2, color=(0, 0, 255, 255),parent="monsters")
+                        dpg.draw_circle((1+x, 1+y), node_radius, color=node_color, parent="monsters")
+                        n += 1
 
                 px = 0 
                 py = 0
                 if self._astar_path is not None:
                     for node in self._astar_path:
                         #these are flipped, unfortunate ha
-
                         x = node[1]+1.5
                         y = node[0]+1.5
                         dpg.draw_circle((x, y), 3, color=(255, 0, 0, 255),parent="monsters")
@@ -261,8 +266,8 @@ class Overlay:
             x0,y0,x1,y1 = win32gui.GetClientRect(d2)
             w = x1-x0
             h = y1-y0
-            tl = ClientToScreen(d2,(x0,y0))
-            rb = ClientToScreen(d2,(x1,y1))
+            tl = ClientToScreen(d2,(x0 + 300,y0))
+            rb = ClientToScreen(d2,(x1 + 300,y1))
 
             left_border = tl[0]-xx0
             right_border = xx1-rb[0]
@@ -272,7 +277,7 @@ class Overlay:
             win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, xx0+left_border,yy0+top_border, int(w), int(h), win32con.SWP_NOSIZE)
             dpg.render_dearpygui_frame()
         dpg.destroy_context()
-
+        Logger.info("Started overlay")
         
     def stop_overlay(self):
         dpg.stop_dearpygui()
@@ -284,7 +289,7 @@ class Overlay:
         self._callback = callback
 
     def display(self):
-        print("display gui")
+        print("Display GUI")
 
 def stop():
     dpg.stop_dearpygui()

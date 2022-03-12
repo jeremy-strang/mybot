@@ -429,10 +429,6 @@ class PatherV2:
                         x = end[0]
                         y = end[1]
 
-                    end_p = [x, y]
-                    x = end_p[0]
-                    y = end_p[1]
-
                     target_x = x + data["area_origin"][0]
                     target_y = y + data["area_origin"][1]
                     player_x = data["player_pos_world"][0]

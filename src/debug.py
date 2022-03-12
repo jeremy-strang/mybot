@@ -37,6 +37,7 @@ from main import on_exit
 from utils.custom_mouse import mouse
 from utils.misc import wait
 from obs import ObsRecorder
+from utils.monsters import find_npc
 
 if __name__ == "__main__":
     from mas import world_to_abs
@@ -105,20 +106,27 @@ if __name__ == "__main__":
 
             # pather_v2.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
 
-            
-            write_data_to_file(api.get_data(), api._raw_data_str)
-            print("Done doing stuff")
-            # pf = PathFinder(api)
-            # start = pf.player_node
+            # write_data_to_file(api.get_data(), api._raw_data_str)
+
+            data = api.get_data()
+            akara = find_npc(Npc.AKARA, api)
+            pf = PathFinder(api)
+            start = pf.player_node
+
+            if akara is not None:
+                path = pf.solve_tsp(end=akara["position"] - data["area_origin"])
+            else:
+                path = pf.solve_tsp()
             # path = pf.solve_tsp()
-            # api._current_path = []
-            # for node in path:
-            #     # pather_v2.traverse_walking(node, char, threshold=8, end_dist=10)
-            #     api._current_path += pf.make_path_astar(start, node, True)
-            #     start = node
+            api._current_path = []
+            for node in path:
+                # pather_v2.traverse_walking(node, char, threshold=8, end_dist=10)
+                api._current_path += pf.make_path_astar(start, node, True)
+                start = node
 
             # api._current_path = path
             # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
+            print("Done doing stuff")
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
