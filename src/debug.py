@@ -102,7 +102,11 @@ if __name__ == "__main__":
             print("Doing stuff...")
             # pickit.pick_up_items(char, False)
             # pather_v2.traverse("Pit Level 1", char)
-            pather_v2.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
+
+            # pather_v2.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
+
+            
+            write_data_to_file(api.get_data(), api._raw_data_str)
             print("Done doing stuff")
             # pf = PathFinder(api)
             # start = pf.player_node
@@ -121,7 +125,6 @@ if __name__ == "__main__":
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
         
         overlay = start_overlay(bot, game_stats)
-
         print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
         keyboard.wait()
 

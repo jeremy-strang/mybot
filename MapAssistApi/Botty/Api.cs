@@ -74,7 +74,8 @@ namespace MapAssist.Botty
                     
                     if (_gameData != null && _areaData != null && _pointsOfInterest != null)
                     {
-                        Dictionary<Stat, int> stats = _gameData.PlayerUnit.Stats;
+                        var playerUnit = _gameData.PlayerUnit;
+                        Dictionary<Stat, int> stats = playerUnit.Stats;
                         var player_life = stats.ContainsKey(Stat.Life) ? stats[Stat.Life] >> 8 : int.MaxValue;
                         var player_max_life = stats.ContainsKey(Stat.MaxLife) ? stats[Stat.MaxLife] >> 8 : int.MaxValue;
                         var player_mana = stats.ContainsKey(Stat.Mana) ? stats[Stat.Mana] >> 8 : int.MaxValue;
@@ -95,7 +96,7 @@ namespace MapAssist.Botty
                             return new { key = key.ToString(), value };
                         }).ToList();
 
-                        UnitItem[] flattenedBelt = _gameData.PlayerUnit.BeltItems.SelectMany(x => x).ToArray();
+                        UnitItem[] flattenedBelt = playerUnit.BeltItems.SelectMany(x => x).ToArray();
 
                         var belt_health_pots = flattenedBelt.Where(item =>
                             item != null && (item.ItemBaseName ?? "").Contains("Healing Potion")).Count();
@@ -128,12 +129,14 @@ namespace MapAssist.Botty
                             player_experience,
                             player_gold,
                             player_stats,
-                            player_state_strings = _gameData.PlayerUnit.StateStrings,
+                            player_state_strings = playerUnit.StateStrings,
+                            player_unit = playerUnit.Struct,
+                            player_name = playerUnit.Name,
+                            player_class = playerUnit.Struct.playerClass.ToString(),
                             static_npcs = new List<dynamic>(),
                             belt_health_pots, // number of health pots in player's belt
                             belt_mana_pots, // number of mana pots in player's belt
                             belt_rejuv_pots, // number of rejuv pots in player's belt
-                            player_unit = _gameData.PlayerUnit,
                         };
                         foreach (var m in _areaData.NPCs)
                         {
