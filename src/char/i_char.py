@@ -421,9 +421,23 @@ class IChar:
         else:
             return False
         
+    def _calc_distance (self, mon):
+        special_types = [
+            MonsterType.SUPER_UNIQUE,
+            MonsterType.UNIQUE,
+            MonsterType.CHAMPION,
+            MonsterType.POSSESSED,
+            MonsterType.GHOSTLY
+        ]
+        if mon["bossID"] != 0: return 0
+        elif mon["type"] in "SuperUnique": return 0.05
+        elif any (mobtype in mon["type"] for mobtype in special_types): return 0.1
+        elif mon["type"] in "Minion": return 0.2
+        else: return mon["dist"]
+
     def kill_around(self,  api, density=15, area=15, special = False):
         monsterlist = api.get_data()
-        monsterlist = monsterlist["monsters"]
+        monsterlist = monsterlist["monsters"].sort(key=self._calc_distance)
         filtered_monster = []
         kill = False
         count = 0

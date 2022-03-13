@@ -104,7 +104,7 @@ class PathFinder:
             if data["current_area"] != self._current_area:
                 self._map = data["map"]
                 self._current_area = data["current_area"]
-                self._clusters = cluster_nodes(self._map, 10)
+                self._clusters = cluster_nodes(self._map, 12)
                 # print(self._clusters)
                 float_map = self._map.astype(np.float32)
                 float_map[float_map == 0] = 999999.0
