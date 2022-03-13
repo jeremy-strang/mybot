@@ -182,33 +182,32 @@ class PathFinder:
         print(permutation)
         return path[:-1] if end_given else path
 
+    # def _solve_tsp(self, end=None):
+    #     self.update_map()
+    #     queue = deque(self._clusters)
+    #     queue.appendleft(self.player_node)
 
-    def _solve_tsp(self, end=None):
-        self.update_map()
-        queue = deque(self._clusters)
-        queue.appendleft(self.player_node)
+    #     end_given = end is not None
+    #     if end_given:
+    #         end = (end[0], end[1])
+    #         queue.append(end)
+    #     nodes = np.asarray(queue)
+    #     N = len(nodes)
+    #     if end_given: N += 1
 
-        end_given = end is not None
-        if end_given:
-            end = (end[0], end[1])
-            queue.append(end)
-        nodes = np.asarray(queue)
-        N = len(nodes)
-        if end_given: N += 1
-
-        # Find distance in number of nodes between each node i, j
-        dist_matrix = np.zeros((N, N))
-        for i in range(N):
-            for j in range(N):
-                if not end_given or (i != 0 and j != N-1):
-                    path_ij = self.make_path_astar(nodes[i], nodes[j], reverse_coords=True)
-                    dist_matrix[i, j] = len(path_ij)
-        if end_given: dist_matrix[0, N-1] = 0
-        print(dist_matrix)
-        permutation, distance = solve_tsp_dynamic_programming(dist_matrix)
-        print(permutation)
-        path = []
-        for i in permutation:
-            if i != N-1: path.append(nodes[i])
-        return path
+    #     # Find distance in number of nodes between each node i, j
+    #     dist_matrix = np.zeros((N, N))
+    #     for i in range(N):
+    #         for j in range(N):
+    #             if not end_given or (i != 0 and j != N-1):
+    #                 path_ij = self.make_path_astar(nodes[i], nodes[j], reverse_coords=True)
+    #                 dist_matrix[i, j] = len(path_ij)
+    #     if end_given: dist_matrix[0, N-1] = 0
+    #     print(dist_matrix)
+    #     permutation, distance = solve_tsp_dynamic_programming(dist_matrix)
+    #     print(permutation)
+    #     path = []
+    #     for i in permutation:
+    #         if i != N-1: path.append(nodes[i])
+    #     return path
 
