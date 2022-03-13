@@ -180,7 +180,7 @@ class PathFinder:
         elapsed = time.time() - start
         print(f"Done solving TSP in {elapsed} seconds")
         print(permutation)
-        return path
+        return path[:-1] if end_given else path
 
 
     def _solve_tsp(self, end=None):
