@@ -65,11 +65,11 @@ class Pit:
         if not self._pather.traverse("Tamoe Highland", self._char, dest_distance=10): return False
         if not self._pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4): return False
     
-        self._obs_recorder.start_recording_if_enabled()
         if not self._pather.traverse("Pit Level 1", self._char, verify_location=True, dest_distance=12): return False
         if not self._pather.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4): return False
         self._char.post_travel()
 
+        self._obs_recorder.start_recording_if_enabled()
         pit_lvl2 = self._pather.get_entity_coords_from_str("Pit Level 2", "poi", False)
         pf = PathFinder(self._api)
         nodes = pf.solve_tsp(pit_lvl2)
@@ -82,15 +82,17 @@ class Pit:
         picked_up_items = self._pickit.pick_up_items(self._char)
         if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
         self._char.pre_travel(do_pre_buff)
-        if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25): return picked_up_items
+        if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25):
+            if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=4, time_out=25):
+                return picked_up_items
         self._char.post_travel()
 
         monster = self._pather.traverse("SparklyChest", self._char, kill=True, verify_location=True, obj=True)
         while type(monster) is dict:
             self._char.kill_uniques(monster)
             picked_up_items = self._pickit.pick_up_items(self._char)
-        if not self._pather.traverse("Sparkly Chest", self._char, kill=False, verify_location=True): return picked_up_items
-        self._pather.activate_poi("Sparkly Chest", "SparklyChest", char=self._char, offset=[9.5, 39.5]) 
+        self._pather.traverse("Sparkly Chest", self._char, kill=False, verify_location=True)
+        self._pather.activate_poi("SparklyChest", "SparklyChest", char=self._char]) 
         picked_up_items = self._pickit.pick_up_items(self._char)
 
         self._obs_recorder.stop_recording_if_enabled()

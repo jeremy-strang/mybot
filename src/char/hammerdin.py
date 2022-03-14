@@ -517,21 +517,21 @@ class Hammerdin(IChar):
         return True
     
     def kill_uniques(self, monster, aura: str = "concentration", offset = [1, 1], time_out: float = 9.0) -> bool:
-        if not self.move_to_monster(monster, offset): return False
+        if not self._pather.move_to_monster(self, monster): return False
         if not self.prepare_attack(aura): return False
         monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
         dist = 0
         start = time.time()
         if type(monster) is dict:
-            dist = self.get_monster_distance(monster, offset)
+            dist = monster["dist"] # self.get_monster_distance(monster, offset)
         while type(monster) is dict and time.time() - start < time_out:
             if dist > 10:
                 if not self.post_attack(): return False
-                if not self.move_to_monster(monster, offset): return False
+                if not self._pather.move_to_monster(self, monster): return False
                 if not self.prepare_attack(aura): return False
             monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
             if type(monster) == dict:
-                dist = self.get_monster_distance(monster, offset)
+                dist = monster["dist"] # self.get_monster_distance(monster, offset)
         if not self.post_attack(): return False
 
     def _kill_mobs_adv(self, names: list[str], game_state:StateMonitor) -> bool:
