@@ -22,7 +22,7 @@ from item.pickit import PickIt
 from ui import UiManager, char_selector
 from ui import BeltManager
 from ui import CharSelector
-from old_pather import OldPather, Location
+from pathing import OldPather, Location
 from npc_manager import NpcManager, Npc
 from health_manager import HealthManager
 from death_manager import DeathManager

@@ -3,14 +3,14 @@ from utils.custom_mouse import mouse
 from char import IChar
 from template_finder import TemplateFinder
 from ui import UiManager
-from old_pather import OldPather
+from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, cut_roi
 import time
 import random
 import numpy as np
-from old_pather import OldPather, Location
+from pathing import OldPather, Location
 
 from api.mapassist import MapAssistApi
 from pathing import Pather
@@ -196,7 +196,7 @@ if __name__ == "__main__":
     import keyboard
     from screen import Screen
     from template_finder import TemplateFinder
-    from old_pather import OldPather
+    from pathing import OldPather
     keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
     keyboard.wait("f11")
     from config import Config

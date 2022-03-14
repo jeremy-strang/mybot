@@ -6,12 +6,12 @@ from char import IChar, CharacterCapabilities
 from char.barbarian.barbarian import Barbarian
 from template_finder import TemplateFinder
 from ui import UiManager
-from old_pather import OldPather
+from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, is_in_roi, cut_roi
 import time
-from old_pather import OldPather, Location
+from pathing import OldPather, Location
 import math
 import threading
 import numpy as np

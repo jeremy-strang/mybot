@@ -18,7 +18,7 @@ from screen import Screen
 from bot import Bot
 from config import Config
 from game_stats import GameStats
-from old_pather import OldPather
+from pathing import OldPather
 from pathing import Pather
 from api import MapAssistApi
 import threading

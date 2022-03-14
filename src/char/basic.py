@@ -3,12 +3,12 @@ from utils.custom_mouse import mouse
 from char import IChar,CharacterCapabilities
 from template_finder import TemplateFinder
 from ui import UiManager
-from old_pather import OldPather
+from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, cut_roi
 import time
-from old_pather import OldPather, Location
+from pathing import OldPather, Location
 
 from api.mapassist import MapAssistApi
 from pathing import Pather

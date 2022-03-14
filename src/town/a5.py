@@ -3,7 +3,7 @@ from town.i_act import IAct
 from screen import Screen
 from config import Config
 from npc_manager import NpcManager, Npc
-from old_pather import OldPather, Location
+from pathing import OldPather, Location
 from pathing import Pather
 from api import MapAssistApi
 from typing import Union

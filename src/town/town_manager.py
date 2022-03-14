@@ -206,7 +206,7 @@ if __name__ == "__main__":
     keyboard.wait("f11")
     from char.hammerdin import Hammerdin
     from item import ItemFinder
-    from old_pather import OldPather
+    from pathing import OldPather
     from screen import Screen
     from npc_manager import NpcManager
     config = Config()

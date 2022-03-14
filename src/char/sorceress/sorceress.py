@@ -4,12 +4,12 @@ from utils.custom_mouse import mouse
 from char import IChar
 from template_finder import TemplateFinder
 from ui import UiManager
-from old_pather import OldPather
+from pathing import OldPather
 from screen import Screen
 from utils.misc import wait
 import time
 from typing import Tuple
-from old_pather import OldPather
+from pathing import OldPather
 
 from api.mapassist import MapAssistApi
 from pathing import Pather

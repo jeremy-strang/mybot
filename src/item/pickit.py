@@ -164,7 +164,7 @@ if __name__ == "__main__":
     from char.hammerdin import Hammerdin
     from ui import UiManager
     from template_finder import TemplateFinder
-    from old_pather import OldPather
+    from pathing import OldPather
     import keyboard
     from obs import ObsRecorder
     keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))

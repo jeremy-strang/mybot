@@ -3,7 +3,7 @@ from utils.custom_mouse import mouse
 from char import IChar
 from template_finder import TemplateFinder
 from ui import UiManager
-from old_pather import OldPather
+from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, rotate_vec, unit_vector
