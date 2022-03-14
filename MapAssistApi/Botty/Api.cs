@@ -71,7 +71,7 @@ namespace MapAssist.Botty
                 lock (_lock)
                 {
                     (_gameData, _areaData, _pointsOfInterest, _) = _gameDataReader.Get();
-                    
+
                     if (_gameData != null && _areaData != null && _pointsOfInterest != null)
                     {
                         var playerUnit = _gameData.PlayerUnit;
@@ -136,7 +136,7 @@ namespace MapAssist.Botty
                             player_gold,
                             player_stats,
                             player_state_strings = playerUnit.StateStrings,
-                            player_unit = playerUnit.Struct,
+                            //player_unit = playerUnit.Struct,
                             player_name = playerUnit.Name,
                             player_class = playerUnit.Struct.playerClass.ToString(),
                             static_npcs = new List<dynamic>(),
@@ -146,18 +146,12 @@ namespace MapAssist.Botty
                         };
                         foreach (var m in _areaData.NPCs)
                         {
-
-                                msg.static_npcs.Add(new
-                                {
-                                    name = m.Key.ToString(),
-                                    position = m.Value,
-                                    
-
-                                });
-                            //Console.WriteLine(m.Key);
+                            msg.static_npcs.Add(new
+                            {
+                                name = m.Key.ToString(),
+                                position = m.Value,
+                            });
                         }
-
-
 
                         foreach (UnitMonster m in _gameData.Monsters)
                         {
@@ -178,7 +172,7 @@ namespace MapAssist.Botty
                                     corpse = m.IsCorpse,
                                     bossID = m.MonsterData.BossLineID,
                                     state_strings = m.StateStrings,
-                                    unit = m,
+                                    is_hovered = m.IsHovered,
                                 });
                             }
                         }
@@ -204,13 +198,14 @@ namespace MapAssist.Botty
                             }
                         }
 
-
                         //ItemLog = Items.ItemLog[_currentProcessId].ToArray(),
                         foreach (ItemLogEntry item in _gameData.ItemLog)
                         {
                             msg.item_log.Add(new
                             {
-                                text = item.Text, hash = item.ItemHashString, unit_item = item.UnitItem.ToString()
+                                text = item.Text,
+                                hash = item.ItemHashString,
+                                unit_item = item.UnitItem.ToString()
                             });
                         }
 
