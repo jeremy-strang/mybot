@@ -168,7 +168,7 @@ class UiManager():
             return True
         return False
 
-    def goto_lobby (self) -> bool:
+    def goto_lobby(self) -> bool:
         """
         Go from charselection to lobby
         :return: Bool if action was successful
@@ -185,7 +185,7 @@ class UiManager():
                 break
         return True
     
-    def create_game_lobby (self) -> bool:
+    def create_game_lobby(self) -> bool:
         Logger.debug("Creating game via Lobby")
         while 1:
             img = self._screen.grab()
@@ -201,8 +201,8 @@ class UiManager():
             img = self._screen.grab()
             found_btn_game_name = self._template_finder.search(["GAME_NAME"], img, threshold=0.8, best_match=True, normalize_monitor=True)
             if found_btn_game_name.valid:
-                mouse.move(found_btn_game_name.center[0],found_btn_game_name.center[1]+20, randomize=[3, 4], delay_factor=[1.0, 1.8])
-                wait(0.5, 1.1)
+                mouse.move(found_btn_game_name.center[0], found_btn_game_name.center[1]+20, randomize=[3, 4], delay_factor=[1.0, 1.8])
+                wait(0.4, 7)
                 mouse.click(button="left")   
                 wait(0.1, 0.15)
                 break

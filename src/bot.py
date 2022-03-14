@@ -108,7 +108,7 @@ class Bot:
         a3 = A3(self._screen, self._template_finder, self._old_pather, self._char, npc_manager, self._pather, self._api)
         a2 = A2(self._screen, self._template_finder, self._old_pather, self._char, npc_manager, self._pather, self._api)
         a1 = A1(self._screen, self._template_finder, self._old_pather, self._char, npc_manager, self._pather, self._api)
-        self._town_manager = TownManager(self._template_finder, self._ui_manager, self._item_finder, a1, a2, a3, a4, a5)
+        self._town_manager = TownManager(self._template_finder, self._ui_manager, self._item_finder, self._api, a1, a2, a3, a4, a5)
         self._route_config = self._config.routes
         self._route_order = self._config.routes_order
         self._npc_manager = npc_manager
@@ -276,18 +276,18 @@ class Bot:
         self.trigger_or_stop("create_game")
 
     def on_create_game(self):
-        if self._config.general ["games_via_lobby"]:
+        if self._config.general["games_via_lobby"]:
             found_btn_play = self._template_finder.search_and_wait("CREATE_GAME", time_out= 3, threshold=0.8, best_match=True, normalize_monitor=True)
             if found_btn_play.valid:
-                self._ui_manager.create_game_lobby ()
+                self._ui_manager.create_game_lobby()
                 self.trigger_or_stop("start_from_town")
             else:
                 found_btn_lobby = self._template_finder.search_and_wait("LOBBY", threshold=0.8, best_match=True, normalize_monitor=True)
                 if found_btn_lobby.valid:
-                    if not self._ui_manager.goto_lobby (): return
+                    if not self._ui_manager.goto_lobby(): return
                     found_btn_play = self._template_finder.search_and_wait("CREATE_GAME", time_out= 3, threshold=0.8, best_match=True, normalize_monitor=True)
                     if found_btn_play.valid:
-                        self._ui_manager.create_game_lobby ()
+                        self._ui_manager.create_game_lobby()
                         self.trigger_or_stop("start_from_town")
         else:
             # Start a game from hero selection
@@ -297,38 +297,16 @@ class Bot:
 
     def on_start_from_town(self):
         self._curr_loc = self._town_manager.wait_for_town_spawn()
-        # Check for the current game ip and pause if we are able to obtain the hot ip
-        if self._config.dclone["region_ips"] != "" and self._config.dclone["dclone_hotip"] != "":
-            cur_game_ip = get_d2r_game_ip()
-            hot_ip = self._config.dclone["dclone_hotip"]
-            Logger.debug(f"Current Game IP: {cur_game_ip}   and HOTIP: {hot_ip}")
-            if hot_ip == cur_game_ip:
-                self._messenger.send_message(f"Dclone IP Found on IP: {cur_game_ip}")
-                print("Press Enter")
-                input()
-                os._exit(1)
-            else:
-                Logger.info(f"Please Enter the region ip and hot ip on config to use")
-
-        # Run /nopickup command to avoid picking up stuff on accident
-        if not self._ran_no_pickup and not self._game_stats._nopickup_active:
-            self._ran_no_pickup = True
-            if self._ui_manager.enable_no_pickup():
-                self._game_stats._nopickup_active = True
-                Logger.info("Activated /nopickup")
-            else:
-                Logger.error("Failed to detect if /nopickup command was applied or not")
         
         if self._game_stats._consecutive_runs_failed > 0 or self._game_stats._game_counter == 0 or \
             self._pick_corpse or self._game_stats._did_chicken_last_run:
             Logger.info("Verifying weapon slot 1 is active due to chicken/failed/first run")
             self._char.verify_active_weapon_tab()
-                
+
         self._game_stats._did_chicken_last_run = False
         self.trigger_or_stop("maintenance")
 
     def on_maintenance(self):
-        self._char.discover_capabilities(force=False)
         # Handle picking up corpse in case of death
         if self._pick_corpse:
             self._pick_corpse = False
@@ -341,8 +319,15 @@ class Bot:
                 keybind = self._char._skill_hotkeys["teleport"]
                 Logger.info(f"Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
+        elif self._curr_loc == Location.A3_TOWN_START:
+            self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16, time_out=3.0)
+            is_loading = True
+            while is_loading:
+                is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
+                if is_loading: time.sleep(0.4)
 
         # Look at belt to figure out how many pots need to be picked up
+        self._char.discover_capabilities(force=False)
         self._belt_manager.update_pot_needs()
 
         # If character is a singer barb, check to ensure we are on weapon slot 1
@@ -419,7 +404,7 @@ class Bot:
 
         # Check if gambling is needed
         if self._ui_manager.gambling_needed() and self._config.char["gamble_items"]:
-            for x in range (4):
+            for x in range(4):
                 self._curr_loc = self._town_manager.gamble(self._curr_loc)
                 self._ui_manager.gamble(self._item_finder)
                 if (x ==3):
@@ -427,6 +412,15 @@ class Bot:
                 else:
                     self._curr_loc = self._town_manager.stash(self._curr_loc, gamble=True)
             self._ui_manager.set__gold_full(False)
+        
+        # Run /nopickup command to avoid picking up stuff on accident
+        if not self._ran_no_pickup and not self._game_stats._nopickup_active:
+            self._ran_no_pickup = True
+            if self._ui_manager.enable_no_pickup():
+                self._game_stats._nopickup_active = True
+                Logger.info("Activated /nopickup")
+            else:
+                Logger.error("Failed to detect if /nopickup command was applied or not")
 
         # Start a new run
         started_run = False

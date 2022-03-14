@@ -384,7 +384,7 @@ class Pather:
                 if dist < 25:
                     next = route.pop(0)
 
-    def traverse_walking(self, end: Union[str, tuple[int, int]], char, obj: bool = False, x: int = 0, y: int = 0, threshold=4, static_npc=False, end_dist=19):
+    def traverse_walking(self, end: Union[str, tuple[int, int]], char, obj: bool = False, x: int = 0, y: int = 0, threshold=4, static_npc=False, end_dist=19, time_out=50.0):
         """slightly different traversal for moving in town/walking"""
         char.pre_move()
         data = None
@@ -393,7 +393,7 @@ class Pather:
         rand = [0, 0]
         random_offset = 0
 
-        while time.time() - start < 50 or sucess is False:
+        while time.time() - start < time_out or sucess is False:
             data = self._api.get_data()
             if data is not None:
                 if data is not None and "map" in data and data["map"] is not None:

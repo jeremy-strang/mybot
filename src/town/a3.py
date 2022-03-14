@@ -41,7 +41,7 @@ class A3(IAct):
 
 
     def open_wp(self, curr_loc: Location) -> bool:
-        if not self._pather.traverse_walking("Kurast Docks",self._char, obj=False,threshold=16): return False
+        if not self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16): return False
         #if not self._pather.traverse("Kurast Docks", self._char, obj=False): return False
         wait(0.5, 0.7)
         result = self._pather.activate_waypoint("Kurast Docks", self._char,entrance_in_wall=False, is_wp = True)
