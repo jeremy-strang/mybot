@@ -1,3 +1,4 @@
+from collections import deque
 import time
 import random
 import ctypes
