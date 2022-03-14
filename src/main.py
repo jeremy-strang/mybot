@@ -52,17 +52,12 @@ def on_exit(game_controller: GameController,  stand_still="capslock"):
     try:
         keyboard.release(stand_still)
         restore_d2r_window_visibility()
-    except:
-        pass
-        if game_controller is not None and game_controller.obs_recorder is not None:
-            try:
-                game_controller.obs_recorder.stop_recording_if_enabled()
-            except:
-                pass
-            try:
-                game_controller.obs_recorder.stop_replaybuffer_if_enabled()
-            except:
-                pass
+    except: pass
+    if game_controller is not None and game_controller.obs_recorder is not None:
+        try: game_controller.obs_recorder.stop_recording_if_enabled()
+        except: pass
+        try: game_controller.obs_recorder.stop_replaybuffer_if_enabled()
+        except: pass
     os._exit(1)
 
 def main():
@@ -92,10 +87,10 @@ def main():
     except BaseException as e:
         print(f"Error creating directories: {e}")
 
-    print(pad_str_sides(f"MyBot {__version__} [name: {config.general['name']}]", "="))
+    print("\n" + pad_str_sides(f"MyBot {__version__} [name: {config.general['name']}]", "="))
     print(f"Active branch:        {config.active_branch}")
     print(f"Latest Commit Sha:    {config.latest_commit_sha}")
-    print("="*80)
+    print("=" * 80)
 
     if show_options:
         print("\nFor gettings started and documentation\nplease see https://github.com/pokzcodes/mybot\n")

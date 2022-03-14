@@ -10,6 +10,7 @@ from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, is_in_roi, cut_roi, points_equal
+from utils.monsters import find_monster
 import time
 from pathing import OldPather, Location
 import math
@@ -64,18 +65,26 @@ class Barbarian(IChar):
     def cast_melee_to_monster(self, skill_key: str, time_in_s: float, monster: dict, mouse_button: str = "left") -> bool:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
-                Logger.debug(f"Meleeing monster {monster['id']} with {skill_key} ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
+                mid = monster['id']
+                Logger.debug(f"Meleeing monster {mid} with {skill_key} ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
+                keyboard.send(self._char_config["stand_still"], do_release=False)
+                wait(0.03, 0.4)
                 keyboard.send(self._skill_hotkeys[skill_key])
                 wait(0.03, 0.4)
-                self._pather.move_mouse_to_monster(monster)
-                keyboard.send(self._char_config["stand_still"], do_release=False)
                 start = time.time()
                 while (time.time() - start) < time_in_s:
-                    wait(0.05, 0.07)
+                    monster = find_monster(mid, self._api)
+                    self._pather.move_mouse_to_monster(monster)
+                    wait(0.03, 0.04)
                     mouse.press(button=mouse_button)
-                    wait(0.1, 0.2)
-                    mouse.release(button=mouse_button)
-                keyboard.send(self._char_config["stand_still"], do_press=False)
+                    wait(0.03, 0.04)
+                    monster = find_monster(mid, self._api)
+                    if monster is None or monster["mode"] == 12:
+                        break
+                mouse.release(button=mouse_button)
+                wait(0.03, 0.04)
+                keyboard.release(self._config.char["stand_still"])
+                wait(0.03, 0.04)
                 return True
             else:
                 Logger.error(f"Invalid monster {monster}")

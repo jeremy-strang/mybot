@@ -107,7 +107,7 @@ class ZerkerBarb(Barbarian):
         game_state.stop()
         return True
 
-    def _kill_mobs(self, game_state: StateMonitor, atk_len: float = 1.5, time_out: float = 30, reposition_pos_world = None) -> bool:
+    def _kill_mobs(self, game_state: StateMonitor, atk_len: float = 1.7, time_out: float = 30, reposition_pos_world = None) -> bool:
         Logger.debug(f"Beginning combat")
         start = time.time()
         last_move = start
@@ -126,15 +126,14 @@ class ZerkerBarb(Barbarian):
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
                     self.move(move_pos_m, force_tp=True)
-                    wait(0.1)
                     last_move = time.time()
                 else:
                     # self.cast_melee("berserk", atk_len, target_pos)
-                    if not self.cast_melee_to_monster("berserk", atk_len, game_state._target): wait(0.2)
+                    if not self.cast_melee_to_monster("berserk", atk_len, game_state._target): wait(0.1)
             elapsed = time.time() - start
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._char_config["battle_orders"])
-        wait(0.04, 0.08)
+        wait(0.03, 0.05)
         Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
         return True
 
