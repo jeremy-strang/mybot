@@ -516,7 +516,7 @@ class Hammerdin(IChar):
         wait(0.02, 0.4)
         return True
     
-    def kill_uniques(self, monster, aura: str = "concentration", offset = [1, 1], time_out: float = 3.0) -> bool:
+    def kill_uniques(self, monster, aura: str = "concentration", offset = [1, 1], time_out: float = 9.0) -> bool:
         if not self.move_to_monster(monster, offset): return False
         if not self.prepare_attack(aura): return False
         monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
