@@ -298,12 +298,6 @@ class Bot:
     def on_start_from_town(self):
         self._curr_loc = self._town_manager.wait_for_town_spawn()
         
-        if self._game_stats._consecutive_runs_failed > 0 or self._game_stats._game_counter == 0 or \
-            self._pick_corpse or self._game_stats._did_chicken_last_run:
-            Logger.info("Verifying weapon slot 1 is active due to chicken/failed/first run")
-            self._char.verify_active_weapon_tab()
-
-        self._game_stats._did_chicken_last_run = False
         self.trigger_or_stop("maintenance")
 
     def _wait_for_load(self):
@@ -317,6 +311,7 @@ class Bot:
         is_loading = True
         # Handle picking up corpse in case of death
         if self._pick_corpse:
+            Logger.debug(f"Picking up corpse...")
             is_loading = self._wait_for_load()
             self._char.discover_capabilities(force=False)
             self._pick_corpse = False
@@ -378,9 +373,6 @@ class Bot:
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
 
-        if is_loading: is_loading = self._wait_for_load()
-        self._char.discover_capabilities(force=False)
-
         # Check if we should force stash (e.g. when picking up items by accident or after failed runs or chicken/death)
         force_stash = False
         self._no_stash_counter += 1
@@ -406,6 +398,9 @@ class Bot:
             self._no_stash_counter = 0
             self._picked_up_items = False
             wait(1.0)
+
+        if is_loading: is_loading = self._wait_for_load()
+        self._char.discover_capabilities(force=False)
 
         # Check if we are out of tps or need repairing
         need_repair = self._ui_manager.repair_needed()
@@ -452,6 +447,12 @@ class Bot:
                 Logger.info("Activated /nopickup")
             else:
                 Logger.error("Failed to detect if /nopickup command was applied or not")
+
+        if self._game_stats._consecutive_runs_failed > 0 or self._game_stats._game_counter == 0 or \
+            self._pick_corpse or self._game_stats._did_chicken_last_run:
+            Logger.info("Verifying weapon slot 1 is active due to chicken/failed/first run")
+            self._char.verify_active_weapon_tab()
+        self._game_stats._did_chicken_last_run = False
 
         # Start a new run
         started_run = False

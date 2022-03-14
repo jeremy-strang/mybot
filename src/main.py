@@ -47,12 +47,14 @@ def start_or_stop_graphic_debugger(controllers: Controllers):
         controllers.game.stop()
         controllers.debugger.start()
 
-def on_exit(game_controller: GameController,  stand_still="capslock"):
+def on_exit(game_controller: GameController,  release_keys="capslock"):
     Logger.info("Exit key pressed, shutting down bot")
-    try:
-        keyboard.release(stand_still)
-        restore_d2r_window_visibility()
+    for key in release_keys:
+        try: keyboard.release(key)
+        except: pass
+    try: restore_d2r_window_visibility()
     except: pass
+
     if game_controller is not None and game_controller.obs_recorder is not None:
         try: game_controller.obs_recorder.stop_recording_if_enabled()
         except: pass
@@ -91,6 +93,11 @@ def main():
     print(f"Active branch:        {config.active_branch}")
     print(f"Latest Commit Sha:    {config.latest_commit_sha}")
     print("=" * 80)
+    print("Hotkeys:")
+    print(f"    Start / Pause Bot:      {config.advanced_options['resume_key']}")
+    print(f"    Stop Bot:               {config.advanced_options['exit_key']}")
+    print(f"    Adjust D2R settings:    {config.advanced_options['auto_settings_key']}")
+    print("=" * 80 + "\n")
 
     if show_options:
         print("\nFor gettings started and documentation\nplease see https://github.com/pokzcodes/mybot\n")
@@ -99,8 +106,8 @@ def main():
         table.rows.append([config.advanced_options['settings_backup_key'], "Backup D2R current settings"])
         table.rows.append([config.advanced_options['auto_settings_key'], "Adjust D2R settings"])
         table.rows.append([config.advanced_options['graphic_debugger_key'], "Start / Stop Graphic debugger"])
-        table.rows.append([config.advanced_options['resume_key'], "Start / Pause Botty"])
-        table.rows.append([config.advanced_options['exit_key'], "Stop bot"])
+        table.rows.append([config.advanced_options['resume_key'], "Start / Pause Bot"])
+        table.rows.append([config.advanced_options['exit_key'], "Stop Bot"])
         table.columns.header = ["hotkey", "action"]
         print(table)
         print("\n")
@@ -110,7 +117,7 @@ def main():
     keyboard.add_hotkey(config.advanced_options['restore_settings_from_backup_key'], lambda: restore_settings_from_backup())
     keyboard.add_hotkey(config.advanced_options['settings_backup_key'], lambda: backup_settings())
     keyboard.add_hotkey(config.advanced_options['resume_key'], lambda: start_or_pause_bot(controllers))
-    keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: on_exit(game_controller, config.char["stand_still"]))
+    keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: on_exit(game_controller, [config.char["stand_still"], config.char["force_move"]]))
     keyboard.wait()
 
 if __name__ == "__main__":
