@@ -20,6 +20,7 @@ from ocr import Ocr
 
 from api.mapassist import MapAssistApi
 from obs import ObsRecorder
+from utils.monsters import find_monster
 
 class IChar:
     _CrossGameCapabilities: Union[None, CharacterCapabilities] = None
@@ -354,6 +355,50 @@ class IChar:
         if self._config.char["teleport_weapon_swap"]:
             self.switch_weapon()
             self.verify_active_weapon_tab()
+
+    def cast_melee(self, skill_key: str, time_in_s: float, abs_screen_pos: tuple[float, float], mouse_button: str = "left"):
+        mouse_pos_m = self._screen.convert_abs_to_monitor(abs_screen_pos)
+        Logger.debug(f"Casting {skill_key} in the direction of ({round(mouse_pos_m[0], 2)}, {round(mouse_pos_m[0], 2)})")
+        if self._skill_hotkeys[skill_key]:
+            keyboard.send(self._skill_hotkeys[skill_key])
+            wait(0.05)
+            mouse.move(*mouse_pos_m, delay_factor=[0.2, 0.4])
+            keyboard.send(self._char_config["stand_still"], do_release=False)
+            start = time.time()
+            while (time.time() - start) < time_in_s:
+                wait(0.06, 0.08)
+                mouse.press(button=mouse_button)
+                wait(0.1, 0.2)
+                mouse.release(button=mouse_button)
+            keyboard.send(self._char_config["stand_still"], do_press=False)
+    
+    def cast_melee_to_monster(self, skill_key: str, time_in_s: float, monster: dict, mouse_button: str = "left") -> bool:
+        if self._skill_hotkeys[skill_key]:
+            if type(monster) is dict:
+                mid = monster['id']
+                Logger.debug(f"Meleeing monster {mid} with {skill_key} ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
+                keyboard.send(self._char_config["stand_still"], do_release=False)
+                wait(0.03, 0.4)
+                keyboard.send(self._skill_hotkeys[skill_key])
+                wait(0.03, 0.4)
+                start = time.time()
+                while (time.time() - start) < time_in_s:
+                    monster = find_monster(mid, self._api)
+                    self._pather.move_mouse_to_monster(monster)
+                    wait(0.03, 0.04)
+                    mouse.press(button=mouse_button)
+                    wait(0.03, 0.04)
+                    monster = find_monster(mid, self._api)
+                    if monster is None or monster["mode"] == 12:
+                        break
+                mouse.release(button=mouse_button)
+                wait(0.03, 0.04)
+                keyboard.release(self._config.char["stand_still"])
+                wait(0.03, 0.04)
+                return True
+            else:
+                Logger.error(f"Invalid monster {monster}")
+        return False
 
     def _pre_buff_cta(self, extra_cast_delay: float = 0.0):
         # Save current skill img
