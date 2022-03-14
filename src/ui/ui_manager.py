@@ -770,21 +770,21 @@ class UiManager():
         :return: Returns True if we succesfully set the nopickup option
         """
         keyboard.send('enter')
-        wait(0.1, 0.25)
-        keyboard.write('/nopickup',delay=.20)
+        wait(0.08, 0.15)
+        keyboard.write('/nopickup', delay=.10)
         keyboard.send('enter')
-        wait(0.1, 0.25)
-        no_pickup = self._template_finder.search_and_wait(["ITEM_PICKUP_ENABLED","ITEM_PICKUP_DISABLED"], roi=self._config.ui_roi["no_pickup"], best_match=True, time_out=3)
+        wait(0.08, 0.15)
+        no_pickup = self._template_finder.search_and_wait(["ITEM_PICKUP_ENABLED", "ITEM_PICKUP_DISABLED"], roi=self._config.ui_roi["no_pickup"], best_match=True, time_out=3)
         if not no_pickup.valid:
             return False
         if no_pickup.name == "ITEM_PICKUP_DISABLED":
             return True
         keyboard.send('enter')
-        wait(0.1, 0.25)
+        wait(0.08, 0.15)
         keyboard.send('up')
-        wait(0.1, 0.25)
+        wait(0.08, 0.15)
         keyboard.send('enter')
-        wait(0.1, 0.25)
+        wait(0.08, 0.15)
         return True
 
     def buy_pots(self, healing_pots: int = 0, mana_pots: int = 0):
