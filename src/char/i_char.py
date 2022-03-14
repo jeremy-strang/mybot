@@ -53,6 +53,7 @@ class IChar:
         if IChar._CrossGameCapabilities is None or force:
             capabilities = self._discover_capabilities()
             self.capabilities = capabilities
+            self.verify_active_weapon_tab()
         self._cast_duration = self.get_cast_frames() * 0.04 + 0.02
         Logger.info(f"Capabilities: {self.capabilities}")
         self.on_capabilities_discovered(self.capabilities)

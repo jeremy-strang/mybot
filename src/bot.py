@@ -352,7 +352,7 @@ class Bot:
         if data is not None:
             health_pct = data["player_health_pct"]
             mana_pct = data["player_mana_pct"]
-            Logger.debug(f"Loaded player HP/MP from memory, HP: {round(health_pct, 1)}, MP: {round(mana_pct, 1)}")
+            Logger.debug(f"Loaded player HP/MP from memory, HP: {round(health_pct, 1)}%, MP: {round(mana_pct, 1)}%")
         else:
             img = self._screen.grab()
             health_pct = HealthManager.get_health(img)
@@ -360,9 +360,13 @@ class Bot:
 
         if health_pct < 0.6 or mana_pct < 0.2 or buy_pots:
             if buy_pots:
+                # Verify it with pixels, memory data has behaved strangely
+                if is_loading: is_loading = self._wait_for_load()
+                self._belt_manager.update_pot_needs(read_memory=False)
+                buy_pots = self._belt_manager.should_buy_pots()
+            if buy_pots:
                 Logger.info("Buy pots at next possible Vendor")
                 pot_needs = self._belt_manager.get_pot_needs()
-                if is_loading: is_loading = self._wait_for_load()
                 self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
                 wait(0.3, 0.5)
                 self._belt_manager.update_pot_needs()
@@ -373,14 +377,9 @@ class Bot:
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
 
-        # 
         if is_loading: is_loading = self._wait_for_load()
         self._char.discover_capabilities(force=False)
 
-        # If character is a singer barb, check to ensure we are on weapon slot 1
-        if self._config.char["type"] == "singer_barb" and self._char.get_active_weapon_tab() == 2:
-            self._char.switch_weapon()
-    
         # Check if we should force stash (e.g. when picking up items by accident or after failed runs or chicken/death)
         force_stash = False
         self._no_stash_counter += 1
