@@ -318,6 +318,7 @@ class Bot:
         # Handle picking up corpse in case of death
         if self._pick_corpse:
             is_loading = self._wait_for_load()
+            self._char.discover_capabilities(force=False)
             self._pick_corpse = False
             time.sleep(1.6)
             DeathManager.pick_up_corpse(self._screen)
