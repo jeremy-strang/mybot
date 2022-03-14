@@ -89,7 +89,7 @@ class BeltManager:
                 else:
                     Logger.debug(f"Drink {potion_type} potion in slot {i+1}. HP: {(stats[0]*100):.1f}%, Mana: {(stats[1]*100):.1f}%")
                     keyboard.send(self._config.char[key])
-                self._pot_needs[potion_type] = max(0, self._pot_needs[potion_type] + 1)
+                self.update_pot_needs()
                 return True
         return False
 
@@ -97,10 +97,11 @@ class BeltManager:
         """Adjust the _pot_needs when a specific pot was picked up by the pickit
         :param item_name: Name of the item as it is in the pickit
         """
-        if item_name in self._item_pot_map:
-            self._pot_needs[self._item_pot_map[item_name]] = max(0, self._pot_needs[self._item_pot_map[item_name]] - 1)
-        else:
-            Logger.warning(f"BeltManager does not know about item: {item_name}")
+        self.update_pot_needs()
+        # if item_name in self._item_pot_map:
+        #     self._pot_needs[self._item_pot_map[item_name]] = max(0, self._pot_needs[self._item_pot_map[item_name]] - 1)
+        # else:
+        #     Logger.warning(f"BeltManager does not know about item: {item_name}")
 
     def update_pot_needs(self) -> List[int]:
         """
@@ -108,14 +109,14 @@ class BeltManager:
         :return: [need_rejuv_pots, need_health_pots, need_mana_pots]
         """
         self._pot_needs = {"rejuv": 0, "health": 0, "mana": 0}
+        wait(0.05, 0.07)
         data = self._api.get_data()
         if data is not None and "belt_rejuv_pots" in data and "belt_health_pots" in data and "belt_mana_pots" in data:
-            self._pot_needs["rejuv"] = self._config.char["belt_rejuv_columns"] * 4 - data["belt_rejuv_pots"]
-            self._pot_needs["health"] = self._config.char["belt_hp_columns"] * 4 - data["belt_health_pots"]
-            self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * 4 - data["belt_mana_pots"]
+            self._pot_needs["rejuv"] = self._config.char["belt_rejuv_columns"] * self._config.char["belt_rows"] - data["belt_rejuv_pots"]
+            self._pot_needs["health"] = self._config.char["belt_hp_columns"] * self._config.char["belt_rows"] - data["belt_health_pots"]
+            self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * self._config.char["belt_rows"] - data["belt_mana_pots"]
             Logger.debug(f"Loaded potion needs from memory: {self._pot_needs}")
-            return
-
+        return [self._pot_needs["rejuv"], self._pot_needs["health"], self._pot_needs["mana"]]
         rows_left = {
             "rejuv": self._config.char["belt_rejuv_columns"],
             "health": self._config.char["belt_hp_columns"],
@@ -179,14 +180,15 @@ class BeltManager:
         keyboard.press("shift")
         for pos in pot_positions:
             x, y = self._screen.convert_screen_to_monitor(pos)
-            mouse.move(x, y, randomize=9, delay_factor=[1.0, 1.5])
-            wait(0.2, 0.3)
+            mouse.move(x, y, randomize=4, delay_factor=[1.0, 1.5])
+            wait(0.2, 0.25)
             mouse.click(button="left")
             wait(0.3, 0.4)
         keyboard.release("shift")
         wait(0.2, 0.25)
         keyboard.send(self._config.char["inventory_screen"])
         wait(0.5)
+        self.update_pot_needs()
 
 
 if __name__ == "__main__":

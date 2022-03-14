@@ -201,7 +201,7 @@ class GameController:
 
     def start_api_thread(self):
         # run map assist
-        self.api = MapAssistApi()
+        self.api = MapAssistApi(self.config.custom_files)
         self.api.start()
 
     def start_game_controller_thread(self):

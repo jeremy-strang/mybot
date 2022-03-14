@@ -65,7 +65,7 @@ if __name__ == "__main__":
         game_stats = GameStats()
         obs_recorder = ObsRecorder(config)
 
-        api = MapAssistApi()
+        api = MapAssistApi(config.custom_files)
         api_thread = threading.Thread(target=api.start)
         api_thread.daemon = False
         api_thread.start()

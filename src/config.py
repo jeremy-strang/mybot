@@ -56,6 +56,7 @@ class Config:
     basic_ranged = {}
     active_branch = ""
     latest_commit_sha = ""
+    custom_files = []
 
     def __init__(self):
         with config_lock:
@@ -197,16 +198,19 @@ class Config:
         Config._custom_pickit_config = configparser.ConfigParser()
         if os.path.exists('config/pickit.custom.ini'):
             Config._custom_pickit_config.read('config/pickit.custom.ini')
+            Config.custom_files.append('./config/pickit.custom.ini')
 
         if not is_test_env:
             if os.path.exists(f'config/custom.ini'):
                 Logger.debug(f"Loading custom config")
                 Config._custom.read(f'config/custom.ini')
+                Config.custom_files.append('./config/custom.ini')
 
             type = Config._select_val("char", "type")
             if os.path.exists(f'config/{type}.custom.ini'):
                 Logger.debug(f"Loading custom config for build {type}")
                 Config._custom.read(f'config/{type}.custom.ini')
+                Config.custom_files.append(f'./config/{type}.custom.ini')
 
         Config.general = {
             "saved_games_folder": Config._select_val("general", "saved_games_folder"),

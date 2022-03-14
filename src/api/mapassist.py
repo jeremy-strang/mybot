@@ -16,7 +16,7 @@ def sleep(duration, get_now=time.perf_counter):
         now = get_now()
 
 class MapAssistApi:
-    def __init__(self):
+    def __init__(self, custom_files=[]):
         self.data=None
         self._current_path = []
         self._astar_current_path = []
@@ -25,6 +25,7 @@ class MapAssistApi:
         self._initial_time = 0
         self._errors = 0
         self._raw_data_str = "{}"
+        self._custom_files = custom_files
 
     def start_timer(self):
         self._num_updates = 0
@@ -69,9 +70,9 @@ class MapAssistApi:
     
     def start(self):
         Logger.info("Starting MAS api")
-        self._mas = MAS(self._on_data)
+        self._mas = MAS(self._on_data, self._custom_files)
         self._mas.start()
-        
+
     def stop(self):
         Logger.info("Stopping MAS api")
         self._mas.cancel()
