@@ -306,16 +306,18 @@ class Bot:
         self._game_stats._did_chicken_last_run = False
         self.trigger_or_stop("maintenance")
 
-    def _wait_to_load(self):
+    def _wait_for_load(self):
         is_loading = True
         while is_loading:
             is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
             if is_loading: time.sleep(0.3)
+        return is_loading
 
     def on_maintenance(self):
+        is_loading = True
         # Handle picking up corpse in case of death
         if self._pick_corpse:
-            self._wait_to_load()
+            is_loading = self._wait_for_load()
             self._pick_corpse = False
             time.sleep(1.6)
             DeathManager.pick_up_corpse(self._screen)
@@ -360,17 +362,19 @@ class Bot:
             if buy_pots:
                 Logger.info("Buy pots at next possible Vendor")
                 pot_needs = self._belt_manager.get_pot_needs()
+                if is_loading: is_loading = self._wait_for_load()
                 self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
-                wait(0.5, 0.8)
+                wait(0.3, 0.5)
                 self._belt_manager.update_pot_needs()
             else:
                 Logger.info("Healing at next possible Vendor")
+                if is_loading: is_loading = self._wait_for_load()
                 self._curr_loc = self._town_manager.heal(self._curr_loc)
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
 
         # 
-        self._wait_to_load()
+        if is_loading: is_loading = self._wait_for_load()
         self._char.discover_capabilities(force=False)
 
         # If character is a singer barb, check to ensure we are on weapon slot 1
