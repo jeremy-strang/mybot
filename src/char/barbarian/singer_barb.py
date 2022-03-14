@@ -5,12 +5,12 @@ from char import IChar, CharacterCapabilities
 from char.barbarian.barbarian import Barbarian
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather
+from old_pather import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, cut_roi, is_in_roi
 import time
-from pather import Pather, Location
+from old_pather import OldPather, Location
 import math
 import threading
 import numpy as np
@@ -18,15 +18,15 @@ import random
 import cv2
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 class SingerBarb(Barbarian):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, pather: Pather,pather_v2: PatherV2, api: MapAssistApi):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, old_pather: OldPather,pather: Pather, api: MapAssistApi):
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
         Logger.info("Setting up Singer Barbarian")
 
     def _cast_war_cry(self, time_in_s: float):
@@ -63,7 +63,7 @@ class SingerBarb(Barbarian):
     
     def on_capabilities_discovered(self, capabilities: CharacterCapabilities):
         if capabilities.can_teleport_natively:
-            self._pather.offset_node(149, [120, 70])
+            self._old_pather.offset_node(149, [120, 70])
             
     def _do_hork(self, hork_time: float):
          if self._skill_hotkeys["find_item"]:
@@ -111,11 +111,11 @@ class SingerBarb(Barbarian):
     def kill_pindle(self) -> bool:
         wait(0.1, 0.15)
         if self.capabilities.can_teleport_natively:
-            self._pather.traverse_nodes_fixed("pindle_end", self)
+            self._old_pather.traverse_nodes_fixed("pindle_end", self)
         else:
             if not self._do_pre_move:
-                self._pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
-        self._pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, time_out=0.1)
+                self._old_pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
+        self._old_pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, time_out=0.1)
         self._cast_war_cry(self._char_config["atk_len_pindle"])
         wait(0.1, 0.15)
         self._do_hork(4)
@@ -123,9 +123,9 @@ class SingerBarb(Barbarian):
 
     def kill_eldritch(self) -> bool:
         if self.capabilities.can_teleport_natively:
-            self._pather.traverse_nodes_fixed("eldritch_end", self)
+            self._old_pather.traverse_nodes_fixed("eldritch_end", self)
         else:
-            self._pather.traverse_nodes((Location.A5_ELDRITCH_SAFE_DIST, Location.A5_ELDRITCH_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
+            self._old_pather.traverse_nodes((Location.A5_ELDRITCH_SAFE_DIST, Location.A5_ELDRITCH_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
         wait(0.05, 0.1)
         self._cast_war_cry(self._char_config["atk_len_eldritch"])
         wait(0.1, 0.15)
@@ -133,7 +133,7 @@ class SingerBarb(Barbarian):
         return True
 
     def kill_shenk(self):
-        self._pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
+        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
         wait(0.05, 0.1)
         self._cast_war_cry(self._char_config["atk_len_shenk"])
         wait(0.1, 0.15)
@@ -142,7 +142,7 @@ class SingerBarb(Barbarian):
 
     def kill_nihlathak(self, end_nodes: list[int]) -> bool:
         # Move close to nihlathak
-        self._pather.traverse_nodes(end_nodes, self, time_out=0.8, do_pre_move=False)
+        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8, do_pre_move=False)
         # move mouse to center (leftover from hammerdin)
         pos_m = self._screen.convert_abs_to_monitor((0, 0))
         mouse.move(*pos_m, randomize=80, delay_factor=[0.5, 0.7])
@@ -187,10 +187,10 @@ class SingerBarb(Barbarian):
                 # If we've been standing in one spot for too long, reposition
                 if time.time() - last_move > 6.0:
                     Logger.debug("Stood in one place too long, repositioning")
-                    self._pather_v2.traverse((156, 113), self)
+                    self._pather.traverse((156, 113), self)
                     last_move = time.time()
                 elif game_state._dist > 6:
-                    move_pos_screen = self._pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
+                    move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
                     self.move(move_pos_m, force_tp=True)
@@ -207,6 +207,6 @@ class SingerBarb(Barbarian):
             if game_state._ready is True:
                 area_pos = game_state._area_pos
                 dist = game_state._dist
-                self._pather_v2.traverse(area_pos, self, randomize=10)
+                self._pather.traverse(area_pos, self, randomize=10)
                 if dist < 8:
                     self._cast_war_cry(2.0)

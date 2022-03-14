@@ -6,12 +6,12 @@ from utils.custom_mouse import mouse
 from char import IChar, CharacterCapabilities
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather
+from old_pather import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, is_in_roi, cut_roi, points_equal
 import time
-from pather import Pather, Location
+from old_pather import OldPather, Location
 import math
 import threading
 import numpy as np
@@ -19,15 +19,15 @@ import random
 import cv2
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 class Barbarian(IChar):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, pather: Pather, pather_v2: PatherV2):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
         self._do_pre_move = True
 
     def get_cast_frames(self):
@@ -43,7 +43,7 @@ class Barbarian(IChar):
     
     def on_capabilities_discovered(self, capabilities: CharacterCapabilities):
         if capabilities.can_teleport_natively:
-            self._pather.offset_node(149, [120, 70])
+            self._old_pather.offset_node(149, [120, 70])
 
     def cast_melee(self, skill_key: str, time_in_s: float, abs_screen_pos: tuple[float, float], mouse_button: str = "left"):
         mouse_pos_m = self._screen.convert_abs_to_monitor(abs_screen_pos)
@@ -67,7 +67,7 @@ class Barbarian(IChar):
                 Logger.debug(f"Meleeing monster {monster['id']} with {skill_key} ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
                 keyboard.send(self._skill_hotkeys[skill_key])
                 wait(0.03, 0.4)
-                self._pather_v2.move_mouse_to_monster(monster)
+                self._pather.move_mouse_to_monster(monster)
                 keyboard.send(self._char_config["stand_still"], do_release=False)
                 start = time.time()
                 while (time.time() - start) < time_in_s:

@@ -1,11 +1,11 @@
 from char.i_char import IChar
 from config import Config
 from logger import Logger
-from pather import Location, Pather
+from old_pather import Location, OldPather
 from typing import Union
 from item.pickit import PickIt
 from api import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from town.town_manager import TownManager
 from ui import UiManager
 from utils.misc import wait, is_in_roi
@@ -19,24 +19,24 @@ class Tower:
     def __init__(
         self,
         screen: Screen,
-        pather: Pather,
+        old_pather: OldPather,
         town_manager: TownManager,
         ui_manager: UiManager,
         char: IChar,
         pickit: PickIt,
         api: MapAssistApi,
-        pather_v2: PatherV2,
+        pather: Pather,
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
         self._screen = screen
-        self._pather = pather
+        self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
         self._api = api
-        self._pather_v2 = pather_v2
+        self._pather = pather
         self._obs_recorder = obs_recorder
 
 
@@ -52,32 +52,32 @@ class Tower:
         return False
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather_v2.wait_for_location("BlackMarsh"): return False
+        if not self._pather.wait_for_location("BlackMarsh"): return False
         if do_pre_buff:
             self._char.pre_buff()
 
         if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
             self._char.switch_weapon()
 
-        if not self._pather_v2.traverse("Forgotten Tower", self._char): return False
-        if not self._pather_v2.go_to_area("Forgotten Tower", "ForgottenTower", entrance_in_wall=False,randomize=3): return False
-        if not self._pather_v2.wait_for_location("ForgottenTower"): return False
-        if not self._pather_v2.traverse("Tower Cellar Level 1", self._char): return False
-        if not self._pather_v2.go_to_area("Tower Cellar Level 1", "TowerCellarLevel1", entrance_in_wall=False,randomize=4): return False
-        if not self._pather_v2.traverse("Tower Cellar Level 2", self._char): return False
-        if not self._pather_v2.go_to_area("Tower Cellar Level 2", "TowerCellarLevel2", entrance_in_wall=False,randomize=4): return False
-        if not self._pather_v2.traverse("Tower Cellar Level 3", self._char): return False
-        if not self._pather_v2.go_to_area("Tower Cellar Level 3", "TowerCellarLevel3", entrance_in_wall=False,randomize=4): return False
-        if not self._pather_v2.traverse("Tower Cellar Level 4", self._char): return False
-        if not self._pather_v2.go_to_area("Tower Cellar Level 4", "TowerCellarLevel4", entrance_in_wall=False,randomize=4): return False
-        if not self._pather_v2.traverse("Tower Cellar Level 5", self._char): return False
-        if not self._pather_v2.go_to_area("Tower Cellar Level 5", "TowerCellarLevel5", entrance_in_wall=False,randomize=4): return False
+        if not self._pather.traverse("Forgotten Tower", self._char): return False
+        if not self._pather.go_to_area("Forgotten Tower", "ForgottenTower", entrance_in_wall=False,randomize=3): return False
+        if not self._pather.wait_for_location("ForgottenTower"): return False
+        if not self._pather.traverse("Tower Cellar Level 1", self._char): return False
+        if not self._pather.go_to_area("Tower Cellar Level 1", "TowerCellarLevel1", entrance_in_wall=False,randomize=4): return False
+        if not self._pather.traverse("Tower Cellar Level 2", self._char): return False
+        if not self._pather.go_to_area("Tower Cellar Level 2", "TowerCellarLevel2", entrance_in_wall=False,randomize=4): return False
+        if not self._pather.traverse("Tower Cellar Level 3", self._char): return False
+        if not self._pather.go_to_area("Tower Cellar Level 3", "TowerCellarLevel3", entrance_in_wall=False,randomize=4): return False
+        if not self._pather.traverse("Tower Cellar Level 4", self._char): return False
+        if not self._pather.go_to_area("Tower Cellar Level 4", "TowerCellarLevel4", entrance_in_wall=False,randomize=4): return False
+        if not self._pather.traverse("Tower Cellar Level 5", self._char): return False
+        if not self._pather.go_to_area("Tower Cellar Level 5", "TowerCellarLevel5", entrance_in_wall=False,randomize=4): return False
 
         if self._config.char["teleport_weapon_swap"]:
             self._char.switch_weapon()
             self._char.verify_active_weapon_tab()
 
-        if not self._pather_v2.traverse("GoodChest", self._char): return False
+        if not self._pather.traverse("GoodChest", self._char): return False
 
         #need to add super unique names to the look up table 
         # ill just use the countess id for now
@@ -91,7 +91,7 @@ class Tower:
         x = game_state._area_pos[0]
         y = game_state._area_pos[1]
         #go to andys body
-        self._pather_v2.traverse((x, y), self._char)
+        self._pather.traverse((x, y), self._char)
         game_state.stop()
         #del game_state
         picked_up_items = self._pickit.pick_up_items(self._char)
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     from bot import Bot
     from config import Config
     from game_stats import GameStats
-    from pathing import PatherV2
+    from pathing import Pather
     from api import MapAssistApi
     import threading
     from template_finder import TemplateFinder
@@ -124,23 +124,23 @@ if __name__ == "__main__":
     api_thread = threading.Thread(target=api.start)
     api_thread.daemon = False
     api_thread.start()
-    #mapassist api + new pather
+    #mapassist api + new old_pather
     game_stats = GameStats() 
     template_finder = TemplateFinder(screen)
     ui_manager = UiManager(screen, template_finder, obs_recorder, game_stats)
-    pather = Pather(screen, template_finder)
+    old_pather = OldPather(screen, template_finder)
 
     bot = Bot(screen, game_stats, template_finder ,api)
     self = bot._andy
 
 
 
-    pather_v2 = PatherV2(screen, api)
+    pather = Pather(screen, api)
 
-    char = LightSorc(config.light_sorc, screen, template_finder, ui_manager, pather)
+    char = LightSorc(config.light_sorc, screen, template_finder, ui_manager, old_pather)
     char.discover_capabilities()
 
-    #pather_v2.traverse("Forgotten Tower", char)
+    #pather.traverse("Forgotten Tower", char)
     #sys.exit()
     while 1:
         data = self._api.get_data()

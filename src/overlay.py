@@ -306,14 +306,14 @@ if __name__ == "__main__":
     from bot import Bot
     from config import Config
     from game_stats import GameStats
-    from pathing import PatherV2
+    from pathing import Pather
     from api import MapAssistApi
     import threading
     from template_finder import TemplateFinder
     from ui import UiManager, char_selector
     from char.sorceress import LightSorc, BlizzSorc, NovaSorc
     from screen import Screen
-    from pather import Location, Pather
+    from old_pather import Location, OldPather
     from dearpygui.dearpygui import *
     from obs import ObsRecorder
 
@@ -326,19 +326,19 @@ if __name__ == "__main__":
     api_thread = threading.Thread(target=api.start)
     api_thread.daemon = False
     api_thread.start()
-    #mapassist api + new pather
+    #mapassist api + new old_pather
     game_stats = GameStats() 
     template_finder = TemplateFinder(screen)
     ui_manager = UiManager(screen, template_finder, obs_recorder, game_stats)
-    pather = Pather(screen, template_finder)
+    old_pather = OldPather(screen, template_finder)
 
     bot = Bot(screen, game_stats, template_finder ,api)
     self = bot._andy
 
 
-    pather_v2 = PatherV2(screen, api)
+    pather = Pather(screen, api)
 
-    char = LightSorc(config.light_sorc, screen, template_finder, ui_manager, pather,pather_v2,api)
+    char = LightSorc(config.light_sorc, screen, template_finder, ui_manager, old_pather,pather,api)
     char.discover_capabilities()
 
     overlay = Overlay(bot,game_stats)

@@ -4,17 +4,17 @@ from utils.custom_mouse import mouse
 from logger import Logger
 from utils.misc import wait, rotate_vec, unit_vector
 import random
-from pather import Location
+from old_pather import Location
 import numpy as np
 from logger import Logger
 from config import Config
 from screen import Screen
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather, Location
+from old_pather import OldPather, Location
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder, obs_recorder
 
@@ -81,7 +81,7 @@ class LightSorc(Sorceress):
         self._lightning(cast_pos_abs, spray=11)
         wait(self._cast_duration, self._cast_duration + 0.2)
         # Move to items
-        self._pather.traverse_nodes_fixed("pindle_end", self)
+        self._old_pather.traverse_nodes_fixed("pindle_end", self)
         return True
 
     def kill_eldritch(self) -> bool:
@@ -92,11 +92,11 @@ class LightSorc(Sorceress):
         self._lightning(cast_pos_abs, spray=50)
         # Move to items
         wait(self._cast_duration, self._cast_duration + 0.2)
-        self._pather.traverse_nodes_fixed("eldritch_end", self)
+        self._old_pather.traverse_nodes_fixed("eldritch_end", self)
         return True
 
     def kill_shenk(self) -> bool:
-        shenk_pos_abs = self._pather.find_abs_node_pos(149, self._screen.grab())
+        shenk_pos_abs = self._old_pather.find_abs_node_pos(149, self._screen.grab())
         if shenk_pos_abs is None:
             shenk_pos_abs = self._screen.convert_screen_to_abs(self._config.path["shenk_end"][0])
         cast_pos_abs = [shenk_pos_abs[0] * 0.9, shenk_pos_abs[1] * 0.9]
@@ -122,15 +122,15 @@ class LightSorc(Sorceress):
         self.move(pos_m, force_move=True)
         # Move to items
         wait(self._cast_duration, self._cast_duration + 0.2)
-        self._pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.4, force_tp=True)
+        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.4, force_tp=True)
         return True
 
     def kill_council(self) -> bool:
         # Move inside to the right
-        self._pather.traverse_nodes_fixed([(1110, 120)], self)
-        self._pather.offset_node(300, (80, -110))
-        self._pather.traverse_nodes([300], self, time_out=1.0, force_tp=True)
-        self._pather.offset_node(300, (-80, 110))
+        self._old_pather.traverse_nodes_fixed([(1110, 120)], self)
+        self._old_pather.offset_node(300, (80, -110))
+        self._old_pather.traverse_nodes([300], self, time_out=1.0, force_tp=True)
+        self._old_pather.offset_node(300, (-80, 110))
         wait(0.5)
         self._frozen_orb((-150, -10), spray=10)
         self._lightning((-150, 0), spray=10)
@@ -144,16 +144,16 @@ class LightSorc(Sorceress):
         self.pre_move()
         self.move(pos_m, force_move=True)
         wait(0.5)
-        self._pather.offset_node(226, (-80, 60))
-        self._pather.traverse_nodes([226], self, time_out=1.0, force_tp=True)
-        self._pather.offset_node(226, (80, -60))
+        self._old_pather.offset_node(226, (-80, 60))
+        self._old_pather.traverse_nodes([226], self, time_out=1.0, force_tp=True)
+        self._old_pather.offset_node(226, (80, -60))
         wait(0.5)
         self._frozen_orb((-150, -130), spray=10)
         self._chain_lightning((200, -185), spray=20)
         self._chain_lightning((-170, -150), spray=20)
         wait(0.5)
-        self._pather.traverse_nodes_fixed([(1110, 15)], self)
-        self._pather.traverse_nodes([300], self, time_out=1.0, force_tp=True)
+        self._old_pather.traverse_nodes_fixed([(1110, 15)], self)
+        self._old_pather.traverse_nodes([300], self, time_out=1.0, force_tp=True)
         pos_m = self._screen.convert_abs_to_monitor((300, 150))
         self.pre_move()
         self.move(pos_m, force_move=True)
@@ -167,9 +167,9 @@ class LightSorc(Sorceress):
         pos_m = self._screen.convert_abs_to_monitor((-430, 230))
         self.pre_move()
         self.move(pos_m, force_move=True)
-        self._pather.offset_node(304, (0, -80))
-        self._pather.traverse_nodes([304], self, time_out=1.0, force_tp=True)
-        self._pather.offset_node(304, (0, 80))
+        self._old_pather.offset_node(304, (0, -80))
+        self._old_pather.traverse_nodes([304], self, time_out=1.0, force_tp=True)
+        self._old_pather.offset_node(304, (0, 80))
         wait(0.5)
         self._frozen_orb((175, -170), spray=40)
         self._chain_lightning((-170, -150), spray=20)
@@ -203,7 +203,7 @@ class LightSorc(Sorceress):
         self.pre_move()
         self.move(pos_m, force_move=True)
         # Move outside since the trav.py expects to start searching for items there if char can teleport
-        self._pather.traverse_nodes([226], self, time_out=2.5, force_tp=True)
+        self._old_pather.traverse_nodes([226], self, time_out=2.5, force_tp=True)
         return True
 
     def kill_nihlathak(self, end_nodes: list[int]) -> bool:
@@ -212,7 +212,7 @@ class LightSorc(Sorceress):
         atk_len = int(self._char_config["atk_len_nihlathak"])
         nihlathak_pos_abs = None
         for i in range(atk_len):
-            nihlathak_pos_abs_next = self._pather.find_abs_node_pos(end_nodes[-1], self._screen.grab())
+            nihlathak_pos_abs_next = self._old_pather.find_abs_node_pos(end_nodes[-1], self._screen.grab())
 
             if nihlathak_pos_abs_next is not None:
                 nihlathak_pos_abs = nihlathak_pos_abs_next
@@ -239,7 +239,7 @@ class LightSorc(Sorceress):
 
         # Move to items
         wait(self._cast_duration, self._cast_duration + 0.2)
-        self._pather.traverse_nodes(end_nodes, self, time_out=0.8)
+        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8)
         return True
 
     def kill_summoner(self) -> bool:
@@ -266,7 +266,7 @@ class LightSorc(Sorceress):
         while odist > 10:
             if game_state._ready is True:
                 target_pos = game_state._target_pos
-                tele_pos_abs = self._pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
+                tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
                 pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
                 self.pre_move()
                 try:
@@ -303,7 +303,7 @@ class LightSorc(Sorceress):
 
                 if casted_static == 0:
                     tele_pos_abs = unit_vector(rotate_vec(target_pos, 0)) * 150
-                    tele_pos_abs = self._pather._adjust_abs_range_to_screen([tele_pos_abs[0],tele_pos_abs[1]])
+                    tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([tele_pos_abs[0],tele_pos_abs[1]])
                     pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
                     self.pre_move()
                     self.move(pos_m)
@@ -325,7 +325,7 @@ class LightSorc(Sorceress):
                 if kite:
                     rot_deg = random.randint(-2,2)
                     tele_pos_abs = unit_vector(rotate_vec(target_pos, rot_deg)) * 320*kite_dist
-                    tele_pos_abs = self._pather._adjust_abs_range_to_screen([tele_pos_abs[0],tele_pos_abs[1]])
+                    tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([tele_pos_abs[0],tele_pos_abs[1]])
                     pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
                     self.pre_move()
                     try:
@@ -340,7 +340,7 @@ if __name__ == "__main__":
     import keyboard
     from screen import Screen
     from template_finder import TemplateFinder
-    from pather import Pather
+    from old_pather import OldPather
     keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
     keyboard.wait("f11")
     from config import Config
@@ -350,7 +350,7 @@ if __name__ == "__main__":
     obs_recorder = ObsRecorder(config)
     screen = Screen(config.general["monitor"])
     t_finder = TemplateFinder(screen)
-    pather = Pather(screen, t_finder)
+    old_pather = OldPather(screen, t_finder)
     ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = LightSorc(config.light_sorc, config.char, screen, t_finder, ui_manager, pather)
+    char = LightSorc(config.light_sorc, config.char, screen, t_finder, ui_manager, old_pather)
     char.kill_council()

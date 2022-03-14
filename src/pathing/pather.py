@@ -24,7 +24,7 @@ from utils.misc import unit_vector, clip_abs_point
 from scipy.ndimage.filters import gaussian_filter
 from pathing.path_finder import PathFinder
 
-class PatherV2:
+class Pather:
     def __init__(self, screen: Screen, api: MapAssistApi):
         self._api = api
         self._screen = screen
@@ -759,6 +759,6 @@ if __name__ == "__main__":
     bot = Bot(screen, game_stats)
 
     api = MapAssistApi()
-    pather_v2 = PatherV2(screen, api)
-    pather_v2.traverse("Worldstone Keep Level 3", bot._char)
-    # print(pather_v2.wait_for_location("TheWorldStoneKeepLevel2"))
+    pather = Pather(screen, api)
+    pather.traverse("Worldstone Keep Level 3", bot._char)
+    # print(pather.wait_for_location("TheWorldStoneKeepLevel2"))

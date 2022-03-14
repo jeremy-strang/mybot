@@ -4,38 +4,38 @@ from utils.custom_mouse import mouse
 from logger import Logger
 from utils.misc import wait, rotate_vec, unit_vector
 import random
-from pather import Location
+from old_pather import Location
 import numpy as np
 from logger import Logger
 from config import Config
 from screen import Screen
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather, Location
+from old_pather import OldPather, Location
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 class BlizzSorc(Sorceress):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, pather: Pather, pather_v2: PatherV2):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         Logger.info("Setting up Blizz Sorc")
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
         #Nihlathak Bottom Right
-        self._pather.offset_node(505, (50, 200))
-        self._pather.offset_node(506, (40, -10))
+        self._old_pather.offset_node(505, (50, 200))
+        self._old_pather.offset_node(506, (40, -10))
         #Nihlathak Top Right
-        self._pather.offset_node(510, (700, -55))
-        self._pather.offset_node(511, (30, -25))
+        self._old_pather.offset_node(510, (700, -55))
+        self._old_pather.offset_node(511, (30, -25))
         #Nihlathak Top Left
-        self._pather.offset_node(515, (-120, -100))
-        self._pather.offset_node(517, (-18, -58))
+        self._old_pather.offset_node(515, (-120, -100))
+        self._old_pather.offset_node(517, (-18, -58))
         #Nihlathak Bottom Left
-        self._pather.offset_node(500, (-150, 200))
-        self._pather.offset_node(501, (10, -33))
+        self._old_pather.offset_node(500, (-150, 200))
+        self._old_pather.offset_node(501, (10, -33))
 
     def get_cast_frames(self):
         fcr = self.get_fcr()
@@ -84,7 +84,7 @@ class BlizzSorc(Sorceress):
             self._ice_blast(cast_pos_abs, spray=11)
         # Move to items
         wait(self._cast_duration, self._cast_duration + 0.2)
-        self._pather.traverse_nodes_fixed("pindle_end", self)
+        self._old_pather.traverse_nodes_fixed("pindle_end", self)
         return True
 
     def kill_eldritch(self) -> bool:
@@ -114,7 +114,7 @@ class BlizzSorc(Sorceress):
         self._blizzard((-50, -130), spray=10)
         self._cast_static()
         wait(3.0)
-        self._pather.traverse_nodes_fixed("eldritch_end", self)
+        self._old_pather.traverse_nodes_fixed("eldritch_end", self)
         return True
 
     def kill_shenk(self) -> bool:
@@ -122,7 +122,7 @@ class BlizzSorc(Sorceress):
         self.pre_move()
         self.move(pos_m, force_move=True)
         #lower left posistion
-        self._pather.traverse_nodes([151], self, time_out=2.5, force_tp=False)
+        self._old_pather.traverse_nodes([151], self, time_out=2.5, force_tp=False)
         self._cast_static()
         self._blizzard((-250, 100), spray=10)
         self._ice_blast((60, 70), spray=60)
@@ -151,15 +151,15 @@ class BlizzSorc(Sorceress):
         self._cast_static()
         self._blizzard((100, -50), spray=10)
         # Move to items
-        self._pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.4, force_tp=True)
+        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.4, force_tp=True)
         return True
 
     def kill_council(self) -> bool:
         # Move inside to the right
-        self._pather.traverse_nodes_fixed([(1110, 120)], self)
-        self._pather.offset_node(300, (80, -110))
-        self._pather.traverse_nodes([300], self, time_out=5.5, force_tp=True)
-        self._pather.offset_node(300, (-80, 110))
+        self._old_pather.traverse_nodes_fixed([(1110, 120)], self)
+        self._old_pather.offset_node(300, (80, -110))
+        self._old_pather.traverse_nodes([300], self, time_out=5.5, force_tp=True)
+        self._old_pather.offset_node(300, (-80, 110))
         # Attack to the left
         self._blizzard((-150, 10), spray=80)
         self._ice_blast((-300, 50), spray=40)
@@ -174,9 +174,9 @@ class BlizzSorc(Sorceress):
         self.move(pos_m, force_move=True)
         wait(0.5)
         # Move to far left
-        self._pather.offset_node(301, (-80, -50))
-        self._pather.traverse_nodes([301], self, time_out=2.5, force_tp=True)
-        self._pather.offset_node(301, (80, 50))
+        self._old_pather.offset_node(301, (-80, -50))
+        self._old_pather.traverse_nodes([301], self, time_out=2.5, force_tp=True)
+        self._old_pather.offset_node(301, (80, 50))
         # Attack to RIGHT
         self._blizzard((100, 150), spray=80)
         self._ice_blast((230, 230), spray=20)
@@ -188,7 +188,7 @@ class BlizzSorc(Sorceress):
         for p in [(450, 100), (-190, 200)]:
             pos_m = self._screen.convert_abs_to_monitor(p)
             self.move(pos_m, force_move=True)
-        self._pather.traverse_nodes([304], self, time_out=2.5, force_tp=True)
+        self._old_pather.traverse_nodes([304], self, time_out=2.5, force_tp=True)
         # Attack to center of stairs
         self._blizzard((-175, -200), spray=30)
         self._ice_blast((30, -60), spray=30)
@@ -196,8 +196,8 @@ class BlizzSorc(Sorceress):
         self._blizzard((175, -270), spray=30)
         wait(1.0)
         # Move back inside
-        self._pather.traverse_nodes_fixed([(1110, 15)], self)
-        self._pather.traverse_nodes([300], self, time_out=2.5, force_tp=False)
+        self._old_pather.traverse_nodes_fixed([(1110, 15)], self)
+        self._old_pather.traverse_nodes([300], self, time_out=2.5, force_tp=False)
         # Attack to center
         self._blizzard((-100, 0), spray=10)
         self._cast_static()
@@ -229,14 +229,14 @@ class BlizzSorc(Sorceress):
         self._cast_static()
         self._ice_blast((-30, 50), spray=10)
         # Move outside since the trav.py expects to start searching for items there if char can teleport
-        self._pather.traverse_nodes([226], self, time_out=2.5, force_tp=True)
+        self._old_pather.traverse_nodes([226], self, time_out=2.5, force_tp=True)
         return True
 
     def kill_nihlathak(self, end_nodes: list[int]) -> bool:
         # Find nilhlatak position
         atk_sequences = max(1, int(self._char_config["atk_len_nihlathak"]) - 1)
         for i in range(atk_sequences):
-            nihlathak_pos_abs = self._pather.find_abs_node_pos(end_nodes[-1], self._screen.grab())
+            nihlathak_pos_abs = self._old_pather.find_abs_node_pos(end_nodes[-1], self._screen.grab())
             if nihlathak_pos_abs is not None:
                 cast_pos_abs = np.array([nihlathak_pos_abs[0] * 1.0, nihlathak_pos_abs[1] * 1.0])
                 wait(0.8)
@@ -254,7 +254,7 @@ class BlizzSorc(Sorceress):
         self._blizzard(cast_pos_abs, spray=15)
         # Move to items
         wait(1.3)
-        self._pather.traverse_nodes(end_nodes, self, time_out=0.8)
+        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8)
         return True
 
     def kill_summoner(self) -> bool:
@@ -274,7 +274,7 @@ if __name__ == "__main__":
     import keyboard
     from screen import Screen
     from template_finder import TemplateFinder
-    from pather import Pather
+    from old_pather import OldPather
     keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
     keyboard.wait("f11")
     from config import Config
@@ -284,7 +284,7 @@ if __name__ == "__main__":
     obs_recorder = ObsRecorder(config)
     screen = Screen()
     t_finder = TemplateFinder(screen)
-    pather = Pather(screen, t_finder)
+    old_pather = OldPather(screen, t_finder)
     ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = BlizzSorc(config.blizz_sorc, config.char, screen, t_finder, ui_manager, pather)
+    char = BlizzSorc(config.blizz_sorc, config.char, screen, t_finder, ui_manager, old_pather)
     char.kill_council()

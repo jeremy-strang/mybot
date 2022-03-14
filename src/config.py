@@ -28,6 +28,7 @@ class Config:
     _shop_config = None
     _transmute_config = None
     _custom = None
+    _custom_pickit_config = None
     # config data
     general = {}
     advanced_options = {}
@@ -67,6 +68,8 @@ class Config:
             return Config._custom[section][key]
         elif section in Config._config:
             return Config._config[section][key]
+        elif section in Config._custom_pickit_config:
+            return Config._custom_pickit_config[section][key]
         elif section in Config._pickit_config:
             return Config._pickit_config[section][key]
         elif section in Config._shop_config:
@@ -77,7 +80,7 @@ class Config:
     @staticmethod
     def parse_item_config_string(key: str = None) -> ItemProps:
         string = Config._select_val("items", key).upper()
-        return Config.string_to_item_prop (string)
+        return Config.string_to_item_prop(string)
 
     @staticmethod
     def string_to_item_prop (string: str) -> ItemProps:
@@ -186,11 +189,14 @@ class Config:
         Config._game_config = configparser.ConfigParser()
         Config._game_config.read('config/game.ini')
         Config._pickit_config = configparser.ConfigParser()
-        pickit_path = 'config/pickit.custom.ini' if not is_test_env and os.path.exists('config/pickit.custom.ini') else 'config/pickit.ini'
-        Config._pickit_config.read(pickit_path)
+        Config._pickit_config.read('config/pickit.ini')
         Config._shop_config = configparser.ConfigParser()
         Config._shop_config.read('config/shop.ini')
         Config._custom = configparser.ConfigParser()
+        Config._custom_pickit_config = configparser.ConfigParser()
+        if os.path.exists('config/pickit.custom.ini'):
+            Config._custom_pickit_config.read('config/pickit.custom.ini')
+
         if not is_test_env:
             if os.path.exists(f'config/custom.ini'):
                 Logger.debug(f"Loading custom config")
@@ -294,8 +300,8 @@ class Config:
             "send_throne_leecher_tp": bool(int(Config._select_val("char", "send_throne_leecher_tp"))),
             "density": ast.literal_eval (Config._select_val("char", "density")),
             "area": ast.literal_eval (Config._select_val("char", "area")),
-          
         }
+
         # Sorc base config
         sorc_base_cfg = dict(Config._config["sorceress"])
         if "sorceress" in Config._custom:
@@ -374,6 +380,14 @@ class Config:
 
         Config.items = {}
         for key in Config._pickit_config["items"]:
+            try:
+                Config.items[key] = Config.parse_item_config_string(key)
+                if Config.items[key].pickit_type and not os.path.exists(f"./assets/items/{key}.png"):
+                    print(f"Warning: You activated {key} in pickit, but there is no img available in assets/items")
+            except ValueError as e:
+                print(f"Error with pickit config: {key} ({e})")
+
+        for key in Config._custom_pickit_config["items"]:
             try:
                 Config.items[key] = Config.parse_item_config_string(key)
                 if Config.items[key].pickit_type and not os.path.exists(f"./assets/items/{key}.png"):

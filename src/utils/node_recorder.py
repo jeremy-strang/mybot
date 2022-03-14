@@ -33,7 +33,7 @@ class NodeRecorder:
         self._upper_left = None
         self._template_finder = TemplateFinder(self._screen)
         self._template_finder._templates = {}
-        self._pather_code_file = "generated/pather_generated.py"
+        self._old_pather_code_file = "generated/old_pather_generated.py"
         self.ref_points = {}
         self.nodes = {}
         self.debug_node_pos = {}
@@ -116,7 +116,7 @@ class NodeRecorder:
                                 rel_loc = (node_screen_pos[0] - self.ref_points[template_key][0], node_screen_pos[1] - self.ref_points[template_key][1])
                                 self.nodes[node_idx][template_key] = rel_loc
                 # print info to console and write code
-                f = open(self._pather_code_file, 'w')
+                f = open(self._old_pather_code_file, 'w')
                 print("---- Current Recorded Nodes: ----")
                 for k in self.nodes:
                     print(self.nodes[k])

@@ -5,28 +5,28 @@ from utils.custom_mouse import mouse
 from char import IChar, CharacterCapabilities
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather
+from old_pather import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, is_in_roi
 import time
-from pather import Pather, Location
+from old_pather import OldPather, Location
 import math
 import threading
 import numpy as np
 import random
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 class Hammerdin(IChar):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, pather: Pather, pather_v2: PatherV2):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         Logger.info("Setting up Hammerdin")
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
         self._do_pre_move = True
         # In case we have a running pala, we want to switch to concentration when moving to the boss
         # ass most likely we will click on some mobs and already cast hammers
@@ -34,7 +34,7 @@ class Hammerdin(IChar):
             self._do_pre_move = False
         else:
             # we want to change positions of shenk and eld a bit to be more center for teleport
-            self._pather.offset_node(149, (70, 10))
+            self._old_pather.offset_node(149, (70, 10))
     
     def get_cast_frames(self):
         fcr = self.get_fcr()
@@ -96,7 +96,7 @@ class Hammerdin(IChar):
             self._do_pre_move = False
         else:
             # we want to change positions of shenk and eld a bit to be more center for teleport
-            self._pather.offset_node(149, (70, 10))
+            self._old_pather.offset_node(149, (70, 10))
 
     def pre_move(self):
         # select teleport if available
@@ -117,12 +117,12 @@ class Hammerdin(IChar):
     def kill_pindle(self) -> bool:
         wait(0.1, 0.15)
         if self.capabilities.can_teleport_natively:
-            self._pather.traverse_nodes_fixed("pindle_end", self)
+            self._old_pather.traverse_nodes_fixed("pindle_end", self)
         else:
             if not self._do_pre_move:
                 keyboard.send(self._skill_hotkeys["concentration"])
                 wait(0.05, 0.15)
-            self._pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
+            self._old_pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
         self._cast_hammers(self._char_config["atk_len_pindle"])
         wait(0.1, 0.15)
         self._cast_hammers(1.6, "redemption")
@@ -131,12 +131,12 @@ class Hammerdin(IChar):
     def kill_eldritch(self) -> bool:
         if self.capabilities.can_teleport_natively:
             # Custom eld position for teleport that brings us closer to eld
-            self._pather.traverse_nodes_fixed([(675, 30)], self)
+            self._old_pather.traverse_nodes_fixed([(675, 30)], self)
         else:
             if not self._do_pre_move:
                 keyboard.send(self._skill_hotkeys["concentration"])
                 wait(0.05, 0.15)
-            self._pather.traverse_nodes((Location.A5_ELDRITCH_SAFE_DIST, Location.A5_ELDRITCH_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
+            self._old_pather.traverse_nodes((Location.A5_ELDRITCH_SAFE_DIST, Location.A5_ELDRITCH_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
         wait(0.05, 0.1)
         self._cast_hammers(self._char_config["atk_len_eldritch"])
         wait(0.1, 0.15)
@@ -147,7 +147,7 @@ class Hammerdin(IChar):
         if not self._do_pre_move:
             keyboard.send(self._skill_hotkeys["concentration"])
             wait(0.05, 0.15)
-        self._pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
+        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
         wait(0.05, 0.1)
         self._cast_hammers(self._char_config["atk_len_shenk"])
         wait(0.1, 0.15)
@@ -169,12 +169,12 @@ class Hammerdin(IChar):
             # Start hammers near the entrance
             self._cast_hammers(atk_len)
             # Go left of center stairs a bit
-            self._pather.traverse_nodes([226, 227], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True)
+            self._old_pather.traverse_nodes([226, 227], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True)
             self._cast_hammers(atk_len)
             # Move a bit to the top and more hammer
             self._move_and_attack((20, 10), atk_len)
             # Go inside and hammer a bit
-            if not self._pather.traverse_nodes([228, 229], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True):
+            if not self._old_pather.traverse_nodes([228, 229], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True):
                 self._move_and_attack((-5, 5), atk_len / 2)
             self._cast_hammers(atk_len)
             # Stay inside and cast hammers again moving forward
@@ -183,7 +183,7 @@ class Hammerdin(IChar):
 
     def kill_nihlathak(self, end_nodes: list[int]) -> bool:
         # Move close to nihlathak
-        self._pather.traverse_nodes(end_nodes, self, time_out=0.8, do_pre_move=False)
+        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8, do_pre_move=False)
         # move mouse to center, otherwise hammers sometimes dont fly, not sure why
         pos_m = self._screen.convert_abs_to_monitor((0, 0))
         mouse.move(*pos_m, randomize=80, delay_factor=[0.5, 0.7])
@@ -231,11 +231,11 @@ class Hammerdin(IChar):
         self._move_and_attack((30, 15), self._char_config["atk_len_diablo_vizier"] * 0.4)
         self._move_and_attack((-30, -15), self._char_config["atk_len_diablo_vizier"] * 0.4)
         self._cast_hammers(1, "redemption")
-        self._pather.traverse_nodes(nodes1, self)
+        self._old_pather.traverse_nodes(nodes1, self)
         self._move_and_attack((30, 15), self._char_config["atk_len_diablo_vizier"] * 0.4)
         self._move_and_attack((-30, -15), self._char_config["atk_len_diablo_vizier"] * 0.4)
         self._cast_hammers(1, "redemption")
-        self._pather.traverse_nodes(nodes2, self)
+        self._old_pather.traverse_nodes(nodes2, self)
         self._move_and_attack((0, 0), self._char_config["atk_len_diablo_vizier"])
         wait(0.1, 0.15)
         self._cast_hammers(2, "redemption")
@@ -248,14 +248,14 @@ class Hammerdin(IChar):
         self._move_and_attack((30, 30), self._char_config["atk_len_diablo_deseis"] * 0.2)
         self._move_and_attack((-60, -0), self._char_config["atk_len_diablo_deseis"] * 0.2)
         self._cast_hammers(1, "redemption")
-        self._pather.traverse_nodes(nodes1, self)
+        self._old_pather.traverse_nodes(nodes1, self)
         self._move_and_attack((0, -60), self._char_config["atk_len_diablo_deseis"] * 0.2)
         self._move_and_attack((60, 0), self._char_config["atk_len_diablo_deseis"] * 0.2)
         self._cast_hammers(1, "redemption")
-        self._pather.traverse_nodes(nodes2, self)
+        self._old_pather.traverse_nodes(nodes2, self)
         self._move_and_attack((-30, -30), self._char_config["atk_len_diablo_deseis"] * 0.5)
         self._cast_hammers(1, "redemption")
-        self._pather.traverse_nodes(nodes3, self)
+        self._old_pather.traverse_nodes(nodes3, self)
         self._move_and_attack((0, 0), self._char_config["atk_len_diablo_deseis"])
         wait(0.1, 0.15)
         self._cast_hammers(2, "redemption") 
@@ -267,14 +267,14 @@ class Hammerdin(IChar):
         self._move_and_attack((30, 15), self._char_config["atk_len_diablo_deseis"] * 0.2)
         self._move_and_attack((-30, -15), self._char_config["atk_len_diablo_deseis"] * 0.2)
         self._cast_hammers(1, "redemption")
-        self._pather.traverse_nodes(nodes1, self)
+        self._old_pather.traverse_nodes(nodes1, self)
         self._move_and_attack((30, 15), self._char_config["atk_len_diablo_deseis"] * 0.2)
         self._move_and_attack((-30, -15), self._char_config["atk_len_diablo_deseis"] * 0.2)
         self._cast_hammers(1, "redemption")
-        self._pather.traverse_nodes(nodes2, self)
+        self._old_pather.traverse_nodes(nodes2, self)
         self._move_and_attack((0, 0), self._char_config["atk_len_diablo_deseis"] * 0.5)
         self._cast_hammers(1, "redemption")
-        self._pather.traverse_nodes(nodes3, self)
+        self._old_pather.traverse_nodes(nodes3, self)
         self._move_and_attack((0, 0), self._char_config["atk_len_diablo_deseis"])
         wait(0.1, 0.15)
         self._cast_hammers(2, "redemption") 
@@ -320,7 +320,7 @@ class Hammerdin(IChar):
         hammer_thread.daemon = True
 
         throne_area = [70, 0, 50, 95]
-        if not self._pather_v2.traverse((93, 26), self):
+        if not self._pather.traverse((93, 26), self):
             return False, found_monsters
         aura = "redemption"
         if aura in self._skill_hotkeys and self._skill_hotkeys[aura]:
@@ -386,7 +386,7 @@ class Hammerdin(IChar):
                             dist = math.dist(area_pos, data["player_pos_area"])
                             if m_is_mummy:
                                 Logger.debug("Fighting mummy: {0}, id: {1}, distance: {2}".format(m["name"], m["id"], dist))
-                                self._pather_v2.traverse(area_pos, self, randomize=12)
+                                self._pather.traverse(area_pos, self, randomize=12)
                                 if dist < 8:
                                     self._cast_hammers(1.4)
                                     screen_space = world_to_abs(m['position'], self._api._player_pos)
@@ -395,7 +395,7 @@ class Hammerdin(IChar):
                                 aura_after_battle = "cleansing"
                                 num_repositions = 0
                             elif not focus_mummies:
-                                self._pather_v2.traverse(area_pos, self, randomize=12)
+                                self._pather.traverse(area_pos, self, randomize=12)
                                 if dist < 8:
                                     self._cast_hammers(1)
                                 num_repositions = 0
@@ -406,11 +406,11 @@ class Hammerdin(IChar):
                 if time.time() - prev_pos_counter > (3.8 if baal_wave != 2 else 6):
                     Logger.debug("Reposition for next attack (" + str(num_repositions) + ")")
                     if baal_wave == 2 and num_repositions == 2:
-                        self._pather_v2.traverse((95, 55), self)
+                        self._pather.traverse((95, 55), self)
                     elif baal_wave == 2 and num_repositions == 3:
-                        self._pather_v2.traverse((101, 3), self)
+                        self._pather.traverse((101, 3), self)
                     elif baal_wave == 2 and num_repositions == 4:
-                        self._pather_v2.traverse((86, 3), self)
+                        self._pather.traverse((86, 3), self)
                     else:
                         m_pos = self._screen.convert_abs_to_monitor((random.randint(-100, 100), random.randint(-100, 100)))
                         self.pre_move()
@@ -450,10 +450,10 @@ class Hammerdin(IChar):
                 # If we've been standing in one spot for too long, reposition
                 if time.time() - last_move > 5.0:
                     Logger.debug("Stood in one place too long, repositioning")
-                    self._pather_v2.traverse((156, 113), self, time_out = 3.0)
+                    self._pather.traverse((156, 113), self, time_out = 3.0)
                     last_move = time.time()
                 elif game_state._dist > 8:
-                    move_pos_screen = self._pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
+                    move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
                     self.move(move_pos_m, force_tp=True)
@@ -480,8 +480,8 @@ class Hammerdin(IChar):
                             proceed = proceed and not any(m["name"].startswith(startstr) for startstr in ignore_names)
                         if proceed and (boundary is None or is_in_roi(boundary, area_pos)):
                             dist = math.dist(area_pos, data["player_pos_area"])
-                            # self._pather_v2.traverse(area_pos, self, time_out=1.0)
-                            self._pather_v2.move_to_monster(self, m)
+                            # self._pather.traverse(area_pos, self, time_out=1.0)
+                            self._pather.move_to_monster(self, m)
                             if dist < 8:
                                 self._cast_hammers(self._cast_duration * 3)
                             wait(0.1)
@@ -493,7 +493,7 @@ class Hammerdin(IChar):
 
     def move_to_monster(self, monster, offset) -> bool:
         self.pre_move()
-        self._pather_v2.traverse([offset[0]+monster['position'][0]- self._api.data["area_origin"][0], offset[1]+monster["position"][1]- self._api.data["area_origin"][1]], self)
+        self._pather.traverse([offset[0]+monster['position'][0]- self._api.data["area_origin"][0], offset[1]+monster["position"][1]- self._api.data["area_origin"][1]], self)
         wait(0.02, 0.4)
         return True
     
@@ -540,7 +540,7 @@ class Hammerdin(IChar):
             if game_state._ready is True:
                 area_pos = game_state._area_pos
                 dist = game_state._dist
-                self._pather_v2.traverse(area_pos, self, randomize=10)
+                self._pather.traverse(area_pos, self, randomize=10)
                 if dist < 8:
                     self._cast_hammers(1.0)
 
@@ -561,6 +561,6 @@ if __name__ == "__main__":
     obs_recorder = ObsRecorder(config)
     screen = Screen()
     t_finder = TemplateFinder(screen)
-    pather = Pather(screen, t_finder)
+    old_pather = OldPather(screen, t_finder)
     ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = Hammerdin(config.hammerdin, config.char, screen, t_finder, ui_manager, pather)
+    char = Hammerdin(config.hammerdin, config.char, screen, t_finder, ui_manager, old_pather)

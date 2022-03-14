@@ -152,14 +152,14 @@ class DrognanShopper:
         mouse.move(pos_m[0], pos_m[1])
         self.hold_move(pos_m, time_held=(2.0 / self.speed_factor))
 
-    # A variation of the move() function from pather.py
+    # A variation of the move() function from old_pather.py
     def hold_move(self, pos_monitor: Tuple[float, float], time_held: float = 2.0):
         factor = self._config.advanced_options["pathing_delay_factor"]
         # in case we want to walk we actually want to move a bit before the point cause d2r will always "overwalk"
         pos_screen = self._screen.convert_monitor_to_screen(pos_monitor)
         pos_abs = self._screen.convert_screen_to_abs(pos_screen)
 
-        # This logic (from pather.py) sometimes negatively affects the shopper, so default is to skip this.
+        # This logic (from old_pather.py) sometimes negatively affects the shopper, so default is to skip this.
         if self.apply_pather_adjustment:
             dist = math.dist(pos_abs, (0, 0))
             min_wd = self._config.ui_pos["min_walk_dist"]

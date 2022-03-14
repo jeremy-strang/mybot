@@ -2,7 +2,7 @@ from typing import Union
 from item import ItemFinder
 from template_finder import TemplateFinder
 from config import Config
-from pather import Location
+from old_pather import Location
 from logger import Logger
 from transmute import Transmute
 from ui import UiManager
@@ -206,7 +206,7 @@ if __name__ == "__main__":
     keyboard.wait("f11")
     from char.hammerdin import Hammerdin
     from item import ItemFinder
-    from pather import Pather
+    from old_pather import OldPather
     from screen import Screen
     from npc_manager import NpcManager
     config = Config()
@@ -214,14 +214,14 @@ if __name__ == "__main__":
     screen = Screen()
     template_finder = TemplateFinder(screen)
     npc_manager = NpcManager(screen, template_finder)
-    pather = Pather(screen, template_finder)
+    old_pather = OldPather(screen, template_finder)
     ui_manager = UiManager(screen, template_finder)
     item_finder = ItemFinder()
-    char = Hammerdin(config.hammerdin, config.char, screen, template_finder, ui_manager, pather)
-    a5 = A5(screen, template_finder, pather, char, npc_manager)
-    a4 = A4(screen, template_finder, pather, char, npc_manager)
-    a3 = A3(screen, template_finder, pather, char, npc_manager)
-    a2 = A2(screen, template_finder, pather, char, npc_manager)
-    a1 = A1(screen, template_finder, pather, char, npc_manager)
+    char = Hammerdin(config.hammerdin, config.char, screen, template_finder, ui_manager, old_pather)
+    a5 = A5(screen, template_finder, old_pather, char, npc_manager)
+    a4 = A4(screen, template_finder, old_pather, char, npc_manager)
+    a3 = A3(screen, template_finder, old_pather, char, npc_manager)
+    a2 = A2(screen, template_finder, old_pather, char, npc_manager)
+    a1 = A1(screen, template_finder, old_pather, char, npc_manager)
     town_manager = TownManager(template_finder, ui_manager, item_finder, a1, a2, a3, a4, a5)
     print(town_manager.open_wp(Location.A1_TOWN_START))

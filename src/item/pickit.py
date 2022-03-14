@@ -164,7 +164,7 @@ if __name__ == "__main__":
     from char.hammerdin import Hammerdin
     from ui import UiManager
     from template_finder import TemplateFinder
-    from pather import Pather
+    from old_pather import OldPather
     import keyboard
     from obs import ObsRecorder
     keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
@@ -176,8 +176,8 @@ if __name__ == "__main__":
     ui_manager = UiManager(screen, t_finder)
     belt_manager = BeltManager(screen, t_finder)
     belt_manager._pot_needs = {"rejuv": 0, "health": 2, "mana": 2}
-    pather = Pather(screen, t_finder)
+    old_pather = OldPather(screen, t_finder)
     item_finder = ItemFinder()
-    char = Hammerdin(config.hammerdin, config.char, t_finder, ui_manager, pather)
+    char = Hammerdin(config.hammerdin, config.char, t_finder, ui_manager, old_pather)
     pickit = PickIt(screen, item_finder, ui_manager, belt_manager)
     print(pickit.pick_up_items(char))

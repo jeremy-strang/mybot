@@ -1,11 +1,11 @@
 from char.i_char import IChar
 from config import Config
 from logger import Logger
-from pather import Location, Pather
+from old_pather import Location, OldPather
 from typing import Union
 from item.pickit import PickIt
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from town.town_manager import TownManager
 from ui import UiManager
 from utils.misc import wait, is_in_roi
@@ -21,24 +21,24 @@ class Andy:
     def __init__(
         self,
         screen: Screen,
-        pather: Pather,
+        old_pather: OldPather,
         town_manager: TownManager,
         ui_manager: UiManager,
         char: IChar,
         pickit: PickIt,
         api: MapAssistApi,
-        pather_v2: PatherV2,
+        pather: Pather,
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
         self._screen = screen
-        self._pather = pather
+        self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
         self._api = api
-        self._pather_v2 = pather_v2
+        self._pather = pather
         self._obs_recorder = obs_recorder
 
     def approach(self, start_loc: Location) -> Union[bool, Location, bool]:
@@ -55,20 +55,20 @@ class Andy:
     # "Catacombs Level 3"
     # CatacombsLevel1
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather_v2.wait_for_location("CatacombsLevel2"): return False
+        if not self._pather.wait_for_location("CatacombsLevel2"): return False
         
         self._char.pre_travel()
-        if not self._pather_v2.traverse("Catacombs Level 3", self._char,verify_location=True): return False
-        if not self._pather_v2.go_to_area("Catacombs Level 3", "CatacombsLevel3", entrance_in_wall=False): return False
-        if not self._pather_v2.traverse("Catacombs Level 4", self._char,verify_location=True): return False
-        if not self._pather_v2.go_to_area("Catacombs Level 4", "CatacombsLevel4", entrance_in_wall=False): return False
+        if not self._pather.traverse("Catacombs Level 3", self._char,verify_location=True): return False
+        if not self._pather.go_to_area("Catacombs Level 3", "CatacombsLevel3", entrance_in_wall=False): return False
+        if not self._pather.traverse("Catacombs Level 4", self._char,verify_location=True): return False
+        if not self._pather.go_to_area("Catacombs Level 4", "CatacombsLevel4", entrance_in_wall=False): return False
         self._char.post_travel()
 
         if self._char._char_config['type'] == 'hammerdin':
-            if not self._pather_v2.traverse((65, 85), self._char): return False
+            if not self._pather.traverse((65, 85), self._char): return False
             self._char.kill_andy()
         elif self._char._char_config['type'] == 'light_sorc' or self._char._char_config['type'] == 'necro':
-            if not self._pather_v2.traverse((46, 23), self._char): return False
+            if not self._pather.traverse((46, 23), self._char): return False
             game_state = StateMonitor(['Andariel'], self._api)
             result = self._char.kill_andy(game_state)
             if result:
@@ -77,7 +77,7 @@ class Andy:
             x = game_state._area_pos[0]
             y = game_state._area_pos[1]
             #go to andys body
-            self._pather_v2.traverse((x, y), self._char)
+            self._pather.traverse((x, y), self._char)
             game_state.stop()
         else:
             raise ValueError("Andy hdin or light sorc or necro")

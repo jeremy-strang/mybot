@@ -3,28 +3,28 @@ from utils.custom_mouse import mouse
 from char import IChar
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather
+from old_pather import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, rotate_vec, unit_vector
 import random
 from typing import Tuple
-from pather import Location, Pather
+from old_pather import Location, OldPather
 import numpy as np
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 
 class Trapsin(IChar):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, pather: Pather, pather_v2: PatherV2):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         Logger.info("Setting up Trapsin")
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
-        self._pather = pather
+        self._old_pather = old_pather
     
     def get_cast_frames(self):
         fcr = self.get_fcr()
@@ -98,9 +98,9 @@ class Trapsin(IChar):
         # Move to items
         wait(self._cast_duration, self._cast_duration + 0.2)
         if self.capabilities.can_teleport_natively:
-            self._pather.traverse_nodes_fixed("pindle_end", self)
+            self._old_pather.traverse_nodes_fixed("pindle_end", self)
         else:
-            self._pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, force_tp=True)
+            self._old_pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, force_tp=True)
         return True
 
     def kill_eldritch(self) -> bool:
@@ -113,14 +113,14 @@ class Trapsin(IChar):
         # Move to items
         wait(self._cast_duration, self._cast_duration + 0.2)
         if self.capabilities.can_teleport_natively:
-            self._pather.traverse_nodes_fixed("eldritch_end", self)
+            self._old_pather.traverse_nodes_fixed("eldritch_end", self)
         else:
-            self._pather.traverse_nodes((Location.A5_ELDRITCH_SAFE_DIST, Location.A5_ELDRITCH_END), self, time_out=0.6, force_tp=True)
+            self._old_pather.traverse_nodes((Location.A5_ELDRITCH_SAFE_DIST, Location.A5_ELDRITCH_END), self, time_out=0.6, force_tp=True)
         return True
 
     def kill_shenk(self) -> bool:
         atk_len = max(1, int(self._char_config["atk_len_shenk"] / 2))
-        shenk_pos_abs = self._pather.find_abs_node_pos(149, self._screen.grab())
+        shenk_pos_abs = self._old_pather.find_abs_node_pos(149, self._screen.grab())
         if shenk_pos_abs is None:
             shenk_pos_abs = self._screen.convert_screen_to_abs(self._config.path["shenk_end"][0])
         cast_pos_abs = [shenk_pos_abs[0] * 0.9, shenk_pos_abs[1] * 0.9]
@@ -129,14 +129,14 @@ class Trapsin(IChar):
             self._left_attack(cast_pos_abs, 90)
         # Move to items
         wait(self._cast_duration, self._cast_duration + 0.2)
-        self._pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.4, force_tp=True)
+        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.4, force_tp=True)
         return True
 
     def kill_nihlathak(self, end_nodes: list[int]) -> bool:
         # Find nilhlatak position
         atk_len = max(1, int(self._char_config["atk_len_nihlathak"] / 2))
         for i in range(atk_len):
-            nihlathak_pos_abs = self._pather.find_abs_node_pos(end_nodes[-1], self._screen.grab())
+            nihlathak_pos_abs = self._old_pather.find_abs_node_pos(end_nodes[-1], self._screen.grab())
             if nihlathak_pos_abs is None:
                 return False
             cast_pos_abs = np.array([nihlathak_pos_abs[0] * 0.9, nihlathak_pos_abs[1] * 0.9])
@@ -151,7 +151,7 @@ class Trapsin(IChar):
                 self.move(pos_m)
         # Move to items
         wait(self._cast_duration, self._cast_duration + 0.2)
-        self._pather.traverse_nodes(end_nodes, self, time_out=0.8)
+        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8)
         return True
 
 
@@ -168,6 +168,6 @@ if __name__ == "__main__":
     obs_recorder = ObsRecorder(config)
     screen = Screen()
     t_finder = TemplateFinder(screen)
-    pather = Pather(screen, t_finder)
+    old_pather = OldPather(screen, t_finder)
     ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = Trapsin(config.trapsin, config.char, screen, t_finder, ui_manager, pather)
+    char = Trapsin(config.trapsin, config.char, screen, t_finder, ui_manager, old_pather)

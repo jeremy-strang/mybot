@@ -4,24 +4,24 @@ from utils.custom_mouse import mouse
 from char import IChar
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather
+from old_pather import OldPather
 from screen import Screen
 from utils.misc import wait
 import time
 from typing import Tuple
-from pather import Pather
+from old_pather import OldPather
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 
 class Sorceress(IChar):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, pather: Pather, pather_v2: PatherV2):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
 
     def pick_up_item(self, pos: Tuple[float, float], item_name: str = None, prev_cast_start: float = 0):
         if self._skill_hotkeys["telekinesis"] and any(x in item_name for x in ['potion', 'misc_gold', 'tp_scroll']):

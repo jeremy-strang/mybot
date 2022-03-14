@@ -22,7 +22,7 @@ from item.pickit import PickIt
 from ui import UiManager, char_selector
 from ui import BeltManager
 from ui import CharSelector
-from pather import Pather, Location
+from old_pather import OldPather, Location
 from npc_manager import NpcManager, Npc
 from health_manager import HealthManager
 from death_manager import DeathManager
@@ -43,8 +43,8 @@ from town import TownManager, A1, A2, A3, A4, A5, town_manager
 from messages import Messenger
 from utils.dclone_ip import get_d2r_game_ip
 
-#mapassist api + new pather
-from pathing import PatherV2
+#mapassist api + new old_pather
+from pathing import Pather
 from api import MapAssistApi
 from utils.monsters import find_npc, find_monster
 
@@ -68,46 +68,46 @@ class Bot:
         self._obs_recorder = obs_recorder
         self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._game_stats)
         self._belt_manager = BeltManager(self._screen, self._template_finder)
-        self._pather = Pather(self._screen, self._template_finder)
+        self._old_pather = OldPather(self._screen, self._template_finder)
         self._pickit = PickIt(self._screen, self._item_finder, self._ui_manager, self._belt_manager)
         self._obs_recorder = ObsRecorder(self._config)
         # Memory reading stuff
         self._api = mapi
 
-        self._pather_v2 = PatherV2(screen, self._api)
+        self._pather = Pather(screen, self._api)
 
         # Create Character
         if self._config.char["type"] in ["sorceress", "light_sorc"]:
-            self._char: IChar = LightSorc(self._config.light_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = LightSorc(self._config.light_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "blizz_sorc":
-            self._char: IChar = BlizzSorc(self._config.blizz_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = BlizzSorc(self._config.blizz_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "nova_sorc":
-            self._char: IChar = NovaSorc(self._config.nova_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = NovaSorc(self._config.nova_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "hammerdin":
-            self._char: IChar = Hammerdin(self._config.hammerdin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = Hammerdin(self._config.hammerdin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "trapsin":
-            self._char: IChar = Trapsin(self._config.trapsin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = Trapsin(self._config.trapsin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "singer_barb":
-            self._char: IChar = SingerBarb(self._config.singer_barb, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = SingerBarb(self._config.singer_barb, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "zerker_barb":
-            self._char: IChar = ZerkerBarb(self._config.zerker_barb, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = ZerkerBarb(self._config.zerker_barb, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "necro":
-            self._char: IChar = Necro(self._config.necro, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = Necro(self._config.necro, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "basic":
-            self._char: IChar = Basic(self._config.basic, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = Basic(self._config.basic, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "basic_ranged":
-            self._char: IChar = Basic_Ranged(self._config.basic_ranged, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._pather, self._pather_v2)
+            self._char: IChar = Basic_Ranged(self._config.basic_ranged, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         else:
             Logger.error(f'{self._config.char["type"]} is not supported! Closing down bot.')
             os._exit(1)
 
         # Create Town Manager
         npc_manager = NpcManager(screen, self._template_finder)
-        a5 = A5(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
-        a4 = A4(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
-        a3 = A3(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
-        a2 = A2(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
-        a1 = A1(self._screen, self._template_finder, self._pather, self._char, npc_manager, self._pather_v2, self._api)
+        a5 = A5(self._screen, self._template_finder, self._old_pather, self._char, npc_manager, self._pather, self._api)
+        a4 = A4(self._screen, self._template_finder, self._old_pather, self._char, npc_manager, self._pather, self._api)
+        a3 = A3(self._screen, self._template_finder, self._old_pather, self._char, npc_manager, self._pather, self._api)
+        a2 = A2(self._screen, self._template_finder, self._old_pather, self._char, npc_manager, self._pather, self._api)
+        a1 = A1(self._screen, self._template_finder, self._old_pather, self._char, npc_manager, self._pather, self._api)
         self._town_manager = TownManager(self._template_finder, self._ui_manager, self._item_finder, a1, a2, a3, a4, a5)
         self._route_config = self._config.routes
         self._route_order = self._config.routes_order
@@ -137,20 +137,20 @@ class Bot:
         Logger.info(f"Doing runs: {self._do_runs_reset.keys()}")
         if self._config.general["randomize_runs"]:
             self.shuffle_runs()
-        self._pindle = Pindle(self._template_finder, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
-        self._shenk = ShenkEld(self._template_finder, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)       
-        self._nihlatak = Nihlathak(self._screen, self._template_finder, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
-        self._arcane = Arcane(self._screen, self._template_finder, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
+        self._pindle = Pindle(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._shenk = ShenkEld(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)       
+        self._nihlatak = Nihlathak(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._arcane = Arcane(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         # mem-reading
-        self._trav = Trav(self._template_finder, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
-        self._baal = Baal(self._screen, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
-        self._meph = Meph(self._screen, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
+        self._trav = Trav(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._baal = Baal(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._meph = Meph(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         #INCLUDED TEMPLATE FOR NOWA, runs with light sorc now
-        self._andy = Andy(self._screen, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
-        self._tower = Tower(self._screen, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
-        self._diablo = Diablo(self._screen, self._template_finder, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
-        self._pit = Pit(self._screen, self._template_finder, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
-        self._stony = Stony_Tomb(self._screen, self._template_finder, self._pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather_v2, self._obs_recorder)
+        self._andy = Andy(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._tower = Tower(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._diablo = Diablo(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._pit = Pit(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._stony = Stony_Tomb(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         
         # Create member variables
         self._pick_corpse = pick_corpse

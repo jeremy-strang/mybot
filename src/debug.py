@@ -19,8 +19,8 @@ from screen import Screen
 from bot import Bot
 from config import Config
 from game_stats import GameStats
-from pather import Location, Pather
-from pathing import PatherV2
+from old_pather import Location, OldPather
+from pathing import Pather
 from api import MapAssistApi
 import threading
 from state_monitor import StateMonitor
@@ -70,28 +70,28 @@ if __name__ == "__main__":
         api_thread.daemon = False
         api_thread.start()
 
-        data = None
-        print(("-" * 80) + "\n\nStarting API...\n\n" + ("-" * 80))
-        while data is None:
-            wait(0.2)
-            data = api.get_data()
-
         game_stats = GameStats() 
         template_finder = TemplateFinder(screen)
-        pather = Pather(screen, template_finder)
-        pather_v2 = PatherV2(screen, api)
+        old_pather = OldPather(screen, template_finder)
+        pather = Pather(screen, api)
         item_finder = ItemFinder()
         ui_manager = UiManager(screen, template_finder, game_stats)
         belt_manager = BeltManager(screen, template_finder)
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager)
 
-        # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
-        char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
+        # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities(force=True)
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
-        pit = Pit(screen, template_finder, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
-        trav = Trav(template_finder, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
-        andy = Andy(screen, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
+        pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        trav = Trav(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        andy = Andy(screen, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+
+        data = None
+        print(("-" * 80) + "\n\nStarting API...")
+        while data is None:
+            wait(0.2)
+            data = api.get_data()
         
         def write_data_to_file(data, data_str):
             current_area = data["current_area"]
@@ -101,15 +101,15 @@ if __name__ == "__main__":
 
         def do_stuff():
             print("Doing stuff...")
-            # pickit.pick_up_items(char, False)
-            # pather_v2.traverse("Pit Level 1", char)
+            data = api.get_data()
 
-            # pather_v2.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
+            # pickit.pick_up_items(char, False)
+            # pather.traverse("Pit Level 1", char)
+
+            # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
 
             # write_data_to_file(api.get_data(), api._raw_data_str)
 
-            char.kill_around(api)
-            # data = api.get_data()
             # akara = find_npc(Npc.AKARA, api)
             # pf = PathFinder(api)
             # start = pf.player_node
@@ -125,14 +125,14 @@ if __name__ == "__main__":
 
             # api._current_path = path
             # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
+        
+            # overlay = start_overlay(bot, game_stats)
             print("Done doing stuff")
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
-        
-        overlay = start_overlay(bot, game_stats)
-        print(("-" * 80) + "\n\nReady!\n\n" + ("-" * 80))
+        print("\nReady!\n\n" + ("-" * 80))
         keyboard.wait()
 
         print("Press Enter to exit ...")

@@ -18,8 +18,8 @@ from screen import Screen
 from bot import Bot
 from config import Config
 from game_stats import GameStats
-from pather import Pather
-from pathing import PatherV2
+from old_pather import OldPather
+from pathing import Pather
 from api import MapAssistApi
 import threading
 from state_monitor import StateMonitor
@@ -75,18 +75,18 @@ if __name__ == "__main__":
 
         game_stats = GameStats() 
         template_finder = TemplateFinder(screen)
-        pather = Pather(screen, template_finder)
-        pather_v2 = PatherV2(screen, api)
+        old_pather = OldPather(screen, template_finder)
+        pather = Pather(screen, api)
         item_finder = ItemFinder()
-        ui_manager = UiManager(screen, template_finder, obs_recorder, pather_v2, game_stats)
+        ui_manager = UiManager(screen, template_finder, obs_recorder, pather, game_stats)
         belt_manager = BeltManager(screen, template_finder)
         
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager)
 
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
-        char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
-        # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, pather, pather_v2)
-        pit = Pit(screen, template_finder, pather, bot._town_manager, ui_manager, char, pickit, api, pather_v2, obs_recorder)
+        char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, old_pather, pather)
+        pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
         
         char.discover_capabilities(force=True)
         overlay = start_overlay(bot, game_stats)

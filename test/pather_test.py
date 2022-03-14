@@ -1,7 +1,7 @@
 import pytest
 from mocks.screen_mock import ScreenMock
 from logger import Logger
-from pather import Pather
+from old_pather import OldPather
 from template_finder import TemplateFinder
 
 
@@ -12,7 +12,7 @@ class TestPather:
 
         screen = ScreenMock()
         template_finder = TemplateFinder(screen)
-        self.pather = Pather(screen, template_finder)
+        self.pather = OldPather(screen, template_finder)
 
     @pytest.mark.parametrize("test_input, expected", [
         ((90, 90), True),

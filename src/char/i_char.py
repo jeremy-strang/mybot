@@ -35,7 +35,7 @@ class IChar:
         self._last_tp = time.time()
         self._ocr = Ocr()
         # Add a bit to be on the save side
-        self._cast_duration = self._char_config["casting_frames"] * 0.04 + 0.01
+        self._cast_duration = self._char_config["casting_frames"] * 0.04 + 0.015
         self.capabilities = None
 
     def _discover_capabilities(self) -> CharacterCapabilities:
@@ -53,6 +53,7 @@ class IChar:
         if IChar._CrossGameCapabilities is None or force:
             capabilities = self._discover_capabilities()
             self.capabilities = capabilities
+        self._cast_duration = self.get_cast_frames() * 0.04 + 0.02
         Logger.info(f"Capabilities: {self.capabilities}")
         self.on_capabilities_discovered(self.capabilities)
 
@@ -527,7 +528,7 @@ if __name__ == "__main__":
     char_config = config.char
     screen = Screen()
     template_finder = TemplateFinder(screen)
-    ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._pather_v2, self._game_stats)
+    ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._pather, self._game_stats)
     ocr = Ocr()
 
     i_char = IChar({}, screen, template_finder, ui_manager)

@@ -1,11 +1,11 @@
 from char.i_char import IChar
 from config import Config
 from logger import Logger
-from pather import Location, Pather
+from old_pather import Location, OldPather
 from typing import Union
 from item.pickit import PickIt
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from town.town_manager import TownManager
 from ui import UiManager
 from utils.misc import wait, is_in_roi
@@ -19,24 +19,24 @@ class Baal:
     def __init__(
         self,
         screen: Screen,
-        pather: Pather,
+        old_pather: OldPather,
         town_manager: TownManager,
         ui_manager: UiManager,
         char: IChar,
         pickit: PickIt,
         api: MapAssistApi,
-        pather_v2: PatherV2,
+        pather: Pather,
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
         self._screen = screen
-        self._pather = pather
+        self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
         self._api = api
-        self._pather_v2 = pather_v2
+        self._pather = pather
         self._obs_recorder = obs_recorder
 
     def approach(self, start_loc: Location) -> Union[bool, Location, bool]:
@@ -68,38 +68,38 @@ class Baal:
 
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather_v2.wait_for_location("TheWorldStoneKeepLevel2"): return False
+        if not self._pather.wait_for_location("TheWorldStoneKeepLevel2"): return False
         if do_pre_buff:
             self._char.pre_buff()
 
         if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
             self._char.switch_weapon()
 
-        if not self._pather_v2.traverse("Worldstone Keep Level 3", self._char, verify_location=True): return False
-        if not self._pather_v2.go_to_area("Worldstone Keep Level 3", "TheWorldStoneKeepLevel3"): return False
+        if not self._pather.traverse("Worldstone Keep Level 3", self._char, verify_location=True): return False
+        if not self._pather.go_to_area("Worldstone Keep Level 3", "TheWorldStoneKeepLevel3"): return False
 
         if self._config.char["teleport_weapon_swap"]:
             self._char.switch_weapon()
             self._char.verify_active_weapon_tab()
             
-        if not self._pather_v2.traverse("Throne of Destruction", self._char, verify_location=True): return False
+        if not self._pather.traverse("Throne of Destruction", self._char, verify_location=True): return False
 
         if self._check_dangerous_monsters(): return False
-        if not self._pather_v2.go_to_area("Throne of Destruction", "ThroneOfDestruction"): return False
+        if not self._pather.go_to_area("Throne of Destruction", "ThroneOfDestruction"): return False
         # Attacks start: Clear room
-        if not self._pather_v2.traverse((95, 55), self._char): return False
+        if not self._pather.traverse((95, 55), self._char): return False
         if self._check_dangerous_monsters(): return False
 
         if self._config.char["send_throne_leecher_tp"]:
             Logger.debug("Sending Throne TP")
-            if not self._pather_v2.traverse((115, 6), self._char): return False
+            if not self._pather.traverse((115, 6), self._char): return False
             wait(0.2)
             self._char.open_tp()
             wait(0.2)
-            if not self._pather_v2.traverse((95, 55), self._char): return False
+            if not self._pather.traverse((95, 55), self._char): return False
         for _ in range(4):
             if not self._char.clear_throne(full=True): return False
-            if not self._pather_v2.traverse((95, 45), self._char): return False
+            if not self._pather.traverse((95, 45), self._char): return False
         start_time = time.time()
         picked_up_items = self._pickit.pick_up_items(self._char)
 
@@ -120,7 +120,7 @@ class Baal:
             self._char.clear_throne()
             start_time = time.time()
             if wave_nr == 1 or wave_nr == 2:
-                if not self._pather_v2.traverse((95, 42), self._char): return False
+                if not self._pather.traverse((95, 42), self._char): return False
                 self._char.pre_buff()
                 picked_up_items |= self._pickit.pick_up_items(self._char)
             if wave_nr == 3 or wave_nr == 5 or wave_nr == 2 or wave_nr == 4:
@@ -138,17 +138,17 @@ class Baal:
             Logger.debug("Temporarily enabling Greater Mana Potion pickup for Baal")
 
         # Pick items
-        if not self._pather_v2.traverse((95, 26), self._char): return False
+        if not self._pather.traverse((95, 26), self._char): return False
         picked_up_items |= self._pickit.pick_up_items(self._char)
         # Move to baal room
 
         if self._config.char["teleport_weapon_swap"]:
             self._char.switch_weapon()
             
-        if not self._pather_v2.traverse((91, 15), self._char): return False
-        if not self._pather_v2.go_to_area((15089, 5006), "TheWorldstoneChamber"): return False
+        if not self._pather.traverse((91, 15), self._char): return False
+        if not self._pather.go_to_area((15089, 5006), "TheWorldstoneChamber"): return False
         self._char.select_skill("teleport")
-        if not self._pather_v2.traverse((136, 176), self._char, do_pre_move=False): return False
+        if not self._pather.traverse((136, 176), self._char, do_pre_move=False): return False
 
         if self._config.char["teleport_weapon_swap"]:
             self._char.switch_weapon()

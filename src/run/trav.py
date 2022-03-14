@@ -2,10 +2,10 @@ from api.mapassist import MapAssistApi
 from char import IChar
 from config import Config
 from logger import Logger
-from pather import Location, Pather
+from old_pather import Location, OldPather
 from typing import Union
 from item.pickit import PickIt
-from pathing import PatherV2
+from pathing import Pather
 import state_monitor
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
@@ -18,24 +18,24 @@ class Trav:
     def __init__(
         self,
         template_finder: TemplateFinder,
-        pather: Pather,
+        old_pather: OldPather,
         town_manager: TownManager,
         ui_manager: UiManager,
         char: IChar,
         pickit: PickIt,
         api: MapAssistApi,
-        pather_v2: PatherV2,
+        pather: Pather,
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
         self._template_finder = template_finder
-        self._pather = pather
+        self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
         self._api = api
-        self._pather_v2 = pather_v2
+        self._pather = pather
         self._obs_recorder = obs_recorder
 
     def approach(self, start_loc: Location) -> Union[bool, Location]:
@@ -61,9 +61,9 @@ class Trav:
             self._char.switch_weapon()
 
         if self._char.capabilities.can_teleport_natively:
-            if self._char._char_config['type'] == 'necro' and not self._pather_v2.traverse("Durance of Hate Level 1", self._char): return False
-            elif not self._pather_v2.traverse((156, 113), self._char, verify_location=False): return False
-        elif not self._pather_v2.traverse_walking((155, 113), self._char):
+            if self._char._char_config['type'] == 'necro' and not self._pather.traverse("Durance of Hate Level 1", self._char): return False
+            elif not self._pather.traverse((156, 113), self._char, verify_location=False): return False
+        elif not self._pather.traverse_walking((155, 113), self._char):
             return False
         
         if tele_swap:
@@ -90,7 +90,7 @@ class Trav:
             y = game_state._area_pos[1]
             wait(0.05, .1)
             game_state.stop()
-            self._pather_v2.traverse((x, y), self._char, time_out=4.0)
+            self._pather.traverse((x, y), self._char, time_out=4.0)
         else:
             raise ValueError("Unsupport character")
 
@@ -100,20 +100,20 @@ class Trav:
 
         # If we can teleport we want to move back inside and also check loot there
         if self._char.capabilities.can_teleport_natively or self._char.capabilities.can_teleport_with_charges:
-            self._pather_v2.traverse((156, 113), self._char, time_out=4.0)
+            self._pather.traverse((156, 113), self._char, time_out=4.0)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
             #wait(0.1, 0.2)
             # Go back to a good spot to TP
-            self._pather_v2.traverse((154, 111), self._char, time_out=4.0)
+            self._pather.traverse((154, 111), self._char, time_out=4.0)
 
         else: # Else we need to make sure we loot both inside and outside the council room
-            self._pather.traverse_nodes([228, 226], self._char, time_out=2, force_move=True)
+            self._old_pather.traverse_nodes([228, 226], self._char, time_out=2, force_move=True)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
             wait(0.1, 0.2)
-            self._pather.traverse_nodes([226, 228, 229], self._char, time_out=2, force_move=True)
+            self._old_pather.traverse_nodes([226, 228, 229], self._char, time_out=2, force_move=True)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
             wait(0.1, 0.2)
-            self._pather.traverse_nodes([230], self._char, time_out=2)
+            self._old_pather.traverse_nodes([230], self._char, time_out=2)
         self._api.get_metrics() # DEBUG
         self._obs_recorder.stop_recording_if_enabled()
         return (Location.A3_TRAV_CENTER_STAIRS, picked_up_items)

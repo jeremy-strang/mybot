@@ -2,7 +2,7 @@ from api.mapassist import MapAssistApi
 from char import IChar
 from config import Config
 from logger import Logger
-from pather import Location, Pather
+from old_pather import Location, OldPather
 from typing import Union
 from item.pickit import PickIt
 from template_finder import TemplateFinder
@@ -10,31 +10,31 @@ from town.town_manager import TownManager
 from ui import UiManager
 from utils.misc import wait
 from state_monitor import StateMonitor
-from pathing import PatherV2
+from pathing import Pather
 from obs import ObsRecorder
 
 class ShenkEld:
     def __init__(
         self,
         template_finder: TemplateFinder,
-        pather: Pather,
+        old_pather: OldPather,
         town_manager: TownManager,
         ui_manager: UiManager,
         char: IChar,
         pickit: PickIt,
         api: MapAssistApi,
-        pather_v2: PatherV2,
+        pather: Pather,
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
         self._template_finder = template_finder
-        self._pather = pather
+        self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
         self._api = api
-        self._pather_v2 = pather_v2
+        self._pather = pather
         self._obs_recorder = obs_recorder
 
     def approach(self, start_loc: Location) -> Union[bool, Location, bool]:
@@ -55,9 +55,9 @@ class ShenkEld:
         if do_pre_buff:
             self._char.pre_buff()
         if self._char.capabilities.can_teleport_natively:
-            self._pather.traverse_nodes_fixed("eldritch_safe_dist", self._char)
+            self._old_pather.traverse_nodes_fixed("eldritch_safe_dist", self._char)
         else:
-            if not self._pather.traverse_nodes((Location.A5_ELDRITCH_START, Location.A5_ELDRITCH_SAFE_DIST), self._char, force_move=True):
+            if not self._old_pather.traverse_nodes((Location.A5_ELDRITCH_START, Location.A5_ELDRITCH_SAFE_DIST), self._char, force_move=True):
                 return False
         if self._char._char_config['type'] == 'necro':
             game_state = StateMonitor(['MinionExp'], self._api,super_unique=True)
@@ -82,17 +82,17 @@ class ShenkEld:
             # No force move, otherwise we might get stuck at stairs!
 
             if self._char._char_config['type'] == 'necro':
-                if not self._pather_v2.traverse("Bloody Foothills", self._char,verify_location=False): return False
-                if not self._pather_v2.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False): return False
+                if not self._pather.traverse("Bloody Foothills", self._char,verify_location=False): return False
+                if not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False): return False
                 wait(.1,.2)
-                if not self._pather_v2.traverse([95,121], self._char): return False
+                if not self._pather.traverse([95,121], self._char): return False
                 game_state = StateMonitor(['OverSeer'], self._api,super_unique=True)
                 result = self._char.kill_shenk_mem(game_state)
                 if result:
                     Logger.info("sHENK died...")
                 game_state.stop()
             else:
-                if not self._pather.traverse_nodes((Location.A5_SHENK_START, Location.A5_SHENK_SAFE_DIST), self._char,force_move=False):
+                if not self._old_pather.traverse_nodes((Location.A5_SHENK_START, Location.A5_SHENK_SAFE_DIST), self._char,force_move=False):
                     return False
                 self._char.kill_shenk()
 

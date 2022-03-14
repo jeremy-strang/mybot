@@ -4,29 +4,29 @@ from utils.custom_mouse import mouse
 from logger import Logger
 from utils.misc import wait, rotate_vec, unit_vector
 import random
-from pather import Location
+from old_pather import Location
 import numpy as np
 from logger import Logger
 from config import Config
 from screen import Screen
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather, Location
+from old_pather import OldPather, Location
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 
 class NovaSorc(Sorceress):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, pather: Pather, pather_v2: PatherV2):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         Logger.info("Setting up Nova Sorc")
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
         # we want to change positions a bit of end points
-        self._pather.offset_node(149, (70, 10))
+        self._old_pather.offset_node(149, (70, 10))
 
     def get_cast_frames(self):
         fcr = self.get_fcr()
@@ -58,19 +58,19 @@ class NovaSorc(Sorceress):
         self._nova(atk_len)
 
     def kill_pindle(self) -> bool:
-        self._pather.traverse_nodes_fixed("pindle_end", self)
+        self._old_pather.traverse_nodes_fixed("pindle_end", self)
         self._cast_static(0.6)
         self._nova(self._char_config["atk_len_pindle"])
         return True
 
     def kill_eldritch(self) -> bool:
-        self._pather.traverse_nodes_fixed([(675, 30)], self)
+        self._old_pather.traverse_nodes_fixed([(675, 30)], self)
         self._cast_static(0.6)
         self._nova(self._char_config["atk_len_eldritch"])
         return True
 
     def kill_shenk(self) -> bool:
-        self._pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0)
+        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0)
         self._cast_static(0.6)
         self._nova(self._char_config["atk_len_shenk"])
         return True
@@ -80,16 +80,16 @@ class NovaSorc(Sorceress):
         atk_len = self._char_config["atk_len_trav"] * 0.21
         # change node to be further to the right
         offset_229 = np.array([200, 100])
-        self._pather.offset_node(229, offset_229)
+        self._old_pather.offset_node(229, offset_229)
         def clear_inside():
-            self._pather.traverse_nodes_fixed([(1110, 120)], self)
-            self._pather.traverse_nodes([229], self, time_out=0.8, force_tp=True)
+            self._old_pather.traverse_nodes_fixed([(1110, 120)], self)
+            self._old_pather.traverse_nodes([229], self, time_out=0.8, force_tp=True)
             self._nova(atk_len)
             self._move_and_attack((-40, -20), atk_len)
             self._move_and_attack((40, 20), atk_len)
             self._move_and_attack((40, 20), atk_len)
         def clear_outside():
-            self._pather.traverse_nodes([226], self, time_out=0.8, force_tp=True)
+            self._old_pather.traverse_nodes([226], self, time_out=0.8, force_tp=True)
             self._nova(atk_len)
             self._move_and_attack((45, -20), atk_len)
             self._move_and_attack((-45, 20), atk_len)
@@ -98,13 +98,13 @@ class NovaSorc(Sorceress):
         clear_inside()
         clear_outside()
         # change back node as it is used in trav.py
-        self._pather.offset_node(229, -offset_229)
+        self._old_pather.offset_node(229, -offset_229)
         return True
 
     def kill_nihlathak(self, end_nodes: list[int]) -> bool:
         atk_len = self._char_config["atk_len_nihlathak"] * 0.3
         # Move close to nihlathak
-        self._pather.traverse_nodes(end_nodes, self, time_out=0.8, do_pre_move=False)
+        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8, do_pre_move=False)
         # move mouse to center
         pos_m = self._screen.convert_abs_to_monitor((0, 0))
         mouse.move(*pos_m, randomize=80, delay_factor=[0.5, 0.7])
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     import keyboard
     from screen import Screen
     from template_finder import TemplateFinder
-    from pather import Pather
+    from old_pather import OldPather
     keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
     keyboard.wait("f11")
     from config import Config
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     obs_recorder = ObsRecorder(config)
     screen = Screen()
     t_finder = TemplateFinder(screen)
-    pather = Pather(screen, t_finder)
+    old_pather = OldPather(screen, t_finder)
     ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = NovaSorc(config.nova_sorc, config.char, screen, t_finder, ui_manager, pather)
+    char = NovaSorc(config.nova_sorc, config.char, screen, t_finder, ui_manager, old_pather)
     char.kill_council()

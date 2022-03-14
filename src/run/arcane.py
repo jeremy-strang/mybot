@@ -2,10 +2,10 @@ from api.mapassist import MapAssistApi
 from char.i_char import IChar
 from config import Config
 from logger import Logger
-from pather import Location, Pather
+from old_pather import Location, OldPather
 from typing import Union
 from item.pickit import PickIt
-from pathing import PatherV2
+from pathing import Pather
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
 from ui import UiManager
@@ -21,18 +21,18 @@ class Arcane:
         self,
         screen: Screen,
         template_finder: TemplateFinder,
-        pather: Pather,
+        old_pather: OldPather,
         town_manager: TownManager,
         ui_manager: UiManager,
         char: IChar,
         pickit: PickIt,
         api: MapAssistApi,
-        pather_v2: PatherV2,
+        pather: Pather,
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
         self._template_finder = template_finder
-        self._pather = pather
+        self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
@@ -40,7 +40,7 @@ class Arcane:
         self._chest = Chest(screen, self._char, self._template_finder, 'arcane')
         self.used_tps = 0
         self._api = api
-        self._pather_v2 = pather_v2
+        self._pather = pather
         self._obs_recorder = obs_recorder
 
     def approach(self, start_loc: Location) -> Union[bool, Location]:
@@ -62,15 +62,15 @@ class Arcane:
         match_summoner = self._template_finder.search_and_wait(tempaltes_summoner, threshold=0.79, time_out=0.5, use_grayscale=True, take_ss=False)
         if not match_platform.valid and not match_summoner.valid:
             # We might have arrived at summoner, move up stairs with static traverse
-            self._pather.traverse_nodes_fixed(traverse_to_summoner, self._char)
+            self._old_pather.traverse_nodes_fixed(traverse_to_summoner, self._char)
             # try to match summoner again
             match_summoner = self._template_finder.search_and_wait(tempaltes_summoner, threshold=0.79, time_out=1.0, use_grayscale=True, take_ss=False)
         if match_summoner.valid:
-            if self._pather.traverse_nodes([461], self._char, time_out=2.2, force_tp=True):
+            if self._old_pather.traverse_nodes([461], self._char, time_out=2.2, force_tp=True):
                 return True
         else:
             # Traverse to center of platform
-            self._pather.traverse_nodes([462], self._char, time_out=1.3, force_tp=True)
+            self._old_pather.traverse_nodes([462], self._char, time_out=1.3, force_tp=True)
         return False
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
@@ -99,8 +99,8 @@ class Arcane:
                 self._char.switch_weapon()
 
             # calibrating at start and moving towards the end of the arm
-            self._pather.traverse_nodes([data.calib_node_start], self._char, force_tp=True)
-            if not self._pather.traverse_nodes_fixed(data.static_path_forward, self._char):
+            self._old_pather.traverse_nodes([data.calib_node_start], self._char, force_tp=True)
+            if not self._old_pather.traverse_nodes_fixed(data.static_path_forward, self._char):
                 return False
             found = self._find_summoner(data.jump_to_summoner)
 

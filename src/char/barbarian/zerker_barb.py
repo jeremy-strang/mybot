@@ -6,12 +6,12 @@ from char import IChar, CharacterCapabilities
 from char.barbarian.barbarian import Barbarian
 from template_finder import TemplateFinder
 from ui import UiManager
-from pather import Pather
+from old_pather import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, is_in_roi, cut_roi
 import time
-from pather import Pather, Location
+from old_pather import OldPather, Location
 import math
 import threading
 import numpy as np
@@ -19,16 +19,16 @@ import random
 import cv2
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor, MonsterPriorityRule, MonsterType
 from obs import ObsRecorder
 
 class ZerkerBarb(Barbarian):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, pather: Pather, pather_v2: PatherV2):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         Logger.info("Setting up Berserk Barbarian")
-        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, pather_v2)
+        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
         self._do_pre_move = True
 
     def kill_b(self, game_state: StateMonitor) -> bool: # TODO
@@ -70,14 +70,14 @@ class ZerkerBarb(Barbarian):
         mouse.move(*pos_monitor)
 
     def kill_uniques(self, monster, aura: str = "concentration", offset = [-1, -1]) -> bool:
-        if not self._pather_v2.move_to_monster(self, monster): return False
+        if not self._pather.move_to_monster(self, monster): return False
         dist = self.distance(monster, offset)
         counter = 0
         while dist > 7 and counter < 5:
             counter += 1
             wait(0.1, 0.2)
             monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
-            self._pather_v2.move_to_monster(self, monster)
+            self._pather.move_to_monster(self, monster)
             dist = self.distance(monster, offset)
         
         while type(monster) != bool and dist <= 7:
@@ -119,10 +119,10 @@ class ZerkerBarb(Barbarian):
                 # If we've been standing in one spot for too long, reposition
                 if time.time() - last_move > 6.0 and reposition_pos_world is not None:
                     Logger.debug("Stood in one place too long, repositioning")
-                    self._pather_v2.traverse(reposition_pos_world, self, time_out = 3.0)
+                    self._pather.traverse(reposition_pos_world, self, time_out = 3.0)
                     last_move = time.time()
                 elif game_state._dist > 6:
-                    move_pos_screen = self._pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
+                    move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
                     self.move(move_pos_m, force_tp=True)

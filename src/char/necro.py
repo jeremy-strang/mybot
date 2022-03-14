@@ -8,7 +8,7 @@ from screen import Screen
 from utils.misc import wait, rotate_vec, unit_vector
 import random
 from typing import Tuple, Union, List
-from pather import Location, Pather
+from old_pather import Location, OldPather
 import numpy as np
 import time
 from utils.misc import cut_roi, is_in_roi
@@ -16,24 +16,24 @@ import os
 import math
 
 from api.mapassist import MapAssistApi
-from pathing import PatherV2
+from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 class Necro(IChar):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, pather: Pather, pather_v2: PatherV2):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         os.system('color')
         Logger.info("\033[94m<<Setting up Necro>>\033[0m")
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        self._old_pather = old_pather
         self._pather = pather
-        self._pather_v2 = pather_v2
         #custom necro pathing for pindle
-        self._pather.adapt_path((Location.A5_PINDLE_START, Location.A5_PINDLE_SAFE_DIST), [100,101])
-        self._pather.adapt_path((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), [104])
+        self._old_pather.adapt_path((Location.A5_PINDLE_START, Location.A5_PINDLE_SAFE_DIST), [100,101])
+        self._old_pather.adapt_path((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), [104])
         #minor offsets to pindle fight locations
-        self._pather.offset_node(102, [15, 0])
-        self._pather.offset_node(103, [15, 0])
-        self._pather.offset_node(101, [100,-5])
+        self._old_pather.offset_node(102, [15, 0])
+        self._old_pather.offset_node(103, [15, 0])
+        self._old_pather.offset_node(101, [100,-5])
 
         self._shenk_dead = 0
         self._skeletons_count=0
@@ -358,7 +358,7 @@ class Necro(IChar):
             target = unit_vector(rotate_vec(cast_dir, angle))
             #Logger.info("current angle ~> "+str(angle))
             for j in range(cast_v_div):
-                circle_pos_screen = self._pather._adjust_abs_range_to_screen((target*120.0*float(j+1.0))*offset)
+                circle_pos_screen = self._old_pather._adjust_abs_range_to_screen((target*120.0*float(j+1.0))*offset)
                 circle_pos_monitor = self._screen.convert_abs_to_monitor(circle_pos_screen)
                 mouse.move(*circle_pos_monitor,delay_factor=[0.3*delay, .6*delay])
 
@@ -373,7 +373,7 @@ class Necro(IChar):
         while odist > 10:
             if game_state._ready is True:
                 target_pos = game_state._target_pos
-                tele_pos_abs = self._pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
+                tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
                 pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
                 self.pre_move()
                 try:
@@ -399,7 +399,7 @@ class Necro(IChar):
         while odist > 10:
             if game_state._ready is True:
                 target_pos = game_state._target_pos
-                tele_pos_abs = self._pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
+                tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
                 pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
                 self.pre_move()
                 try:
@@ -422,7 +422,7 @@ class Necro(IChar):
         while odist > 10:
             if game_state._ready is True:
                 target_pos = game_state._target_pos
-                tele_pos_abs = self._pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
+                tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
                 pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
                 self.pre_move()
                 try:
@@ -440,15 +440,15 @@ class Necro(IChar):
         #use unique id for now
         self._cast_circle(cast_dir=[-1,1],cast_start_angle=0,cast_end_angle=360,cast_div=32,cast_v_div=2,cast_spell='raise_skeleton',offset=2,delay=1.6)
         
-        #self._pather.traverse_nodes([102,103], self)
-        #self._pather_v2.traverse()
-        self._pather_v2.traverse([58,44], self)
+        #self._old_pather.traverse_nodes([102,103], self)
+        #self._pather.traverse()
+        self._pather.traverse([58,44], self)
 
         odist = 999999
         while odist > 30:
             if game_state._ready is True:
                 target_pos = game_state._target_pos
-                tele_pos_abs = self._pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
+                tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
                 pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
                 self.pre_move()
                 try:
@@ -469,7 +469,7 @@ class Necro(IChar):
         while odist > 20:
             if game_state._ready is True:
                 target_pos = game_state._target_pos
-                tele_pos_abs = self._pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
+                tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([target_pos[0],target_pos[1]])
                 pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
                 self.pre_move()
                 try:
@@ -494,7 +494,7 @@ class Necro(IChar):
     def kill_shenk_mem(self, game_state: StateMonitor) -> bool:
 
         #if game_state._ready is True:
-            #self._pather_v2.traverse(game_state._area_pos, self)
+            #self._pather.traverse(game_state._area_pos, self)
 
         wait(self._cast_duration, self._cast_duration +.2)
         self._kill_mobs(["SiegeBoss"], game_state,kite=True)
@@ -545,13 +545,13 @@ class Necro(IChar):
                 if kite:
                     #rot_deg = random.randint(-2,2)
                     #tele_pos_abs = unit_vector(rotate_vec(target_pos, rot_deg)) * 320*kite_dist
-                    #tele_pos_abs = self._pather._adjust_abs_range_to_screen([tele_pos_abs[0],tele_pos_abs[1]])
+                    #tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([tele_pos_abs[0],tele_pos_abs[1]])
                     #pos_m = self._screen.convert_abs_to_monitor(target_pos)
                     #self.pre_move()
                     #try:
                     #self.move(pos_m, force_move=True)
                     try:
-                        self._pather_v2.traverse(game_state._area_pos, self)
+                        self._pather.traverse(game_state._area_pos, self)
                         wait(.05,.1)
                         self._amp_dmg(target_pos, 11)
                         pos_m = self._screen.convert_abs_to_monitor((0, 20))
@@ -570,7 +570,7 @@ class Necro(IChar):
                     #except:
                         #Logger.error("Something went wrong with movement...")
 
-        self._pather_v2.traverse(game_state._area_pos, self)
+        self._pather.traverse(game_state._area_pos, self)
 
 if __name__ == "__main__":
     import os
@@ -585,6 +585,6 @@ if __name__ == "__main__":
     obs_recorder = ObsRecorder(config)
     screen = Screen()
     t_finder = TemplateFinder(screen)
-    pather = Pather(screen, t_finder)
+    old_pather = OldPather(screen, t_finder)
     ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = Necro(config.necro, config.char, screen, t_finder, ui_manager, pather)
+    char = Necro(config.necro, config.char, screen, t_finder, ui_manager, old_pather)

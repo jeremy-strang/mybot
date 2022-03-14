@@ -102,7 +102,7 @@ class Location:
     A2_STONY_WP = "a2_stony_wp"
     A2_STONY_END = "a2_stony_end"
 
-class Pather:
+class OldPather:
     """
     Traverses 'dynamic' pathes with reference templates and relative coordinates or statically recorded pathes.
     Check utils/node_recorder.py to generate templates/refpoints and relative coordinates to nodes. Once you have refpoints and
@@ -625,8 +625,8 @@ class Pather:
                         # Don't want to spam the log with errors in this case because it most likely worked out just fine
                         if time_out > 3.1:
                             if self._config.general["info_screenshots"]:
-                                cv2.imwrite("./info_screenshots/info_pather_got_stuck_" + time.strftime("%Y%m%d_%H%M%S") + ".png", img)
-                            Logger.error("Got stuck exit pather")
+                                cv2.imwrite("./info_screenshots/info_old_pather_got_stuck_" + time.strftime("%Y%m%d_%H%M%S") + ".png", img)
+                            Logger.error("Got stuck exit old_pather")
                         return False
 
                 # Sometimes we get stuck at rocks and stuff, after a few seconds force a move into the last known direction
@@ -635,7 +635,7 @@ class Pather:
                     if last_direction is not None:
                         pos_abs = last_direction
                     pos_abs = self._adjust_abs_range_to_screen(pos_abs)
-                    Logger.debug(f"Pather: taking a random guess towards " + str(pos_abs))
+                    Logger.debug(f"OldPather: taking a random guess towards " + str(pos_abs))
                     x_m, y_m = self._screen.convert_abs_to_monitor(pos_abs)
                     char.move((x_m, y_m), force_move=True)
                     did_force_move = True
@@ -660,34 +660,34 @@ class Pather:
 # Testing: Move char to whatever Location to start and run
 if __name__ == "__main__":
     # debug method to display all nodes
-    def display_all_nodes(pather: Pather, filter: str = None):
+    def display_all_nodes(old_pather: OldPather, filter: str = None):
         while 1:
-            img = pather._screen.grab()
+            img = old_pather._screen.grab()
             display_img = img.copy()
             template_map = {}
             template_scores = {}
-            for template_type in pather._template_finder._templates:
+            for template_type in old_pather._template_finder._templates:
                 if filter is None or filter in template_type:
-                    template_match = pather._template_finder.search(template_type, img, use_grayscale=True, threshold=0.78)
+                    template_match = old_pather._template_finder.search(template_type, img, use_grayscale=True, threshold=0.78)
                     if template_match.valid:
                         template_map[template_type] = template_match.center
                         template_scores[template_type] = template_match.score
             print(template_scores)
             print(template_map)
-            for node_idx in pather._nodes:
-                for template_type in pather._nodes[node_idx]:
+            for node_idx in old_pather._nodes:
+                for template_type in old_pather._nodes[node_idx]:
                     if template_type in template_map:
                         ref_pos_screen = template_map[template_type]
                         # Get reference position of template in abs coordinates
-                        ref_pos_abs = pather._screen.convert_screen_to_abs(ref_pos_screen)
+                        ref_pos_abs = old_pather._screen.convert_screen_to_abs(ref_pos_screen)
                         # Calc the abs node position with the relative coordinates (relative to ref)
-                        node_pos_rel = pather._get_node(node_idx, template_type)
-                        node_pos_abs = pather._convert_rel_to_abs(node_pos_rel, ref_pos_abs)
-                        node_pos_abs = pather._adjust_abs_range_to_screen(node_pos_abs)
-                        x, y = pather._screen.convert_abs_to_screen(node_pos_abs)
+                        node_pos_rel = old_pather._get_node(node_idx, template_type)
+                        node_pos_abs = old_pather._convert_rel_to_abs(node_pos_rel, ref_pos_abs)
+                        node_pos_abs = old_pather._adjust_abs_range_to_screen(node_pos_abs)
+                        x, y = old_pather._screen.convert_abs_to_screen(node_pos_abs)
                         cv2.circle(display_img, (x, y), 5, (255, 0, 0), 3)
                         cv2.putText(display_img, str(node_idx), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                        x, y = pather._screen.convert_abs_to_screen(ref_pos_abs)
+                        x, y = old_pather._screen.convert_abs_to_screen(ref_pos_abs)
                         cv2.circle(display_img, (x, y), 5, (0, 255, 0), 3)
                         cv2.putText(display_img, template_type, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             # display_img = cv2.resize(display_img, None, fx=0.5, fy=0.5)
@@ -706,21 +706,21 @@ if __name__ == "__main__":
     obs_recorder = ObsRecorder(config)
     screen = Screen()
     t_finder = TemplateFinder(screen)
-    pather = Pather(screen, t_finder)
+    old_pather = OldPather(screen, t_finder)
 
-    display_all_nodes(pather, "DIA_B1S")
+    display_all_nodes(old_pather, "DIA_B1S")
 
     # # changing node pos and generating new code
     # code = ""
     # node_idx = 226
     # offset = [0, 0]
-    # for k in pather._nodes[node_idx]:
-    #     pather._nodes[node_idx][k][0] += offset[0]
-    #     pather._nodes[node_idx][k][1] += offset[1]
-    #     code += (f'"{k}": {pather._nodes[node_idx][k]}, ')
+    # for k in old_pather._nodes[node_idx]:
+    #     old_pather._nodes[node_idx][k][0] += offset[0]
+    #     old_pather._nodes[node_idx][k][1] += offset[1]
+    #     code += (f'"{k}": {old_pather._nodes[node_idx][k]}, ')
     # print(code)
 
     ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = Hammerdin(config.hammerdin, config.char, screen, t_finder, ui_manager, pather)
+    char = Hammerdin(config.hammerdin, config.char, screen, t_finder, ui_manager, old_pather)
 
-    #pather.traverse_nodes([632], char)
+    #old_pather.traverse_nodes([632], char)
