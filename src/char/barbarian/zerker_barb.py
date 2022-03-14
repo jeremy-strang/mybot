@@ -107,7 +107,7 @@ class ZerkerBarb(Barbarian):
         game_state.stop()
         return True
 
-    def _kill_mobs(self, game_state: StateMonitor, atk_len: float = 1.7, time_out: float = 30, reposition_pos_world = None) -> bool:
+    def _kill_mobs(self, game_state: StateMonitor, atk_len: float = 2.3, time_out: float = 30, reposition_pos_world = None) -> bool:
         Logger.debug(f"Beginning combat")
         start = time.time()
         last_move = start
