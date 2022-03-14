@@ -82,7 +82,7 @@ class TownManager:
 
         print(f"Current area: {current_area}")
         loc = self.get_act_from_current_area(current_area)
-        if loc == Location.A3_TOWN_START:
+        if loc is not None:
             return loc
 
         template_match = self._template_finder.search_and_wait(TOWN_MARKERS, best_match=True, time_out=time_out)
