@@ -4,7 +4,7 @@ from utils.custom_mouse import mouse
 from logger import Logger
 from utils.misc import wait, rotate_vec, unit_vector
 import random
-from old_pather import Location
+from pathing import Location
 import numpy as np
 from logger import Logger
 from config import Config

@@ -1,7 +1,7 @@
 from template_finder import TemplateFinder
 from ui import UiManager
 from ui import BeltManager
-from old_pather import Location
+from pathing import Location
 import cv2
 import time
 import keyboard

@@ -1,6 +1,6 @@
 import time
 from typing import Union
-from old_pather import Location
+from pathing import Location
 from char import IChar
 from screen import Screen
 from config import Config

@@ -2,7 +2,7 @@ from typing import Union
 from item import ItemFinder
 from template_finder import TemplateFinder
 from config import Config
-from old_pather import Location
+from pathing import Location
 from logger import Logger
 from transmute import Transmute
 from ui import UiManager
