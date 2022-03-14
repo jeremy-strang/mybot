@@ -100,9 +100,8 @@ class PathFinder:
                     dist_matrix[i, j] = cityblock(nodes[i], nodes[j])
         if end_given: dist_matrix[0, N-1] = 0
         elapsed = time.time() - start
-        print(f"Calculated distance matrix in {elapsed} seconds")
-        print(dist_matrix)
         permutation = None
+        distance = 0
         if exact:
             permutation, distance = solve_tsp_dynamic_programming(dist_matrix)
         else:
@@ -112,8 +111,7 @@ class PathFinder:
             if not end_given or (end_given and i != N-1):
                 path.append(nodes[i])
         elapsed = time.time() - start
-        print(f"Done solving TSP in {elapsed} seconds")
-        print(permutation)
+        print(f"Done solving TSP in {elapsed} seconds, distance: {distance}, permutation: {permutation}")
         return path[:-1] if end_given else path
 
     # def _solve_tsp(self, end=None):

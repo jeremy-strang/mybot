@@ -79,8 +79,8 @@ if __name__ == "__main__":
         belt_manager = BeltManager(screen, template_finder, api)
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api)
 
-        # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities(force=True)
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
         pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
@@ -101,9 +101,13 @@ if __name__ == "__main__":
 
         def do_stuff():
             print("Doing stuff...")
-            ui_manager.enable_no_pickup()
-            # pather.traverse("Pit Level 1", char)
+            data = api.get_data()
 
+            for poi in data["poi"]:
+                print(f"---- poi: {poi['label']} ----")
+                print(poi)
+            pather.traverse("SparklyChest", char, kill=False, verify_location=True)
+            pather.activate_poi("SparklyChest", "SparklyChest", char=char, offset=[-4, -6]) 
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
 
             # write_data_to_file(api.get_data(), api._raw_data_str)
@@ -130,7 +134,7 @@ if __name__ == "__main__":
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
-        print("\nReady!\n\n" + ("-" * 80))
+        print("Ready!\n\n" + ("-" * 80))
         keyboard.wait()
 
         print("Press Enter to exit ...")

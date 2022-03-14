@@ -21,6 +21,7 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from utils.misc import unit_vector, clip_abs_point
+from utils.monsters import find_poi, find_object, find_monster
 from scipy.ndimage.filters import gaussian_filter
 from pathing.path_finder import PathFinder
 
@@ -73,6 +74,38 @@ class Pather:
             f = max(fw, fh)
             abs_pos = (int(abs_pos[0] * f), int(abs_pos[1] * f))
         return abs_pos
+
+    def get_entity_coords_from_str(self, entity_str: str, collection: str="poi", entrance_in_wall=False) -> tuple[int, int]:
+        data = self._api.get_data()
+        key_dict = {
+            "poi": "label",
+            "objects": "name",
+        }
+        key = key_dict[collection] if collection in key_dict else None
+        if key is None or data is None: return None
+
+        entity = None
+        for unit in data[collection]:
+            if key in unit and unit[key].lower().startswith(entity_str.lower()):
+                entity = unit
+                break
+        if entity is None: return None
+
+        area_pos = entity["position"] - data["area_origin"]
+        if entrance_in_wall:
+            if data["map"][area_pos[1] - 1][area_pos[0]] == 1:
+                area_pos = [entity["position"][0], entity["position"][1] + 2]
+            elif data["map"][area_pos[1] + 1][area_pos[0]] == 1:
+                area_pos = [entity["position"][0], entity["position"][1] - 2]
+            elif data["map"][area_pos[1]][area_pos[0] - 1] == 1:
+                area_pos = [entity["position"][0] + 2, entity["position"][1]]
+            elif data["map"][area_pos[1]][area_pos[0] + 1] == 1:
+                area_pos = [entity["position"][0] - 2, entity["position"][1]]
+            # else:
+            #     area_pos = entity["position"]
+        # else:
+        #     area_pos = entity["position"]
+        return area_pos
 
     def activate_waypoint(self, obj: Union[tuple[int, int], str], char, entrance_in_wall: bool = True, is_wp: bool = True) -> bool:
         start = time.time()
@@ -160,7 +193,13 @@ class Pather:
 
         return False
 
-    def activate_poi(self, poi: Union[tuple[int, int], str], end_loc: str, entrance_in_wall: bool = True, typ="poi", char=None, offset: list = [0, 0]) -> bool:
+    def activate_poi(self,
+                     poi: Union[tuple[int, int], str],
+                     end_loc: str,
+                     entrance_in_wall: bool = True,
+                     typ="poi",
+                     char=None,
+                     offset: list = [0, 0]) -> bool:
         start = time.time()
         while time.time() - start < 20:
             data = self._api.get_data()
@@ -178,64 +217,53 @@ class Pather:
                             ap = p["position"] - data["area_origin"]
                             if entrance_in_wall:
                                 if data["map"][ap[1] - 1][ap[0]] == 1:
-                                    ap = [p["position"][0],
-                                          p["position"][1] + 2]
+                                    ap = [p["position"][0], p["position"][1] + 2]
                                 elif data["map"][ap[1] + 1][ap[0]] == 1:
-                                    ap = [p["position"][0],
-                                          p["position"][1] - 2]
+                                    ap = [p["position"][0], p["position"][1] - 2]
                                 elif data["map"][ap[1]][ap[0] - 1] == 1:
-                                    ap = [p["position"][0] +
-                                          2, p["position"][1]]
+                                    ap = [p["position"][0] + 2, p["position"][1]]
                                 elif data["map"][ap[1]][ap[0] + 1] == 1:
-                                    ap = [p["position"][0] -
-                                          2, p["position"][1]]
+                                    ap = [p["position"][0] - 2, p["position"][1]]
                                 else:
                                     ap = p["position"]
-                            ap = [ap[0] + offset[0], ap[1]+offset[1]]
+                            ap = [ap[0] + offset[0], ap[1] + offset[1]]
                             #pos_monitor = self._api.world_to_abs_screen(ap)
-                            player_p = data['player_pos_world'] + \
-                                data['player_offset']
+                            player_p = data['player_pos_world'] + data['player_offset']
                             pos_monitor = world_to_abs(ap, player_p)
                             if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                                pos_monitor = self._screen.convert_abs_to_monitor(
-                                    pos_monitor)
+                                pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                             else:
                                 pos_monitor = None
                 else:
                     player_p = data['player_pos_area']+data['player_offset']
                     pos_monitor = world_to_abs(poi, player_p)
                     if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                        pos_monitor = self._screen.convert_abs_to_monitor(
-                            pos_monitor)
+                        pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                     else:
                         pos_monitor = None
                 if pos_monitor is not None:
                     if typ == "objects":
                         counter = 0
                         while (obj["mode"] == 0):
-
                             stash_menu = data['menus']['Stash']
                             if stash_menu:
                                 Logger.debug('Stash menu opened!')
                                 return True
 
-                            player_p = data['player_pos_area'] + \
-                                data['player_offset']
+                            player_p = data['player_pos_area'] + data['player_offset']
                             ap = obj["position"] - data["area_origin"]
                             pos_monitor = world_to_abs(ap, player_p)
-                            pos_monitor = self._screen.convert_abs_to_monitor(
-                                pos_monitor)
+                            pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                             if char is not None:
                                 if typ == "objects":
                                     self.traverse(poi, char, obj=True)
                                 else:
                                     self.traverse(poi, char)
-                            pos_monitor = [pos_monitor[0] -
-                                           9.5, pos_monitor[1]-39.5]
+                            pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1] - 39.5]
                             mouse.move(*pos_monitor)
-                            time.sleep(0.75)
+                            wait(0.5, 0.6)
                             mouse.click("left")
-                            time.sleep(0.75)
+                            wait(0.5, 0.6)
                             if counter == 2:
                                 if char is not None:
                                     monster = char.kill_around(self._api, 1, 5, True)
@@ -250,10 +278,11 @@ class Pather:
 
                             counter += 1
                     else:
-                        pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
+                        pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1] - 39.5]
                         mouse.move(*pos_monitor)
-                        time.sleep(0.25)
+                        wait(0.3, 0.4)
                         mouse.click("left")
+                        wait(0.1)
                         # we did it!
                     return True
         return False
@@ -324,7 +353,7 @@ class Pather:
                     wait(0.04, 0.05)
                     mouse.release(button="left")
                     num_clicks += 1
-                    wait(0.1, 0.2)
+                    wait(0.25, 0.35)
                     if num_clicks == 10: randomize += 1
                     if num_clicks == 15: randomize += 2
                     if num_clicks == 20: randomize += 3
@@ -716,8 +745,7 @@ class Pather:
                     if kill:
                         density = self._config.char["density"]
                         area = self._config.char["area"]
-                        monster = char.kill_around(
-                            self._api, density, area, True)
+                        monster = char.kill_around(self._api, density, area, True)
                         if monster:
                             return monster
                         if do_pre_move:

@@ -16,3 +16,19 @@ def find_npc(npc: Npc, api: MapAssistApi):
         if name.lower() == npc.lower():
             return m
     return None
+
+def find_poi(poi: str, api: MapAssistApi):
+    data = api.get_data()
+    for poi in data["poi"]:
+        label = poi["label"]
+        if label.lower().startswith(poi.lower()):
+            return poi
+    return None
+
+def find_object(object: str, api: MapAssistApi):
+    data = api.get_data()
+    for object in data["objects"]:
+        name = object["name"]
+        if name.lower().startswith(object.lower()):
+            return object
+    return None
