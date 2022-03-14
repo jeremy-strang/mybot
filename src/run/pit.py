@@ -79,6 +79,7 @@ class Pit:
                 self._char.kill_uniques(monster)
                 picked_up_items = self._pickit.pick_up_items(self._char)  
                 monster = self._pather.traverse(node, self._char, 0, True, False, True, True, self._pickit, time_out=6.0)
+        self.post_attack()
         picked_up_items = self._pickit.pick_up_items(self._char)
         if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
         self._char.pre_travel(do_pre_buff)
@@ -90,7 +91,9 @@ class Pit:
         monster = self._pather.traverse("SparklyChest", self._char, kill=True, verify_location=True, obj=True)
         while type(monster) is dict:
             self._char.kill_uniques(monster)
+            self._char._
             picked_up_items = self._pickit.pick_up_items(self._char)
+        self.post_attack()
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True)
         self._pather.activate_poi("SparklyChest", "SparklyChest", char=self._char) 
         picked_up_items = self._pickit.pick_up_items(self._char)
