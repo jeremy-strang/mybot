@@ -259,13 +259,13 @@ class Pather:
                             pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
 
                             mouse.move(*pos_monitor)
-                            time.sleep(0.75)
+                            wait(0.3, 0.35)
                             mouse.click("left")
-                            time.sleep (0.75)
+                            wait(0.3, .35)
   
                     else:
                         mouse.move(*pos_monitor)
-                        time.sleep(0.25)
+                        wait(0.3, 0.35)
                         mouse.click("left")      
                         #we did it!
                     return True
