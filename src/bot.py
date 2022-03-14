@@ -319,12 +319,21 @@ class Bot:
                 keybind = self._char._skill_hotkeys["teleport"]
                 Logger.info(f"Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
-        elif self._curr_loc == Location.A3_TOWN_START:
-            self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16, time_out=3.0)
+        else:
+            if self._curr_loc == Location.A1_TOWN_START:
+                self._pather.traverse_walking("Rogue Encampment", self._char, obj=False, threshold=16, time_out=1.5)
+            elif self._curr_loc == Location.A2_TOWN_START:
+                self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, time_out=3.5)
+            elif self._curr_loc == Location.A3_TOWN_START:
+                self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16, time_out=3.0)
+            elif self._curr_loc == Location.A4_TOWN_START:
+                self._pather.traverse_walking("The Pandemonium Fortress", self._char, obj=False, threshold=16, time_out=1.0)
+            elif self._curr_loc == Location.A5_TOWN_START:
+                self._pather.traverse_walking("Harrogath", self._char, obj=False, threshold=16, time_out=2.0)
             is_loading = True
             while is_loading:
                 is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
-                if is_loading: time.sleep(0.4)
+                if is_loading: time.sleep(0.3)
 
         # Look at belt to figure out how many pots need to be picked up
         self._char.discover_capabilities(force=False)
