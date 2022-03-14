@@ -339,7 +339,7 @@ namespace MapAssist.Helpers
                     new Item[] { Item.Belt, Item.HeavyBelt }.Contains(belt.Item) ? 3 : 4;
 
                 playerUnit.BeltItems = Enumerable.Range(0, 4).Select(i => Enumerable.Range(0, beltSize).Select(j => beltItems.FirstOrDefault(item => item.X == i + j * 4)).ToArray()).ToArray();
-
+                
                 return new GameData
                 {
                     PlayerPosition = playerUnit.Position,
@@ -355,6 +355,7 @@ namespace MapAssist.Helpers
                     Mercs = mercList,
                     Objects = objectList,
                     Items = itemList,
+                    BeltItems = beltItems,
                     ItemLog = Items.ItemLog[_currentProcessId].ToArray(),
                     Session = session,
                     Roster = rosterData,

@@ -3,6 +3,7 @@ from typing import List
 import keyboard
 import itertools
 import cv2
+from api.mapassist import MapAssistApi
 
 from utils.misc import cut_roi, wait, color_filter
 from utils.custom_mouse import mouse
@@ -15,10 +16,11 @@ from ui import UiManager
 
 
 class BeltManager:
-    def __init__(self, screen: Screen, template_finder: TemplateFinder):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, api: MapAssistApi):
         self._config = Config()
         self._screen = screen
         self._template_finder = template_finder
+        self._api = api
         self._pot_needs = {"rejuv": 0, "health": 0, "mana": 0}
         self._item_pot_map = {
             "misc_rejuvenation_potion": "rejuv",
@@ -106,6 +108,14 @@ class BeltManager:
         :return: [need_rejuv_pots, need_health_pots, need_mana_pots]
         """
         self._pot_needs = {"rejuv": 0, "health": 0, "mana": 0}
+        data = self._api.get_data()
+        if data is not None and "belt_rejuv_pots" in data and "belt_health_pots" in data and "belt_mana_pots" in data:
+            self._pot_needs["rejuv"] = self._config.char["belt_rejuv_columns"] * 4 - data["belt_rejuv_pots"]
+            self._pot_needs["health"] = self._config.char["belt_hp_columns"] * 4 - data["belt_health_pots"]
+            self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * 4 - data["belt_mana_pots"]
+            Logger.debug(f"Loaded potion needs from memory: {self._pot_needs}")
+            return
+
         rows_left = {
             "rejuv": self._config.char["belt_rejuv_columns"],
             "health": self._config.char["belt_hp_columns"],

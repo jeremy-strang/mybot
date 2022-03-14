@@ -66,13 +66,13 @@ class Bot:
         self._template_finder = template_finder
         self._item_finder = ItemFinder()
         self._obs_recorder = obs_recorder
+        self._api = mapi
         self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._game_stats)
-        self._belt_manager = BeltManager(self._screen, self._template_finder)
+        self._belt_manager = BeltManager(self._screen, self._template_finder, self._api)
         self._old_pather = OldPather(self._screen, self._template_finder)
         self._pickit = PickIt(self._screen, self._item_finder, self._ui_manager, self._belt_manager)
         self._obs_recorder = ObsRecorder(self._config)
         # Memory reading stuff
-        self._api = mapi
 
         self._pather = Pather(screen, self._api)
 
@@ -306,9 +306,16 @@ class Bot:
         self._game_stats._did_chicken_last_run = False
         self.trigger_or_stop("maintenance")
 
+    def _wait_to_load(self):
+        is_loading = True
+        while is_loading:
+            is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
+            if is_loading: time.sleep(0.3)
+
     def on_maintenance(self):
         # Handle picking up corpse in case of death
         if self._pick_corpse:
+            self._wait_to_load()
             self._pick_corpse = False
             time.sleep(1.6)
             DeathManager.pick_up_corpse(self._screen)
@@ -330,23 +337,26 @@ class Bot:
                 self._pather.traverse_walking("The Pandemonium Fortress", self._char, obj=False, threshold=16, time_out=1.0)
             elif self._curr_loc == Location.A5_TOWN_START:
                 self._pather.traverse_walking("Harrogath", self._char, obj=False, threshold=16, time_out=2.0)
-            is_loading = True
-            while is_loading:
-                is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
-                if is_loading: time.sleep(0.3)
 
         # Look at belt to figure out how many pots need to be picked up
-        self._char.discover_capabilities(force=False)
         self._belt_manager.update_pot_needs()
 
-        # If character is a singer barb, check to ensure we are on weapon slot 1
-        if self._config.char["type"] == "singer_barb" and self._char.get_active_weapon_tab() == 2:
-            self._char.switch_weapon()
-
         # Check if should need some healing
-        img = self._screen.grab()
         buy_pots = self._belt_manager.should_buy_pots()
-        if HealthManager.get_health(img) < 0.6 or HealthManager.get_mana(img) < 0.2 or buy_pots:
+
+        health_pct = 1.0
+        mana_pct = 1.0
+        data = self._api.get_data()
+        if data is not None:
+            health_pct = data["player_health_pct"]
+            mana_pct = data["player_mana_pct"]
+            Logger.debug(f"Loaded player HP/MP from memory, HP: {round(health_pct, 1)}, MP: {round(mana_pct, 1)}")
+        else:
+            img = self._screen.grab()
+            health_pct = HealthManager.get_health(img)
+            mana_pct = HealthManager.get_mana(img)
+
+        if health_pct < 0.6 or mana_pct < 0.2 or buy_pots:
             if buy_pots:
                 Logger.info("Buy pots at next possible Vendor")
                 pot_needs = self._belt_manager.get_pot_needs()
@@ -359,6 +369,14 @@ class Bot:
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
 
+        # 
+        self._wait_to_load()
+        self._char.discover_capabilities(force=False)
+
+        # If character is a singer barb, check to ensure we are on weapon slot 1
+        if self._config.char["type"] == "singer_barb" and self._char.get_active_weapon_tab() == 2:
+            self._char.switch_weapon()
+    
         # Check if we should force stash (e.g. when picking up items by accident or after failed runs or chicken/death)
         force_stash = False
         self._no_stash_counter += 1

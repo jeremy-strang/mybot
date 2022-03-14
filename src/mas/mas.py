@@ -89,7 +89,11 @@ class MAS(Thread):
 			"used_skill": None,
 			"right_skill": None,
 			"left_skill": None,
-			"menus":None,
+			"menus": None,
+			"player_health": 0.0,
+			"player_mana": 0.0,
+			"player_health_pct": 1.0,
+			"player_mana_pct": 1.0,
 		}
 
 		botty_data["menus"] = data["wp_menu"]
@@ -99,6 +103,7 @@ class MAS(Thread):
 		botty_data["current_area"] = data["current_area"]
 		botty_data["belt_health_pots"] = data["belt_health_pots"]
 		botty_data["belt_mana_pots"] = data["belt_mana_pots"]
+		botty_data["belt_rejuv_pots"] = data["belt_rejuv_pots"]
 		botty_data["player_stats"] = data["player_stats"]
 		botty_data["player_gold"] = data["player_gold"]
 		botty_data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
@@ -112,6 +117,17 @@ class MAS(Thread):
 		botty_data["player_pos_world"] = np.array([px_int, py_int])
 		self._player_pos = botty_data["player_pos_world"]
 		botty_data["player_pos_area"] = botty_data["player_pos_world"] - botty_data["area_origin"]
+		
+		health = data["player_life"]
+		max_health = data["player_max_life"]
+		mana = data["player_mana"]
+		max_mana = data["player_max_mana"]
+		botty_data["player_health"] = health
+		botty_data["player_max_health"] = max_health
+		botty_data["player_mana"] = mana
+		botty_data["player_max_mana"] = max_mana
+		botty_data["player_health_pct"] = float(health) / max_health if max_health > 0 else 0.0
+		botty_data["player_mana_pct"] = float(mana) / max_mana if max_mana > 0 else 0.0
 
 		px_float = float(data["player_pos"]["X"])-float(px_int)
 		py_float = float(data["player_pos"]["Y"])-float(py_int)

@@ -98,13 +98,19 @@ namespace MapAssist.Botty
 
                         UnitItem[] flattenedBelt = playerUnit.BeltItems.SelectMany(x => x).ToArray();
 
-                        var belt_health_pots = flattenedBelt.Where(item =>
-                            item != null && (item.ItemBaseName ?? "").Contains("Healing Potion")).Count();
-                        var belt_mana_pots = flattenedBelt.Where(item =>
-                            item != null && (item.ItemBaseName ?? "").Contains("Mana Potion")).Count();
-                        var belt_rejuv_pots = flattenedBelt.Where(item =>
-                            item != null && (item.ItemBaseName ?? "").Contains("Rejuvenation Potion")).Count();
-                        
+                        var belt_health_pots = 0;
+                        var belt_mana_pots = 0;
+                        var belt_rejuv_pots = 0;
+                        if (_gameData.BeltItems != null)
+                        {
+                            foreach (var item in _gameData.BeltItems)
+                            {
+                                if ((item.ItemBaseName ?? "").Contains("Healing Potion")) belt_health_pots++;
+                                else if ((item.ItemBaseName ?? "").Contains("Mana Potion")) belt_mana_pots++;
+                                else if ((item.ItemBaseName ?? "").Contains("Rejuvenation Potion")) belt_rejuv_pots++;
+                            }
+                        }
+
                         var msg = new
                         {
                             success = true,
@@ -228,7 +234,7 @@ namespace MapAssist.Botty
             }
             catch (Exception ex)
             {
-                //_log.Error(ex);
+                _log.Error(ex);
             }
 
             return JsonConvert.SerializeObject(new { success = false }, formatting);

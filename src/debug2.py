@@ -79,7 +79,7 @@ if __name__ == "__main__":
         pather = Pather(screen, api)
         item_finder = ItemFinder()
         ui_manager = UiManager(screen, template_finder, obs_recorder, pather, game_stats)
-        belt_manager = BeltManager(screen, template_finder)
+        belt_manager = BeltManager(screen, template_finder, api)
         
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager)
 

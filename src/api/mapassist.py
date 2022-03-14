@@ -58,7 +58,7 @@ class MapAssistApi:
                 events.emit("data", self.data)
             else:
                 self._errors += 1                
-        except:
+        except BaseException as e:
             traceback.print_exc()
             self._errors += 1
         if self._errors > 270:
