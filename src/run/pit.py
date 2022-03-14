@@ -91,8 +91,8 @@ class Pit:
         while type(monster) is dict:
             self._char.kill_uniques(monster)
             picked_up_items = self._pickit.pick_up_items(self._char)
-        self._pather.traverse("Sparkly Chest", self._char, kill=False, verify_location=True)
-        self._pather.activate_poi("SparklyChest", "SparklyChest", char=self._char]) 
+        self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True)
+        self._pather.activate_poi("SparklyChest", "SparklyChest", char=self._char) 
         picked_up_items = self._pickit.pick_up_items(self._char)
 
         self._obs_recorder.stop_recording_if_enabled()
