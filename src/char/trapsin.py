@@ -9,7 +9,7 @@ from screen import Screen
 from utils.misc import wait, rotate_vec, unit_vector
 import random
 from typing import Tuple
-from old_pather import Location, OldPather
+from pathing import Location, OldPather
 import numpy as np
 
 from api.mapassist import MapAssistApi

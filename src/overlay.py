@@ -313,7 +313,7 @@ if __name__ == "__main__":
     from ui import UiManager, char_selector
     from char.sorceress import LightSorc, BlizzSorc, NovaSorc
     from screen import Screen
-    from old_pather import Location, OldPather
+    from pathing import Location, OldPather
     from dearpygui.dearpygui import *
     from obs import ObsRecorder
 

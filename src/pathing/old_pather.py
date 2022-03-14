@@ -12,7 +12,6 @@ from config import Config
 from logger import Logger
 from screen import Screen
 from template_finder import TemplateFinder
-from char import IChar
 
 
 class Location:
@@ -466,7 +465,7 @@ class OldPather:
     def _convert_rel_to_abs(rel_loc: Tuple[float, float], pos_abs: Tuple[float, float]) -> Tuple[float, float]:
         return (rel_loc[0] + pos_abs[0], rel_loc[1] + pos_abs[1])
 
-    def traverse_nodes_fixed(self, key: Union[str, List[Tuple[float, float]]], char: IChar) -> bool:
+    def traverse_nodes_fixed(self, key: Union[str, List[Tuple[float, float]]], char) -> bool:
         if not char.capabilities.can_teleport_natively:
             error_msg = "Teleport is required for static pathing"
             Logger.error(error_msg)
@@ -563,7 +562,7 @@ class OldPather:
     def traverse_nodes(
         self,
         path: Union[tuple[Location, Location], list[int]],
-        char: IChar,
+        char,
         time_out: float = 5,
         force_tp: bool = False,
         do_pre_move: bool = True,

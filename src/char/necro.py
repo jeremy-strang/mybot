@@ -8,7 +8,7 @@ from screen import Screen
 from utils.misc import wait, rotate_vec, unit_vector
 import random
 from typing import Tuple, Union, List
-from old_pather import Location, OldPather
+from pathing import Location, OldPather
 import numpy as np
 import time
 from utils.misc import cut_roi, is_in_roi

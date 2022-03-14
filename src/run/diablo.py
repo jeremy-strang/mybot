@@ -4,7 +4,7 @@ import time
 from char.i_char import IChar
 from config import Config
 from logger import Logger
-from old_pather import Location, OldPather
+from pathing import Location, OldPather
 from typing import Union
 from item.pickit import PickIt
 from template_finder import TemplateFinder
