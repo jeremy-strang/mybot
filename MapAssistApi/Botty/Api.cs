@@ -180,7 +180,11 @@ namespace MapAssist.Botty
                         foreach (PointOfInterest p in _pointsOfInterest)
                         {
                             //Console.WriteLine(p.Label);
-                            msg.points_of_interest.Add(new { position = p.Position, type = p.Type, label = p.Label });
+                            msg.points_of_interest.Add(new {
+                                position = p.Position,
+                                type = p.Type,
+                                label = p.Label,
+                            });
                         }
 
                         foreach (UnitObject o in _gameData.Objects)
@@ -193,7 +197,8 @@ namespace MapAssist.Botty
                                     id = o.UnitId,
                                     selectable = o.ObjectData.InteractType != 0x00,
                                     name = ((GameObject)o.TxtFileNo).ToString(),
-                                    mode = o.Struct.Mode
+                                    mode = o.Struct.Mode,
+                                    is_hovered = o.IsHovered,
                                 });
                             }
                         }
@@ -205,7 +210,7 @@ namespace MapAssist.Botty
                             {
                                 text = item.Text,
                                 hash = item.ItemHashString,
-                                unit_item = item.UnitItem.ToString()
+                                unit_item = item.UnitItem.ToString(),
                             });
                         }
 
@@ -219,7 +224,8 @@ namespace MapAssist.Botty
                                 flags = item.ItemData.ItemFlags,
                                 quality = item.ItemData.ItemQuality,
                                 name = Items.GetItemName(item),
-                                base_name = item.ItemBaseName
+                                base_name = item.ItemBaseName,
+                                is_hovered = item.IsHovered,
                             });
                         }
 

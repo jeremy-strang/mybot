@@ -2,6 +2,8 @@ import time
 import keyboard
 import cv2
 from operator import itemgetter
+from api.mapassist import MapAssistApi
+from pathing import Pather
 
 from utils.custom_mouse import mouse
 from config import Config
@@ -14,13 +16,20 @@ from char import IChar
 
 
 class PickIt:
-    def __init__(self, screen: Screen, item_finder: ItemFinder, ui_manager: UiManager, belt_manager: BeltManager):
+    def __init__(self,
+                 screen: Screen,
+                 item_finder: ItemFinder,
+                 ui_manager: UiManager,
+                 belt_manager: BeltManager,
+                 api: MapAssistApi,
+                 ):
         self._item_finder = item_finder
         self._screen = screen
         self._belt_manager = belt_manager
         self._ui_manager = ui_manager
         self._config = Config()
         self._last_closest_item: Item = None
+        self._api = api
 
     def pick_up_items(self, char: IChar, is_at_trav: bool = False) -> bool:
         """
@@ -150,7 +159,7 @@ class PickIt:
                     time.sleep(0.1)
                     # save closeset item for next time to check potential endless loops of not reaching it or of telekinsis/teleport
                     self._last_closest_item = closest_item
-
+    
         keyboard.send(self._config.char["show_items"])
         elapsed = round(time.time() - start, 1)
         Logger.debug(f"Done picking {len(picked_up_items)} up items in {elapsed} seconds")

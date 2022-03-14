@@ -77,7 +77,7 @@ if __name__ == "__main__":
         item_finder = ItemFinder()
         ui_manager = UiManager(screen, template_finder, game_stats)
         belt_manager = BeltManager(screen, template_finder, api)
-        pickit = PickIt(screen, item_finder, ui_manager, belt_manager)
+        pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api)
 
         # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
@@ -102,13 +102,8 @@ if __name__ == "__main__":
         def do_stuff():
             print("Doing stuff...")
             data = api.get_data()
-            belt_health_pots = data["belt_health_pots"]
-            belt_mana_pots = data["belt_mana_pots"]
-            belt_rejuv_pots = data["belt_rejuv_pots"]
-            print(f"belt_health_pots: {belt_health_pots}")
-            print(f"belt_mana_pots:   {belt_mana_pots}")
-            print(f"belt_rejuv_pots:   {belt_rejuv_pots}")
-            # pickit.pick_up_items(char, False)
+
+        
             # pather.traverse("Pit Level 1", char)
 
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)

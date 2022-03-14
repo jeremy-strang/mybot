@@ -47,6 +47,13 @@ class Trav:
         if self._ui_manager.use_wp(3, 7):
             return Location.A3_TRAV_START
         return False
+    
+    def _avoid_durance(self):
+        # Hack in case we end up in Durance by accidentally clicking the stairs
+        data = self._api.get_data()
+        if data is not None and data["current_area"] == "DuranceOfHateLevel1":
+            if not self._pather.go_to_area("Travincal", "Travincal", True, time_out=5.0):
+                self._pather.go_to_area("Travincal", "Travincal", True, time_out=5.0)
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         tele_swap = self._config.char["teleport_weapon_swap"]
@@ -74,6 +81,7 @@ class Trav:
         if self._char._char_config['type'] == 'hammerdin':
             game_state = StateMonitor(['CouncilMember'], self._api, unique_id=-1, many=True)
             self._char.kill_council(game_state)
+            self._avoid_durance()
             game_state.stop()
         elif self._char._char_config['type'] == 'barbarian' or self._char._char_config['type'] == 'zerker_barb':
             # First kill council
@@ -81,6 +89,7 @@ class Trav:
             # Loot once before hork to get anything that might get covered up after hork
             picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True)
             wait(0.1, 0.2)
+            self._avoid_durance()
             # Hork hork hork
             self._char.do_hork(names=["CouncilMember"], boundary=[122, 80, 50, 50])
         elif self._char._char_config['type'] == 'light_sorc' or self._char._char_config['type'] == 'necro':
@@ -90,13 +99,15 @@ class Trav:
             y = game_state._area_pos[1]
             wait(0.05, .1)
             game_state.stop()
+            self._avoid_durance()
             self._pather.traverse((x, y), self._char, time_out=4.0)
         else:
             raise ValueError("Unsupport character")
 
         # Check for loot once wherever we ended up after combat
         picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True)
-        wait(0.1, 0.2)
+        wait(0.1, 0.15)
+        self._avoid_durance()
 
         # If we can teleport we want to move back inside and also check loot there
         if self._char.capabilities.can_teleport_natively or self._char.capabilities.can_teleport_with_charges:
@@ -104,6 +115,7 @@ class Trav:
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
             #wait(0.1, 0.2)
             # Go back to a good spot to TP
+            self._avoid_durance()
             self._pather.traverse((154, 111), self._char, time_out=4.0)
 
         else: # Else we need to make sure we loot both inside and outside the council room

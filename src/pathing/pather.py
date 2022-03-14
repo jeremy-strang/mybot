@@ -319,14 +319,16 @@ class Pather:
                                    pos_monitor[1] + random.randint(-randomize, +randomize))
                     pos_monitor = [pos_monitor[0], pos_monitor[1]]
                     _mouse.move(*pos_monitor, duration=.025)
-                    time.sleep(0.1)
+                    wait(0.1, 0.15)
                     mouse.press(button="left")
-                    time.sleep(.1)
+                    wait(0.04, 0.05)
                     mouse.release(button="left")
                     num_clicks += 1
+                    wait(0.1, 0.2)
                     if num_clicks == 10: randomize += 1
                     if num_clicks == 15: randomize += 2
                     if num_clicks == 20: randomize += 3
+                    data = self._api.get_data()
                 if data["current_area"] == end_loc:
                     Logger.debug(f"Done going to area {end_loc} after {time.time() - start} sec")
                     return True

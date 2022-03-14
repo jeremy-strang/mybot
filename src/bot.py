@@ -70,11 +70,11 @@ class Bot:
         self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._game_stats)
         self._belt_manager = BeltManager(self._screen, self._template_finder, self._api)
         self._old_pather = OldPather(self._screen, self._template_finder)
-        self._pickit = PickIt(self._screen, self._item_finder, self._ui_manager, self._belt_manager)
+        self._pather = Pather(screen, self._api)
+        self._pickit = PickIt(self._screen, self._item_finder, self._ui_manager, self._belt_manager, self._api)
         self._obs_recorder = ObsRecorder(self._config)
         # Memory reading stuff
 
-        self._pather = Pather(screen, self._api)
 
         # Create Character
         if self._config.char["type"] in ["sorceress", "light_sorc"]:
