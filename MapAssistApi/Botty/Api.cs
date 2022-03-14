@@ -234,7 +234,7 @@ namespace MapAssist.Botty
             }
             catch (Exception ex)
             {
-                _log.Error(ex);
+                //_log.Error(ex);
             }
 
             return JsonConvert.SerializeObject(new { success = false }, formatting);
