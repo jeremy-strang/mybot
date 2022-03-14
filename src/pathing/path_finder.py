@@ -18,56 +18,9 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from scipy.ndimage.filters import gaussian_filter
-from utils.misc import unit_vector, clip_abs_point
+from utils.misc import cluster_nodes, unit_vector, clip_abs_point
 from python_tsp.heuristics import solve_tsp_simulated_annealing, solve_tsp_local_search
 from python_tsp.exact import solve_tsp_dynamic_programming
-
-def closest_node(node, nodes):
-    return nodes[cdist([node], nodes).argmin()]
-
-def cluster_nodes(nodes, max_cluster_ct = None):
-    features = np.array([[0, 0]])
-    clusters = np.array([[0, 0]])
-    x = 0
-    y = 0
-    for node in nodes:
-        for key in node:
-            if key:
-                features = np.concatenate((features, [np.array([x,y])]))
-            x += 1
-        x = 0
-        y += 1
-    features[0, 0:-1, ...] = features[0, 1:, ...]
-    cluster_count = int(features.size / 3000)
-    if max_cluster_ct is not None:
-        cluster_count = min(max_cluster_ct, cluster_count)
-    while features.size > 2048:
-        features = np.delete(features, list(range(0, features.shape[0], 2)), axis=0)
-    clusters_k, distortion = kmeans(features.astype(float), cluster_count,iter=5)
-    for c in clusters_k:
-        closest = closest_node(c, features)
-        clusters = np.concatenate((clusters, [closest]))
-    clusters = np.delete(clusters, 0, 0)
-    return clusters
-
-def make_path_bfs(start, end, grid):
-    wall = 0
-    queue = deque([[start]])
-    seen = set([start])
-    width = len(grid)
-    height = len(grid[0])
-    while queue:
-        path = queue.popleft()
-        x, y = path[-1]
-        if (x, y) == end:
-            if path is None:
-                print("NO PATH")
-                print(path)
-            return path
-        for x2, y2 in ((x+1, y), (x-1, y), (x, y+1), (x, y-1), (x-1, y-1), (x+1, y+1), (x+1, y-1), (x-1, y+1)):
-            if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:
-                queue.append(path + [(x2, y2)])
-                seen.add((x2, y2))
 
 def make_path_astar(start, end, grid):
     float_map = grid.astype(np.float32)
@@ -84,13 +37,14 @@ def make_path_astar(start, end, grid):
     return path
 
 class PathFinder:
-    def __init__(self, api: MapAssistApi):
+    def __init__(self, api: MapAssistApi, max_cluster_ct=12):
         self._api = api
         self._data = None
         self._map = None
         self._current_area = None
         self._clusters = None
         self._weighted_map = None
+        self._max_cluster_ct = max_cluster_ct
         self.player_node = None
         self.update_map()
     
@@ -104,7 +58,7 @@ class PathFinder:
             if data["current_area"] != self._current_area:
                 self._map = data["map"]
                 self._current_area = data["current_area"]
-                self._clusters = cluster_nodes(self._map, 12)
+                self._clusters = cluster_nodes(self._map, self._max_cluster_ct)
                 # print(self._clusters)
                 float_map = self._map.astype(np.float32)
                 float_map[float_map == 0] = 999999.0
@@ -121,26 +75,6 @@ class PathFinder:
         path = np.flip(path, 1)
         path = path.tolist()
         return path
-
-    def make_path_bfs(self, start, end):
-        wall = 0
-        queue = deque([[start]])
-        seen = set([start])
-        width = len(self._map)
-        height = len(self._map[0])
-        while queue:
-            path = queue.popleft()
-            x, y = path[-1]
-            if (x, y) == end:
-                if path is None:
-                    print("NO PATH")
-                    print(path)
-                return path
-            for x2, y2 in ((x+1, y), (x-1, y), (x, y+1), (x, y-1), (x-1, y-1), (x+1, y+1), (x+1, y-1), (x-1, y+1)):
-                if 0 <= x2 < width and 0 <= y2 < height and self._map[y2][x2] != wall and (x2, y2) not in seen:
-                    queue.append(path + [(x2, y2)])
-                    seen.add((x2, y2))
-        return []
     
     def solve_tsp(self, end=None, exact=False):
         start = time.time()

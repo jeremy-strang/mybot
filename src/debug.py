@@ -108,21 +108,20 @@ if __name__ == "__main__":
 
             # write_data_to_file(api.get_data(), api._raw_data_str)
 
-            data = api.get_data()
-            akara = find_npc(Npc.AKARA, api)
-            pf = PathFinder(api)
-            start = pf.player_node
+            char.kill_around(api)
+            # data = api.get_data()
+            # akara = find_npc(Npc.AKARA, api)
+            # pf = PathFinder(api)
+            # start = pf.player_node
 
-            if akara is not None:
-                path = pf.solve_tsp(end=akara["position"] - data["area_origin"])
-            else:
-                path = pf.solve_tsp()
-            # path = pf.solve_tsp()
-            api._current_path = []
-            for node in path:
-                # pather_v2.traverse_walking(node, char, threshold=8, end_dist=10)
-                api._current_path += pf.make_path_astar(start, node, True)
-                start = node
+            # if akara is not None:
+            #     path = pf.solve_tsp(end=akara["position"] - data["area_origin"])
+            # else:
+            #     path = pf.solve_tsp()
+            # api._current_path = []
+            # for node in path:
+            #     api._current_path += pf.make_path_astar(start, node, True)
+            #     start = node
 
             # api._current_path = path
             # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)

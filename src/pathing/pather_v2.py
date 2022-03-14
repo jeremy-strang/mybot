@@ -22,7 +22,7 @@ from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from utils.misc import unit_vector, clip_abs_point
 from scipy.ndimage.filters import gaussian_filter
-from pathing.path_finder import PathFinder, make_path_bfs, make_path_astar, cluster_nodes
+from pathing.path_finder import PathFinder
 
 class PatherV2:
     def __init__(self, screen: Screen, api: MapAssistApi):
