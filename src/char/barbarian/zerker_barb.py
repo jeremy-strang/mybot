@@ -59,8 +59,9 @@ class ZerkerBarb(Barbarian):
 
     def post_attack(self):
         mouse.release(button="left")
+        wait(0.03, 0.05)
         keyboard.send(self._char_config["stand_still"], do_press=False) 
-        wait(0.1, 0.15)
+        wait(0.03, 0.05)
 
     def mouse_follow_unit(self, monster, offset):
         player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
@@ -75,7 +76,7 @@ class ZerkerBarb(Barbarian):
         counter = 0
         while dist > 7 and counter < 5:
             counter += 1
-            wait(0.1, 0.2)
+            wait(0.3, 0.5)
             monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
             self._pather.move_to_monster(self, monster)
             dist = self.distance(monster, offset)
@@ -134,6 +135,7 @@ class ZerkerBarb(Barbarian):
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._char_config["battle_orders"])
         wait(0.03, 0.05)
+        self.post_attack()
         Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
         return True
 
