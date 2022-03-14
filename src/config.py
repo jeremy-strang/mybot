@@ -51,6 +51,7 @@ class Config:
     barbarian = {}
     necro = {}
     zerker_barb = {}
+    singer_barb = {}
     basic = {}
     basic_ranged = {}
     active_branch = ""
