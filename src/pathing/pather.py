@@ -480,7 +480,7 @@ class Pather:
                     randomize = 0
                     prev_p = [0, 0]
                     delta_p = 0
-                    while len(target) > 0:
+                    while len(target) > 0 and time.time() - start < time_out:
                         try:
                             data = self._api.get_data()
                         except:
