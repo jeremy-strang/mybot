@@ -79,7 +79,7 @@ class Pit:
                 self._char.kill_uniques(monster)
                 picked_up_items = self._pickit.pick_up_items(self._char)  
                 monster = self._pather.traverse(node, self._char, 0, True, False, True, True, self._pickit, time_out=6.0)
-        self.post_attack()
+        self._char.post_attack()
         picked_up_items = self._pickit.pick_up_items(self._char)
         if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
         self._char.pre_travel(do_pre_buff)
