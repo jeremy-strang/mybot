@@ -182,11 +182,8 @@ class Barbarian(IChar):
         wait(self._cast_duration, self._cast_duration + 0.03)
         # Make sure the switch back to the original weapon is good
         if switch_back:
-            print("switching back...")
             self.switch_weapon()
             self.verify_active_weapon_tab()
-        else:
-            print("not switching back...")
 
     def pre_buff(self, switch_back=True):
         if self._char_config["barb_pre_buff_weapon_swap"]:
