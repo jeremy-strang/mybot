@@ -769,22 +769,24 @@ class UiManager():
         Checks the best match between enabled and disabled an retrys if already set.
         :return: Returns True if we succesfully set the nopickup option
         """
+        wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.08, 0.15)
+        wait(0.08, 0.14)
         keyboard.write('/nopickup', delay=.10)
+        wait(0.02, 0.04)
         keyboard.send('enter')
-        wait(0.08, 0.15)
+        wait(0.17, 0.22)
         no_pickup = self._template_finder.search_and_wait(["ITEM_PICKUP_ENABLED", "ITEM_PICKUP_DISABLED"], roi=self._config.ui_roi["no_pickup"], best_match=True, time_out=3)
         if not no_pickup.valid:
             return False
         if no_pickup.name == "ITEM_PICKUP_DISABLED":
             return True
         keyboard.send('enter')
-        wait(0.08, 0.15)
+        wait(0.17, 0.22)
         keyboard.send('up')
-        wait(0.08, 0.15)
+        wait(0.08, 0.14)
         keyboard.send('enter')
-        wait(0.08, 0.15)
+        wait(0.08, 0.14)
         return True
 
     def buy_pots(self, healing_pots: int = 0, mana_pots: int = 0):

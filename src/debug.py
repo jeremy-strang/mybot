@@ -101,9 +101,7 @@ if __name__ == "__main__":
 
         def do_stuff():
             print("Doing stuff...")
-            data = api.get_data()
-
-        
+            ui_manager.enable_no_pickup()
             # pather.traverse("Pit Level 1", char)
 
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
