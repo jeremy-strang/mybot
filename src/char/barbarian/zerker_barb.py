@@ -125,7 +125,7 @@ class ZerkerBarb(Barbarian):
                     move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
-                    self.move(move_pos_m, force_tp=True)
+                    self.move(move_pos_m, force_tp=True, force_move=True)
                     last_move = time.time()
                 else:
                     # self.cast_melee("berserk", atk_len, target_pos)
