@@ -110,6 +110,12 @@ if __name__ == "__main__":
                         print(f"belt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}")
                         if len(belt) > i and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
                             print (f"potion{i+1}")
+            
+
+            print(data["corpses"])
+            print(data["player_corpse"])
+            
+            
             # print(data["belt_items"])
 
             # bank = None
@@ -122,9 +128,10 @@ if __name__ == "__main__":
             # bot._town_manager.a3.open_stash(Location.A3_TOWN_START)
             # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
+            write_data_to_file(api.get_data(), api._raw_data_str)
+
             stop_debug(game_controller, overlay)
 
-            # write_data_to_file(api.get_data(), api._raw_data_str)
 
             # akara = find_npc(Npc.AKARA, api)
             # pf = PathFinder(api)

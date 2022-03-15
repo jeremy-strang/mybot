@@ -313,6 +313,7 @@ class Bot:
         data = self._api.get_data()
         if data is not None:
             merc_alive = "player_merc" in data and data["player_merc"] is not None and data["player_merc"]["mode"] != 12
+            self._pick_corpse = "player_corpse" in data and data["player_corpse"] is not None and type(data["player_corpse"]) is dict
 
         # Handle picking up corpse in case of death
         if self._pick_corpse:

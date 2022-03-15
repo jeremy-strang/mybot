@@ -110,11 +110,13 @@ class MAS(Thread):
         _data["belt_health_pots"] = data["belt_health_pots"]
         _data["belt_mana_pots"] = data["belt_mana_pots"]
         _data["belt_rejuv_pots"] = data["belt_rejuv_pots"]
+        _data["flattened_belt"] = data["flattened_belt"]
         _data["player_stats"] = data["player_stats"]
         _data["player_gold"] = data["player_gold"]
         _data["player_id"] = data["player_id"]
         _data["player_merc"] = data["player_merc"]
-        _data["flattened_belt"] = data["flattened_belt"]
+        _data["player_corpse"] = data["player_corpse"]
+        _data["corpses"] = data["corpses"]
         _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
         _data["map"][_data["map"] == 1] = 0
         _data["map"] += 1

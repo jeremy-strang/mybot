@@ -140,11 +140,12 @@ class BeltManager:
         if read_memory:
             wait(0.05, 0.07)
             data = self._api.get_data()
+            rows = self._config.char["belt_rows"]
             if data is not None and "belt_rejuv_pots" in data and "belt_health_pots" in data and "belt_mana_pots" in data:
-                self._pot_needs["rejuv"] = self._config.char["belt_rejuv_columns"] * self._config.char["belt_rows"] - data["belt_rejuv_pots"]
-                self._pot_needs["health"] = self._config.char["belt_hp_columns"] * self._config.char["belt_rows"] - data["belt_health_pots"]
-                self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * self._config.char["belt_rows"] - data["belt_mana_pots"]
-                print(self._pot_needs)
+                self._pot_needs["rejuv"] = max(0, self._config.char["belt_rejuv_columns"] * rows - data["belt_rejuv_pots"])
+                self._pot_needs["health"] = max(0, self._config.char["belt_hp_columns"] * rows - data["belt_health_pots"])
+                self._pot_needs["mana"] = max(0, self._config.char["belt_mp_columns"] * rows - data["belt_mana_pots"])
+            print(self._pot_needs)
         # else:
         #     rows_left = {
         #         "rejuv": self._config.char["belt_rejuv_columns"],

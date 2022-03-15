@@ -110,6 +110,7 @@ namespace MapAssist.Botty
                                 else if ((item.ItemBaseName ?? "").Contains("Rejuvenation Potion")) belt_rejuv_pots++;
                             }
                         }
+
                         var merc = _gameData.Mercs.Where(a => a.IsPlayerOwned).FirstOrDefault();
                         dynamic player_merc = null;
                         if (merc != null)
@@ -133,6 +134,29 @@ namespace MapAssist.Botty
                             };
                         }
 
+                        var corpses = new List<dynamic>();
+                        dynamic player_corpse = null;
+
+                        foreach (var corpse in _gameData.Corpses.Where(a => a.IsCorpse && a.IsPlayer).ToList())
+                        {
+                            var pcorpse = new
+                            {
+                                position = corpse.Position,
+                                id = corpse.UnitId,
+                                name = corpse.Name,
+                                is_hovered = corpse.IsHovered,
+                                is_corpse = corpse.IsCorpse,
+                                player_class = corpse.Struct.playerClass,
+                                unit_type = corpse.Struct.UnitType,
+                                mode = corpse.Struct.Mode,
+                            };
+                            corpses.Add(pcorpse);
+                            if (pcorpse.name == playerUnit.Name)
+                            {
+                                player_corpse = pcorpse;
+                            }
+                        }
+
                         var msg = new
                         {
                             success = true,
@@ -141,6 +165,8 @@ namespace MapAssist.Botty
                             items = new List<dynamic>(),
                             item_log = new List<dynamic>(),
                             points_of_interest = new List<dynamic>(),
+                            corpses,
+                            player_corpse,
                             player_pos = _gameData.PlayerPosition,
                             area_origin = _areaData.Origin,
                             collision_grid = _areaData.CollisionGrid,
