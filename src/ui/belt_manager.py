@@ -108,9 +108,9 @@ class BeltManager:
     def _get_potion_key(self, potion_type, merc, stats) -> str:
         data = self._api.get_data()
         if data is not None:
-            if "flattened_belt" in data:
+            if "flattened_belt" in data and data["flattened_belt"] is not None:
                 belt = data["flattened_belt"]
-                for i in range(4):
+                for i in range(min(len(belt), 4)):
                     if len(belt) > i and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
                         return f"potion{i+1}"
         img = self._screen.grab()

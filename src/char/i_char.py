@@ -473,13 +473,14 @@ class IChar:
         else:
             return False
     
-    def kill_around(self,  api, density=15, area=15, special = False):
+    def kill_around(self,  api, density=7, area=25, special = False):
         special_types = [
             MonsterType.SUPER_UNIQUE,
             MonsterType.UNIQUE,
             MonsterType.CHAMPION,
             MonsterType.POSSESSED,
-            MonsterType.GHOSTLY
+            MonsterType.GHOSTLY,
+            MonsterType.MINION,
         ]
         def _calc_distance(mon):
             if mon["bossID"] != 0: return 0
