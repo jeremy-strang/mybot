@@ -266,15 +266,13 @@ namespace MapAssist.Botty
                             });
                         }
 
-                        foreach (UnitItem item in _gameData.AllItems)
+                        foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
                         {
-
                             dynamic istats = null;
-
+                            
                             if (item.Stats != null)
                             {
                                 istats = item.Stats.Select(it =>
-
                                 {
                                     Stat key = it.Key;
                                     var value = it.Value;
@@ -290,7 +288,7 @@ namespace MapAssist.Botty
                             msg.items.Add(new
                             {
                                 position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
-                                mode = item.ItemMode,
+                                mode = item.ItemMode.ToString(),
                                 id = item.UnitId,
                                 flags = item.ItemData.ItemFlags.ToString(),
                                 quality = item.ItemData.ItemQuality.ToString(),

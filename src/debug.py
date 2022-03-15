@@ -119,7 +119,7 @@ if __name__ == "__main__":
             # print(belt_manager.get_pot_needs())
 
             # bot._town_manager.open_stash(Location.A4_TOWN_START)
-            # write_data_to_file(data, api._raw_data_str)
+            write_data_to_file(data, api._raw_data_str)
             
             
             # print(data["belt_items"])
