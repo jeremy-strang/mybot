@@ -591,7 +591,8 @@ class IChar:
             while len(unlooted) > 0:
                 data = self._api.get_data()
                 if data is not None:
-                    self._pather.traverse(unlooted[0]["position"] - data["area_origin"], self, verify_location=False, time_out=7, dest_distance=10)
+                    if not self._pather.traverse(unlooted[0]["position"] - data["area_origin"], self, verify_location=False, time_out=6, dest_distance=10):
+                        looted_uniques.add(unlooted[0]["id"])
                 picked_up_items += pickit()
                 for m in unlooted:
                     if m["dist"] < 15:
