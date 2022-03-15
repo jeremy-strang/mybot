@@ -78,7 +78,7 @@ class BeltManager:
         return cut_roi(img, roi)
 
     def drink_potion(self, potion_type: str, merc: bool = False, stats: List = []) -> bool:
-        key = self._get_potion_key(potion_type, merc, stats)
+        key = self._get_potion_key(potion_type)
         if not key:
             Logger.warning(f"No availale potion key for potion type {potion_type}")
             return False
@@ -105,7 +105,7 @@ class BeltManager:
         #         return True
         # return False
     
-    def _get_potion_key(self, potion_type, merc, stats) -> str:
+    def _get_potion_key(self, potion_type) -> str:
         data = self._api.get_data()
         if data is not None:
             if "flattened_belt" in data and data["flattened_belt"] is not None:
@@ -142,10 +142,22 @@ class BeltManager:
             data = self._api.get_data()
             rows = self._config.char["belt_rows"]
             if data is not None and "belt_rejuv_pots" in data and "belt_health_pots" in data and "belt_mana_pots" in data:
-                self._pot_needs["rejuv"] = max(0, self._config.char["belt_rejuv_columns"] * rows - data["belt_rejuv_pots"])
-                self._pot_needs["health"] = max(0, self._config.char["belt_hp_columns"] * rows - data["belt_health_pots"])
-                self._pot_needs["mana"] = max(0, self._config.char["belt_mp_columns"] * rows - data["belt_mana_pots"])
-            print(self._pot_needs)
+                self._pot_needs["rejuv"] = self._config.char["belt_rejuv_columns"] * rows - data["belt_rejuv_pots"]
+                self._pot_needs["health"] = self._config.char["belt_hp_columns"] * rows - data["belt_health_pots"]
+                self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * rows - data["belt_mana_pots"]
+            
+            for potion_type in ["health", "mana", "rejuv"]:
+                while self._pot_needs[potion_type] < 0:
+                    key = self._get_potion_key(potion_type)
+                    if not key:
+                        self._pot_needs[potion_type] = 0
+                    else:
+                        wait(0.04, 0.06)
+                        keyboard.send(self._config.char[key])
+                        self._pot_needs[potion_type] -= 1
+                        wait(0.04, 0.06)
+
+            Logger.debug(f"Potion needs: {self._pot_needs}")
         # else:
         #     rows_left = {
         #         "rejuv": self._config.char["belt_rejuv_columns"],
