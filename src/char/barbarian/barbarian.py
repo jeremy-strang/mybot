@@ -26,7 +26,7 @@ from obs import ObsRecorder
 
 class Barbarian(IChar):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
-        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         self._old_pather = old_pather
         self._pather = pather
         self._do_pre_move = True

@@ -25,7 +25,7 @@ from obs import ObsRecorder
 class Hammerdin(IChar):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         Logger.info("Setting up Hammerdin")
-        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, old_pather)
         self._old_pather = old_pather
         self._pather = pather
         self._do_pre_move = True
@@ -516,25 +516,8 @@ class Hammerdin(IChar):
         keyboard.send(self._char_config["stand_still"], do_press=False) 
         wait(0.02, 0.4)
         return True
-    
-    def loot_uniques(self, pickit, time_out: float=20.0, looted_uniques: set=set(), boundary=None) -> int:
-        picked_up_items = 0
-        # Loot all the dead uniques/champs that may be off screen
-        if pickit is not None:
-            unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
-            while len(unlooted) > 0:
-                data = self._api.get_data()
-                if data is not None:
-                    self._pather.traverse(unlooted[0]["position"] - data["area_origin"], self, verify_location=False, time_out=7, dest_distance=10)
-                picked_up_items += pickit()
-                for m in unlooted:
-                    if m["dist"] < 10:
-                        looted_uniques.add(m["id"])
-                        print(f"Looted champ/unique monster with ID {m['id']}")
-                unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
-        return picked_up_items
 
-    def kill_uniques(self, pickit=None, time_out: float=20.0, looted_uniques: set=set(), boundary=None) -> bool:
+    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
         Logger.debug(f"Beginning combat")
         rules = [
             MonsterPriorityRule(auras = ["CONVICTION"]),

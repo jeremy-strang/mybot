@@ -115,7 +115,11 @@ if __name__ == "__main__":
             # belt_manager.update_pot_needs(True)
             # print(belt_manager.get_pot_needs())
 
-            write_data_to_file(data, api._raw_data_str)
+            print(belt_manager._get_potion_key("mana"))
+            print(belt_manager._get_potion_key("health"))
+            print(belt_manager._get_potion_key("rejuv"))
+
+            # write_data_to_file(data, api._raw_data_str)
             
             
             # print(data["belt_items"])

@@ -8,7 +8,7 @@ import keyboard
 import numpy as np
 from char.capabilities import CharacterCapabilities
 import obs
-from pathing import PathFinder
+from pathing import PathFinder, Pather, OldPather
 from state_monitor import MonsterType
 from utils.custom_mouse import mouse
 from utils.misc import wait, cut_roi, is_in_roi, color_filter
@@ -22,18 +22,30 @@ from ocr import Ocr
 
 from api.mapassist import MapAssistApi
 from obs import ObsRecorder
-from utils.monsters import find_monster
+from utils.monsters import CHAMPS_UNIQUES, find_monster, get_unlooted_monsters
 
 class IChar:
     _CrossGameCapabilities: Union[None, CharacterCapabilities] = None
 
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder):
+    def __init__(self,
+                 skill_hotkeys: dict,
+                 screen: Screen,
+                 template_finder: TemplateFinder,
+                 ui_manager: UiManager,
+                 api: MapAssistApi,
+                 obs_recorder: ObsRecorder,
+                 old_pather: OldPather,
+                 pather: Pather
+                ):
         self._skill_hotkeys = skill_hotkeys
         self._char_config = Config().char
         self._template_finder = template_finder
         self._ui_manager = ui_manager
         self._screen = screen
         self._api = api
+        self._obs_recorder = obs_recorder
+        self._old_pather = old_pather
+        self._pather = pather
         self._config = Config()
         self._last_tp = time.time()
         self._ocr = Ocr()
@@ -570,6 +582,23 @@ class IChar:
 
     def kill_cs_trash(self) -> bool:
         raise ValueError("Diablo CS Trash is not implemented!")
+
+    def loot_uniques(self, pickit, time_out: float=20.0, looted_uniques: set=set(), boundary=None) -> int:
+        picked_up_items = 0
+        # Loot all the dead uniques/champs that may be off screen
+        if pickit is not None:
+            unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
+            while len(unlooted) > 0:
+                data = self._api.get_data()
+                if data is not None:
+                    self._pather.traverse(unlooted[0]["position"] - data["area_origin"], self, verify_location=False, time_out=7, dest_distance=10)
+                picked_up_items += pickit()
+                for m in unlooted:
+                    if m["dist"] < 15:
+                        looted_uniques.add(m["id"])
+                        print(f"Looted champ/unique monster with ID {m['id']}")
+                unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
+        return picked_up_items
 
     def kill_uniques(self, pickit: FunctionType, time_out: float=9.0, looted_uniques: set=set()) -> bool:
         raise ValueError("Kill uniques not implemented")

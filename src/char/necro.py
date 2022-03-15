@@ -24,7 +24,7 @@ class Necro(IChar):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         os.system('color')
         Logger.info("\033[94m<<Setting up Necro>>\033[0m")
-        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, old_pather)
         self._old_pather = old_pather
         self._pather = pather
         #custom necro pathing for pindle

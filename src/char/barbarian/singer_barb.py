@@ -23,8 +23,8 @@ from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 class SingerBarb(Barbarian):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, old_pather: OldPather,pather: Pather, api: MapAssistApi):
-        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather, api: MapAssistApi):
+        super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, old_pather)
         self._old_pather = old_pather
         self._pather = pather
         Logger.info("Setting up Singer Barbarian")
