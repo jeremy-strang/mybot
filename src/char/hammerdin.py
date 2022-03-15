@@ -542,7 +542,7 @@ class Hammerdin(IChar):
                 target_pos = game_state._target_pos
                 target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
                 if target_pos is not None and initial_pos is None:
-                    initial_pos = np.array(game_state._area_pos) + data["area_origin"]
+                    initial_pos = np.array(game_state._target["position"]) - data["area_origin"]
                 # print(f"Targeting {game_state._target}")
                 # If we've been standing in one spot for too long, reposition
                 if time.time() - last_move > 6.0:
@@ -572,8 +572,8 @@ class Hammerdin(IChar):
         if pickit is not None:
             picked_up_items += pickit()
             if initial_pos is not None:
-                print(initial_pos)
-                self._pather.traverse(initial_pos, self, time_out = 4.0)
+                self._pather.traverse(np.array(initial_pos), self, time_out = 4.0)
+                picked_up_items += pickit()
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._skill_hotkeys["concentration"])
         wait(0.03, 0.05)

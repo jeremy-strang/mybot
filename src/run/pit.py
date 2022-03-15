@@ -70,16 +70,13 @@ class Pit:
         self._char.post_travel()
 
         picked_up_items = 0
-        self._obs_recorder.start_recording_if_enabled()
         pit_lvl2 = self._pather.get_entity_coords_from_str("Pit Level 2", "poi", False)
         pf = PathFinder(self._api)
         nodes = pf.solve_tsp(pit_lvl2)
         for node in nodes:
             self._pather.traverse(node, self._char, 0, do_pre_move=True, obj=False, kill=False, pickit=self._pickit, time_out=8.0)
             picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 20.0)
-            picked_up_items += self._pickit.pick_up_items(self._char)
         self._char.post_attack()
-        picked_up_items = self._pickit.pick_up_items(self._char)
 
         if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
         if do_pre_buff: self._char.pre_buff()
@@ -88,16 +85,13 @@ class Pit:
             if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25):
                 return picked_up_items
 
-        self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
-        picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 20.0)
-        picked_up_items = self._pickit.pick_up_items(self._char)
-
+        picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 25.0)
         self._char.post_attack()
-        self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True)
-        self._pather.activate_poi("SparklyChest", "SparklyChest", char=self._char) 
+
+        self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
+        self._pather.activate_poi("SparklyChest", "PitLevel2", char=self._char) 
         picked_up_items = self._pickit.pick_up_items(self._char)
 
-        self._obs_recorder.stop_recording_if_enabled()
         # for poi in ["Pit Level 2", "SparklyChest"]:
         #     monster = self._pather.traverse(poi, self._char, kill=True, verify_location=True)
         #     while type(monster) is dict:
