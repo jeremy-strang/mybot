@@ -304,7 +304,7 @@ class Bot:
         is_loading = True
         while is_loading:
             is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
-            if is_loading: time.sleep(0.3)
+            if is_loading: wait(0.3, 0.4)
         return is_loading
 
     def on_maintenance(self):
