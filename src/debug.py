@@ -112,8 +112,8 @@ if __name__ == "__main__":
                             print (f"potion{i+1}")
             
 
-            print(data["corpses"])
-            print(data["player_corpse"])
+            belt_manager.update_pot_needs(True)
+            print(belt_manager.get_pot_needs())
             
             
             # print(data["belt_items"])
