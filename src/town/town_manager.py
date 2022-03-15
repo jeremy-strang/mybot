@@ -1,3 +1,4 @@
+import time
 from typing import Union
 from api.mapassist import MapAssistApi
 from item import ItemFinder
@@ -56,23 +57,26 @@ class TownManager:
             location = Location.A1_TOWN_START
         return location
 
-    def get_act_from_current_area(self) -> Location:
+    def get_act_from_current_area(self, time_out=30) -> Location:
         location = None
         current_area = None
-        while current_area is None:
+        start = time.time()
+        while location is None and time.time() - start < time_out:
             data = self._api.get_data()
             if data is not None and "current_area" in data and len(data["current_area"]) > 0:
                 current_area = data["current_area"]
-        if current_area == "Harrogath":
-            location = Location.A5_TOWN_START
-        elif current_area == "ThePandemoniumFortress":
-            location = Location.A4_TOWN_START
-        elif current_area == "KurastDocks":
-            location = Location.A3_TOWN_START
-        elif current_area == "LutGholein":
-            location = Location.A2_TOWN_START
-        elif current_area == "RogueEncampment":
-            location = Location.A1_TOWN_START
+            if current_area == "Harrogath":
+                location = Location.A5_TOWN_START
+            elif current_area == "ThePandemoniumFortress":
+                location = Location.A4_TOWN_START
+            elif current_area == "KurastDocks":
+                location = Location.A3_TOWN_START
+            elif current_area == "LutGholein":
+                location = Location.A2_TOWN_START
+            elif current_area == "RogueEncampment":
+                location = Location.A1_TOWN_START
+            else:
+                wait(0.02, 0.04)
         print(f"Determined location from memory {current_area} -> {location}")
         return location
 
