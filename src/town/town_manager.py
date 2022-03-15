@@ -73,6 +73,7 @@ class TownManager:
             location = Location.A2_TOWN_START
         elif current_area == "RogueEncampment":
             location = Location.A1_TOWN_START
+        print(f"Determined location from memory {current_area} -> {location}")
         return location
 
     def wait_for_town_spawn(self, time_out: float = None) -> Location:
@@ -83,6 +84,7 @@ class TownManager:
         loc = self.get_act_from_current_area()
         if loc is not None: return loc
         
+        print(f"Unable to determine location: {loc}")
         template_match = self._template_finder.search_and_wait(TOWN_MARKERS, best_match=True, time_out=time_out)
         if template_match.valid:
             return TownManager.get_act_from_location(template_match.name)
@@ -176,22 +178,15 @@ class TownManager:
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
         curr_act = self.get_act_from_current_area()
-        print(f"curr_act: {curr_act}")
-        print(f"curr_loc: {curr_loc}")
         if curr_act is None:
             curr_act = TownManager.get_act_from_location(curr_loc)
-            print(f"  curr_act: {curr_act}")
             if curr_act is None: return False
         new_loc = curr_act
-        print(f"  new_loc: {new_loc}")
         if not self._acts[curr_act].can_stash():
             new_loc = self.go_to_act(5, curr_loc)
             if not new_loc: return False
             curr_act = Location.A5_TOWN_START
-
-        print(f"  new_loc2: {new_loc}")
         new_loc = self._acts[curr_act].open_stash(new_loc)
-        print(f"  new_loc3: {new_loc}")
         if not new_loc: return False
         return new_loc
 

@@ -22,7 +22,6 @@ using MapAssist.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static MapAssist.Types.Stats;
 
 namespace MapAssist.Helpers
 {
@@ -97,9 +96,9 @@ namespace MapAssist.Helpers
                     },
                 };
 
-                foreach (var (stat, shift) in Stats.StatShifts.Select(x => (x.Key, x.Value)))
+                foreach (var (stat, shift) in StatShifts.Select(x => (x.Key, x.Value)))
                 {
-                    requirementsFunctions.Add(stat.ToString(), () => Items.GetItemStatShifted(item, stat) >= (int)rule[stat]);
+                    requirementsFunctions.Add(stat.ToString(), () => Items.GetItemStatShifted(item, stat, shift) >= (int)rule[stat]);
                 }
 
                 var requirementMet = true;

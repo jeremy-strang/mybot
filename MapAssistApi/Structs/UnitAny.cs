@@ -20,7 +20,6 @@
 using MapAssist.Types;
 using System;
 using System.Runtime.InteropServices;
-using static MapAssist.Types.Stats;
 
 namespace MapAssist.Structs
 {

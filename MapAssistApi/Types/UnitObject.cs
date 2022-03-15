@@ -16,7 +16,7 @@ namespace MapAssist.Types
 
         public new UnitObject Update()
         {
-            if (base.Update() == UpdateResult.Updated)
+            if (base.Update())
             {
                 using (var processContext = GameManager.GetProcessContext())
                 {

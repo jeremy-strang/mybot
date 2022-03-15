@@ -144,52 +144,52 @@ class BeltManager:
                 self._pot_needs["health"] = self._config.char["belt_hp_columns"] * self._config.char["belt_rows"] - data["belt_health_pots"]
                 self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * self._config.char["belt_rows"] - data["belt_mana_pots"]
                 print(self._pot_needs)
-        else:
-            rows_left = {
-                "rejuv": self._config.char["belt_rejuv_columns"],
-                "health": self._config.char["belt_hp_columns"],
-                "mana": self._config.char["belt_mp_columns"],
-            }
-            # In case we are in danger that the mouse hovers the belt rows, move it to the center
-            screen_mouse_pos = self._screen.convert_monitor_to_screen(mouse.get_position())
-            if screen_mouse_pos[1] > self._config.ui_pos["screen_height"] * 0.72:
-                center_m = self._screen.convert_abs_to_monitor((-200, -120))
-                mouse.move(*center_m, randomize=100)
-            keyboard.send(self._config.char["show_belt"])
-            wait(0.5)
-            # first clean up columns that might be too much
-            img = self._screen.grab()
-            for column in range(4):
-                potion_type = self._potion_type(self._cut_potion_img(img, column, 0))
-                if potion_type != "empty":
-                    rows_left[potion_type] -= 1
-                    if rows_left[potion_type] < 0:
-                        rows_left[potion_type] += 1
-                        key = f"potion{column+1}"
-                        for _ in range(5):
-                            keyboard.send(self._config.char[key])
-                            wait(0.2, 0.3)
-            # calc how many potions are needed
-            img = self._screen.grab()
-            current_column = None
-            for column in range(4):
-                for row in range(self._config.char["belt_rows"]):
-                    potion_type = self._potion_type(self._cut_potion_img(img, column, row))
-                    if row == 0:
-                        if potion_type != "empty":
-                            current_column = potion_type
-                        else:
-                            for key in rows_left:
-                                if rows_left[key] > 0:
-                                    rows_left[key] -= 1
-                                    self._pot_needs[key] += self._config.char["belt_rows"]
-                                    break
-                            break
-                    elif current_column is not None and potion_type == "empty":
-                        self._pot_needs[current_column] += 1
-            wait(0.2)
-            Logger.debug(f"Will pickup: {self._pot_needs}")
-            keyboard.send(self._config.char["show_belt"])
+        # else:
+        #     rows_left = {
+        #         "rejuv": self._config.char["belt_rejuv_columns"],
+        #         "health": self._config.char["belt_hp_columns"],
+        #         "mana": self._config.char["belt_mp_columns"],
+        #     }
+        #     # In case we are in danger that the mouse hovers the belt rows, move it to the center
+        #     screen_mouse_pos = self._screen.convert_monitor_to_screen(mouse.get_position())
+        #     if screen_mouse_pos[1] > self._config.ui_pos["screen_height"] * 0.72:
+        #         center_m = self._screen.convert_abs_to_monitor((-200, -120))
+        #         mouse.move(*center_m, randomize=100)
+        #     keyboard.send(self._config.char["show_belt"])
+        #     wait(0.5)
+        #     # first clean up columns that might be too much
+        #     img = self._screen.grab()
+        #     for column in range(4):
+        #         potion_type = self._potion_type(self._cut_potion_img(img, column, 0))
+        #         if potion_type != "empty":
+        #             rows_left[potion_type] -= 1
+        #             if rows_left[potion_type] < 0:
+        #                 rows_left[potion_type] += 1
+        #                 key = f"potion{column+1}"
+        #                 for _ in range(5):
+        #                     keyboard.send(self._config.char[key])
+        #                     wait(0.2, 0.3)
+        #     # calc how many potions are needed
+        #     img = self._screen.grab()
+        #     current_column = None
+        #     for column in range(4):
+        #         for row in range(self._config.char["belt_rows"]):
+        #             potion_type = self._potion_type(self._cut_potion_img(img, column, row))
+        #             if row == 0:
+        #                 if potion_type != "empty":
+        #                     current_column = potion_type
+        #                 else:
+        #                     for key in rows_left:
+        #                         if rows_left[key] > 0:
+        #                             rows_left[key] -= 1
+        #                             self._pot_needs[key] += self._config.char["belt_rows"]
+        #                             break
+        #                     break
+        #             elif current_column is not None and potion_type == "empty":
+        #                 self._pot_needs[current_column] += 1
+        #     wait(0.2)
+        #     Logger.debug(f"Will pickup: {self._pot_needs}")
+        #     keyboard.send(self._config.char["show_belt"])
 
     def fill_up_belt_from_inventory(self, num_loot_columns: int):
         """

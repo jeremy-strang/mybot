@@ -330,19 +330,19 @@ class Bot:
                 Logger.info(f"Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
         else:
-            if "A1_" in self._curr_loc:
+            if "a1_" in self._curr_loc:
                 # self._pather.traverse_walking("Rogue Encampment", self._char, obj=False, threshold=16, time_out=7.0)
                 self._curr_loc = Location.A1_TOWN_START
-            elif "A2_" in self._curr_loc:
+            elif "a2_" in self._curr_loc:
                 self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, time_out=7.0)
                 self._curr_loc = Location.A2_FARA_STASH
-            elif "A3_" in self._curr_loc:
+            elif "a3_" in self._curr_loc:
                 self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16, time_out=7.0)
                 self._curr_loc = Location.A3_STASH_WP
-            elif "A4_" in self._curr_loc:
+            elif "a4_" in self._curr_loc:
                 self._pather.traverse_walking("The Pandemonium Fortress", self._char, obj=False, threshold=16, time_out=7.0)
                 self._curr_loc = Location.A4_WP
-            elif "A5_" in self._curr_loc:
+            elif "a5_" in self._curr_loc:
                 self._pather.traverse_walking("Harrogath", self._char, obj=False, threshold=16, time_out=7.0)
                 self._curr_loc = Location.A5_STASH
 
