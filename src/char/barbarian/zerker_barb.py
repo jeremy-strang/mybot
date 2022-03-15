@@ -130,7 +130,7 @@ class ZerkerBarb(Barbarian):
                     last_move = time.time()
                 else:
                     # self.cast_melee("berserk", atk_len, target_pos)
-                    if not self.cast_melee_to_monster("berserk", atk_len, game_state._target): wait(0.1)
+                    if not self.tele_stomp_monster("berserk", atk_len, game_state._target): wait(0.1)
             elapsed = time.time() - start
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._char_config["battle_orders"])
