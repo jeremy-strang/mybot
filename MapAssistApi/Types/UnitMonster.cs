@@ -36,33 +36,36 @@ namespace MapAssist.Types
 
         private List<Resist> GetImmunities()
         {
-            Stats.TryGetValue(Stat.DamageReduced, out var resistanceDamage);
-            Stats.TryGetValue(Stat.MagicResist, out var resistanceMagic);
-            Stats.TryGetValue(Stat.FireResist, out var resistanceFire);
-            Stats.TryGetValue(Stat.LightningResist, out var resistanceLightning);
-            Stats.TryGetValue(Stat.ColdResist, out var resistanceCold);
-            Stats.TryGetValue(Stat.PoisonResist, out var resistancePoison);
-
-            var resists = new List<int>
-            {
-                resistanceDamage,
-                resistanceMagic,
-                resistanceFire,
-                resistanceLightning,
-                resistanceCold,
-                resistancePoison
-            };
-
             var immunities = new List<Resist>();
 
-            for (var i = 0; i < 6; i++)
+            if (Stats != null)
             {
-                if (resists[i] >= 100)
+                Stats.TryGetValue(Stat.DamageReduced, out var resistanceDamage);
+                Stats.TryGetValue(Stat.MagicResist, out var resistanceMagic);
+                Stats.TryGetValue(Stat.FireResist, out var resistanceFire);
+                Stats.TryGetValue(Stat.LightningResist, out var resistanceLightning);
+                Stats.TryGetValue(Stat.ColdResist, out var resistanceCold);
+                Stats.TryGetValue(Stat.PoisonResist, out var resistancePoison);
+
+                var resists = new List<int>
                 {
-                    immunities.Add((Resist)i);
+                    resistanceDamage,
+                    resistanceMagic,
+                    resistanceFire,
+                    resistanceLightning,
+                    resistanceCold,
+                    resistancePoison
+                };
+
+                for (var i = 0; i < 6; i++)
+                {
+                    if (resists[i] >= 100)
+                    {
+                        immunities.Add((Resist)i);
+                    }
                 }
             }
-
+            
             return immunities;
         }
 
