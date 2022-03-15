@@ -541,8 +541,7 @@ class Hammerdin(IChar):
                 target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
                 if target_pos is not None and initial_pos is None:
                     initial_pos = np.array(game_state._area_pos) if game_state._area_pos is not None else None
-                # print(f"Targeting {game_state._target}")
-                # If we've been standing in one spot for too long, reposition
+                    
                 if time.time() - last_move > 6.0:
                     Logger.debug("Stood in one place too long, repositioning")
                     rot_deg = random.randint(-2,2)
