@@ -131,7 +131,6 @@ if __name__ == "__main__":
             #         print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
             #         print(bank)
             
-            bot._town_manager.a5.open_stash(Location.A5_TOWN_START)
             # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
             # ui_manager.throw_out_junk(item_finder)
