@@ -523,10 +523,14 @@ class Hammerdin(IChar):
         if pickit is not None:
             unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
             while len(unlooted) > 0:
-                self._pather.traverse(unlooted[0]["area_pos"], self, verify_location=False, time_out=7, dest_distance=10)
+                data = self._api.get_data()
+                if data is not None:
+                    self._pather.traverse(unlooted[0]["position"] - data["area_origin"], self, verify_location=False, time_out=7, dest_distance=10)
                 picked_up_items += pickit()
                 for m in unlooted:
-                    if m["dist"] < 10: looted_uniques.add(m["id"])
+                    if m["dist"] < 10:
+                        looted_uniques.add(m["id"])
+                        print(f"Looted champ/unique monster with ID {m['id']}")
                 unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
         return picked_up_items
 
