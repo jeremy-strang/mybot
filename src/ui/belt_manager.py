@@ -78,20 +78,48 @@ class BeltManager:
         return cut_roi(img, roi)
 
     def drink_potion(self, potion_type: str, merc: bool = False, stats: List = []) -> bool:
+        key = self._get_potion_key(potion_type, merc, stats)
+        if not key:
+            Logger.warning(f"No availale potion key for potion type {potion_type}")
+            return False
+        if merc:
+            Logger.debug(f"Give {potion_type} potion in slot {key} to merc. HP: {(stats[0]*100):.1f}%")
+            keyboard.send(f"left shift + {self._config.char[key]}")
+        else:
+            Logger.debug(f"Drink {potion_type} potion in slot {key}. HP: {(stats[0]*100):.1f}%, Mana: {(stats[1]*100):.1f}%")
+            keyboard.send(self._config.char[key])
+        self.update_pot_needs()
+        return True
+        # img = self._screen.grab()
+        # for i in range(4):
+        #     potion_img = self._cut_potion_img(img, i, 0)
+        #     if self._potion_type(potion_img) == potion_type:
+        #         key = f"potion{i+1}"
+        #         if merc:
+        #             Logger.debug(f"Give {potion_type} potion in slot {i+1} to merc. HP: {(stats[0]*100):.1f}%")
+        #             keyboard.send(f"left shift + {self._config.char[key]}")
+        #         else:
+        #             Logger.debug(f"Drink {potion_type} potion in slot {i+1}. HP: {(stats[0]*100):.1f}%, Mana: {(stats[1]*100):.1f}%")
+        #             keyboard.send(self._config.char[key])
+        #         self.update_pot_needs()
+        #         return True
+        # return False
+    
+    def _get_potion_key(self, potion_type, merc, stats) -> str:
+        data = self._api.get_data()
+        if data is not None:
+            if "flattened_belt" in data:
+                belt = data["flattened_belt"]
+                for i in range(4):
+                    if len(belt) > i and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
+                        return f"potion{i+1}"
         img = self._screen.grab()
         for i in range(4):
             potion_img = self._cut_potion_img(img, i, 0)
             if self._potion_type(potion_img) == potion_type:
-                key = f"potion{i+1}"
-                if merc:
-                    Logger.debug(f"Give {potion_type} potion in slot {i+1} to merc. HP: {(stats[0]*100):.1f}%")
-                    keyboard.send(f"left shift + {self._config.char[key]}")
-                else:
-                    Logger.debug(f"Drink {potion_type} potion in slot {i+1}. HP: {(stats[0]*100):.1f}%, Mana: {(stats[1]*100):.1f}%")
-                    keyboard.send(self._config.char[key])
-                self.update_pot_needs()
-                return True
+                return f"potion{i+1}"
         return False
+        
 
     def picked_up_pot(self, item_name: str):
         """Adjust the _pot_needs when a specific pot was picked up by the pickit

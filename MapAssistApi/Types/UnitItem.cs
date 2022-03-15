@@ -22,7 +22,7 @@ namespace MapAssist.Types
 
         public new UnitItem Update()
         {
-            base.Update();
+            if (base.Update() == UpdateResult.InvalidUpdate) return this;
 
             if (IsValidUnit && MapAssistConfiguration.Loaded.ItemLog.Enabled)
             {
@@ -45,11 +45,15 @@ namespace MapAssist.Types
 
         public bool IsIdentified => ItemData.ItemQuality >= ItemQuality.MAGIC && (ItemData.ItemFlags & ItemFlags.IFLAG_IDENTIFIED) == ItemFlags.IFLAG_IDENTIFIED;
 
+        public bool IsIdentifiedForLog { get; set; }
+
         public bool IsDropped => ItemModeMapped == ItemModeMapped.Ground;
 
         public bool IsInStore => ItemModeMapped == ItemModeMapped.Vendor;
 
         public bool IsInSocket => ItemModeMapped == ItemModeMapped.Socket;
+
+        public StashTab StashTab { get; set; } = StashTab.None;
 
         public bool IsAnyPlayerHolding
         {
@@ -84,7 +88,8 @@ namespace MapAssist.Types
                         else return ItemModeMapped.Mercenary;
                 }
 
-                if (ItemData.dwOwnerID == uint.MaxValue && (ItemData.ItemFlags & ItemFlags.IFLAG_INSTORE) == ItemFlags.IFLAG_INSTORE) return ItemModeMapped.Vendor;
+                if (ItemData.dwOwnerID == uint.MaxValue && (ItemData.ItemFlags & ItemFlags.IFLAG_INSTORE) == ItemFlags.IFLAG_INSTORE && ItemData.InvPage != InvPage.NULL) return ItemModeMapped.Vendor;
+                if (ItemData.dwOwnerID == uint.MaxValue) return ItemModeMapped.Selected;
                 if (ItemData.dwOwnerID != uint.MaxValue && ItemData.InvPage == InvPage.EQUIP) return ItemModeMapped.Trade; // Other player's trade window
 
                 switch (ItemData.InvPage)
@@ -98,7 +103,7 @@ namespace MapAssist.Types
                 return ItemModeMapped.Unknown; // Items that appeared in the trade window before will appear here
             }
         }
-        
+
         public override string HashString => Item + "/" + Position.X + "/" + Position.Y;
     }
 }

@@ -102,17 +102,22 @@ if __name__ == "__main__":
         def do_stuff():
             print("Doing stuff...")
             data = api.get_data()
+            # print(data["belt_items"])
 
-            bank = None
-            for obj in data["objects"]:
-                if obj["name"].startswith("Bank"):
-                    bank = obj
-                    print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
-                    print(bank)
+            # bank = None
+            # for obj in data["objects"]:
+            #     if obj["name"].startswith("Bank"):
+            #         bank = obj
+            #         print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
+            #         print(bank)
 
-            bot._curr_loc = Location.A3_TOWN_START
+            # bot._curr_loc = Location.A3_TOWN_START
+
+            bot._belt_manager.update_pot_needs()
+            
+            bot._belt_manager.drink_potion("health", True, [0.5, 0.5])
             # bot._town_manager.a3.open_stash(Location.A3_TOWN_START)
-            curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
+            # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25)
             # print("round 2")

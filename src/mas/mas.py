@@ -114,6 +114,7 @@ class MAS(Thread):
         _data["player_gold"] = data["player_gold"]
         _data["player_id"] = data["player_id"]
         _data["player_merc"] = data["player_merc"]
+        _data["flattened_belt"] = data["flattened_belt"]
         _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
         _data["map"][_data["map"] == 1] = 0
         _data["map"] += 1

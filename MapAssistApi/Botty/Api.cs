@@ -25,6 +25,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static MapAssist.Types.Stats;
 
 namespace MapAssist.Botty
 {
@@ -96,7 +97,7 @@ namespace MapAssist.Botty
                             return new { key = key.ToString(), value };
                         }).ToList();
 
-                        UnitItem[] flattenedBelt = playerUnit.BeltItems.SelectMany(x => x).ToArray();
+                        UnitItem[] flattened_belt = playerUnit.BeltItems.SelectMany(x => x).ToArray();
 
                         var belt_health_pots = 0;
                         var belt_mana_pots = 0;
@@ -167,6 +168,7 @@ namespace MapAssist.Botty
                             belt_health_pots, // number of health pots in player's belt
                             belt_mana_pots, // number of mana pots in player's belt
                             belt_rejuv_pots, // number of rejuv pots in player's belt
+                            flattened_belt,
                         };
                         foreach (var m in _areaData.NPCs)
                         {
