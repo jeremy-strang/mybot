@@ -82,11 +82,11 @@ class Pit:
         self._char.post_attack()
         picked_up_items = self._pickit.pick_up_items(self._char)
         if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
-        self._char.pre_travel(do_pre_buff)
-        if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25):
-            if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=4, time_out=25):
+        if do_pre_buff: self._char.pre_buff()
+        self._char.post_attack()
+        if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25):
+            if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25):
                 return picked_up_items
-        self._char.post_travel()
 
         monster = self._pather.traverse("SparklyChest", self._char, kill=True, verify_location=True, obj=True)
         while type(monster) is dict:

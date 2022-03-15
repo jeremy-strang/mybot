@@ -46,7 +46,7 @@ if __name__ == "__main__":
     def stop_debug(game_controller, overlay):
         ui_manager.abort = True
         if overlay is not None: overlay.stop_overlay()
-        on_exit(game_controller)
+        on_exit(game_controller, ["capslock", "space"])
 
     def start_overlay(bot, game_stats):
         print("Overlay thread starting...")
@@ -103,11 +103,11 @@ if __name__ == "__main__":
             print("Doing stuff...")
             data = api.get_data()
 
-            for poi in data["poi"]:
-                print(f"---- poi: {poi['label']} ----")
-                print(poi)
-            pather.traverse("SparklyChest", char, kill=False, verify_location=True)
-            pather.activate_poi("SparklyChest", "SparklyChest", char=char, offset=[-4, -6]) 
+            pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25)
+            print("round 2")
+            pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25)
+            stop_debug(game_controller, overlay)
+            # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=5, time_out=25)
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
 
             # write_data_to_file(api.get_data(), api._raw_data_str)

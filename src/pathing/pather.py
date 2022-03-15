@@ -398,6 +398,7 @@ class Pather:
                                     ap = p["position"]
                             else:
                                 ap = p["position"]
+                            print(p)
                             dist = math.dist(ap, data['player_pos_area'])
                             mult = 1
                             if dist < 40:
@@ -424,14 +425,15 @@ class Pather:
                     random.seed()
                     pos_monitor = (pos_monitor[0] + random.randint(-randomize, +randomize),
                                    pos_monitor[1] + random.randint(-randomize, +randomize))
-                    pos_monitor = [pos_monitor[0], pos_monitor[1]]
-                    _mouse.move(*pos_monitor, duration=.025)
+                    pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
+                    _mouse.move(*pos_monitor, duration=.07)
                     wait(0.1, 0.15)
                     mouse.press(button="left")
                     wait(0.04, 0.05)
                     mouse.release(button="left")
+
                     num_clicks += 1
-                    wait(0.25, 0.35)
+                    wait(0.5, 0.6)
                     if num_clicks == 10: randomize += 1
                     if num_clicks == 15: randomize += 2
                     if num_clicks == 20: randomize += 3
