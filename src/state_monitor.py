@@ -126,7 +126,9 @@ class ApiThread:
         '''
         data = self._sm._api.get_data()
         if data is not None:
-            for m in self._scored_monsters(data, self._sm._boundary):
+            monsters = self._scored_monsters(data, self._sm._boundary)
+            # print(f"State monitor targeting {len(monsters)} monsters")
+            for m in monsters:
                 proceed = True
                 correct_id = False
                 if self._sm._super_unique:

@@ -69,30 +69,29 @@ class Pit:
         if not self._pather.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4): return False
         self._char.post_travel()
 
+        picked_up_items = 0
         self._obs_recorder.start_recording_if_enabled()
         pit_lvl2 = self._pather.get_entity_coords_from_str("Pit Level 2", "poi", False)
         pf = PathFinder(self._api)
         nodes = pf.solve_tsp(pit_lvl2)
         for node in nodes:
-            monster = self._pather.traverse(node, self._char, 0, True, False, True, True, self._pickit, time_out=6.0)
-            while type(monster) is dict:
-                self._char.kill_uniques(monster)
-                picked_up_items = self._pickit.pick_up_items(self._char)  
-                monster = self._pather.traverse(node, self._char, 0, True, False, True, True, self._pickit, time_out=6.0)
+            self._pather.traverse(node, self._char, 0, do_pre_move=True, obj=False, kill=False, pickit=self._pickit, time_out=8.0)
+            picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 20.0)
+            picked_up_items += self._pickit.pick_up_items(self._char)
         self._char.post_attack()
         picked_up_items = self._pickit.pick_up_items(self._char)
+
         if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
         if do_pre_buff: self._char.pre_buff()
-        self._char.post_attack()
+        
         if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25):
             if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25):
                 return picked_up_items
 
-        monster = self._pather.traverse("SparklyChest", self._char, kill=True, verify_location=True, obj=True)
-        while type(monster) is dict:
-            self._char.kill_uniques(monster)
-            self._char._
-            picked_up_items = self._pickit.pick_up_items(self._char)
+        self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
+        picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 20.0)
+        picked_up_items = self._pickit.pick_up_items(self._char)
+
         self._char.post_attack()
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True)
         self._pather.activate_poi("SparklyChest", "SparklyChest", char=self._char) 
