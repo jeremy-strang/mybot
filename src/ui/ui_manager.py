@@ -594,7 +594,36 @@ class UiManager():
                 return self.stash_all_items(num_loot_columns, item_finder)
 
         Logger.debug("Done stashing")
-        wait(0.4, 0.5)
+        wait(0.5, 0.6)
+
+    def throw_out_junk(self, item_finder: ItemFinder):
+        wait(0.2, 0.3)
+        keyboard.send(self._config.char["inventory_screen"])
+        wait(0.5, 0.6)
+        num_loot_columns = self._config.char["num_loot_columns"]
+        for column, row in itertools.product(range(num_loot_columns), range(4)):
+            img = self._screen.grab()
+            slot_pos, slot_img = self.get_slot_pos_and_img(self._config, img, column, row)
+            if self._slot_has_item(slot_img):
+                x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
+                mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
+                # check item again and discard it or stash it
+                wait(0.4, 0.6)
+                hovered_item = self._screen.grab()
+                found_items = self._keep_item(item_finder, hovered_item)
+                if len(found_items) == 0:
+                    keyboard.send('ctrl', do_release=False)
+                    wait(0.1, 0.2)
+                    mouse.press(button="left")
+                    wait(0.1, 0.2)
+                    mouse.release(button="left")
+                    wait(0.1, 0.2)
+                    keyboard.send('ctrl', do_press=False)
+                    # To avoid logging multiple times the same item when stash tab is full
+                    # check the _keep_item again. In case stash is full we will still find the same item
+                    wait(0.3)
+        keyboard.send(self._config.char["inventory_screen"])
+        wait(0.3, 0.4)
 
     def transfer_shared_to_private_gold(self, count: int):
         for x in range (3):

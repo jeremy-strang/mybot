@@ -128,7 +128,7 @@ if __name__ == "__main__":
             # bot._town_manager.a3.open_stash(Location.A3_TOWN_START)
             # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
-            write_data_to_file(api.get_data(), api._raw_data_str)
+            ui_manager.throw_out_junk(item_finder)
 
             stop_debug(game_controller, overlay)
 
