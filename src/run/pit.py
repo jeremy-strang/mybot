@@ -4,7 +4,7 @@ import time
 from char.i_char import IChar
 from config import Config
 from logger import Logger
-from pathing import Location, OldPather, PathFinder
+from pathing import Location, OldPather, PathFinder, Pather
 from typing import Union
 from item.pickit import PickIt
 from template_finder import TemplateFinder
@@ -71,12 +71,14 @@ class Pit:
 
         picked_up_items = 0
         pit_lvl2 = self._pather.get_entity_coords_from_str("Pit Level 2", "poi", False)
-        pf = PathFinder(self._api)
-        nodes = pf.solve_tsp(pit_lvl2)
-        for node in nodes:
-            self._pather.traverse(node, self._char, 0, do_pre_move=True, obj=False, kill=False, pickit=self._pickit, time_out=8.0)
-            picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 20.0)
-        self._char.post_attack()
+        # pf = PathFinder(self._api)
+        # nodes = pf.solve_tsp(pit_lvl2)
+        # for node in nodes:
+        #     self._pather.traverse(node, self._char, 0, do_pre_move=True, obj=False, kill=False, pickit=self._pickit, time_out=8.0)
+        #     picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 20.0)
+        # self._char.post_attack()
+        pickit_func = lambda: self._pickit.pick_up_items(self._char)
+        picked_up_items += self._char.clear_zone(pit_lvl2, pickit_func)
 
         if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
         if do_pre_buff: self._char.pre_buff()
@@ -85,11 +87,10 @@ class Pit:
             if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25):
                 return picked_up_items
 
-        picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 25.0)
-        self._char.post_attack()
+        coords = self._pather.get_entity_coords_from_str("SparklyChest", "poi", False)
+        picked_up_items += self._char.clear_zone(coords, pickit_func)
 
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
-        coords = self._pather.get_entity_coords_from_str("SparklyChest", "poi", False)
         self._pather.activate_poi(coords, "PitLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False) 
         picked_up_items = self._pickit.pick_up_items(self._char)
 

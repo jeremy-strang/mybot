@@ -8,6 +8,7 @@ import keyboard
 import numpy as np
 from char.capabilities import CharacterCapabilities
 import obs
+from pathing import PathFinder
 from state_monitor import MonsterType
 from utils.custom_mouse import mouse
 from utils.misc import wait, cut_roi, is_in_roi, color_filter
@@ -407,6 +408,16 @@ class IChar:
             else:
                 Logger.error(f"Invalid monster {monster}")
         return False
+
+    def clear_zone(self, dest_world=None, pickit_func=None) -> int:
+        picked_up_items = 0
+        pf = PathFinder(self._api)
+        nodes = pf.solve_tsp(dest_world)
+        for node in nodes:
+            self._pather.traverse(node, self, 0, do_pre_move=True, obj=False, kill=False, time_out=10.0)
+            picked_up_items += self.kill_uniques(lambda: pickit_func(), 20.0)
+        self.post_attack()
+        return picked_up_items
 
     def _pre_buff_cta(self, extra_cast_delay: float = 0.0):
         # Save current skill img
