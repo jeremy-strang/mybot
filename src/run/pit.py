@@ -87,22 +87,6 @@ class Pit:
 
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
         self._pather.activate_poi(coords, "PitLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False) 
-        picked_up_items = self._pickit.pick_up_items(self._char)
-        # for poi in ["Pit Level 2", "SparklyChest"]:
-        #     monster = self._pather.traverse(poi, self._char, kill=True, verify_location=True)
-        #     while type(monster) is dict:
-        #         self._char.kill_uniques(monster)
-        #         picked_up_items = self._pickit.pick_up_items(self._char)  
-        #         monster = self._pather.traverse(poi, self._char, kill=True, verify_location=True, time_out=8.0)
-        #     while self._api.data["current_area"] != poi.replace(" ",""):
-        #         if "Pit Level" in poi:
-        #             self._pather.go_to_area(poi, poi.replace(" ",""), entrance_in_wall=False, randomize=5, time_out=25)
-        #             self._obs_recorder.stop_recording_if_enabled()
-        #         elif poi == "SparklyChest":
-        #             self._pather.activate_poi(poi, poi, char=self._char, offset=[-4, -6]) 
-        #             wait(0.5, 1.0)
-        #             picked_up_items = self._pickit.pick_up_items(self._char)
-        #             break 
-        #         else:
-        #             self._pather.activate_poi(poi, poi, char=self._char)    
+        picked_up_items = self._pickit.pick_up_items(self._char)  
         return (Location.A1_PIT_END, picked_up_items)
+
