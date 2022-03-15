@@ -145,6 +145,11 @@ class PickIt:
                         found_items = True
                         Logger.warning("Inventory full, skipping pickit!")
                         self._ui_manager.throw_out_junk(self._item_finder)
+                        # throw out junk and check again
+                    if self._ui_manager.is_overburdened():
+                        found_items = True
+                        Logger.warning("Inventory full, skipping pickit!")
+                        break
                     else:
                         # send log to discord
                         if found_items and closest_item.name not in picked_up_items:

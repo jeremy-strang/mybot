@@ -210,6 +210,7 @@ class TownManager:
         # check if we can stash in current act
         Logger.debug(f"Location is {curr_act}")
         if self._acts[curr_act].can_stash():
+            self._ui_manager.throw_out_junk(self._item_finder)
             new_loc = self._acts[curr_act].open_stash(curr_loc)
             if not new_loc: return False
             wait(1.0)
