@@ -300,13 +300,6 @@ class Bot:
         
         self.trigger_or_stop("maintenance")
 
-    def _wait_for_load(self):
-        is_loading = True
-        while is_loading:
-            is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
-            if is_loading: wait(0.3, 0.4)
-        return False
-
     def on_maintenance(self):
         is_loading = True
         merc_alive = False

@@ -37,11 +37,12 @@ class MonsterPriorityRule:
     def evaluate_rules(self, monster: dict, min_score: int = 0) -> int:
         rules_met = 0
         if monster is not None and type(monster) is dict:
+            m_types = monster["type"].split(", ") if type(monster["type"]) is str else []
             if self.names is not None and any(monster["name"].startswith(startstr) for startstr in self.names):
                 rules_met += 1
             if self.monster_types is not None:
                 for monster_type in self.monster_types:
-                    if any(monster_type == mtype for mtype in monster["type"].split(", ")):
+                    if any(monster_type == mtype for mtype in m_types):
                         rules_met += 1
             if self.auras is not None:
                 for aura in self.auras:
