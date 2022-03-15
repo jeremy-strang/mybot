@@ -59,8 +59,7 @@ class A1(IAct):
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
         if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=8): return False
-        coords = self._pather.get_entity_coords_from_str("Bank", "objects", False)
-        self._pather.activate_poi(coords, Location.A1_STASH, char=self._char, entrance_in_wall=False)
+        self._pather.activate_poi("Bank", "Bank", typ='objects', char=self._char)   
         return Location.A1_STASH
 
     def heal(self, curr_loc: Location) -> Union[Location, bool]:

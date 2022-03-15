@@ -99,6 +99,9 @@ if __name__ == "__main__":
                 f.write(json.dumps(json.loads(data_str), indent=4, sort_keys=True))
                 f.close()
 
+        
+        # overlay = start_overlay(bot, game_stats)
+
         def do_stuff():
             print("Doing stuff...")
             data = api.get_data()
@@ -115,10 +118,7 @@ if __name__ == "__main__":
             # belt_manager.update_pot_needs(True)
             # print(belt_manager.get_pot_needs())
 
-            print(belt_manager._get_potion_key("mana"))
-            print(belt_manager._get_potion_key("health"))
-            print(belt_manager._get_potion_key("rejuv"))
-
+            # bot._town_manager.open_stash(Location.A4_TOWN_START)
             # write_data_to_file(data, api._raw_data_str)
             
             
@@ -131,12 +131,10 @@ if __name__ == "__main__":
             #         print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
             #         print(bank)
             
-            # bot._town_manager.a3.open_stash(Location.A3_TOWN_START)
+            bot._town_manager.a5.open_stash(Location.A5_TOWN_START)
             # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
             # ui_manager.throw_out_junk(item_finder)
-
-            stop_debug(game_controller, overlay)
 
 
             # akara = find_npc(Npc.AKARA, api)
@@ -154,8 +152,8 @@ if __name__ == "__main__":
 
             # api._current_path = path
             # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
-        
-            # overlay = start_overlay(bot, game_stats)
+
+            # stop_debug(game_controller, overlay)
             print("Done doing stuff")
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
