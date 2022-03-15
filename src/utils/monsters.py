@@ -44,7 +44,7 @@ def get_unlooted_monsters(api: MapAssistApi, rules: list[MonsterPriorityRule], l
     data = api.get_data()
     if data is not None and "monsters" in data:
         monsters = sort_and_filter_monsters(data, rules, boundary)
-        return list(filter(lambda m: m["mode"] == 12 and m["id"] not in looted_monsters and m["dist"] < max_distance, data["monsters"]))
+        return list(filter(lambda m: m["mode"] == 12 and m["id"] not in looted_monsters and m["dist"] < max_distance, monsters))
     return []
 
 
