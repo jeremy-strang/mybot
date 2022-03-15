@@ -34,6 +34,7 @@ class A3(IAct):
         return Location.A3_ORMUS
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
+        #if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=10): return False
         if not self._pather.traverse_walking([147,60],self._char, obj=False,threshold=10,static_npc=False,end_dist=10): return False
         self._pather.activate_poi ("Bank", "Bank", typ='objects', char=self._char)    
         return Location.A3_STASH_WP
