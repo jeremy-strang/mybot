@@ -110,9 +110,10 @@ class BeltManager:
         if data is not None:
             if "flattened_belt" in data and data["flattened_belt"] is not None:
                 belt = data["flattened_belt"]
-                for i in range(min(len(belt), 4)):
-                    if len(belt) > i and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
-                        return f"potion{i+1}"
+                if belt is not None:
+                    for i in range(min(len(belt), 4)):
+                        if len(belt) >= i and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
+                            return f"potion{i+1}"
         img = self._screen.grab()
         for i in range(4):
             potion_img = self._cut_potion_img(img, i, 0)
