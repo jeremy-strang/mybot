@@ -585,10 +585,11 @@ class IChar:
 
     def loot_uniques(self, pickit, time_out: float=20.0, looted_uniques: set=set(), boundary=None) -> int:
         picked_up_items = 0
+        start = time.time()
         # Loot all the dead uniques/champs that may be off screen
         if pickit is not None:
             unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
-            while len(unlooted) > 0:
+            while len(unlooted) > 0 and time.time() - start < time_out:
                 data = self._api.get_data()
                 if data is not None:
                     if not self._pather.traverse(unlooted[0]["position"] - data["area_origin"], self, verify_location=False, time_out=6, dest_distance=10):
