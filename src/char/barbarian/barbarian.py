@@ -99,7 +99,7 @@ class Barbarian(IChar):
             if distance > 3.5:
                 move_pos_m = self._screen.convert_player_target_world_to_monitor(m["position"], data["player_pos_world"])
                 self.pre_move()
-                self.move(move_pos_m, force_tp=True)
+                self.move(move_pos_m, force_tp=True, force_move=True)
                 wait(0.1, 0.15)
                 data = self._api.get_data()
                 # Recalculate distance after moving
