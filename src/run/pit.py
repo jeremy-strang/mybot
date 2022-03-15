@@ -89,7 +89,8 @@ class Pit:
         self._char.post_attack()
 
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
-        self._pather.activate_poi("SparklyChest", "PitLevel2", char=self._char) 
+        coords = self._pather.get_entity_coords_from_str("SparklyChest", "poi", False)
+        self._pather.activate_poi(coords, "PitLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False) 
         picked_up_items = self._pickit.pick_up_items(self._char)
 
         # for poi in ["Pit Level 2", "SparklyChest"]:

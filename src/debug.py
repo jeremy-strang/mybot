@@ -110,21 +110,11 @@ if __name__ == "__main__":
             #         bank = obj
             #         print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
             #         print(bank)
-
-            # bot._curr_loc = Location.A3_TOWN_START
-
-            bot._belt_manager.update_pot_needs()
             
-            bot._belt_manager.drink_potion("health", True, [0.5, 0.5])
             # bot._town_manager.a3.open_stash(Location.A3_TOWN_START)
             # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
-            # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25)
-            # print("round 2")
-            # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25)
             stop_debug(game_controller, overlay)
-            # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=5, time_out=25)
-            # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)
 
             # write_data_to_file(api.get_data(), api._raw_data_str)
 
