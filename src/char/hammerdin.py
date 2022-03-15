@@ -524,7 +524,7 @@ class Hammerdin(IChar):
             MonsterPriorityRule(monster_types = [MonsterType.SUPER_UNIQUE]),
             MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
             MonsterPriorityRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
-            MonsterPriorityRule(monster_types = [MonsterType.MINION]),
+            # MonsterPriorityRule(monster_types = [MonsterType.MINION]),
         ]
         start = time.time()
         game_state = StateMonitor(rules, self._api, False, -1, True, False, None)
