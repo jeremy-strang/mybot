@@ -102,9 +102,17 @@ if __name__ == "__main__":
         def do_stuff():
             print("Doing stuff...")
             data = api.get_data()
-            print(data["player_merc"])
 
-            
+            bank = None
+            for obj in data["objects"]:
+                if obj["name"].startswith("Bank"):
+                    bank = obj
+                    print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
+                    print(bank)
+
+            # bot._town_manager.a3.open_stash(Location.A3_TOWN_START)
+            pather.activate_poi(pather.get_entity_coords_from_str("Bank", "objects", False), Location.A3_STASH_WP, char=char, entrance_in_wall=False)
+
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25)
             # print("round 2")
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25)

@@ -35,15 +35,17 @@ class A3(IAct):
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
         #if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=10): return False
-        if not self._pather.traverse_walking([147,60],self._char, obj=False,threshold=10,static_npc=False,end_dist=10): return False
-        self._pather.activate_poi ("Bank", "Bank", typ='objects', char=self._char)    
-        return Location.A3_STASH_WP
+        if not self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16): return False
+        wait(0.2, 0.3)
+        coords = self._pather.get_entity_coords_from_str("Bank", "objects", False)
+        self._pather.activate_poi(coords, Location.A3_STASH_WP, char=self._char, entrance_in_wall=False)
 
+        return Location.A3_STASH_WP
 
     def open_wp(self, curr_loc: Location) -> bool:
         if not self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16): return False
         #if not self._pather.traverse("Kurast Docks", self._char, obj=False): return False
-        wait(0.5, 0.7)
+        wait(0.4, 0.6)
         result = self._pather.activate_waypoint("Kurast Docks", self._char,entrance_in_wall=False, is_wp = True)
         return result
 
