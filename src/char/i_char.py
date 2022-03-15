@@ -355,6 +355,12 @@ class IChar:
             self.switch_weapon()
             self.verify_active_weapon_tab()
 
+    def prepare_attack(self):
+        pass
+
+    def post_attack(self):
+        pass
+
     def cast_melee(self, skill_key: str, time_in_s: float, abs_screen_pos: tuple[float, float], mouse_button: str = "left"):
         mouse_pos_m = self._screen.convert_abs_to_monitor(abs_screen_pos)
         Logger.debug(f"Casting {skill_key} in the direction of ({round(mouse_pos_m[0], 2)}, {round(mouse_pos_m[0], 2)})")
@@ -466,9 +472,7 @@ class IChar:
                 return False
         else:
             return False
-        
-
-
+    
     def kill_around(self,  api, density=15, area=15, special = False):
         special_types = [
             MonsterType.SUPER_UNIQUE,

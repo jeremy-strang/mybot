@@ -93,7 +93,7 @@ class Pit:
             self._char.kill_uniques(monster)
             self._char._
             picked_up_items = self._pickit.pick_up_items(self._char)
-        self.post_attack()
+        self._char.post_attack()
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True)
         self._pather.activate_poi("SparklyChest", "SparklyChest", char=self._char) 
         picked_up_items = self._pickit.pick_up_items(self._char)
