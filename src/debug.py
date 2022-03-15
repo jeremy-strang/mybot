@@ -102,18 +102,20 @@ if __name__ == "__main__":
         def do_stuff():
             print("Doing stuff...")
             data = api.get_data()
-            potion_type = "rejuv"
-            if "flattened_belt" in data and data["flattened_belt"] is not None:
-                belt = data["flattened_belt"]
-                if belt is not None and len(belt) > 0:
-                    for i in range(min(len(belt), 4)):
-                        print(f"belt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}")
-                        if len(belt) > i and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
-                            print (f"potion{i+1}")
+            # potion_type = "rejuv"
+            # if "flattened_belt" in data and data["flattened_belt"] is not None:
+            #     belt = data["flattened_belt"]
+            #     if belt is not None and len(belt) > 0:
+            #         for i in range(min(len(belt), 4)):
+            #             print(f"belt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}")
+            #             if len(belt) > i and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
+            #                 print (f"potion{i+1}")
             
 
-            belt_manager.update_pot_needs(True)
-            print(belt_manager.get_pot_needs())
+            # belt_manager.update_pot_needs(True)
+            # print(belt_manager.get_pot_needs())
+
+            write_data_to_file(data, api._raw_data_str)
             
             
             # print(data["belt_items"])
@@ -128,7 +130,7 @@ if __name__ == "__main__":
             # bot._town_manager.a3.open_stash(Location.A3_TOWN_START)
             # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
-            ui_manager.throw_out_junk(item_finder)
+            # ui_manager.throw_out_junk(item_finder)
 
             stop_debug(game_controller, overlay)
 

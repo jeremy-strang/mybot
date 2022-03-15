@@ -231,7 +231,8 @@ namespace MapAssist.Botty
                         foreach (PointOfInterest p in _pointsOfInterest)
                         {
                             //Console.WriteLine(p.Label);
-                            msg.points_of_interest.Add(new {
+                            msg.points_of_interest.Add(new
+                            {
                                 position = p.Position,
                                 type = p.Type,
                                 label = p.Label,
@@ -265,18 +266,46 @@ namespace MapAssist.Botty
                             });
                         }
 
-                        foreach (UnitItem item in _gameData.Items)
+                        foreach (UnitItem item in _gameData.AllItems)
                         {
+
+                            dynamic istats = null;
+
+                            if (item.Stats != null)
+                            {
+                                istats = item.Stats.Select(it =>
+
+                                {
+                                    Stat key = it.Key;
+                                    var value = it.Value;
+                                    if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
+                                    {
+                                        value = value >> 8;
+                                    }
+
+                                    return new { key = key.ToString(), value };
+                                }).ToList();
+                            }
+
                             msg.items.Add(new
                             {
-                                position = item.Position,
+                                position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
                                 mode = item.ItemMode,
                                 id = item.UnitId,
-                                flags = item.ItemData.ItemFlags,
-                                quality = item.ItemData.ItemQuality,
+                                flags = item.ItemData.ItemFlags.ToString(),
+                                quality = item.ItemData.ItemQuality.ToString(),
                                 name = Items.GetItemName(item),
                                 base_name = item.ItemBaseName,
                                 is_hovered = item.IsHovered,
+                                body_loc = item.ItemData.BodyLoc.ToString(),
+                                item_mode_mapped = item.ItemModeMapped.ToString(),
+                                stats = istats,
+                                is_player_owned = item.IsPlayerOwned,
+                                state_strings = item.StateStrings,
+                                is_in_socket = item.IsInSocket,
+                                is_identified = item.IsIdentified,
+                                is_in_store = item.IsInStore,
+                                inventory_page = item.ItemData.InvPage.ToString(),
                             });
                         }
 
@@ -286,7 +315,7 @@ namespace MapAssist.Botty
             }
             catch (Exception ex)
             {
-                //_log.Error(ex);
+                _log.Error(ex);
             }
 
             return JsonConvert.SerializeObject(new { success = false }, formatting);

@@ -356,6 +356,7 @@ namespace MapAssist.Helpers
                     Objects = objectList,
                     Items = itemList,
                     BeltItems = beltItems,
+                    AllItems = allItems,
                     ItemLog = Items.ItemLog[_currentProcessId].ToArray(),
                     Session = session,
                     Roster = rosterData,

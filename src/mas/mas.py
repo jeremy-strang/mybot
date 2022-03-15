@@ -117,6 +117,7 @@ class MAS(Thread):
         _data["player_merc"] = data["player_merc"]
         _data["player_corpse"] = data["player_corpse"]
         _data["corpses"] = data["corpses"]
+        # _data["items"] = data["items"]
         _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
         _data["map"][_data["map"] == 1] = 0
         _data["map"] += 1
@@ -169,7 +170,10 @@ class MAS(Thread):
             _data["objects"].append(obj)
 
         for item in data["items"]:
-            item["position"] = np.array([int(item["position"]["X"]), int(item["position"]["Y"])])
+            x = item["position"][0]
+            y = item["position"][1]
+            item["name"] = item["base_name"]
+            item["position"] = np.array([x, y])
             item["abs_screen_position"] = np.array(world_to_abs(item["position"], self._player_pos))
             item["dist"] = math.dist(_data["player_pos_world"], item["position"])
             _data["items"].append(item)
