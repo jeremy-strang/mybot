@@ -430,6 +430,7 @@ class IChar:
             self._pather.traverse(node, self, 0, do_pre_move=True, obj=False, kill=False, time_out=10.0)
             picked_up_items += self.kill_uniques(lambda: pickit_func(), 20.0, looted_uniques)
         self.post_attack()
+        Logger.debug(f"Killed and looted {picked_up_items} from {len(looted_uniques)} champion/unique packs")
         return picked_up_items
 
     def _pre_buff_cta(self, extra_cast_delay: float = 0.0):

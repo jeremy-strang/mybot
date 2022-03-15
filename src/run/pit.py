@@ -88,7 +88,6 @@ class Pit:
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
         self._pather.activate_poi(coords, "PitLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False) 
         picked_up_items = self._pickit.pick_up_items(self._char)
-        Logger.debug(f"Killed and looted {picked_up_items} from {len(looted_uniques)} champion/unique packs")
         # for poi in ["Pit Level 2", "SparklyChest"]:
         #     monster = self._pather.traverse(poi, self._char, kill=True, verify_location=True)
         #     while type(monster) is dict:
