@@ -265,9 +265,7 @@ class Pather:
                             pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1]-39.5]
                             mouse.move(*pos_monitor)
                             time.sleep(0.75)
-                            # mouse.click("left")
-                            print("here spot 1")
-                            time.sleep(5.0)
+                            mouse.click("left")
                             time.sleep(0.75)
                             if counter == 2:
                                 if char is not None:
@@ -286,9 +284,7 @@ class Pather:
                         pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
                         mouse.move(*pos_monitor)
                         time.sleep(0.25)
-                        # mouse.click("left")
-                        print("here spot 2")
-                        time.sleep(5.0)
+                        mouse.click("left")
                         # we did it!
                     return True
         return False
