@@ -302,11 +302,12 @@ class IChar:
             pos_abs = [int(pos_abs[0] * adjust_factor), int(pos_abs[1] * adjust_factor)]
             x, y = self._screen.convert_abs_to_monitor(pos_abs)
             mouse.move(x, y, randomize=5, delay_factor=[factor*0.1, factor*0.14])
-            wait(0.012, 0.02)
+            wait(0.02, 0.03)
             if force_move:
                 keyboard.send(self._config.char["force_move"])
             else:
                 mouse.click(button="left")
+                wait(0.02, 0.03)
     
     def open_tp(self):
         # will check if tp is available and select the skill
