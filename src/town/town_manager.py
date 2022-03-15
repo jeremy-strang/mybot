@@ -176,16 +176,22 @@ class TownManager:
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
         curr_act = self.get_act_from_current_area()
+        print(f"curr_act: {curr_act}")
+        print(f"curr_loc: {curr_loc}")
         if curr_act is None:
             curr_act = TownManager.get_act_from_location(curr_loc)
+            print(f"  curr_act: {curr_act}")
             if curr_act is None: return False
         new_loc = curr_act
+        print(f"  new_loc: {new_loc}")
         if not self._acts[curr_act].can_stash():
             new_loc = self.go_to_act(5, curr_loc)
             if not new_loc: return False
             curr_act = Location.A5_TOWN_START
 
+        print(f"  new_loc2: {new_loc}")
         new_loc = self._acts[curr_act].open_stash(new_loc)
+        print(f"  new_loc3: {new_loc}")
         if not new_loc: return False
         return new_loc
 
@@ -207,6 +213,7 @@ class TownManager:
             curr_act = TownManager.get_act_from_location(curr_loc)
             if curr_act is None: return False
         # check if we can stash in current act
+        Logger.debug(f"Location is {curr_act}")
         if self._acts[curr_act].can_stash():
             new_loc = self._acts[curr_act].open_stash(curr_loc)
             if not new_loc: return False

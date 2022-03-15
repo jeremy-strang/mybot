@@ -110,8 +110,9 @@ if __name__ == "__main__":
                     print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
                     print(bank)
 
+            bot._curr_loc = Location.A3_TOWN_START
             # bot._town_manager.a3.open_stash(Location.A3_TOWN_START)
-            pather.activate_poi(pather.get_entity_coords_from_str("Bank", "objects", False), Location.A3_STASH_WP, char=char, entrance_in_wall=False)
+            curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25)
             # print("round 2")

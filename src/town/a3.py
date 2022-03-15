@@ -34,12 +34,8 @@ class A3(IAct):
         return Location.A3_ORMUS
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
-        #if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=10): return False
-        if not self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16): return False
-        wait(0.2, 0.3)
-        coords = self._pather.get_entity_coords_from_str("Bank", "objects", False)
-        self._pather.activate_poi(coords, Location.A3_STASH_WP, char=self._char, entrance_in_wall=False)
-
+        if not self._pather.traverse_walking([147,60],self._char, obj=False,threshold=10,static_npc=False,end_dist=10): return False
+        self._pather.activate_poi ("Bank", "Bank", typ='objects', char=self._char)    
         return Location.A3_STASH_WP
 
     def open_wp(self, curr_loc: Location) -> bool:
@@ -50,7 +46,7 @@ class A3(IAct):
         return result
 
     def wait_for_tp(self) -> Union[Location, bool]:
-        template_match = self._template_finder.search_and_wait("A3_TOWN_10", time_out=20)
+        template_match = self._templwate_finder.search_and_wait("A3_TOWN_10", time_out=20)
         if template_match.valid:
             self._old_pather.traverse_nodes((Location.A3_STASH_WP, Location.A3_STASH_WP), self._char, force_move=True)
             return Location.A3_STASH_WP

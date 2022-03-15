@@ -331,15 +331,20 @@ class Bot:
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
         else:
             if "A1_" in self._curr_loc:
-                self._pather.traverse_walking("Rogue Encampment", self._char, obj=False, threshold=16, time_out=1.5)
+                # self._pather.traverse_walking("Rogue Encampment", self._char, obj=False, threshold=16, time_out=7.0)
+                self._curr_loc = Location.A1_TOWN_START
             elif "A2_" in self._curr_loc:
-                self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, time_out=3.5)
+                self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, time_out=7.0)
+                self._curr_loc = Location.A2_FARA_STASH
             elif "A3_" in self._curr_loc:
-                self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16, time_out=3.0)
+                self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16, time_out=7.0)
+                self._curr_loc = Location.A3_STASH_WP
             elif "A4_" in self._curr_loc:
-                self._pather.traverse_walking("The Pandemonium Fortress", self._char, obj=False, threshold=16, time_out=1.0)
+                self._pather.traverse_walking("The Pandemonium Fortress", self._char, obj=False, threshold=16, time_out=7.0)
+                self._curr_loc = Location.A4_WP
             elif "A5_" in self._curr_loc:
-                self._pather.traverse_walking("Harrogath", self._char, obj=False, threshold=16, time_out=2.0)
+                self._pather.traverse_walking("Harrogath", self._char, obj=False, threshold=16, time_out=7.0)
+                self._curr_loc = Location.A5_STASH
 
         # Look at belt to figure out how many pots need to be picked up
         self._belt_manager.update_pot_needs()
@@ -394,7 +399,7 @@ class Bot:
                 if not self._curr_loc:
                     if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                     return self.trigger_or_stop("end_game", failed=True)
-            Logger.info("Stashing items")
+            Logger.info(f"Stashing items, current location: {self._curr_loc}")
             if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             self._curr_loc = self._town_manager.stash(self._curr_loc)
             self._check_gold_pickup()
