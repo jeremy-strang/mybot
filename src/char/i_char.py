@@ -554,6 +554,7 @@ class IChar:
     def loot_uniques(self, pickit, time_out: float=16.0, looted_uniques: set=set(), boundary=None) -> int:
         picked_up_items = 0
         start = time.time()
+        last_pickit_pos = None
         # Loot all the dead uniques/champs that may be off screen
         if pickit is not None:
             unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=60)
@@ -562,11 +563,14 @@ class IChar:
                 if data is not None:
                     corpse = unlooted[0]
                     area_pos = unlooted[0]["position"] - data["area_origin"]
-                    if corpse["dist"] > 18 or not self._pather.traverse(area_pos, self, verify_location=False, time_out=6, dest_distance=10):
+                    if corpse["dist"] < 15 or not self._pather.traverse(area_pos, self, verify_location=False, time_out=6, dest_distance=10):
                         looted_uniques.add(corpse["id"])
-                picked_up_items += pickit()
+                data = self._api.get_data()
+                if last_pickit_pos is None or math.dist(last_pickit_pos, data["player_pos_area"]) >= 15:
+                    picked_up_items += pickit()
+                last_pickit_pos = data["player_pos_area"]
                 for m in unlooted:
-                    if m["dist"] < 18:
+                    if m["dist"] < 15:
                         looted_uniques.add(m["id"])
                         print(f"Looted champ/unique monster with ID {m['id']}, type: {m['type']}")
                 unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=60)
