@@ -273,8 +273,10 @@ class IChar:
         factor = self._config.advanced_options["pathing_delay_factor"]
         if self._skill_hotkeys["teleport"] and (force_tp or(self._ui_manager.is_right_skill_selected(["TELE_ACTIVE"]) and self._ui_manager.is_right_skill_active())):
             mouse.move(pos_monitor[0], pos_monitor[1], randomize=2, delay_factor=[factor*0.1, factor*0.14])
-            wait(0.02, 0.02)
+            wait(0.02, 0.03)
             mouse.click(button="right")
+            wait(0.02, 0.03)
+            mouse.release(button="right")
             wait(self._cast_duration, self._cast_duration + 0.02)
         else:
             # in case we want to walk we actually want to move a bit before the point cause d2r will always "overwalk"
