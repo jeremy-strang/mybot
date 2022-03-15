@@ -84,8 +84,6 @@ class ItemManager:
 		odist = math.dist([target_x,target_y],[player_x,player_y])
 		print(odist)
 
-
-
 	def start(self):
 		print("Startup item manager...")
 		while 1:
