@@ -581,27 +581,6 @@ class Hammerdin(IChar):
         Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
         game_state.stop()
         return picked_up_items
-        # if not self._pather.move_to_monster(self, monster): return False
-        # if not self.prepare_attack(aura): return False
-        # monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
-        # dist = 0
-        # start = time.time()
-        # if type(monster) is dict:
-        #     dist = monster["dist"] # self.get_monster_distance(monster, offset)
-        # while type(monster) is dict and time.time() - start < time_out:
-        #     if dist > 10:
-        #         if not self.post_attack(): return False
-        #         if not self._pather.move_to_monster(self, monster):
-        #             self.post_attack()
-        #             return False
-        #         if not self.prepare_attack(aura):
-        #             self.post_attack()
-        #             return False
-        #     monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
-        #     if type(monster) == dict:
-        #         dist = monster["dist"] # self.get_monster_distance(monster, offset)
-        # if not self.post_attack(): return False
-        # return True
 
     def _kill_mobs_adv(self, names: list[str], game_state:StateMonitor) -> bool:
         #loop till our boss death
