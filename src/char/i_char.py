@@ -583,23 +583,25 @@ class IChar:
     def kill_cs_trash(self) -> bool:
         raise ValueError("Diablo CS Trash is not implemented!")
 
-    def loot_uniques(self, pickit, time_out: float=20.0, looted_uniques: set=set(), boundary=None) -> int:
+    def loot_uniques(self, pickit, time_out: float=16.0, looted_uniques: set=set(), boundary=None) -> int:
         picked_up_items = 0
         start = time.time()
         # Loot all the dead uniques/champs that may be off screen
         if pickit is not None:
-            unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
+            unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=60)
             while len(unlooted) > 0 and time.time() - start < time_out:
                 data = self._api.get_data()
                 if data is not None:
-                    if not self._pather.traverse(unlooted[0]["position"] - data["area_origin"], self, verify_location=False, time_out=6, dest_distance=10):
-                        looted_uniques.add(unlooted[0]["id"])
+                    corpse = unlooted[0]
+                    area_pos = unlooted[0]["position"] - data["area_origin"]
+                    if corpse["dist"] > 18 or not self._pather.traverse(area_pos, self, verify_location=False, time_out=6, dest_distance=10):
+                        looted_uniques.add(corpse["id"])
                 picked_up_items += pickit()
                 for m in unlooted:
-                    if m["dist"] < 15:
+                    if m["dist"] < 18:
                         looted_uniques.add(m["id"])
                         print(f"Looted champ/unique monster with ID {m['id']}, type: {m['type']}")
-                unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
+                unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=60)
         return picked_up_items
 
     def kill_uniques(self, pickit: FunctionType, time_out: float=9.0, looted_uniques: set=set()) -> bool:
