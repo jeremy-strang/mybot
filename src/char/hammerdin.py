@@ -555,7 +555,7 @@ class Hammerdin(IChar):
                         self.move(pos_m)
                     except: pass
                     last_move = time.time()
-                elif game_state._dist > 6:
+                elif game_state._dist > 7:
                     move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
@@ -570,7 +570,8 @@ class Hammerdin(IChar):
         
         picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
 
-        if initial_pos is not None:
+        data = self._api.get_data()
+        if data is not None and initial_pos is not None and math.dist(initial_pos, data["player_pos_area"]) > 15:
             self._pather.traverse(np.array(initial_pos), self, time_out = 6.0)
             picked_up_items += pickit()
 
