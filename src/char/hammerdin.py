@@ -9,6 +9,7 @@ from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import rotate_vec, unit_vector, wait, is_in_roi
+from utils.monsters import get_unlooted_monsters, CHAMPS_UNIQUES
 import time
 from pathing import OldPather, Location
 import math
@@ -516,15 +517,26 @@ class Hammerdin(IChar):
         wait(0.02, 0.4)
         return True
     
-    def kill_uniques(self, pickit=None, time_out: float = 20.0) -> bool:
+    def loot_uniques(self, pickit, time_out: float=20.0, looted_uniques: set=set(), boundary=None) -> int:
+        picked_up_items = 0
+        # Loot all the dead uniques/champs that may be off screen
+        if pickit is not None:
+            unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
+            while len(unlooted) > 0:
+                self._pather.traverse(unlooted[0]["area_pos"], self, verify_location=False, time_out=7, dest_distance=10)
+                picked_up_items += pickit()
+                for m in unlooted:
+                    if m["dist"] < 10: looted_uniques.add(m["id"])
+                unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
+        return picked_up_items
+
+    def kill_uniques(self, pickit=None, time_out: float=20.0, looted_uniques: set=set(), boundary=None) -> bool:
         Logger.debug(f"Beginning combat")
         rules = [
             MonsterPriorityRule(auras = ["CONVICTION"]),
             MonsterPriorityRule(monster_types = [MonsterType.SUPER_UNIQUE]),
             MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
-            MonsterPriorityRule(monster_types = [MonsterType.CHAMPION,
-                                                 MonsterType.GHOSTLY,
-                                                 MonsterType.POSSESSED]),
+            MonsterPriorityRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
             MonsterPriorityRule(monster_types = [MonsterType.MINION]),
         ]
         start = time.time()
@@ -538,7 +550,6 @@ class Hammerdin(IChar):
             if not game_state._ready:
                 wait(0.1)
             else:
-                data = self._api.get_data()
                 target_pos = game_state._target_pos
                 target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
                 if target_pos is not None and initial_pos is None:
@@ -569,11 +580,13 @@ class Hammerdin(IChar):
                     if not self.cast_melee_to_monster("blessed_hammer", self._cast_duration * 3, game_state._target): wait(0.1)
                     self.post_attack()
             elapsed = time.time() - start
-        if pickit is not None:
+        
+        picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
+
+        if initial_pos is not None:
+            self._pather.traverse(np.array(initial_pos), self, time_out = 6.0)
             picked_up_items += pickit()
-            if initial_pos is not None:
-                self._pather.traverse(np.array(initial_pos), self, time_out = 4.0)
-                picked_up_items += pickit()
+
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._skill_hotkeys["concentration"])
         wait(0.03, 0.05)

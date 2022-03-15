@@ -71,12 +71,7 @@ class Pit:
 
         picked_up_items = 0
         pit_lvl2 = self._pather.get_entity_coords_from_str("Pit Level 2", "poi", False)
-        # pf = PathFinder(self._api)
-        # nodes = pf.solve_tsp(pit_lvl2)
-        # for node in nodes:
-        #     self._pather.traverse(node, self._char, 0, do_pre_move=True, obj=False, kill=False, pickit=self._pickit, time_out=8.0)
-        #     picked_up_items += self._char.kill_uniques(lambda: self._pickit.pick_up_items(self._char), 20.0)
-        # self._char.post_attack()
+
         pickit_func = lambda: self._pickit.pick_up_items(self._char)
         picked_up_items += self._char.clear_zone(pit_lvl2, pickit_func)
 

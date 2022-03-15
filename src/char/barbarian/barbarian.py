@@ -122,7 +122,6 @@ class Barbarian(IChar):
         Logger.debug(f"Finished horking corpses after {round(time.time() - start, 2)} sec")
 
     def pre_buff_swap(self, switch_back=True):
-        # Try to switch weapons and select bo until we find the skill on the right skill slot
         self.switch_weapon()
         keyboard.send(self._char_config["battle_command"])
         wait(0.04, 0.07)

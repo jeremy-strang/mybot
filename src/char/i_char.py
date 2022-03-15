@@ -410,12 +410,13 @@ class IChar:
         return False
 
     def clear_zone(self, dest_world=None, pickit_func=None) -> int:
+        looted_uniques = set()
         picked_up_items = 0
         pf = PathFinder(self._api)
         nodes = pf.solve_tsp(dest_world)
         for node in nodes:
             self._pather.traverse(node, self, 0, do_pre_move=True, obj=False, kill=False, time_out=10.0)
-            picked_up_items += self.kill_uniques(lambda: pickit_func(), 20.0)
+            picked_up_items += self.kill_uniques(lambda: pickit_func(), 20.0, looted_uniques)
         self.post_attack()
         return picked_up_items
 
@@ -570,7 +571,7 @@ class IChar:
     def kill_cs_trash(self) -> bool:
         raise ValueError("Diablo CS Trash is not implemented!")
 
-    def kill_uniques(self, pickit: FunctionType, time_out: float = 9.0) -> bool:
+    def kill_uniques(self, pickit: FunctionType, time_out: float=9.0, looted_uniques: set=set()) -> bool:
         raise ValueError("Kill uniques not implemented")
 
 if __name__ == "__main__":
