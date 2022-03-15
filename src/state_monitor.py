@@ -125,7 +125,7 @@ class ApiThread:
         '''
         data = self._sm._api.get_data()
         if data is not None:
-            monsters = sort_and_filter_monsters(data, self._sm.rules, self._sm._boundary)
+            monsters = sort_and_filter_monsters(data, self._sm._rules, self._sm._boundary)
             # print(f"State monitor targeting {len(monsters)} monsters")
             for m in monsters:
                 proceed = True
@@ -173,7 +173,7 @@ class ApiThread:
                         else:
                             data = self._sm._api.get_data()
                             more = -1
-                            for l in sort_and_filter_monsters(data, self._sm.rules, self._sm._boundary):
+                            for l in sort_and_filter_monsters(data, self._sm._rules, self._sm._boundary):
                                 # If we are targeting corpses, make sure it's dead, otherwise make sure it's alive
                                 is_correct_mode = (self._sm._do_corpses and l["is_targetable_corpse"]) or (not self._sm._do_corpses and l["mode"] != 12)
                                 if monster_score(l, self._sm._rules) > 0 and is_correct_mode:
