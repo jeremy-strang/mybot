@@ -102,10 +102,18 @@ if __name__ == "__main__":
         def do_stuff():
             print("Doing stuff...")
             data = api.get_data()
+            potion_type = "rejuv"
+            if "flattened_belt" in data and data["flattened_belt"] is not None:
+                belt = data["flattened_belt"]
+                if belt is not None and len(belt) > 0:
+                    for i in range(min(len(belt), 4)):
+                        print(f"belt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}")
+                        if len(belt) > i and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
+                            print (f"potion{i+1}")
             # print(data["belt_items"])
 
             # bank = None
-            # for obj in data["objects"]:
+            # for obj in data["objects"]:w
             #     if obj["name"].startswith("Bank"):
             #         bank = obj
             #         print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
