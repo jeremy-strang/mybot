@@ -110,6 +110,28 @@ namespace MapAssist.Botty
                                 else if ((item.ItemBaseName ?? "").Contains("Rejuvenation Potion")) belt_rejuv_pots++;
                             }
                         }
+                        var merc = _gameData.Mercs.Where(a => a.IsPlayerOwned).FirstOrDefault();
+                        dynamic player_merc = null;
+                        if (merc != null)
+                        {
+                            player_merc = new
+                            {
+                                position = merc.Position,
+                                immunities = merc.Immunities,
+                                unit_type = merc.UnitType.ToString(),
+                                type = merc.MonsterData.MonsterType.ToString(),
+                                id = merc.UnitId,
+                                name = ((Npc)merc.TxtFileNo).ToString(),
+                                mode = merc.Struct.Mode,
+                                is_targetable_corpse = merc.IsTargetableCorpse,
+                                number = merc.TxtFileNo,
+                                heath_percentage = merc.HealthPercentage,
+                                corpse = merc.IsCorpse,
+                                bossID = merc.MonsterData.BossLineID,
+                                state_strings = merc.StateStrings,
+                                is_hovered = merc.IsHovered,
+                            };
+                        }
 
                         var msg = new
                         {
@@ -139,6 +161,8 @@ namespace MapAssist.Botty
                             //player_unit = playerUnit.Struct,
                             player_name = playerUnit.Name,
                             player_class = playerUnit.Struct.playerClass.ToString(),
+                            player_id = playerUnit.UnitId,
+                            player_merc,
                             static_npcs = new List<dynamic>(),
                             belt_health_pots, // number of health pots in player's belt
                             belt_mana_pots, // number of mana pots in player's belt

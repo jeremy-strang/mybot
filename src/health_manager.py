@@ -1,3 +1,4 @@
+from api.mapassist import MapAssistApi
 from template_finder import TemplateFinder
 from ui import UiManager
 from ui import BeltManager
@@ -16,12 +17,12 @@ from obs import ObsRecorder
 
 
 class HealthManager:
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: MapAssistApi):
         self._config = Config()
         self._obs_recorder = obs_recorder
         self._screen = screen
         self._template_finder = template_finder
-        self._ui_manager = UiManager(screen, self._template_finder, self._obs_recorder)
+        self._ui_manager = UiManager(screen, self._template_finder, self._obs_recorder, api)
         self._belt_manager = None # must be set with the belt manager form bot.py
         self._do_monitor = False
         self._did_chicken = False

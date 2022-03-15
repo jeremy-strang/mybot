@@ -75,7 +75,7 @@ if __name__ == "__main__":
         old_pather = OldPather(screen, template_finder)
         pather = Pather(screen, api)
         item_finder = ItemFinder()
-        ui_manager = UiManager(screen, template_finder, game_stats)
+        ui_manager = UiManager(screen, template_finder, obs_recorder, api, game_stats)
         belt_manager = BeltManager(screen, template_finder, api)
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api)
 
@@ -102,10 +102,12 @@ if __name__ == "__main__":
         def do_stuff():
             print("Doing stuff...")
             data = api.get_data()
+            print(data["player_merc"])
 
-            pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25)
-            print("round 2")
-            pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25)
+            
+            # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25)
+            # print("round 2")
+            # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25)
             stop_debug(game_controller, overlay)
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=5, time_out=25)
             # pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=5, time_out=25)

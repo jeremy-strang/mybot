@@ -1,3 +1,4 @@
+from api import MapAssistApi
 from screen import Screen
 from template_finder import TemplateFinder
 from config import Config
@@ -11,13 +12,13 @@ from utils.custom_mouse import mouse
 from obs import ObsRecorder
 
 class GameRecovery:
-    def __init__(self, screen: Screen, death_manager: DeathManager, template_finder: TemplateFinder, obs_recorder: ObsRecorder):
+    def __init__(self, screen: Screen, death_manager: DeathManager, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: MapAssistApi):
         self._config = Config()
         self._screen = screen
         self._death_manager = death_manager
         self._template_finder = template_finder
         self._obs_recorder = obs_recorder
-        self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder)
+        self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, api)
 
     def go_to_hero_selection(self):
         set_d2r_always_on_top()

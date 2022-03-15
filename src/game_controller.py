@@ -147,7 +147,7 @@ class GameController:
         self.template_finder = TemplateFinder(self.screen)
         self.start_health_manager_thread()
         self.start_death_manager_thread()
-        self.game_recovery = GameRecovery(self.screen, self.death_manager, self.template_finder, self.obs_recorder)
+        self.game_recovery = GameRecovery(self.screen, self.death_manager, self.template_finder, self.obs_recorder, self.api)
         self.game_stats = GameStats()        
         self.start_game_controller_thread()
         self.is_running = True
@@ -181,7 +181,7 @@ class GameController:
 
     def start_health_manager_thread(self):
         # Run health monitor thread
-        self.health_manager = HealthManager(self.screen, self.template_finder, self.obs_recorder)
+        self.health_manager = HealthManager(self.screen, self.template_finder, self.obs_recorder, self.api)
         self.health_monitor_thread = threading.Thread(target=self.health_manager.start_monitor)
         self.health_monitor_thread.daemon = True
         self.health_monitor_thread.start()

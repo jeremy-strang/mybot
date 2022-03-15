@@ -80,6 +80,7 @@ class MAS(Thread):
     def get_data(self, data) -> dict:
         _data = {
             "monsters": [],
+            "mercs": [],
             "poi": [],
             "objects": [],
             "items": [],
@@ -97,6 +98,8 @@ class MAS(Thread):
             "player_mana": 0.0,
             "player_health_pct": 1.0,
             "player_mana_pct": 1.0,
+            "player_id": 0,
+            "player_merc": None,
         }
 
         _data["menus"] = data["wp_menu"]
@@ -109,9 +112,12 @@ class MAS(Thread):
         _data["belt_rejuv_pots"] = data["belt_rejuv_pots"]
         _data["player_stats"] = data["player_stats"]
         _data["player_gold"] = data["player_gold"]
+        _data["player_id"] = data["player_id"]
+        _data["player_merc"] = data["player_merc"]
         _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
         _data["map"][_data["map"] == 1] = 0
         _data["map"] += 1
+
 
         px_int = int(data["player_pos"]["X"])
         py_int = int(data["player_pos"]["Y"])
@@ -148,7 +154,6 @@ class MAS(Thread):
             monster["abs_screen_position"] = np.array(world_to_abs(monster["position"], self._player_pos))
             monster["dist"] = math.dist(_data["player_pos_world"], monster["position"])
             _data["monsters"].append(monster)
-        # botty_data["monsters"].sort(key=self.calc_distance)
 
         for poi in data["points_of_interest"]:
             poi["position"] = np.array([int(poi["position"]["X"]), int(poi["position"]["Y"])])

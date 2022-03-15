@@ -115,7 +115,6 @@ class BeltManager:
                 self._pot_needs["rejuv"] = self._config.char["belt_rejuv_columns"] * self._config.char["belt_rows"] - data["belt_rejuv_pots"]
                 self._pot_needs["health"] = self._config.char["belt_hp_columns"] * self._config.char["belt_rows"] - data["belt_health_pots"]
                 self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * self._config.char["belt_rows"] - data["belt_mana_pots"]
-                Logger.debug(f"Loaded potion needs from memory: {self._pot_needs}")
         else:
             rows_left = {
                 "rejuv": self._config.char["belt_rejuv_columns"],
@@ -128,7 +127,7 @@ class BeltManager:
                 center_m = self._screen.convert_abs_to_monitor((-200, -120))
                 mouse.move(*center_m, randomize=100)
             keyboard.send(self._config.char["show_belt"])
-            wait(0.5)
+            wait(0.3, 0.4)
             # first clean up columns that might be too much
             img = self._screen.grab()
             for column in range(4):

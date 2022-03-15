@@ -1,4 +1,5 @@
 from typing import Union
+from api.mapassist import MapAssistApi
 from item import ItemFinder
 from obs.obs_recorder import ObsRecorder
 from template_finder import TemplateFinder
@@ -9,6 +10,7 @@ from transmute import Transmute
 from ui import UiManager
 from town import IAct, A1, A2, A3, A4, A5
 from utils.misc import wait
+from api import MapAssistApi
 
 TOWN_MARKERS = [
             "A5_TOWN_0", "A5_TOWN_1",
@@ -20,7 +22,7 @@ TOWN_MARKERS = [
 
 class TownManager:
 
-    def __init__(self, template_finder: TemplateFinder, ui_manager: UiManager, item_finder: ItemFinder, api, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5):
+    def __init__(self, template_finder: TemplateFinder, ui_manager: UiManager, item_finder: ItemFinder, api: MapAssistApi, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5):
         self._config = Config()
         self._template_finder = template_finder
         self._ui_manager = ui_manager
@@ -54,9 +56,13 @@ class TownManager:
             location = Location.A1_TOWN_START
         return location
 
-    @staticmethod
-    def get_act_from_current_area(current_area: Location) -> Location:
+    def get_act_from_current_area(self) -> Location:
         location = None
+        current_area = None
+        while current_area is None:
+            data = self._api.get_data()
+            if data is not None and "current_area" in data and len(data["current_area"]) > 0:
+                current_area = data["current_area"]
         if current_area == "Harrogath":
             location = Location.A5_TOWN_START
         elif current_area == "ThePandemoniumFortress":
@@ -74,35 +80,33 @@ class TownManager:
         :param time_out: Optional float value for time out in seconds, defaults to None
         :return: Location of the town (e.g. Location.A4_TOWN_START) or None if nothing was found within time_out time
         """
-        current_area = None
-        while current_area is None:
-            data = self._api.get_data()
-            if data is not None and "current_area" in data and len(data["current_area"]) > 0:
-                current_area = data["current_area"]
-
-        print(f"Current area: {current_area}")
-        loc = self.get_act_from_current_area(current_area)
-        if loc is not None:
-            return loc
-
+        loc = self.get_act_from_current_area()
+        if loc is not None: return loc
+        
         template_match = self._template_finder.search_and_wait(TOWN_MARKERS, best_match=True, time_out=time_out)
         if template_match.valid:
             return TownManager.get_act_from_location(template_match.name)
         return None
 
     def wait_for_tp(self, curr_loc: Location):
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         return self._acts[curr_act].wait_for_tp()
 
     def open_wp(self, curr_loc: Location):
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         return self._acts[curr_act].open_wp(curr_loc)
 
     def go_to_act(self, act_idx: int, curr_loc: Location) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         # check if we already are in the desired act
         if act_idx == 1: act = Location.A1_TOWN_START
         elif act_idx == 2: act = Location.A2_TOWN_START
@@ -120,8 +124,10 @@ class TownManager:
         return self._acts[act].get_wp_location()
 
     def heal(self, curr_loc: Location) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         # check if we can heal in current act
         if self._acts[curr_act].can_heal():
             return self._acts[curr_act].heal(curr_loc)
@@ -129,8 +135,10 @@ class TownManager:
         return curr_loc
 
     def buy_pots(self, curr_loc: Location, healing_pots: int = 0, mana_pots: int = 0) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         # check if we can buy pots in current act
         if self._acts[curr_act].can_buy_pots():
             new_loc = self._acts[curr_act].open_trade_menu(curr_loc)
@@ -143,8 +151,10 @@ class TownManager:
         return curr_loc
 
     def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         # check if we can resurrect in current act
         if self._acts[curr_act].can_resurrect():
             return self._acts[curr_act].resurrect(curr_loc)
@@ -153,8 +163,10 @@ class TownManager:
         return self._acts[Location.A4_TOWN_START].resurrect(new_loc)
 
     def identify(self, curr_loc: Location) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         # check if we can Identify in current act
         if self._acts[curr_act].can_identify():
             return self._acts[curr_act].identify(curr_loc)
@@ -163,9 +175,11 @@ class TownManager:
         return self._acts[Location.A5_TOWN_START].identify(new_loc)
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        new_loc = curr_loc
-
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
+        new_loc = curr_act
         if not self._acts[curr_act].can_stash():
             new_loc = self.go_to_act(5, curr_loc)
             if not new_loc: return False
@@ -176,8 +190,10 @@ class TownManager:
         return new_loc
 
     def gamble(self, curr_loc: Location) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         # check if we can Identify in current act
         if self._acts[curr_act].can_gamble():
             return self._acts[curr_act].gamble(curr_loc)
@@ -186,8 +202,10 @@ class TownManager:
         return self._acts[Location.A4_TOWN_START].gamble(new_loc)
 
     def stash(self, curr_loc: Location, gamble=False) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         # check if we can stash in current act
         if self._acts[curr_act].can_stash():
             new_loc = self._acts[curr_act].open_stash(curr_loc)
@@ -204,8 +222,10 @@ class TownManager:
         return new_loc
 
     def repair_and_fill_tps(self, curr_loc: Location) -> Union[Location, bool]:
-        curr_act = TownManager.get_act_from_location(curr_loc)
-        if curr_act is None: return False
+        curr_act = self.get_act_from_current_area()
+        if curr_act is None:
+            curr_act = TownManager.get_act_from_location(curr_loc)
+            if curr_act is None: return False
         # check if we can rapair in current act
         if self._acts[curr_act].can_trade_and_repair():
             new_loc = self._acts[curr_act].open_trade_and_repair_menu(curr_loc)

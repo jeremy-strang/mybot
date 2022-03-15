@@ -67,7 +67,7 @@ class Bot:
         self._item_finder = ItemFinder()
         self._obs_recorder = obs_recorder
         self._api = mapi
-        self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._game_stats)
+        self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._api, self._game_stats)
         self._belt_manager = BeltManager(self._screen, self._template_finder, self._api)
         self._old_pather = OldPather(self._screen, self._template_finder)
         self._pather = Pather(screen, self._api)
@@ -305,14 +305,19 @@ class Bot:
         while is_loading:
             is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
             if is_loading: wait(0.3, 0.4)
-        return is_loading
+        return False
 
     def on_maintenance(self):
         is_loading = True
+        merc_alive = False
+        data = self._api.get_data()
+        if data is not None:
+            merc_alive = "player_merc" in data and data["player_merc"] is not None and data["player_merc"]["mode"] != 12
+
         # Handle picking up corpse in case of death
         if self._pick_corpse:
             Logger.debug(f"Picking up corpse...")
-            is_loading = self._wait_for_load()
+            is_loading = self._ui_manager.wait_for_loading_finish()
             self._char.discover_capabilities(force=False)
             self._pick_corpse = False
             time.sleep(1.6)
@@ -325,31 +330,30 @@ class Bot:
                 Logger.info(f"Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
         else:
-            if self._curr_loc == Location.A1_TOWN_START:
+            if "A1_" in self._curr_loc:
                 self._pather.traverse_walking("Rogue Encampment", self._char, obj=False, threshold=16, time_out=1.5)
-            elif self._curr_loc == Location.A2_TOWN_START:
+            elif "A2_" in self._curr_loc:
                 self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, time_out=3.5)
-            elif self._curr_loc == Location.A3_TOWN_START:
+            elif "A3_" in self._curr_loc:
                 self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16, time_out=3.0)
-            elif self._curr_loc == Location.A4_TOWN_START:
+            elif "A4_" in self._curr_loc:
                 self._pather.traverse_walking("The Pandemonium Fortress", self._char, obj=False, threshold=16, time_out=1.0)
-            elif self._curr_loc == Location.A5_TOWN_START:
+            elif "A5_" in self._curr_loc:
                 self._pather.traverse_walking("Harrogath", self._char, obj=False, threshold=16, time_out=2.0)
 
         # Look at belt to figure out how many pots need to be picked up
         self._belt_manager.update_pot_needs()
-
-        # Check if should need some healing
         buy_pots = self._belt_manager.should_buy_pots()
 
-        health_pct = 1.0
-        mana_pct = 1.0
+        health_pct = 100.0
+        mana_pct = 100.0
         data = self._api.get_data()
         if data is not None:
             health_pct = data["player_health_pct"]
             mana_pct = data["player_mana_pct"]
-            Logger.debug(f"Loaded player HP/MP from memory, HP: {round(health_pct, 1)}%, MP: {round(mana_pct, 1)}%")
+            Logger.debug(f"Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
         else:
+            is_loading = self._ui_manager.wait_for_loading_finish()
             img = self._screen.grab()
             health_pct = HealthManager.get_health(img)
             mana_pct = HealthManager.get_mana(img)
@@ -357,10 +361,10 @@ class Bot:
         if health_pct < 0.6 or mana_pct < 0.2 or buy_pots:
             if buy_pots:
                 # Verify it with pixels, memory data has behaved strangely
-                if is_loading: is_loading = self._wait_for_load()
                 self._belt_manager.update_pot_needs(read_memory=False)
                 buy_pots = self._belt_manager.should_buy_pots()
             if buy_pots:
+                if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 Logger.info("Buy pots at next possible Vendor")
                 pot_needs = self._belt_manager.get_pot_needs()
                 self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
@@ -368,7 +372,7 @@ class Bot:
                 self._belt_manager.update_pot_needs()
             else:
                 Logger.info("Healing at next possible Vendor")
-                if is_loading: is_loading = self._wait_for_load()
+                if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 self._curr_loc = self._town_manager.heal(self._curr_loc)
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
@@ -378,16 +382,20 @@ class Bot:
         self._no_stash_counter += 1
         if not self._picked_up_items and (self._no_stash_counter > 4 or self._pick_corpse):
             self._no_stash_counter = 0
+            if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             force_stash = self._ui_manager.should_stash(self._config.char["num_loot_columns"])
         # Stash stuff, either when item was picked up or after X runs without stashing because of unwanted loot in inventory
         if self._picked_up_items or force_stash:
             # Check config/gold and see if we need to enable/disable gold pickup
             if self._config.char["id_items"]:
                 Logger.info("Identifying items")
+                if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 self._curr_loc = self._town_manager.identify(self._curr_loc)
                 if not self._curr_loc:
+                    if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                     return self.trigger_or_stop("end_game", failed=True)
             Logger.info("Stashing items")
+            if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             self._curr_loc = self._town_manager.stash(self._curr_loc)
             self._check_gold_pickup()
             Logger.info("Running transmutes")
@@ -399,7 +407,7 @@ class Bot:
             self._picked_up_items = False
             wait(1.0)
 
-        if is_loading: is_loading = self._wait_for_load()
+        if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
         self._char.discover_capabilities(force=False)
 
         # Check if we are out of tps or need repairing
@@ -420,9 +428,10 @@ class Bot:
             wait(1.0)
 
         # Check if merc needs to be revived
-        merc_alive = self._template_finder.search(["MERC_A2","MERC_A1","MERC_A5","MERC_A3"], self._screen.grab(), threshold=0.9, roi=self._config.ui_roi["merc_icon"]).valid
+        # merc_alive = self._template_finder.search(["MERC_A2","MERC_A1","MERC_A5","MERC_A3"], self._screen.grab(), threshold=0.9, roi=self._config.ui_roi["merc_icon"]).valid
         if not merc_alive and self._config.char["use_merc"]:
             Logger.info("Resurrect merc")
+            self._obs_recorder.save_replay_if_enabled()
             self._game_stats.log_merc_death()
             self._curr_loc = self._town_manager.resurrect(self._curr_loc)
             if not self._curr_loc:

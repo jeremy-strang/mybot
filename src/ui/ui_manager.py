@@ -5,6 +5,7 @@ import cv2
 import itertools
 import os
 import numpy as np
+from api.mapassist import MapAssistApi
 import obs
 from obs import obs_recorder
 
@@ -20,6 +21,7 @@ from template_finder import TemplateFinder
 from messages import Messenger
 from game_stats import GameStats
 from obs import ObsRecorder
+from api import MapAssistApi
 
 import random 
 import string
@@ -28,11 +30,12 @@ import string
 class UiManager():
     """Everything that is clicking on some static 2D UI or is checking anything in regard to it should be placed here."""
 
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, game_stats: GameStats = None):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: MapAssistApi, game_stats: GameStats = None):
         self._config = Config()
         self._template_finder = template_finder
         self._messenger = Messenger()
         self._obs_recorder = obs_recorder
+        self._api = api
         self._game_stats = game_stats
         self._screen = screen
         self._gold_full = False
@@ -130,6 +133,20 @@ class UiManager():
                 return True
             if time_out is not None and time.time() - start > time_out:
                 return False
+    
+    def wait_for_loading_finish(self, time_out: float = 45.0) -> bool:
+        """
+        Waits until loading screen is finished
+        :param time_out: Maximum time to wait for loading screen to finish
+        :return: True if time out
+        """
+        is_loading = True
+        start = time.time()
+        while is_loading and time.time() - start < time_out:
+            is_loading = self._template_finder.search("LOADING", self._screen.grab()).valid
+            if is_loading: wait(0.3, 0.4)
+            else: return False
+        return True
 
     def save_and_exit(self, does_chicken: bool = False) -> bool:
         """
@@ -579,7 +596,7 @@ class UiManager():
         Logger.debug("Done stashing")
         wait(0.4, 0.5)
 
-    def transfer_shared_to_private_gold (self, count: int):
+    def transfer_shared_to_private_gold(self, count: int):
         for x in range (3):
             self._move_to_stash_tab (count)
             stash_gold_btn = self._template_finder.search("INVENTORY_GOLD_BTN", self._screen.grab(), roi=self._config.ui_roi["gold_btn_stash"], threshold=0.83)
@@ -694,6 +711,7 @@ class UiManager():
             return False
 
     def repair_needed(self) -> bool:
+
         template_match = self._template_finder.search(
             "REPAIR_NEEDED",
             self._screen.grab(),
