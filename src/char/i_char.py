@@ -598,7 +598,7 @@ class IChar:
                 for m in unlooted:
                     if m["dist"] < 15:
                         looted_uniques.add(m["id"])
-                        print(f"Looted champ/unique monster with ID {m['id']}")
+                        print(f"Looted champ/unique monster with ID {m['id']}, type: {m['type']}")
                 unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=50)
         return picked_up_items
 
