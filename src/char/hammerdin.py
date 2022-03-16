@@ -544,15 +544,7 @@ class Hammerdin(IChar):
                     
                 if time.time() - last_move > 6.0:
                     Logger.debug("Stood in one place too long, repositioning")
-                    rot_deg = random.randint(-2,2)
-                    tele_pos_abs = unit_vector(rotate_vec(target_pos, rot_deg)) * 320 * 3
-                    tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([tele_pos_abs[0], tele_pos_abs[1]])
-                    pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
-                    self.pre_move()
-                    try:
-                        self.move(pos_m)
-                        self.move(pos_m)
-                    except: pass
+                    self.reposition(target_pos)
                     last_move = time.time()
                 elif game_state._dist > 7:
                     move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
@@ -563,7 +555,7 @@ class Hammerdin(IChar):
                 else:
                     keyboard.send(self._skill_hotkeys["concentration"])
                     wait(0.03, 0.05)
-                    if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target): wait(0.1)
+                    if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target, stop_when_dead=False): wait(0.1)
                     self.post_attack()
             elapsed = time.time() - start
         

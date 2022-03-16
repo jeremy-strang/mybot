@@ -11,7 +11,7 @@ import obs
 from pathing import PathFinder, Pather, OldPather
 from state_monitor import MonsterType
 from utils.custom_mouse import mouse
-from utils.misc import wait, cut_roi, is_in_roi, color_filter
+from utils.misc import rotate_vec, unit_vector, wait, cut_roi, is_in_roi, color_filter
 
 from logger import Logger
 from config import Config
@@ -306,6 +306,18 @@ class IChar:
             else:
                 mouse.click(button="left")
                 wait(0.02, 0.03)
+
+    def reposition(self, target_pos):
+        rot_deg = random.randint(-2, 2)
+        tele_pos_abs = unit_vector(rotate_vec(target_pos, rot_deg)) * 320 * 3
+        tele_pos_abs = self._old_pather._adjust_abs_range_to_screen([tele_pos_abs[0], tele_pos_abs[1]])
+        pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
+        self.pre_move()
+        try:
+            self.move(pos_m)
+            self.move(pos_m)
+        except:
+            pass
     
     def open_tp(self):
         # will check if tp is available and select the skill
@@ -375,6 +387,17 @@ class IChar:
 
     def post_attack(self):
         pass
+    
+    def cast_aoe(self, skill_hotkey: str, button="right"):
+        if button == "left":
+            keyboard.send(self._char_config["stand_still"], do_release=False)
+        keyboard.send(self._skill_hotkeys[skill_hotkey])
+        wait(0.02, 0.03)
+        mouse.click(button=button)
+        wait(self._cast_duration + 0.01)
+        if button == "left":
+            keyboard.send(self._char_config["stand_still"], do_press=False)
+            wait(0.02, 0.03)
 
     def cast_melee(self, skill_key: str, time_in_s: float, abs_screen_pos: tuple[float, float], mouse_button: str = "left"):
         mouse_pos_m = self._screen.convert_abs_to_monitor(abs_screen_pos)
@@ -392,7 +415,7 @@ class IChar:
                 mouse.release(button=mouse_button)
             keyboard.send(self._char_config["stand_still"], do_press=False)
     
-    def tele_stomp_monster(self, skill_key: str, time_in_s: float, monster: dict, mouse_button: str = "left") -> bool:
+    def tele_stomp_monster(self, skill_key: str, time_in_s: float, monster: dict, mouse_button: str = "left", stop_when_dead=True) -> bool:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
                 mid = monster['id']
@@ -409,12 +432,12 @@ class IChar:
                     mouse.press(button=mouse_button)
                     wait(0.03, 0.04)
                     monster = find_monster(mid, self._api)
-                    if monster is None or monster["mode"] == 12:
+                    if monster is None or monster["mode"] == 12 and stop_when_dead:
                         break
                 mouse.release(button=mouse_button)
-                wait(0.03, 0.04)
+                wait(0.02, 0.03)
                 keyboard.release(self._config.char["stand_still"])
-                wait(0.03, 0.04)
+                wait(0.02, 0.03)
                 return True
             else:
                 Logger.error(f"Invalid monster {monster}")

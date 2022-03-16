@@ -10,7 +10,7 @@ from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, is_in_roi, cut_roi, points_equal
-from utils.monsters import find_monster
+from utils.monsters import CHAMPS_UNIQUES, find_monster
 import time
 from pathing import OldPather, Location
 import math
@@ -52,7 +52,7 @@ class Barbarian(IChar):
         monsters = sorted(data["monsters"], key = lambda m: (math.dist(data["player_pos_area"], m["position"] - data["area_origin"])))
         for m in monsters:
             if unique_only:
-                proceed = m["mode"] == 12 and m["is_targetable_corpse"] and m["id"] not in skip_ids and any (m["type"] in typ for typ in ["SuperUnique", "Unique", "Champion"])
+                proceed = m["mode"] == 12 and m["is_targetable_corpse"] and m["id"] not in skip_ids and any(m["type"] in typ.monster_types for typ in CHAMPS_UNIQUES)
             else:
                 proceed = m["mode"] == 12 and m["is_targetable_corpse"] and m["id"] not in skip_ids
             if proceed and names is not None:

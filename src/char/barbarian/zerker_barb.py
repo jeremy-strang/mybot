@@ -9,7 +9,7 @@ from ui import UiManager
 from pathing import OldPather
 from logger import Logger
 from screen import Screen
-from utils.misc import wait, is_in_roi, cut_roi
+from utils.misc import rotate_vec, unit_vector, wait, is_in_roi, cut_roi
 import time
 from pathing import OldPather, Location
 import math
@@ -31,37 +31,37 @@ class ZerkerBarb(Barbarian):
         self._pather = pather
         self._do_pre_move = True
 
-    def kill_b(self, game_state: StateMonitor) -> bool: # TODO
-        atk_len = self._char_config["atk_len_trav"]
-        self._kill_mobs(game_state, atk_len)
-        return True
+    # def kill_b(self, game_state: StateMonitor) -> bool: # TODO
+    #     atk_len = self._char_config["atk_len_trav"]
+    #     self._kill_mobs(game_state, atk_len)
+    #     return True
 
-    def distance(self, monster, offset):
-        if type(monster) is dict:
-            player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
-            dist = math.dist(player_p, monster["position"]) -(offset [0] + offset [1]) 
-            return dist
-        return 0
+    # def distance(self, monster, offset):
+    #     if type(monster) is dict:
+    #         player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
+    #         dist = math.dist(player_p, monster["position"]) -(offset [0] + offset [1]) 
+    #         return dist
+    #     return 0
 
-    def prepare_attack(self):
-        wait(0.05, 0.1)
-        keyboard.send(self._skill_hotkeys["howl"])
-        wait(0.05)
-        mouse.click(button="right")
-        wait(0.05)
-        if self._skill_hotkeys["berserk"]:
-            keyboard.send(self._skill_hotkeys["berserk"])
-            wait(0.05)
-        mouse.press(button="left")
-        wait(0.1, 0.2)
-        keyboard.send(self._char_config["stand_still"], do_release=False) 
-        wait(0.05, 0.1)
+    # def prepare_attack(self):
+    #     wait(0.05, 0.1)
+    #     keyboard.send(self._skill_hotkeys["howl"])
+    #     wait(0.05)
+    #     mouse.click(button="right")
+    #     wait(0.05)
+    #     if self._skill_hotkeys["berserk"]:
+    #         keyboard.send(self._skill_hotkeys["berserk"])
+    #         wait(0.05)
+    #     mouse.press(button="left")
+    #     wait(0.1, 0.2)
+    #     keyboard.send(self._char_config["stand_still"], do_release=False) 
+    #     wait(0.05, 0.1)
 
     def post_attack(self):
         mouse.release(button="left")
-        wait(0.03, 0.05)
+        wait(0.03, 0.04)
         keyboard.send(self._char_config["stand_still"], do_press=False) 
-        wait(0.03, 0.05)
+        wait(0.03, 0.04)
 
     def mouse_follow_unit(self, monster, offset):
         player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
@@ -70,30 +70,83 @@ class ZerkerBarb(Barbarian):
         wait(0.1)
         mouse.move(*pos_monitor)
 
-    def kill_uniques(self, monster, aura: str = "concentration", offset = [-1, -1]) -> bool:
-        if not self._pather.move_to_monster(self, monster): return False
-        dist = self.distance(monster, offset)
-        counter = 0
-        while dist > 7 and counter < 5:
-            counter += 1
-            wait(0.3, 0.5)
-            monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
-            self._pather.move_to_monster(self, monster)
-            dist = self.distance(monster, offset)
+    # def kill_uniques(self, monster, aura: str = "concentration", offset = [-1, -1]) -> bool:
+    #     if not self._pather.move_to_monster(self, monster): return False
+    #     dist = self.distance(monster, offset)
+    #     counter = 0
+    #     while dist > 7 and counter < 5:
+    #         counter += 1
+    #         wait(0.3, 0.5)
+    #         monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
+    #         self._pather.move_to_monster(self, monster)
+    #         dist = self.distance(monster, offset)
         
-        while type(monster) != bool and dist <= 7:
-            self.prepare_attack()
-            self.mouse_follow_unit(monster, offset)
-            wait(0.8, 1.0)
-            monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
-            self.post_attack()
-            if type(monster)==dict:
-                dist = self.distance(monster, offset)
+    #     while type(monster) != bool and dist <= 7:
+    #         self.prepare_attack()
+    #         self.mouse_follow_unit(monster, offset)
+    #         wait(0.8, 1.0)
+    #         monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
+    #         self.post_attack()
+    #         if type(monster)==dict:
+    #             dist = self.distance(monster, offset)
+    #         else:
+    #             dist = 10
+    #     self.post_attack()
+    #     self.do_hork(unique_only=True, disable_swap=True)
+    #     return True
+
+    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
+        Logger.debug(f"Beginning combat")
+        rules = [
+            MonsterPriorityRule(auras = ["CONVICTION"]),
+            MonsterPriorityRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+            MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
+            MonsterPriorityRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
+            # MonsterPriorityRule(monster_types = [MonsterType.MINION]),
+        ]
+        start = time.time()
+        game_state = StateMonitor(rules, self._api, False, -1, True, False, None)
+        last_move = start
+        elapsed = 0
+        picked_up_items = 0
+        data = game_state._data
+        initial_pos = None
+        while elapsed < time_out and game_state._dead == 0 and game_state._target is not None:
+            if not game_state._ready:
+                wait(0.01, 0.12)
             else:
-                dist = 10
+                target_pos = game_state._target_pos
+                target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
+                if target_pos is not None and initial_pos is None:
+                    initial_pos = np.array(game_state._area_pos) if game_state._area_pos is not None else None
+                
+                self.cast_aoe("howl")
+                if time.time() - last_move > 6.0:
+                    Logger.debug("Stood in one place too long, repositioning")
+                    self.reposition(target_pos)
+                    last_move = time.time()
+                elif game_state._dist > 7:
+                    move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
+                    move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
+                    self.pre_move()
+                    self.move(move_pos_m, force_tp=True, force_move=True)
+                    last_move = time.time()
+                else:
+                    self.cast_aoe("howl")
+                    if not self.tele_stomp_monster("berserk", 1.7, game_state._target): wait(0.1)
+                    self.post_attack()
+            elapsed = time.time() - start
+        
+        self.cast_aoe("howl")
+        self.do_hork(None, time_out=8, unique_only=True)
+        # This is a hack to prevent Teleport from being used during pickit
+        keyboard.send(self._skill_hotkeys["howl"])
+        wait(0.03, 0.04)
         self.post_attack()
-        self.do_hork(unique_only=True, disable_swap=True)
-        return True
+        picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
+        Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
+        game_state.stop()
+        return picked_up_items
 
     def kill_council(self, game_state: StateMonitor = None) -> bool:
         rules = [
