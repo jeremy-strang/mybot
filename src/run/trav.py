@@ -77,7 +77,7 @@ class Trav:
             self._char.switch_weapon()
             self._char.verify_active_weapon_tab()
 
-        self._obs_recorder.start_recording_if_enabled()
+        # self._obs_recorder.start_recording_if_enabled()
         if self._char._char_config['type'] == 'hammerdin':
             game_state = StateMonitor(['CouncilMember'], self._api, unique_id=-1, many=True)
             self._char.kill_council(game_state)
@@ -127,5 +127,5 @@ class Trav:
             wait(0.1, 0.2)
             self._old_pather.traverse_nodes([230], self._char, time_out=2)
         self._api.get_metrics() # DEBUG
-        self._obs_recorder.stop_recording_if_enabled()
+        # self._obs_recorder.stop_recording_if_enabled()
         return (Location.A3_TRAV_CENTER_STAIRS, picked_up_items)
