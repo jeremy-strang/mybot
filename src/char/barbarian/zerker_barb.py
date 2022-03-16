@@ -120,12 +120,11 @@ class ZerkerBarb(Barbarian):
                 if target_pos is not None and initial_pos is None:
                     initial_pos = np.array(game_state._area_pos) if game_state._area_pos is not None else None
                 
-                self.cast_aoe("howl")
                 if time.time() - last_move > 6.0:
                     Logger.debug("Stood in one place too long, repositioning")
                     self.reposition(target_pos)
                     last_move = time.time()
-                elif game_state._dist > 7:
+                elif game_state._dist > 6:
                     move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
@@ -133,8 +132,8 @@ class ZerkerBarb(Barbarian):
                     last_move = time.time()
                 else:
                     self.cast_aoe("howl")
+                    self.verify_active_weapon_tab()
                     if not self.tele_stomp_monster("berserk", 1.7, game_state._target): wait(0.1)
-                    self.post_attack()
             elapsed = time.time() - start
         
         self.cast_aoe("howl")
