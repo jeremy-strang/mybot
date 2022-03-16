@@ -70,31 +70,6 @@ class ZerkerBarb(Barbarian):
         wait(0.1)
         mouse.move(*pos_monitor)
 
-    # def kill_uniques(self, monster, aura: str = "concentration", offset = [-1, -1]) -> bool:
-    #     if not self._pather.move_to_monster(self, monster): return False
-    #     dist = self.distance(monster, offset)
-    #     counter = 0
-    #     while dist > 7 and counter < 5:
-    #         counter += 1
-    #         wait(0.3, 0.5)
-    #         monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
-    #         self._pather.move_to_monster(self, monster)
-    #         dist = self.distance(monster, offset)
-        
-    #     while type(monster) != bool and dist <= 7:
-    #         self.prepare_attack()
-    #         self.mouse_follow_unit(monster, offset)
-    #         wait(0.8, 1.0)
-    #         monster = self.kill_around(self._api, density=self._char_config["density"], area=self._char_config["area"], special = True)
-    #         self.post_attack()
-    #         if type(monster)==dict:
-    #             dist = self.distance(monster, offset)
-    #         else:
-    #             dist = 10
-    #     self.post_attack()
-    #     self.do_hork(unique_only=True, disable_swap=True)
-    #     return True
-
     def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
         Logger.debug(f"Beginning combat")
         rules = [
@@ -135,7 +110,6 @@ class ZerkerBarb(Barbarian):
                     self.verify_active_weapon_tab()
                     if not self.tele_stomp_monster("berserk", 1.7, game_state._target): wait(0.1)
             elapsed = time.time() - start
-        
         self.cast_aoe("howl")
         self.do_hork(None, time_out=8, unique_only=True)
         # This is a hack to prevent Teleport from being used during pickit
@@ -147,6 +121,21 @@ class ZerkerBarb(Barbarian):
         game_state.stop()
         return picked_up_items
 
+    def kill_andy(self, game_state: StateMonitor = None) -> bool:
+        game_state = StateMonitor(["Andariel"], self._api)
+        self.cast_aoe("howl")
+        self._kill_mobs(game_state, atk_len=4, time_out=10)
+        self.cast_aoe("howl")
+        self._kill_mobs(game_state, atk_len=4, time_out=30)
+        game_state.stop()
+        return True
+
+    def kill_meph(self, game_state: StateMonitor = None) -> bool:
+        game_state = StateMonitor(["Mephisto"], self._api)
+        self._kill_mobs(game_state, reposition_pos=(69, 54), reposition_time=10)
+        game_state.stop()
+        return True
+
     def kill_council(self, game_state: StateMonitor = None) -> bool:
         rules = [
             MonsterPriorityRule(auras = ["CONVICTION"]),
@@ -155,12 +144,16 @@ class ZerkerBarb(Barbarian):
             MonsterPriorityRule(names = ["CouncilMember"]),
             MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[120, 80, 50, 50])
-        self._kill_mobs(game_state, reposition_pos_world=(156, 113))
+        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True)
+        if not self._kill_mobs(game_state, reposition_pos=(156, 113)): return False
         game_state.stop()
         return True
 
-    def _kill_mobs(self, game_state: StateMonitor, atk_len: float = 2.3, time_out: float = 30, reposition_pos_world = None) -> bool:
+    def kill_tower(self, game_state: StateMonitor) -> bool:
+        self._kill_mobs(game_state, 1.7, 15, do_howl=True)
+        return True
+
+    def _kill_mobs(self, game_state: StateMonitor, atk_len: float=2.3, time_out: float=30, reposition_pos=None, reposition_time=6.0, do_howl: bool=False) -> bool:
         Logger.debug(f"Beginning combat")
         start = time.time()
         last_move = start
@@ -170,15 +163,16 @@ class ZerkerBarb(Barbarian):
                 target_pos = game_state._target_pos
                 target_pos = [target_pos[0]-9.5,target_pos[1]-39.5]
                 # If we've been standing in one spot for too long, reposition
-                if time.time() - last_move > 6.0 and reposition_pos_world is not None:
+                if time.time() - last_move > reposition_time and reposition_pos is not None:
                     Logger.debug("Stood in one place too long, repositioning")
-                    self._pather.traverse(reposition_pos_world, self, time_out = 3.0)
+                    self._pather.traverse(reposition_pos, self, time_out = 3.0)
                     last_move = time.time()
                 elif game_state._dist > 6:
                     move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
                     self.move(move_pos_m, force_tp=True, force_move=True)
+                    if do_howl: self.cast_aoe("howl")
                     last_move = time.time()
                 else:
                     # self.cast_melee("berserk", atk_len, target_pos)

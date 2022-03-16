@@ -53,11 +53,8 @@ class Tower:
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         if not self._pather.wait_for_location("BlackMarsh"): return False
-        if do_pre_buff:
-            self._char.pre_buff()
 
-        if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
-            self._char.switch_weapon()
+        self._char.pre_travel()
 
         if not self._pather.traverse("Forgotten Tower", self._char): return False
         if not self._pather.go_to_area("Forgotten Tower", "ForgottenTower", entrance_in_wall=False,randomize=3): return False
@@ -73,9 +70,7 @@ class Tower:
         if not self._pather.traverse("Tower Cellar Level 5", self._char): return False
         if not self._pather.go_to_area("Tower Cellar Level 5", "TowerCellarLevel5", entrance_in_wall=False,randomize=4): return False
 
-        if self._config.char["teleport_weapon_swap"]:
-            self._char.switch_weapon()
-            self._char.verify_active_weapon_tab()
+        self._char.post_travel()
 
         if not self._pather.traverse("GoodChest", self._char): return False
 
@@ -83,7 +78,7 @@ class Tower:
         # ill just use the countess id for now
         #351218274,
         #4206342633
-        game_state = StateMonitor(['DarkStalker'], self._api,super_unique=True)
+        game_state = StateMonitor(['DarkStalker'], self._api, super_unique=True)
         result = self._char.kill_tower(game_state)
         if result:
             Logger.info("Countess died...")

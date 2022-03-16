@@ -61,7 +61,7 @@ class Meph:
 
         if not self._pather.traverse("Durance of Hate Level 3", self._char,verify_location=True): return False
         if not self._pather.go_to_area("Durance of Hate Level 3", "DuranceOfHateLevel3"): return False
-        if not self._pather.traverse((69, 54), self._char,verify_location=True): return False
+        if not self._pather.traverse((69, 54), self._char, verify_location=True): return False
 
         if self._config.char["teleport_weapon_swap"]:
             self._char.switch_weapon()
@@ -69,19 +69,17 @@ class Meph:
 
         if self._char._char_config['type'] == 'hammerdin':
             self._char.kill_meph()
-        elif self._char._char_config['type'] == 'light_sorc' or self._char._char_config['type'] == 'necro':
+        elif self._char._char_config['type'] in ['light_sorc', 'necro', 'zerker_barb']:
             game_state = StateMonitor(['Mephisto'],self._api)
-            result = self._char.kill_meph(game_state)
+            self._char.kill_meph(game_state)
             x = game_state._area_pos[0]
             y = game_state._area_pos[1]
-            #go to mephs body
             self._pather.traverse((x, y), self._char)
             game_state.stop()
+        elif self._char._char_config['type'] == 'zerker_barb':
+            game_state = StateMonitor(['Mephisto'], self._api)
         else:
             raise ValueError("Andy hdin or light sorc or necro")
-
-
-
 
         picked_up_items = self._pickit.pick_up_items(self._char)
         return (Location.A3_MEPH_END, picked_up_items)

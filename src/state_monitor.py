@@ -133,7 +133,7 @@ class ApiThread:
                 correct_id = False
                 if self._sm._super_unique:
                     if 'Unique' in m['type']:
-                        proceed = monster_score(l, self._sm._rules) > 0 if len(self._sm._rules > 0) else True
+                        proceed = monster_score(m, self._sm._rules) > 0 if len(self._sm._rules) > 0 else True
 
                 if self._sm._do_corpses and not m["is_targetable_corpse"]:
                     proceed = False
