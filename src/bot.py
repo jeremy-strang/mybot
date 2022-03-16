@@ -361,13 +361,13 @@ class Bot:
             if buy_pots:
                 self._belt_manager.update_pot_needs()
                 buy_pots = self._belt_manager.should_buy_pots()
-            if buy_pots:
-                if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
-                Logger.info("Buy pots at next possible Vendor")
-                pot_needs = self._belt_manager.get_pot_needs()
-                self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
-                wait(0.5)
-                self._belt_manager.update_pot_needs()
+                if buy_pots:
+                    if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
+                    Logger.info("Buy pots at next possible Vendor")
+                    pot_needs = self._belt_manager.get_pot_needs()
+                    self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
+                    wait(0.5)
+                    self._belt_manager.update_pot_needs()
             else:
                 Logger.info("Healing at next possible Vendor")
                 if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()

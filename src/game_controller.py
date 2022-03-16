@@ -97,6 +97,7 @@ class GameController:
                         if self.config.general["custom_message_hook"]:
                             messenger.send_message(msg)
                         self.safe_exit(1)
+                        return False
                     else:
                         do_restart = self.game_recovery.go_to_hero_selection()
                     break
