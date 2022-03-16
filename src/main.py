@@ -92,12 +92,11 @@ def main():
     print("\n" + pad_str_sides(f"MyBot {__version__} [name: {config.general['name']}]", "="))
     print(f"Active branch:        {config.active_branch}")
     print(f"Latest Commit Sha:    {config.latest_commit_sha}")
-    print("=" * 80)
     print("Hotkeys:")
-    print(f"    Backup D2R settings:    {config.advanced_options['settings_backup_key']}")
-    print(f"    Adjust D2R settings:    {config.advanced_options['auto_settings_key']}")
-    print(f"    Start / Pause Bot:      {config.advanced_options['resume_key']}")
-    print(f"    Stop Bot:               {config.advanced_options['exit_key']}")
+    print(f"    Backup settings:        {config.advanced_options['settings_backup_key']} key")
+    print(f"    Adjust settings:        {config.advanced_options['auto_settings_key']} key")
+    print(f"    Toggle Start/Pause Bot: {config.advanced_options['resume_key']} key")
+    print(f"    Stop Bot:               {config.advanced_options['exit_key']} key")
     print("=" * 80 + "\n")
 
     if show_options:
