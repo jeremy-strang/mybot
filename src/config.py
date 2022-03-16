@@ -378,7 +378,8 @@ class Config:
             "settings_backup_key": Config._select_val("advanced_options", "settings_backup_key"),
             "graphic_debugger_key": Config._select_val("advanced_options", "graphic_debugger_key"),
             'debug_overlay': bool(int(Config._select_val("advanced_options", "debug_overlay"))),
-            'obs_recording_enabled':bool(int(Config._select_val("advanced_options", "obs_recording_enabled"))),
+            'obs_run_recording_enabled':bool(int(Config._select_val("advanced_options", "obs_run_recording_enabled"))),
+            'obs_debug_replays_enabled':bool(int(Config._select_val("advanced_options", "obs_debug_replays_enabled"))),
             "obs_cli_path": Config._select_val("advanced_options", "obs_cli_path"),
             "obs_scene_name": Config._select_val("advanced_options", "obs_scene_name"),
         }

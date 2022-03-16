@@ -15,71 +15,73 @@ class ObsRecorder:
 
     def __init__(self, config: Config):
         self._config = config
-        self._is_obs_enabled = self._config.advanced_options["obs_recording_enabled"]
+        self._is_replay_enabled = self._config.advanced_options["obs_debug_replays_enabled"]
+        self._is_recording_enabled = self._config.advanced_options["obs_run_recording_enabled"]
         self._cli_path = self._config.advanced_options["obs_cli_path"]
-        self._scene_name = self._config.advanced_options["obs_scene_name"]
         self._is_recording_active = False
-        if self._is_obs_enabled:
-            if os.path.isfile(self._cli_path):
-                if len(self._scene_name) > 0:
-                    try:
-                        if not os.system(f"{self._cli_path} scene current {self._scene_name}"):
-                            Logger.error(f"Error selecting OBS scene {self._scene_name}")
-                    except BaseException as e:
-                        Logger.error("Error initializing OBS scene: " + e)
-            else:
-                self._is_obs_enabled = False
+        if self._is_replay_enabled or self._is_recording_enabled:
+            if not os.path.isfile(self._cli_path):
+                Logger.error(f"Error initializing OBS recorder, invalid OBS CLI path: {self._cli_path}")
+                self._is_replay_enabled = False
+                self._is_recording_enabled = False
 
     def start_recording_if_enabled(self):
-        if self._is_obs_enabled:
+        if self._is_recording_enabled:
             if self._is_recording_active:
                 self.stop_recording_if_enabled()
             try:
                 if os.system(f"{self._cli_path} recording start"):
+                    # Logger.error("Error starting OBS recording")
                     self._is_recording_active = False
-                    Logger.error("Error starting OBS recording")
                 else:
-                    Logger.error("Starting OBS recording")
+                    # Logger.error("Starting OBS recording")
                     self._is_recording_active = True
             except BaseException as e:
+                # Logger.error("Error starting OBS recording: " + e)
+                # traceback.print_exc()
                 self._is_recording_active = False
-                Logger.error("Error starting OBS recording: " + e)
-                traceback.print_exc()
     
     def stop_recording_if_enabled(self):
-        if self._is_obs_enabled:
+        if self._is_recording_enabled:
             try:
                 if os.system(f"{self._cli_path} recording stop"):
-                    Logger.error("Error stopping OBS recording")
-                else:
-                    self._is_recording_active = False
+                    # Logger.error("Error stopping OBS recording")
+                    pass
             except BaseException as e:
-                Logger.error("Error stopping OBS recording: " + e)
-                traceback.print_exc()
+                # Logger.error("Error stopping OBS recording: " + e)
+                # traceback.print_exc()
+                pass
+            self._is_recording_active = False
 
     def start_replaybuffer_if_enabled(self):
-        if self._is_obs_enabled:
+        if self._is_replay_enabled:
             try:
                 if os.system(f"{self._cli_path} replaybuffer start"):
-                    Logger.error("Error starting OBS replaybuffer")
+                    # Logger.error("Error starting OBS replaybuffer")
+                    pass
             except BaseException as e:
-                Logger.error("Error starting OBS replaybuffer: " + e)
-                traceback.print_exc()
+                # Logger.error("Error starting OBS replaybuffer: " + e)
+                # traceback.print_exc()
+                pass
     
     def stop_replaybuffer_if_enabled(self):
-        if self._is_obs_enabled:
+        if self._is_replay_enabled:
             try:
                 if os.system(f"{self._cli_path} replaybuffer stop"):
-                    Logger.error("Error stopping OBS replaybuffer")
+                    # Logger.error("Error stopping OBS replaybuffer")
+                    pass
             except BaseException as e:
-                Logger.error("Error stopping OBS replaybuffer: " + e)
-                traceback.print_exc()
+                # Logger.error("Error stopping OBS replaybuffer: " + e)
+                # traceback.print_exc()
+                pass
     
     def save_replay_if_enabled(self):
-        if self._is_obs_enabled:
+        if self._is_replay_enabled:
             try:
                 if os.system(f"{self._cli_path} replaybuffer save"):
-                    Logger.error("Error saving OBS replay")
+                    # Logger.error("Error saving OBS replay")
+                    pass
             except BaseException as e:
-                Logger.error("Error saving OBS replay: " + e)
-                traceback.print_exc()
+                # Logger.error("Error saving OBS replay: " + e)
+                # traceback.print_exc()
+                pass

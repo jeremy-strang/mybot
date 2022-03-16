@@ -258,9 +258,9 @@ run_shenk=0
 | pathing_delay_factor | A linear scaling factor, between 1 and 10, applied to pathing delays. |
 | message_headers      | Headers that are sent with each messages                              |
 | message_body_template | Message body of the post message sent                                |
-| obs_recording_enabled | Set to 1 to enable recording/replays during runs with [OBS] (requires [OBS](https://obsproject.com/) runnig w/ [obs-websocket](https://github.com/obsproject/obs-websocket) plugin, and [obs-cli](https://github.com/muesli/obs-cli) installed. |
-| obs_cli_path          | Required if obs_recording_enabled is 1, this is the path to obs-cli.exe () |
-| obs_scene_name        | An optional OBS scene name to use for recording (if this is not set, it will use whatever scene is active) |
+| obs_replay_recording_enabled | Set to 1 to enable recording during runs with [OBS] (requires [OBS](https://obsproject.com/) runnig w/ [obs-websocket](https://github.com/obsproject/obs-websocket) plugin, and [obs-cli](https://github.com/muesli/obs-cli) installed. |
+| obs_debug_replays_enabled | Set to 1 to enable saving video replays for failed runs and other errors [OBS] (requires [OBS](https://obsproject.com/) runnig w/ [obs-websocket](https://github.com/obsproject/obs-websocket) plugin, and [obs-cli](https://github.com/muesli/obs-cli) installed. |
+| obs_cli_path          | Required if either obs_run_recording_enabled or obs_replay_recording_enabled are 1, this is the path to obs-cli.exe () |
 
 ## Support this project
 
