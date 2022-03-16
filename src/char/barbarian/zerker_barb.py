@@ -113,7 +113,7 @@ class ZerkerBarb(Barbarian):
         initial_pos = None
         while elapsed < time_out and game_state._dead == 0 and game_state._target is not None:
             if not game_state._ready:
-                wait(0.01, 0.12)
+                wait(0.1, 0.12)
             else:
                 target_pos = game_state._target_pos
                 target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
