@@ -1,3 +1,4 @@
+import pprint
 import time
 from typing import Union
 from pathing import Location
@@ -13,6 +14,7 @@ from template_finder import TemplateFinder
 from utils.misc import wait
 from utils.monsters import find_monster, find_npc
 from utils.custom_mouse import mouse
+pp = pprint.PrettyPrinter(depth=6)
 
 class IAct:
     def __init__(self, screen: Screen, template_finder: TemplateFinder, old_pather: OldPather, char: IChar, npc_manager: NpcManager, pather: Pather, api: MapAssistApi):
@@ -80,6 +82,7 @@ class IAct:
                 if m is not None:
                     mouse.click(button="left")
                     wait(1.0)
+                    pp.pprint(m)
                     data = self._api.get_data()
                     menu_open = data is not None and data["menus"]["NpcInteract"]
                     if menu_open:
