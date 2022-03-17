@@ -106,14 +106,14 @@ class IChar:
     def verify_active_weapon_tab(self) -> bool:
         active_weapon_tab = self.get_active_weapon_tab()
         if active_weapon_tab == -1:
-            wait(0.4, 0.5)
+            wait(0.3, 0.4)
             keyboard.send(self._config.char["inventory_screen"])
-            wait(0.25, 0.3)
+            wait(0.2, 0.25)
             active_weapon_tab = self.get_active_weapon_tab()
         attempts = 0
         while active_weapon_tab == 2 and attempts < 5:
             self.switch_weapon()
-            wait(0.15, 0.25)
+            wait(0.2, 0.25)
             attempts += 1
             active_weapon_tab = self.get_active_weapon_tab()
         return active_weapon_tab == 1
@@ -121,13 +121,13 @@ class IChar:
     def get_active_weapon_tab(self) -> int:
         active_slot = -1
         #Check to make sure we are on our main weapon set in slot 1, and not the secondary set in slot 2
-        wait(0.03, 0.05)
+        wait(0.4, 0.05)
         keyboard.send(self._config.char["inventory_screen"])
-        wait(0.2, 0.25)
+        wait(0.4, 0.05)
         data = self._api.get_data()
         if data is not None and "menus" in data and "Inventory" in data["menus"] and not data["menus"]["Inventory"]:
             keyboard.send(self._config.char["inventory_screen"])
-            wait(0.2, 0.25)
+            wait(0.4, 0.05)
         
         if self._template_finder.search_and_wait(["WS1"], threshold=0.84, time_out=1.5, roi=[862, 50, 110, 100]).valid:
             Logger.info("Weapon slot 1 is active")
@@ -420,11 +420,11 @@ class IChar:
                 mouse.release(button=mouse_button)
             keyboard.send(self._char_config["stand_still"], do_press=False)
     
-    def tele_stomp_monster(self, skill_key: str, time_in_s: float, monster: dict, mouse_button: str = "left", stop_when_dead=True) -> bool:
+    def tele_stomp_monster(self, skill_key: str, time_in_s: float, monster: dict, mouse_button: str = "left", stop_when_dead=True, max_distance=4.0) -> bool:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
                 mid = monster['id']
-                Logger.debug(f"Meleeing monster {mid} with {skill_key} ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
+                Logger.debug(f"Attacking monster {mid} with {skill_key}, distance: {monster['dist']}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
                 keyboard.send(self._char_config["stand_still"], do_release=False)
                 wait(0.03, 0.4)
                 keyboard.send(self._skill_hotkeys[skill_key])
@@ -437,7 +437,7 @@ class IChar:
                     mouse.press(button=mouse_button)
                     wait(0.03, 0.04)
                     monster = find_monster(mid, self._api)
-                    if monster is None or monster["mode"] == 12 and stop_when_dead:
+                    if monster is None or monster["dist"] > max_distance or (monster["mode"] == 12 and stop_when_dead):
                         break
                 mouse.release(button=mouse_button)
                 wait(0.02, 0.03)

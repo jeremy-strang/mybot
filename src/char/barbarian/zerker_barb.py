@@ -167,7 +167,7 @@ class ZerkerBarb(Barbarian):
                     Logger.debug("Stood in one place too long, repositioning")
                     self._pather.traverse(reposition_pos, self, time_out = 3.0)
                     last_move = time.time()
-                elif game_state._dist > 6:
+                elif game_state._dist > 3:
                     move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
@@ -176,7 +176,7 @@ class ZerkerBarb(Barbarian):
                     last_move = time.time()
                 else:
                     # self.cast_melee("berserk", atk_len, target_pos)
-                    if not self.tele_stomp_monster("berserk", atk_len, game_state._target): wait(0.1)
+                    if not self.tele_stomp_monster("berserk", atk_len, game_state._target, max_distance=3): wait(0.1)
             elapsed = time.time() - start
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._char_config["battle_orders"])

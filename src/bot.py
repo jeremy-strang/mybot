@@ -460,8 +460,7 @@ class Bot:
             else:
                 Logger.error("Failed to detect if /nopickup command was applied or not")
 
-        if self._game_stats._consecutive_runs_failed > 0 or self._game_stats._game_counter == 0 or \
-            self._pick_corpse or self._game_stats._did_chicken_last_run:
+        if self._game_stats._run_counter == 0 or self._game_stats._consecutive_runs_failed > 0 or self._game_stats._game_counter == 0 or self._pick_corpse or self._game_stats._did_chicken_last_run:
             Logger.info("Verifying weapon slot 1 is active due to chicken/failed/first run")
             self._char.verify_active_weapon_tab()
         self._game_stats._did_chicken_last_run = False
