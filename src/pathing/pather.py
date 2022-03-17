@@ -91,7 +91,7 @@ class Pather:
                 break
         if entity is None: return None
 
-        area_pos = entity["position"]
+        area_pos = entity["position"] - data["area_origin"]
         if entrance_in_wall:
             if data["map"][area_pos[1] - 1][area_pos[0]] == 1:
                 area_pos = [entity["position"][0], entity["position"][1] + 2]
@@ -101,7 +101,7 @@ class Pather:
                 area_pos = [entity["position"][0] + 2, entity["position"][1]]
             elif data["map"][area_pos[1]][area_pos[0] + 1] == 1:
                 area_pos = [entity["position"][0] - 2, entity["position"][1]]
-        return area_pos - data["area_origin"]
+        return area_pos
 
     def activate_waypoint(self, obj: Union[tuple[int, int], str], char, entrance_in_wall: bool = True, is_wp: bool = True) -> bool:
         start = time.time()
