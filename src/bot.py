@@ -336,6 +336,7 @@ class Bot:
         else:
             dest = None
             dest_loc = self._curr_loc
+            pre_walk_time = 4.5
             if "a1_" in self._curr_loc:
                 dest = "Akara" if buy_pots or should_heal else "Rogue Encampment"
                 dest_loc = Location.A1_AKARA if buy_pots or should_heal else Location.A1_WP_NORTH
@@ -347,6 +348,8 @@ class Bot:
             elif "a3_" in self._curr_loc:
                 dest = "Ormus" if buy_pots or should_heal else "Kurast Docks"
                 dest_loc = Location.A3_ORMUS if buy_pots or should_heal else Location.A3_STASH_WP
+                if dest == "Ormus":
+                    pre_walk_time = 3
             elif "a4_" in self._curr_loc:
                 dest = "Jamella" if buy_pots or should_heal else "The Pandemonium Fortress"
                 dest_loc = Location.A4_JAMELLA if buy_pots or should_heal else Location.A4_WP
@@ -357,7 +360,7 @@ class Bot:
                 dest_loc = Location.A5_MALAH if buy_pots or should_heal else Location.A5_STASH
             if dest is not None:
                 Logger.debug(f"Heading toward {dest}. Buy pots: {buy_pots}, need to heal: {should_heal}")
-                self._pather.traverse_walking(dest, self._char, obj=False, threshold=16, time_out=7.0)
+                self._pather.traverse_walking(dest, self._char, obj=False, threshold=16, time_out=pre_walk_time, end_dist=10)
                 self._curr_loc = dest_loc
 
         if should_heal or buy_pots:

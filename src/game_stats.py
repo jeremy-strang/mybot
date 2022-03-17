@@ -85,7 +85,7 @@ class GameStats:
         self._game_counter += 1
         self._timer = time.time()
         print("="*80)
-        Logger.info(f"Starting game #{self._game_counter}\n")
+        Logger.info(f"Starting game #{self._game_counter}")
         items = self._location_stats["totals"]["items"]
         chickens = self._location_stats["totals"]["chickens"]
         failed_runs = self._location_stats["totals"]["failed_runs"]

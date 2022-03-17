@@ -118,7 +118,9 @@ class Barbarian(IChar):
             last_pos = data["player_pos_world"]
             m = self.get_next_corpse(names, boundary, skip_ids=skip_ids, unique_only=unique_only)
         if self._char_config["barb_pre_hork_weapon_swap"] and not disable_swap:
+            wait(0.10, 0.15)
             self.switch_weapon()
+            self.verify_active_weapon_tab()
         Logger.debug(f"Finished horking corpses after {round(time.time() - start, 2)} sec")
 
     def pre_buff_swap(self, switch_back=True):
