@@ -51,74 +51,52 @@ class Stony_Tomb:
         Logger.info("Run Stony Tomb")
         if not self._char.capabilities.can_teleport_natively:
             raise ValueError("Pit requires teleport")
-        if not self._town_manager.open_wp(start_loc):
-            return False
-        wait(0.4)
-        self._ui_manager.use_wp(2, 2)
+
+        if "a2_" not in self._api.data["current_area"]:
+            self._pather.activate_waypoint("Lut Gholein", self._char, entrance_in_wall=False, is_wp = True)
+            self._ui_manager.use_wp(2, 2)
+        else:
+            if not self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, max_distance=15): return False
+            if not self._pather.traverse_walking("Drognan", self._char, obj=False, threshold=16, max_distance=15): return False
+            if not self._pather.traverse_walking("Rocky Waste", self._char, obj=False, threshold=16, max_distance=10): return False
+            wait(0.4)
         return Location.A2_STONY_WP
     
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        #if not self._pather.wait_for_location("a4_diablo_wp"): return False
-        
-        if do_pre_buff: self._char.pre_buff()
+        if not self._pather.traverse_walking("Rocky Waste", self._char): return False
+        if not self._pather.go_to_area("Rocky Waste", "RockyWaste", entrance_in_wall=False, randomize=2): return False
 
-        if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
-            self._char.switch_weapon()
-
-        if not self._pather.traverse("Rocky Waste", self._char): 
-            if (self._api.data["current_area"]=='RockyWaste'):
-                Logger.info ('Rocky Waste')
-            else:
-                return False
-        count = 0
-        while (self._api.data["current_area"]!='RockyWaste'):
-            center = self._screen.convert_abs_to_monitor([0,0])
-            self._char.pre_move ()
-            self._pather.go_to_area ("Rocky Waste", "Rocky Waste")
-            wait (0.5, 0.6)
+        while (self._api.data["current_area"] != 'RockyWaste'):
+            self._pather.go_to_area("Rocky Waste", "RockyWaste", entrance_in_wall=False, randomize=2)
+            wait (0.03, 0.05)
             count +=1
             if count > 3:
+                Logger.error(f"Failed to travel to Rocky Waste")
                 return False
-        #self._pather.activate_poi(["255", "392", "393", "255","394","255", "396", "395", "255"], "test")
-        counter = 0
-        pois = ["Stony Tomb Level 1", "TombsWallTorchRight", "TombsWallTorchLeft", "Stony Tomb Level 2", "SparklyChest"]
-        for poi in pois:
-            if counter == 0:
-                #if do_pre_buff: self._char.pre_buff()
-                monster = self._pather.traverse(poi, self._char, kill=False, verify_location=True)
-                if self._config.char["teleport_weapon_swap"]:
-                    self._char.switch_weapon()
-                    self._char.verify_active_weapon_tab()
-            elif counter == 1 or counter ==2:
-                monster = self._pather.traverse(poi, self._char, kill=True, obj=True, verify_location=False)
-            else:
-                monster = self._pather.traverse(poi, self._char, kill=True, verify_location= True)
-            while (type(monster)==dict):            
-                self._char.kill_uniques (monster)
-                picked_up_items = self._pickit.pick_up_items (self._char)
-                if counter == 1 or counter ==2:
-                    monster = self._pather.traverse(poi, self._char, kill=True, obj=True, verify_location=False)
-                else:      
-                    monster = self._pather.traverse(poi, self._char, kill=True, verify_location= True)
-            count = 0
-            if counter != 1 and counter != 2:
-                while (self._api.data["current_area"]!=poi.replace(" ","")):
-                    self._pather.traverse(poi, self._char, kill=True, verify_location= True)
-                    if "Stony Tomb Level" in poi:
-                        self._pather.go_to_area (poi, poi)
-                    elif poi == "SparklyChest":
-                        self._pather.activate_poi (poi, poi, char=self._char, offset=[-4, -6]) 
-                        wait (0.5, 1.0)
-                        picked_up_items = self._pickit.pick_up_items (self._char)
-                        break 
-                    else:
-                        #self._pather.activate_poi (poi, poi, char=self._char)  
-                        pass  
-                    
-                    wait (0.5, 1.5)
-                    if count > 3:
-                        return False
-                    count += 1
-            counter += 1
-        #kill Diablo
+
+        self._char.pre_travel(do_pre_buff)
+        if not self._pather.traverse("Stony Tomb Level 1", self._char, verify_location=True, dest_distance=12): return False
+        if not self._pather.go_to_area("Stony Tomb Level 1", "StonyTombLevel1", entrance_in_wall=True, randomize=3): return False
+        self._char.post_travel()
+
+        picked_up_items = 0
+        lvl2 = self._pather.get_entity_coords_from_str("Stony Tomb Level", "poi", False)
+
+        pickit_func = lambda: self._pickit.pick_up_items(self._char)
+        picked_up_items += self._char.clear_zone(lvl2, pickit_func)
+
+        if not self._pather.traverse(lvl2, self._char, kill=False, verify_location=True): return picked_up_items
+        if do_pre_buff: self._char.pre_buff()
+
+        if not self._pather.go_to_area("Stony Tomb Level 2", "StonyTombLevel2", entrance_in_wall=True, randomize=2, time_out=25):
+            if not self._pather.go_to_area("Stony Tomb Level 2", "StonyTombLevel2", entrance_in_wall=False, randomize=4, time_out=25):
+                return picked_up_items
+
+        coords = self._pather.get_entity_coords_from_str("SparklyChest", "poi", False)
+        picked_up_items += self._char.clear_zone(coords, pickit_func)
+
+        self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
+        self._pather.activate_poi(coords, "StonyTombLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False) 
+        picked_up_items = self._pickit.pick_up_items(self._char)  
+        
         return (Location.A2_STONY_END, picked_up_items)
