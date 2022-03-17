@@ -28,7 +28,7 @@ GOTO MENU
 python ./build.py
 GOTO MENU
 :RUN
-conda activate botty && python src/main.py
+conda activate mybot && python src/main.py
 GOTO MENU
 :EXIT
 EXIT
