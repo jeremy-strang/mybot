@@ -107,28 +107,28 @@ if __name__ == "__main__":
         def do_stuff():
             print("Doing stuff...")
             data = api.get_data()
-            potion_type = "health"
-            pp.pprint(data["flattened_belt"])
+            # potion_type = "health"
+            # pp.pprint(data["flattened_belt"])
 
-            if data is not None:
-                if "flattened_belt" in data and data["flattened_belt"] is not None:
-                    belt = data["flattened_belt"]
-                    if belt is not None and len(belt) > 0:
-                        for i in range(min(len(belt), 4)):
-                            print(f"\n\nbelt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}\n\n")
-                            pp.pprint(belt[i])
-                            print("\n")
-                            print(len(belt) > i and type(belt[i]) is dict)
-                            print("ItemBaseName" in belt[i])
-                            print(belt[i]["ItemBaseName"])
-                            print(potion_type.lower() in belt[i]["ItemBaseName"].lower())
-                            if len(belt) > i and type(belt[i]) is dict and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
-                                print(f"potion{i+1}")
+            # if data is not None:
+            #     if "flattened_belt" in data and data["flattened_belt"] is not None:
+            #         belt = data["flattened_belt"]
+            #         if belt is not None and len(belt) > 0:
+            #             for i in range(min(len(belt), 4)):
+            #                 print(f"\n\nbelt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}\n\n")
+            #                 pp.pprint(belt[i])
+            #                 print("\n")
+            #                 print(len(belt) > i and type(belt[i]) is dict)
+            #                 print("ItemBaseName" in belt[i])
+            #                 print(belt[i]["ItemBaseName"])
+            #                 print(potion_type.lower() in belt[i]["ItemBaseName"].lower())
+            #                 if len(belt) > i and type(belt[i]) is dict and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
+            #                     print(f"potion{i+1}")
             # belt_manager.update_pot_needs(True)
             # print(belt_manager.get_pot_needs())
 
             # bot._town_manager.open_stash(Location.A4_TOWN_START)
-            write_data_to_file(data, api._raw_data_str)
+            # write_data_to_file(data, api._raw_data_str)
             
             
             # print(data["belt_items"])
@@ -142,7 +142,7 @@ if __name__ == "__main__":
             
             # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
 
-            # ui_manager.throw_out_junk(item_finder)
+            ui_manager.throw_out_junk(item_finder)
 
 
             # akara = find_npc(Npc.AKARA, api)

@@ -614,11 +614,9 @@ class UiManager():
                 if len(found_items) == 0:
                     keyboard.send('ctrl', do_release=False)
                     wait(0.1, 0.2)
-                    mouse.press(button="left")
+                    mouse.click(button="left")
                     wait(0.1, 0.2)
-                    mouse.release(button="left")
-                    wait(0.1, 0.2)
-                    keyboard.send('ctrl', do_press=False)
+                    keyboard.release('ctrl')
                     # To avoid logging multiple times the same item when stash tab is full
                     # check the _keep_item again. In case stash is full we will still find the same item
                     wait(0.3)
