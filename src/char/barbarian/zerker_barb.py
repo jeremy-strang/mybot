@@ -99,7 +99,7 @@ class ZerkerBarb(Barbarian):
                     Logger.debug("Stood in one place too long, repositioning")
                     self.reposition(target_pos)
                     last_move = time.time()
-                elif game_state._dist > 6:
+                elif game_state._dist > 4:
                     move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
@@ -108,10 +108,10 @@ class ZerkerBarb(Barbarian):
                 else:
                     self.cast_aoe("howl")
                     self.verify_active_weapon_tab()
-                    if not self.tele_stomp_monster("berserk", 1.7, game_state._target): wait(0.1)
+                    if not self.tele_stomp_monster("berserk", 2, game_state._target): wait(0.1)
             elapsed = time.time() - start
         self.cast_aoe("howl")
-        self.do_hork(None, time_out=8, unique_only=True)
+        self.do_hork(None, time_out=9, unique_only=True)
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._skill_hotkeys["howl"])
         wait(0.03, 0.04)

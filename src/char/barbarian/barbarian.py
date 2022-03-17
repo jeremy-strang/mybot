@@ -96,7 +96,7 @@ class Barbarian(IChar):
             data = self._api.get_data()
             distance = math.dist(data["player_pos_area"], m["position"] - data["area_origin"])
             m_id = m["id"]
-            if distance > 3.5:
+            if distance > 3:
                 move_pos_m = self._screen.convert_player_target_world_to_monitor(m["position"], data["player_pos_world"])
                 self.pre_move()
                 self.move(move_pos_m, force_tp=True, force_move=True)
@@ -109,7 +109,7 @@ class Barbarian(IChar):
                     if last_pos is not None and points_equal(last_pos, data["player_pos_world"], 2):
                         Logger.debug(f"Failed to move into hork range of monster {m_id}, skipping it")
                         skip_ids.add(m_id)
-            if distance <= 3.5:
+            if distance <= 3:
                 target_pos = world_to_abs(m["position"], data["player_pos_world"])
                 self.cast_hork(target_pos, press_len=self._cast_duration * 2 + 0.02)
             else:
