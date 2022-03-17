@@ -57,7 +57,6 @@ class Trav:
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         tele_swap = self._config.char["teleport_weapon_swap"]
-        self._api.start_timer() # DEBUG
         # Kill Council
         if not self._template_finder.search_and_wait(["TRAV_0", "TRAV_1", "TRAV_20"], threshold=0.65, time_out=20).valid:
             return False
@@ -77,6 +76,7 @@ class Trav:
             self._char.switch_weapon()
             self._char.verify_active_weapon_tab()
 
+        self._api.start_timer()
         # self._obs_recorder.start_recording_if_enabled()
         if self._char._char_config['type'] == 'hammerdin':
             game_state = StateMonitor(['CouncilMember'], self._api, unique_id=-1, many=True)
@@ -103,6 +103,7 @@ class Trav:
             self._pather.traverse((x, y), self._char, time_out=4.0)
         else:
             raise ValueError("Unsupport character")
+        self._api.get_metrics()
 
         # Check for loot once wherever we ended up after combat
         picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True)
@@ -126,6 +127,5 @@ class Trav:
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
             wait(0.1, 0.2)
             self._old_pather.traverse_nodes([230], self._char, time_out=2)
-        self._api.get_metrics() # DEBUG
         # self._obs_recorder.stop_recording_if_enabled()
         return (Location.A3_TRAV_CENTER_STAIRS, picked_up_items)
