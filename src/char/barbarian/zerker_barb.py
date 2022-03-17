@@ -80,7 +80,7 @@ class ZerkerBarb(Barbarian):
             # MonsterPriorityRule(monster_types = [MonsterType.MINION]),
         ]
         start = time.time()
-        game_state = StateMonitor(rules, self._api, False, -1, True, False, None, boundary=[122, 80, 50, 50])
+        game_state = StateMonitor(rules, self._api, False, -1, True, False, None)
         last_move = start
         elapsed = 0
         picked_up_items = 0
@@ -144,7 +144,7 @@ class ZerkerBarb(Barbarian):
             MonsterPriorityRule(names = ["CouncilMember"]),
             MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True)
+        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
         if not self._kill_mobs(game_state, reposition_pos=(156, 113)): return False
         game_state.stop()
         return True
