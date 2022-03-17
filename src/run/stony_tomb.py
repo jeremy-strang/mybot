@@ -51,16 +51,19 @@ class Stony_Tomb:
         Logger.info("Run Stony Tomb")
         if not self._char.capabilities.can_teleport_natively:
             raise ValueError("Pit requires teleport")
-        if "a2_" not in self._api.data["current_area"]: self._ui_manager.use_wp(2, 2)
-        else:
-            if not self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, max_distance=10): return False
-            wait(0.4)
+
+        if "a2_" not in self._api.data["current_area"]:
             self._pather.activate_waypoint("Lut Gholein", self._char, entrance_in_wall=False, is_wp = True)
             self._ui_manager.use_wp(2, 2)
+        else:
+            if not self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, max_distance=15): return False
+            if not self._pather.traverse_walking("Drognan", self._char, obj=False, threshold=16, max_distance=15): return False
+            if not self._pather.traverse_walking("Rocky Waste", self._char, obj=False, threshold=16, max_distance=10): return False
+            wait(0.4)
         return Location.A2_STONY_WP
     
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather.traverse_walking("Rocky Waste", self._char, dest_distance=10): return False
+        if not self._pather.traverse_walking("Rocky Waste", self._char): return False
         if not self._pather.go_to_area("Rocky Waste", "RockyWaste", entrance_in_wall=False, randomize=2): return False
 
         while (self._api.data["current_area"] != 'RockyWaste'):

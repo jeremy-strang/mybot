@@ -555,7 +555,7 @@ class Hammerdin(IChar):
                 else:
                     keyboard.send(self._skill_hotkeys["concentration"])
                     wait(0.03, 0.05)
-                    if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target, stop_when_dead=False): wait(0.1)
+                    if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target, stop_when_dead=False, max_distance=5): wait(0.1)
                     self.post_attack()
             elapsed = time.time() - start
         

@@ -345,6 +345,7 @@ class Bot:
             elif "a2_" in self._curr_loc:
                 dest = "Lysander" if buy_pots or should_heal else "Lut Gholein"
                 dest_loc = Location.A2_FARA_STASH if buy_pots or should_heal else Location.A2_WP
+                pre_walk_time = 6
             elif "a3_" in self._curr_loc:
                 dest = "Ormus" if buy_pots or should_heal else "Kurast Docks"
                 dest_loc = Location.A3_ORMUS if buy_pots or should_heal else Location.A3_STASH_WP
