@@ -424,7 +424,7 @@ class IChar:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
                 mid = monster['id']
-                Logger.debug(f"Attacking monster {mid} with {skill_key}, distance: {monster['dist']}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
+                Logger.debug(f"Attacking monster {mid} with {skill_key}, distance: {round(monster['dist'], 2)}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
                 keyboard.send(self._char_config["stand_still"], do_release=False)
                 wait(0.03, 0.4)
                 keyboard.send(self._skill_hotkeys[skill_key])
