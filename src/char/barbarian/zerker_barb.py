@@ -153,7 +153,7 @@ class ZerkerBarb(Barbarian):
         self._kill_mobs(game_state, 1.7, 15, do_howl=True)
         return True
 
-    def _kill_mobs(self, game_state: StateMonitor, atk_len: float=2.3, time_out: float=30, reposition_pos=None, reposition_time=6.0, do_howl: bool=False) -> bool:
+    def _kill_mobs(self, game_state: StateMonitor, atk_len: float=2.3, time_out: float=40, reposition_pos=None, reposition_time=6.0, do_howl: bool=False) -> bool:
         Logger.debug(f"Beginning combat")
         start = time.time()
         last_move = start
