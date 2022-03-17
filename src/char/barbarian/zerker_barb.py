@@ -80,7 +80,7 @@ class ZerkerBarb(Barbarian):
             # MonsterPriorityRule(monster_types = [MonsterType.MINION]),
         ]
         start = time.time()
-        game_state = StateMonitor(rules, self._api, False, -1, True, False, None)
+        game_state = StateMonitor(rules, self._api, False, -1, True, False, None, boundary=[122, 80, 50, 50])
         last_move = start
         elapsed = 0
         picked_up_items = 0
