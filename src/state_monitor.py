@@ -102,27 +102,21 @@ class StateMonitor:
         self.start()
 
     def start(self):
-        Logger.debug("Start game monitoring thread...")
         self._game = ApiThread(self)
         self._game_thread = threading.Thread(target=self._game.get_data)
-        #self._game_thread.daemon = False
         self._game_thread.start()
 
     def stop(self):
-        Logger.debug("Game monitoring thread shutdown...")
         if self._game_thread: kill_thread(self._game_thread)
-        #self._game_thread.join()
-        Logger.debug("Game monitoring thread shutdown...")
 
 class ApiThread:
     def __init__(self, state: StateMonitor):
         self._api = state._api
         self._sm = state
-        Logger.debug("Opened API thread...")
 
     def _update_status(self):
         '''
-            gets status of current target position
+        Gets status of current target position
         '''
         data = self._sm._api.get_data()
         if data is not None:
@@ -196,4 +190,3 @@ class ApiThread:
             self._sm._data = self._api.get_data()
             self._update_status()
             time.sleep(.01)
-            #print("updating...")
