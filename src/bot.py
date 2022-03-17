@@ -297,16 +297,26 @@ class Bot:
 
     def on_start_from_town(self):
         self._curr_loc = self._town_manager.wait_for_town_spawn()
-        
         self.trigger_or_stop("maintenance")
 
     def on_maintenance(self):
         is_loading = True
         merc_alive = False
+        health_pct = 1
+        mana_pct = 1
         data = self._api.get_data()
         if data is not None:
-            merc_alive = "player_merc" in data and data["player_merc"] is not None and data["player_merc"]["mode"] != 12
             self._pick_corpse = "player_corpse" in data and data["player_corpse"] is not None and type(data["player_corpse"]) is dict
+            merc_alive = "player_merc" in data and data["player_merc"] is not None and data["player_merc"]["mode"] != 12
+            health_pct = data["player_health_pct"]
+            mana_pct = data["player_mana_pct"]
+            Logger.debug(f"Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
+
+        # Figure out how many pots need to be picked up
+        self._belt_manager.update_pot_needs()
+        buy_pots = self._belt_manager.should_buy_pots()
+        should_heal = health_pct < 0.7 or mana_pct < 0.2
+        should_res_merc = not merc_alive and self._config.char["use_merc"]
 
         # Handle picking up corpse in case of death
         if self._pick_corpse:
@@ -324,54 +334,45 @@ class Bot:
                 Logger.info(f"Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
         else:
+            dest = None
+            dest_loc = self._curr_loc
             if "a1_" in self._curr_loc:
-                # self._pather.traverse_walking("Rogue Encampment", self._char, obj=False, threshold=16, time_out=7.0)
-                self._curr_loc = Location.A1_TOWN_START
+                dest = "Akara" if buy_pots or should_heal else "Rogue Encampment"
+                dest_loc = Location.A1_AKARA if buy_pots or should_heal else Location.A1_WP_NORTH
+                if self._picked_up_items or should_res_merc:
+                    dest = None
             elif "a2_" in self._curr_loc:
-                self._pather.traverse_walking("Lut Gholein", self._char, obj=False, threshold=16, time_out=7.0)
-                self._curr_loc = Location.A2_FARA_STASH
+                dest = "Lysander" if buy_pots or should_heal else "Lut Gholein"
+                dest_loc = Location.A2_FARA_STASH if buy_pots or should_heal else Location.A2_WP
             elif "a3_" in self._curr_loc:
-                self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16, time_out=7.0)
-                self._curr_loc = Location.A3_STASH_WP
+                dest = "Ormus" if buy_pots or should_heal else "Kurast Docks"
+                dest_loc = Location.A3_ORMUS if buy_pots or should_heal else Location.A3_STASH_WP
             elif "a4_" in self._curr_loc:
-                self._pather.traverse_walking("The Pandemonium Fortress", self._char, obj=False, threshold=16, time_out=7.0)
-                self._curr_loc = Location.A4_WP
+                dest = "Jamella" if buy_pots or should_heal else "The Pandemonium Fortress"
+                dest_loc = Location.A4_JAMELLA if buy_pots or should_heal else Location.A4_WP
+                if self._picked_up_items or should_res_merc:
+                    dest = None
             elif "a5_" in self._curr_loc:
-                self._pather.traverse_walking("Harrogath", self._char, obj=False, threshold=16, time_out=7.0)
-                self._curr_loc = Location.A5_STASH
+                dest = "Malah" if buy_pots or should_heal else "Harrogath"
+                dest_loc = Location.A5_MALAH if buy_pots or should_heal else Location.A5_STASH
+            if dest is not None:
+                Logger.debug(f"Heading toward {dest}. Buy pots: {buy_pots}, need to heal: {should_heal}")
+                self._pather.traverse_walking(dest, self._char, obj=False, threshold=16, time_out=7.0)
+                self._curr_loc = dest_loc
 
-        # Look at belt to figure out how many pots need to be picked up
-        self._belt_manager.update_pot_needs()
-        buy_pots = self._belt_manager.should_buy_pots()
-
-        health_pct = 100.0
-        mana_pct = 100.0
-        data = self._api.get_data()
-        if data is not None:
-            health_pct = data["player_health_pct"]
-            mana_pct = data["player_mana_pct"]
-            Logger.debug(f"Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
-        else:
-            is_loading = self._ui_manager.wait_for_loading_finish()
-            img = self._screen.grab()
-            health_pct = HealthManager.get_health(img)
-            mana_pct = HealthManager.get_mana(img)
-
-        if health_pct < 0.6 or mana_pct < 0.2 or buy_pots:
+        if should_heal or buy_pots:
             if buy_pots:
+                if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
+                Logger.info("Buy pots at next possible Vendor")
+                pot_needs = self._belt_manager.get_pot_needs()
+                self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
+                wait(0.5)
                 self._belt_manager.update_pot_needs()
-                buy_pots = self._belt_manager.should_buy_pots()
-                if buy_pots:
-                    if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
-                    Logger.info("Buy pots at next possible Vendor")
-                    pot_needs = self._belt_manager.get_pot_needs()
-                    self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
-                    wait(0.5)
-                    self._belt_manager.update_pot_needs()
             else:
                 Logger.info("Healing at next possible Vendor")
                 if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 self._curr_loc = self._town_manager.heal(self._curr_loc)
+            
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
 
@@ -426,8 +427,9 @@ class Bot:
             wait(1.0)
 
         # Check if merc needs to be revived
-        # merc_alive = self._template_finder.search(["MERC_A2","MERC_A1","MERC_A5","MERC_A3"], self._screen.grab(), threshold=0.9, roi=self._config.ui_roi["merc_icon"]).valid
-        if not merc_alive and self._config.char["use_merc"]:
+        if should_res_merc:
+            merc_alive = self._template_finder.search(["MERC_A2","MERC_A1","MERC_A5","MERC_A3"], self._screen.grab(), threshold=0.9, roi=self._config.ui_roi["merc_icon"]).valid
+        if should_res_merc:
             Logger.info("Resurrect merc")
             self._obs_recorder.save_replay_if_enabled()
             self._game_stats.log_merc_death()

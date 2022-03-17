@@ -114,13 +114,12 @@ class BeltManager:
                     for i in range(min(len(belt), 4)):
                         if len(belt) > i and type(belt[i]) is dict and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
                             return f"potion{i+1}"
-        img = self._screen.grab()
-        for i in range(4):
-            potion_img = self._cut_potion_img(img, i, 0)
-            if self._potion_type(potion_img) == potion_type:
-                return f"potion{i+1}"
+        # img = self._screen.grab()
+        # for i in range(4):
+        #     potion_img = self._cut_potion_img(img, i, 0)
+        #     if self._potion_type(potion_img) == potion_type:
+        #         return f"potion{i+1}"
         return False
-        
 
     def picked_up_pot(self, item_name: str):
         """Adjust the _pot_needs when a specific pot was picked up by the pickit
@@ -156,7 +155,6 @@ class BeltManager:
                         keyboard.send(self._config.char[key])
                         self._pot_needs[potion_type] -= 1
                         wait(0.04, 0.06)
-
             Logger.debug(f"Potion needs: {self._pot_needs}")
         # else:
         #     rows_left = {

@@ -740,7 +740,6 @@ class UiManager():
             return False
 
     def repair_needed(self) -> bool:
-
         template_match = self._template_finder.search(
             "REPAIR_NEEDED",
             self._screen.grab(),
