@@ -319,7 +319,7 @@ class Bot:
         if data is not None:
             if self._api.player_summary is not None:
                 self._config.general["player_summary"] = self._api.player_summary
-                self._config.general["player_name"] = self._api.player_name
+                self._config.general["name"] = self._api.player_name
                 Logger.info(f"Loaded player summary from memory: {self._api.player_summary}")
             if data["item_on_cursor"]:
                 is_loading = self._ui_manager.wait_for_loading_finish()
