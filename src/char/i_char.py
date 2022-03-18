@@ -459,50 +459,20 @@ class IChar:
         Logger.debug(f"Killed and looted {picked_up_items} from {len(looted_uniques)} champion/unique packs")
         return picked_up_items
 
-    def _pre_buff_cta(self, extra_cast_delay: float = 0.0):
-        # Save current skill img
-        skill_before = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
-        # Try to switch weapons and select bo until we find the skill on the right skill slot
-        start = time.time()
-        switch_sucess = False
-        while time.time() - start < 4:
-            keyboard.send(self._char_config["weapon_switch"])
-            wait(0.3, 0.35)
-            keyboard.send(self._char_config["battle_command"])
-            wait(0.1, 0.19)
-            if self._ui_manager.is_right_skill_selected(["BC", "BO"]):
-                switch_sucess = True
-                break
-        if not switch_sucess:
-            Logger.warning("You dont have Battle Command bound, or you do not have CTA. ending CTA buff")
-        else:
-            # We switched succesfully, let's pre buff
-            delay = self._cast_duration + extra_cast_delay
-            mouse.click(button="right")
-            wait(delay + 0.16, delay + 0.18)
-            keyboard.send(self._char_config["battle_orders"])
-            wait(0.1, 0.19)
-            mouse.click(button="right")
-            wait(delay + 0.16, delay + 0.18)
-            if "shout" in self._skill_hotkeys:
-                keyboard.send(self._skill_hotkeys["shout"])
-                wait(0.1, 0.19)
-                Logger.debug("Casting Shout with key: " + self._skill_hotkeys["shout"])
-                mouse.click(button="right")
-                wait(delay + 0.16, delay + 0.18)
-
+    def _pre_buff_cta(self, switch_back=True):
+        self.switch_weapon()
+        keyboard.send(self._char_config["battle_command"])
+        wait(0.04, 0.07)
+        mouse.click(button="right")
+        wait(self._cast_duration, self._cast_duration + 0.03)
+        keyboard.send(self._char_config["battle_orders"])
+        wait(0.04, 0.07)
+        mouse.click(button="right")
+        wait(self._cast_duration, self._cast_duration + 0.03)
         # Make sure the switch back to the original weapon is good
-        start = time.time()
-        while time.time() - start < 4:
-            keyboard.send(self._char_config["weapon_switch"])
-            wait(0.3, 0.35)
-            skill_after = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
-            _, max_val, _, _ = cv2.minMaxLoc(cv2.matchTemplate(skill_after, skill_before, cv2.TM_CCOEFF_NORMED))
-            if max_val > 0.9:
-                break
-            else:
-                Logger.warning("Failed to switch weapon, try again")
-                wait(0.5)
+        if switch_back:
+            self.switch_weapon()
+            self.verify_active_weapon_tab()
     
     def filter_monster(self, monsterlist, area):
         filtered_monster = []
