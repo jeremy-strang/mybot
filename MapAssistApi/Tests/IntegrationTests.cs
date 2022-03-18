@@ -15,7 +15,7 @@ namespace MapAssist.Tests
             {
                 using (var api = new Api())
                 {
-                    api.RetrieveDataFromMemory(Formatting.Indented);
+                    api.RetrieveDataFromMemory(true, Formatting.Indented);
                 }
             }
         }
