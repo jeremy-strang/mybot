@@ -100,7 +100,7 @@ class Diablo:
                 self._char.kill_uniques (monster)
                 picked_up_items = self._pickit.pick_up_items (self._char)  
                 monster = self._pather.traverse(poi, self._char, kill=True)
-            self._pather.activate_poi (poi, poi, typ="objects", char=self._char)
+            self._pather.activate_poi(poi, poi, collection="objects", char=self._char)
 
             monster = self._char.kill_around (self._api, special = True)
             while (type (monster)==dict):

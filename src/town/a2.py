@@ -30,7 +30,7 @@ class A2(IAct):
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
         if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=8): return False
-        self._pather.activate_poi ("Bank", "Bank", typ='objects', char=self._char)    
+        self._pather.activate_poi ("Bank", "Bank", collection='objects', char=self._char)    
         return Location.A2_FARA_STASH
 
     def identify(self, curr_loc: Location) -> Union[Location, bool]:
