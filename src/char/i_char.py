@@ -124,7 +124,9 @@ class IChar:
         if data is not None:
             stats_dict = {}
             for stat_pair in data["player_stats"]:
-                stats_dict[stat_pair["key"]] = stat_pair["value"]
+                key = stat_pair["key"]
+                if key in ["Strength", "Dexterity", "Vitality", "Energy"]:
+                    stats_dict[key] = stat_pair["value"]
             return stats_dict
         return None
 
@@ -136,10 +138,10 @@ class IChar:
         elif tab == 2: self._stats_with_weapon_tab2 = stats_dict
 
     def _try_stats_for_weapon_detection(self) -> int:
-        stored_tab1 = self._stats_with_weapon_tab1 is not None
-        stored_tab2 = self._stats_with_weapon_tab2 is not None
+        tab1_was_stored = self._stats_with_weapon_tab1 is not None
+        tab2_was_stored = self._stats_with_weapon_tab2 is not None
         data = self._api.get_data()
-        if data is None or (not stored_tab1 and not stored_tab2): return -1
+        if data is None or (not tab1_was_stored and not tab2_was_stored): return -1
         stats_dict = self._build_stats_dict()
         strength = stats_dict["Strength"]
         dexterity = stats_dict["Dexterity"]
@@ -147,7 +149,7 @@ class IChar:
         vitality = stats_dict["Vitality"]
         tab1_match = False
 
-        if stored_tab1 and \
+        if tab1_was_stored and \
             strength == self._stats_with_weapon_tab1["Strength"] and \
             dexterity == self._stats_with_weapon_tab1["Dexterity"] and \
             energy == self._stats_with_weapon_tab1["Energy"] and \
@@ -156,7 +158,7 @@ class IChar:
             tab1_match = True
         tab2_match = False
 
-        if stored_tab2 and \
+        if tab2_was_stored and \
             strength == self._stats_with_weapon_tab2["Strength"] and \
             dexterity == self._stats_with_weapon_tab2["Dexterity"] and \
             energy == self._stats_with_weapon_tab2["Energy"] and \
