@@ -158,6 +158,54 @@ namespace MapAssist.Botty
                             }
                         }
 
+                        var item_on_cursor = false;
+                        var items = new List<dynamic>();
+                        foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
+                        {
+                            dynamic istats = null;
+
+                            if (item.Stats != null)
+                            {
+                                istats = item.Stats.Select(it =>
+                                {
+                                    Stat key = it.Key;
+                                    var value = it.Value;
+                                    if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
+                                    {
+                                        value = value >> 8;
+                                    }
+
+                                    return new { key = key.ToString(), value };
+                                }).ToList();
+                            }
+
+                            if (item.ItemMode == ItemMode.ONCURSOR)
+                            {
+                                item_on_cursor = true;
+                            }
+
+                            items.Add(new
+                            {
+                                position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
+                                mode = item.ItemMode.ToString(),
+                                id = item.UnitId,
+                                flags = item.ItemData.ItemFlags.ToString(),
+                                quality = item.ItemData.ItemQuality.ToString(),
+                                name = Items.GetItemName(item),
+                                base_name = item.ItemBaseName,
+                                is_hovered = item.IsHovered,
+                                body_loc = item.ItemData.BodyLoc.ToString(),
+                                item_mode_mapped = item.ItemModeMapped.ToString(),
+                                stats = istats,
+                                is_player_owned = item.IsPlayerOwned,
+                                state_strings = item.StateStrings,
+                                is_in_socket = item.IsInSocket,
+                                is_identified = item.IsIdentified,
+                                is_in_store = item.IsInStore,
+                                inventory_page = item.ItemData.InvPage.ToString(),
+                            });
+                        }
+
                         var current_area = _areaData.Area.ToString();
                         var mapH = 0;
                         var mapW = 0;
@@ -184,7 +232,7 @@ namespace MapAssist.Botty
                             success = true,
                             monsters = new List<dynamic>(),
                             objects = new List<dynamic>(),
-                            items = new List<dynamic>(),
+                            items,
                             item_log = new List<dynamic>(),
                             points_of_interest = new List<dynamic>(),
                             corpses,
@@ -233,6 +281,7 @@ namespace MapAssist.Botty
                             belt_mana_pots, // number of mana pots in player's belt
                             belt_rejuv_pots, // number of rejuv pots in player's belt
                             flattened_belt,
+                            item_on_cursor,
                         };
                         foreach (var m in _areaData.NPCs)
                         {
@@ -302,47 +351,6 @@ namespace MapAssist.Botty
                                 text = item.Text,
                                 hash = item.ItemHashString,
                                 unit_item = item.UnitItem.ToString(),
-                            });
-                        }
-
-                        foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
-                        {
-                            dynamic istats = null;
-
-                            if (item.Stats != null)
-                            {
-                                istats = item.Stats.Select(it =>
-                                {
-                                    Stat key = it.Key;
-                                    var value = it.Value;
-                                    if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
-                                    {
-                                        value = value >> 8;
-                                    }
-
-                                    return new { key = key.ToString(), value };
-                                }).ToList();
-                            }
-
-                            msg.items.Add(new
-                            {
-                                position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
-                                mode = item.ItemMode.ToString(),
-                                id = item.UnitId,
-                                flags = item.ItemData.ItemFlags.ToString(),
-                                quality = item.ItemData.ItemQuality.ToString(),
-                                name = Items.GetItemName(item),
-                                base_name = item.ItemBaseName,
-                                is_hovered = item.IsHovered,
-                                body_loc = item.ItemData.BodyLoc.ToString(),
-                                item_mode_mapped = item.ItemModeMapped.ToString(),
-                                stats = istats,
-                                is_player_owned = item.IsPlayerOwned,
-                                state_strings = item.StateStrings,
-                                is_in_socket = item.IsInSocket,
-                                is_identified = item.IsIdentified,
-                                is_in_store = item.IsInStore,
-                                inventory_page = item.ItemData.InvPage.ToString(),
                             });
                         }
 

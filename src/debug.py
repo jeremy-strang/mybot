@@ -95,13 +95,6 @@ if __name__ == "__main__":
             wait(0.2)
             data = api.get_data()
         
-        def write_data_to_file(data, data_str):
-            current_area = data["current_area"]
-            with open(f"../botty_data_{current_area}.json", "w") as f:
-                f.write(json.dumps(json.loads(data_str), indent=4, sort_keys=True))
-                f.close()
-
-        
         # overlay = start_overlay(bot, game_stats)
 
         def do_stuff():
@@ -169,6 +162,7 @@ if __name__ == "__main__":
             print("Done doing stuff")
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
+        keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file())
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
         print("Ready!\n\n" + ("-" * 80))

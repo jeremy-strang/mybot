@@ -47,6 +47,15 @@ def start_or_stop_graphic_debugger(controllers: Controllers):
         controllers.game.stop()
         controllers.debugger.start()
 
+def save_d2r_data_to_file(controllers: Controllers):
+    if controllers.game.is_running:
+        try:
+            controllers.game.save_d2r_data_to_file()
+        except BaseException as e:
+            print(f"Error saving D2R memory data: {e}")
+    else:
+        print(f"Error: D2R memory data is not available when the game is not running")
+
 def on_exit(game_controller: GameController,  release_keys="capslock"):
     Logger.info("Exit key pressed, shutting down bot")
     for key in release_keys:
@@ -93,29 +102,18 @@ def main():
     print(f"Active branch:        {config.active_branch}")
     print(f"Latest Commit Sha:    {config.latest_commit_sha}")
     print("Hotkeys:")
-    print(f"    Backup settings:        {config.advanced_options['settings_backup_key']} key")
-    print(f"    Adjust settings:        {config.advanced_options['auto_settings_key']} key")
-    print(f"    Toggle Start/Pause Bot: {config.advanced_options['resume_key']} key")
-    print(f"    Stop Bot:               {config.advanced_options['exit_key']} key")
+    print(f"    Backup settings:          {config.advanced_options['settings_backup_key']} key")
+    print(f"    Adjust settings:          {config.advanced_options['auto_settings_key']} key")
+    print(f"    Save D2R data to a file:  {config.advanced_options['save_d2r_data_to_file_key']} key")
+    print(f"    Toggle Start/Pause Bot:   {config.advanced_options['resume_key']} key")
+    print(f"    Stop Bot:                 {config.advanced_options['exit_key']} key")
     print("=" * 80 + "\n")
-
-    if show_options:
-        print("\nFor gettings started and documentation\nplease see https://github.com/pokzcodes/mybot\n")
-        table = BeautifulTable()
-        table.rows.append([config.advanced_options['restore_settings_from_backup_key'], "Restore D2R settings from backup"])
-        table.rows.append([config.advanced_options['settings_backup_key'], "Backup D2R current settings"])
-        table.rows.append([config.advanced_options['auto_settings_key'], "Adjust D2R settings"])
-        table.rows.append([config.advanced_options['graphic_debugger_key'], "Start / Stop Graphic debugger"])
-        table.rows.append([config.advanced_options['resume_key'], "Start / Pause Bot"])
-        table.rows.append([config.advanced_options['exit_key'], "Stop Bot"])
-        table.columns.header = ["hotkey", "action"]
-        print(table)
-        print("\n")
 
     keyboard.add_hotkey(config.advanced_options['auto_settings_key'], lambda: adjust_settings())
     keyboard.add_hotkey(config.advanced_options['graphic_debugger_key'], lambda: start_or_stop_graphic_debugger(controllers))
     keyboard.add_hotkey(config.advanced_options['restore_settings_from_backup_key'], lambda: restore_settings_from_backup())
     keyboard.add_hotkey(config.advanced_options['settings_backup_key'], lambda: backup_settings())
+    keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: save_d2r_data_to_file(controllers))
     keyboard.add_hotkey(config.advanced_options['resume_key'], lambda: start_or_pause_bot(controllers))
     keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: on_exit(game_controller, [config.char["stand_still"], config.char["force_move"]]))
     keyboard.wait()

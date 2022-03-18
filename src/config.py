@@ -377,6 +377,7 @@ class Config:
             "restore_settings_from_backup_key": Config._select_val("advanced_options", "restore_settings_from_backup_key"),
             "settings_backup_key": Config._select_val("advanced_options", "settings_backup_key"),
             "graphic_debugger_key": Config._select_val("advanced_options", "graphic_debugger_key"),
+            "save_d2r_data_to_file_key": Config._select_val("advanced_options", "save_d2r_data_to_file_key"),
             'debug_overlay': bool(int(Config._select_val("advanced_options", "debug_overlay"))),
             'obs_run_recording_enabled':bool(int(Config._select_val("advanced_options", "obs_run_recording_enabled"))),
             'obs_debug_replays_enabled':bool(int(Config._select_val("advanced_options", "obs_debug_replays_enabled"))),

@@ -136,7 +136,6 @@ class GameController:
                 kill_game()
             traceback.print_exc()
 
-
     def start(self):
         # Check if we user should update the d2r settings
         diff = check_settings()
@@ -218,3 +217,7 @@ class GameController:
     def safe_exit(self, error_code=0):
         kill_game()
         os._exit(error_code)
+
+    def save_d2r_data_to_file(self):
+        if self.api is not None:
+            self.api.write_data_to_file()

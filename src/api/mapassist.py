@@ -1,4 +1,5 @@
 import traceback
+import os
 import numpy as np
 from mas import MAS
 import math
@@ -40,11 +41,14 @@ class MapAssistApi:
         Logger.debug("Updated data {0} times in {1} sec ({2} per sec)".format(n, elapsed, n_per_sec))
         return (elapsed, n, n_per_sec)
 
-    def write_data_to_file(self):
+    def write_data_to_file(self, file_path=None):
         current_area = self.data["current_area"]
-        with open(f"../botty_data_{current_area}.json", "w") as f:
+        if file_path is None:
+            file_path = f"./stats/botty_data_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
+        with open(file_path, "w") as f:
             f.write(json.dumps(json.loads(self._raw_data_str), indent=4, sort_keys=True))
             f.close()
+        Logger.info(f"Saved D2R memory snapshot to {os.path.normpath(file_path)}")
 
     def get_data(self):
         return self.data
