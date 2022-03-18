@@ -116,6 +116,7 @@ class MAS(Thread):
             "player_mana_pct": 1.0,
             "player_id": 0,
             "player_merc": None,
+            "item_on_cursor": False,
         }
 
         _data["menus"] = data["menus"]
@@ -170,6 +171,7 @@ class MAS(Thread):
         _data["player_merc"] = data["player_merc"]
         _data["player_corpse"] = data["player_corpse"]
         _data["corpses"] = data["corpses"]
+        _data["item_on_cursor"] = data["item_on_cursor"]
         # _data["items"] = data["items"]
 
         if data["map_changed"]:

@@ -10,6 +10,7 @@ from typing import Union
 from collections import OrderedDict
 from run.stony_tomb import Stony_Tomb
 from transmute import Transmute
+from utils.custom_mouse import mouse
 from utils.misc import wait
 from game_stats import GameStats
 from logger import Logger
@@ -295,6 +296,15 @@ class Bot:
             if not self._ui_manager.start_game(): return
             self.trigger_or_stop("start_from_town")
 
+    def handle_item_on_cursor(self):
+        Logger.debug(f"Game started with an item on the cursor. Dropping it and running pickit...")
+        mouse.move(*self._screen.convert_screen_to_monitor((600, 360)))
+        wait(0.1, 0.15)
+        mouse.click(button="left")
+        self._char.discover_capabilities(force=False)
+        self._pickit.pick_up_items(self._char)
+        wait(0.1, 0.2)
+
     def on_start_from_town(self):
         self._curr_loc = self._town_manager.wait_for_town_spawn()
         self.trigger_or_stop("maintenance")
@@ -306,6 +316,10 @@ class Bot:
         mana_pct = 1
         data = self._api.get_data()
         if data is not None:
+            if data["item_on_cursor"]:
+                is_loading = self._ui_manager.wait_for_loading_finish()
+                self.handle_item_on_cursor()
+                data = self._api.get_data()
             self._pick_corpse = "player_corpse" in data and data["player_corpse"] is not None and type(data["player_corpse"]) is dict
             merc_alive = "player_merc" in data and data["player_merc"] is not None and data["player_merc"]["mode"] != 12
             health_pct = data["player_health_pct"]
