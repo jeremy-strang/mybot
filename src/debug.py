@@ -99,66 +99,70 @@ if __name__ == "__main__":
 
         def do_stuff():
             print("Doing stuff...")
-            data = api.get_data()
-            # potion_type = "health"
-            # pp.pprint(data["flattened_belt"])
+            try:
+                data = api.get_data()
+                # potion_type = "health"
+                # pp.pprint(data["flattened_belt"])
 
-            # if data is not None:
-            #     if "flattened_belt" in data and data["flattened_belt"] is not None:
-            #         belt = data["flattened_belt"]
-            #         if belt is not None and len(belt) > 0:
-            #             for i in range(min(len(belt), 4)):
-            #                 print(f"\n\nbelt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}\n\n")
-            #                 pp.pprint(belt[i])
-            #                 print("\n")
-            #                 print(len(belt) > i and type(belt[i]) is dict)
-            #                 print("ItemBaseName" in belt[i])
-            #                 print(belt[i]["ItemBaseName"])
-            #                 print(potion_type.lower() in belt[i]["ItemBaseName"].lower())
-            #                 if len(belt) > i and type(belt[i]) is dict and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
-            #                     print(f"potion{i+1}")
-            # belt_manager.update_pot_needs(True)
-            # print(belt_manager.get_pot_needs())
+                # if data is not None:
+                #     if "flattened_belt" in data and data["flattened_belt"] is not None:
+                #         belt = data["flattened_belt"]
+                #         if belt is not None and len(belt) > 0:
+                #             for i in range(min(len(belt), 4)):
+                #                 print(f"\n\nbelt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}\n\n")
+                #                 pp.pprint(belt[i])
+                #                 print("\n")
+                #                 print(len(belt) > i and type(belt[i]) is dict)
+                #                 print("ItemBaseName" in belt[i])
+                #                 print(belt[i]["ItemBaseName"])
+                #                 print(potion_type.lower() in belt[i]["ItemBaseName"].lower())
+                #                 if len(belt) > i and type(belt[i]) is dict and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
+                #                     print(f"potion{i+1}")
+                # belt_manager.update_pot_needs(True)
+                # print(belt_manager.get_pot_needs())
 
-            # bot._town_manager.open_stash(Location.A4_TOWN_START)
-            # write_data_to_file(data, api._raw_data_str)
-            
-            
-            # print(data["belt_items"])
+                # bot._town_manager.open_stash(Location.A4_TOWN_START)
+                # write_data_to_file(data, api._raw_data_str)
+                
+                
+                # print(data["belt_items"])
 
-            # bank = None
-            # for obj in data["objects"]:w
-            #     if obj["name"].startswith("Bank"):
-            #         bank = obj
-            #         print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
-            #         print(bank)
-            
-            # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
-            
-            api.start_timer()
-            pather.traverse_walking("Kurast Docks", char, obj=False, threshold=16, time_out=4, end_dist=10)
-            api.get_metrics()
+                # bank = None
+                # for obj in data["objects"]:w
+                #     if obj["name"].startswith("Bank"):
+                #         bank = obj
+                #         print(f"object id: {obj['id']}, name: {obj['name']}, position: {obj['position']}")
+                #         print(bank)
+                
+                # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
+                
+                api.start_timer()
+                pather.traverse_walking("Kurast Docks", char, obj=False, threshold=16, time_out=4, end_dist=10)
+                api.get_metrics()
 
-            # ui_manager.throw_out_junk(item_finder)    
+                # ui_manager.throw_out_junk(item_finder)    
 
 
-            # akara = find_npc(Npc.AKARA, api)
-            # pf = PathFinder(api)
-            # start = pf.player_node
+                # akara = find_npc(Npc.AKARA, api)
+                # pf = PathFinder(api)
+                # start = pf.player_node
 
-            # if akara is not None:
-            #     path = pf.solve_tsp(end=akara["position"] - data["area_origin"])
-            # else:
-            #     path = pf.solve_tsp()
-            # api._current_path = []
-            # for node in path:
-            #     api._current_path += pf.make_path_astar(start, node, True)
-            #     start = node
+                # if akara is not None:
+                #     path = pf.solve_tsp(end=akara["position"] - data["area_origin"])
+                # else:
+                #     path = pf.solve_tsp()
+                # api._current_path = []
+                # for node in path:
+                #     api._current_path += pf.make_path_astar(start, node, True)
+                #     start = node
 
-            # api._current_path = path
-            # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
+                # api._current_path = path
+                # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
 
-            # stop_debug(game_controller, overlay)
+                # stop_debug(game_controller, overlay)
+            except BaseException as e:
+                print(e)
+                traceback.print_exc()
             print("Done doing stuff")
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))

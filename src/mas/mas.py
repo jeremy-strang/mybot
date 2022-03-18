@@ -116,6 +116,7 @@ class MAS(Thread):
             "player_mana_pct": 1.0,
             "player_id": 0,
             "player_merc": None,
+            "player_corpse": None,
             "item_on_cursor": False,
         }
 
@@ -170,9 +171,7 @@ class MAS(Thread):
         _data["player_id"] = data["player_id"]
         _data["player_merc"] = data["player_merc"]
         _data["player_corpse"] = data["player_corpse"]
-        _data["corpses"] = data["corpses"]
         _data["item_on_cursor"] = data["item_on_cursor"]
-        # _data["items"] = data["items"]
 
         if data["map_changed"]:
             print(f"Map changed: {len(data['collision_grid'])}")
@@ -229,10 +228,9 @@ class MAS(Thread):
         for item in data["items"]:
             x = item["position"][0]
             y = item["position"][1]
-            item["name"] = item["base_name"]
             item["position"] = np.array([x, y])
             item["abs_screen_position"] = np.array(world_to_abs(item["position"], self._player_pos))
             item["dist"] = math.dist(_data["player_pos_world"], item["position"])
-            _data["items"].append(item)
-        _data["items"] = sorted(_data["items"], key=lambda r: r["dist"])
+        _data["items"] = data["items"]
+
         return _data

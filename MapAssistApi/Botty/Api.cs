@@ -140,21 +140,21 @@ namespace MapAssist.Botty
 
                         foreach (var corpse in _gameData.Corpses.Where(a => a.IsCorpse && a.IsPlayer).ToList())
                         {
-                            var pcorpse = new
+                            if (corpse.Name == playerUnit.Name)
                             {
-                                position = corpse.Position,
-                                id = corpse.UnitId,
-                                name = corpse.Name,
-                                is_hovered = corpse.IsHovered,
-                                is_corpse = corpse.IsCorpse,
-                                player_class = corpse.Struct.playerClass,
-                                unit_type = corpse.Struct.UnitType,
-                                mode = corpse.Struct.Mode,
-                            };
-                            corpses.Add(pcorpse);
-                            if (pcorpse.name == playerUnit.Name)
-                            {
+                                var pcorpse = new
+                                {
+                                    position = corpse.Position,
+                                    id = corpse.UnitId,
+                                    name = corpse.Name,
+                                    is_hovered = corpse.IsHovered,
+                                    is_corpse = corpse.IsCorpse,
+                                    player_class = corpse.Struct.playerClass,
+                                    unit_type = corpse.Struct.UnitType,
+                                    mode = corpse.Struct.Mode,
+                                };
                                 player_corpse = pcorpse;
+                                corpses.Add(pcorpse);
                             }
                         }
 
@@ -184,26 +184,24 @@ namespace MapAssist.Botty
                                 item_on_cursor = true;
                             }
 
-                            items.Add(new
+                            if (item.ItemModeMapped == ItemModeMapped.Ground)
                             {
-                                position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
-                                mode = item.ItemMode.ToString(),
-                                id = item.UnitId,
-                                flags = item.ItemData.ItemFlags.ToString(),
-                                quality = item.ItemData.ItemQuality.ToString(),
-                                name = Items.GetItemName(item),
-                                base_name = item.ItemBaseName,
-                                is_hovered = item.IsHovered,
-                                body_loc = item.ItemData.BodyLoc.ToString(),
-                                item_mode_mapped = item.ItemModeMapped.ToString(),
-                                stats = istats,
-                                is_player_owned = item.IsPlayerOwned,
-                                state_strings = item.StateStrings,
-                                is_in_socket = item.IsInSocket,
-                                is_identified = item.IsIdentified,
-                                is_in_store = item.IsInStore,
-                                inventory_page = item.ItemData.InvPage.ToString(),
-                            });
+                                items.Add(new
+                                {
+                                    position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
+                                    id = item.UnitId,
+                                    flags = item.ItemData.ItemFlags.ToString(),
+                                    quality = item.ItemData.ItemQuality.ToString(),
+                                    name = Items.GetItemName(item),
+                                    base_name = item.ItemBaseName,
+                                    is_hovered = item.IsHovered,
+                                    item_mode = item.ItemMode.ToString(),
+                                    item_mode_mapped = item.ItemModeMapped.ToString(),
+                                    stats = istats,
+                                    is_identified = item.IsIdentified,
+                                    inventory_page = item.ItemData.InvPage.ToString(),
+                                });
+                            }
                         }
 
                         var current_area = _areaData.Area.ToString();
@@ -360,8 +358,8 @@ namespace MapAssist.Botty
             }
             catch (Exception ex)
             {
-                _log.Error(ex);
-                _log.Error(ex.StackTrace);
+                //_log.Error(ex);
+                //_log.Error(ex.StackTrace);
             }
 
             return JsonConvert.SerializeObject(new { success = false }, formatting);
