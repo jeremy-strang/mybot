@@ -78,7 +78,7 @@ class IAct:
             start = time.time()
             while not menu_open and time.time() - start < 10:
                 m = find_monster(m["id"], self._api)
-                self._pather.move_mouse_to_abs_pos(m["abs_screen_position"], m["dist"])
+                self._pather.move_mouse_to_abs_pos(m["position_abs"], m["dist"])
                 if m is not None:
                     mouse.click(button="left")
                     wait(1.0)

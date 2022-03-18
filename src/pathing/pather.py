@@ -161,7 +161,7 @@ class Pather:
                                 # print(pos_monitor)
                                 player_p = data['player_pos_area']
                                 new_pos_mon = world_to_abs(
-                                    (ap-data["area_origin"]), player_p+data['player_offset'])
+                                    (ap-data["area_origin"]), player_p + data['player_offset'])
                                 pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
 
                                 if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
@@ -396,9 +396,9 @@ class Pather:
         Logger.debug(f"Failed to confirm arrival at {end_loc}")
         return False
 
-    def move_mouse_to_abs_pos(self, abs_screen_position, dist):
-        x = np.clip(abs_screen_position[0], -638, 638)
-        y = np.clip(abs_screen_position[1], -350, 225)
+    def move_mouse_to_abs_pos(self, position_abs, dist):
+        x = np.clip(position_abs[0], -638, 638)
+        y = np.clip(position_abs[1], -350, 225)
         pos_m = self._screen.convert_abs_to_monitor([x, y])
         x_m = pos_m[0]
         y_m = pos_m[1]
@@ -407,11 +407,11 @@ class Pather:
 
     def move_mouse_to_monster(self, monster):
         if monster is not None:
-            self.move_mouse_to_abs_pos(monster["abs_screen_position"], monster["dist"])
+            self.move_mouse_to_abs_pos(monster["position_abs"], monster["dist"])
 
     def move_to_monster(self, char, monster: dict) -> bool:
         if monster is not None and type(monster) is dict:
-            self.move_mouse_to_abs_pos(monster["abs_screen_position"], monster["dist"])
+            self.move_mouse_to_abs_pos(monster["position_abs"], monster["dist"])
             if char.capabilities.can_teleport_natively:
                 char.pre_move()
                 mouse.click(button="right")
@@ -467,6 +467,7 @@ class Pather:
         start = time.time()
         rand = [0, 0]
         random_offset = 0
+        pf = PathFinder(self._api)
 
         while time.time() - start < time_out or sucess is False:
             data = self._api.get_data()
@@ -487,20 +488,20 @@ class Pather:
                     else:
                         for p in data["poi"]:
                             if p["label"].startswith(end):
-                                map_pos = p["position"] - data["area_origin"]
+                                map_pos = p["position_area"]
                                 x = map_pos[0]
                                 y = map_pos[1]
                                 break
                         for p in data["monsters"]:
                             if p["name"].startswith(end):
-                                map_pos = p["position"] - data["area_origin"]
+                                map_pos = p["position_area"]
                                 x = map_pos[0]
                                 y = map_pos[1]
                                 break
                 elif obj is True:
                     for p in data["objects"]:
                         if p["name"].startswith(end):
-                            map_pos = p["position"] - data["area_origin"]
+                            map_pos = p["position_area"]
                             x = map_pos[0]
                             y = map_pos[1]
                             break
@@ -513,19 +514,18 @@ class Pather:
                 player_x = data["player_pos_world"][0]
                 player_y = data["player_pos_world"][1]
 
-                player_x_local = player_x - data["area_origin"][0]
-                player_y_local = player_y - data["area_origin"][1]
+                player_x_area = data["player_pos_area"][0]
+                player_y_area = data["player_pos_area"][1]
 
                 odist = math.dist([target_x, target_y],
-                                    [player_x, player_y])
+                                  [player_x, player_y])
 
                 # make paths
                 if data['map'] is not None:
-                    player_local = (int(player_y_local), int(player_x_local))
-                    dest = (int(y), int(x))
+                    player_pos_area = (int(player_y_area), int(player_x_area))
+                    dest_pos_area = (int(y), int(x))
                     # path_data = make_path_astar(player_local, dest, data["map"])
-                    pf = PathFinder(self._api)
-                    path_data = pf.make_path_astar(player_local, dest)
+                    path_data = pf.make_path_astar(player_pos_area, dest_pos_area)
                     self._api._current_path = path_data
                     if path_data is not None:
                         target = path_data
@@ -546,8 +546,7 @@ class Pather:
                     continue
 
                 if path_data is not None:
-                    keyboard.send(
-                        char._char_config["force_move"], do_release=False)
+                    keyboard.send(char._char_config["force_move"], do_release=False)
 
                 self._api._current_path = target
                 moves = 0
@@ -569,13 +568,13 @@ class Pather:
 
                     delta_p = math.dist(prev_p, data["player_pos_world"])
 
-                    wp_x = target[0][0]+data["area_origin"][0]
-                    wp_y = target[0][1]+data["area_origin"][1]
+                    wp_x = target[0][0] + data["area_origin"][0]
+                    wp_y = target[0][1] + data["area_origin"][1]
 
                     odist = math.dist([wp_x, wp_y], [player_x, player_y])
 
-                    end_x = end_click_pt[0]+data["area_origin"][0]
-                    end_y = end_click_pt[1]+data["area_origin"][1]
+                    end_x = end_click_pt[0] + data["area_origin"][0]
+                    end_y = end_click_pt[1] + data["area_origin"][1]
 
                     end = math.dist([end_x, end_y], [player_x, player_y])
 
@@ -722,18 +721,18 @@ class Pather:
                 last_pos = player_pos_area
 
                 # Get endpoint
-                map_pos = None
+                area_pos = None
                 if type(end) is str and obj is False:
-                    for p in data["poi"]:
-                        if p["label"].startswith(end):
-                            map_pos = p["position"] - data["area_origin"]
+                    for poi in data["poi"]:
+                        if poi["label"].startswith(end):
+                            area_pos = poi["position"] - data["area_origin"]
                 elif type(end) is str and obj is True:
-                    for p in data["objects"]:
-                        if p["name"].startswith(end):
-                            map_pos = p["position"] - data["area_origin"]
+                    for poi in data["objects"]:
+                        if poi["name"].startswith(end):
+                            area_pos = poi["position"] - data["area_origin"]
                 else:
-                    map_pos = end
-                if map_pos is None:
+                    area_pos = end
+                if area_pos is None:
                     if hard_exit < 10:
                         data = self._api.get_data()
                         hard_exit += 1
@@ -752,7 +751,7 @@ class Pather:
                 weighted_map[weighted_map == 0] = 999999
                 weighted_map[weighted_map == 1] = 1
                 start_pos = np.array([player_pos_area[1], player_pos_area[0]])
-                end_pos = np.array([map_pos[1], map_pos[0]])
+                end_pos = np.array([area_pos[1], area_pos[0]])
                 weighted_map[end_pos[0]][end_pos[1]] = 1
                 route = pyastar2d.astar_path(weighted_map, start_pos, end_pos, allow_diagonal=False)
 
@@ -802,7 +801,7 @@ class Pather:
                             char.pre_move()
                 data = self._api.get_data()
                 player_pos = data['player_pos_area'] + data['player_offset']
-                recalc_dist = math.dist(player_pos, map_pos)
+                recalc_dist = math.dist(player_pos, area_pos)
                 if recalc_dist < dest_distance and verify_location:
                     Logger.debug(f"Traverse to {end} completed ({round(recalc_dist, 2)} from destination)")
                     return True

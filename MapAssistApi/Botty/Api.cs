@@ -263,7 +263,7 @@ namespace MapAssist.Botty
                             points_of_interest = new List<dynamic>(),
                             corpses,
                             player_corpse,
-                            player_pos = _gameData.PlayerPosition,
+                            player_pos_world = _gameData.PlayerPosition,
                             area_origin = _areaData.Origin,
                             collision_grid = map_changed || forceMap ? _areaData.CollisionGrid : null,
                             current_area,
