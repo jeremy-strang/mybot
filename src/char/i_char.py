@@ -69,7 +69,6 @@ class IChar:
             capabilities = self._discover_capabilities()
             self.capabilities = capabilities
         self._cast_duration = self.get_cast_frames() * 0.04 + 0.02
-        Logger.info(f"Capabilities: {self.capabilities}")
         self.on_capabilities_discovered(self.capabilities)
 
     def on_capabilities_discovered(self, capabilities: CharacterCapabilities):

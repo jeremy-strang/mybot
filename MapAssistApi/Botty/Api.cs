@@ -120,7 +120,7 @@ namespace MapAssist.Botty
                         var player_health_pct = player_max_health > 0 ? (double)player_health / player_max_health : 1.0;
                         var player_mana = stats.ContainsKey(Stat.Mana) ? stats[Stat.Mana] >> 8 : int.MaxValue;
                         var player_max_mana = stats.ContainsKey(Stat.MaxMana) ? stats[Stat.MaxMana] >> 8 : int.MaxValue;
-                        var player_mana_pct = player_max_mana > 0 ? player_mana / player_max_mana : 1.0;
+                        var player_mana_pct = player_max_mana > 0 ? (double)player_mana / player_max_mana : 1.0;
                         var player_level = stats.ContainsKey(Stat.Level) ? stats[Stat.Level] : int.MaxValue;
                         var player_experience = stats.ContainsKey(Stat.Experience) ? stats[Stat.Experience] : int.MaxValue;
                         var player_gold = stats.ContainsKey(Stat.Gold) ? stats[Stat.Gold] : int.MaxValue;

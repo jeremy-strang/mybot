@@ -628,6 +628,7 @@ class UiManager():
         wait(0.5, 0.6)
 
     def throw_out_junk(self, item_finder: ItemFinder):
+        Logger.info("Throwing out junk")
         wait(0.2, 0.3)
         keyboard.send(self._config.char["inventory_screen"])
         wait(0.5, 0.6)
