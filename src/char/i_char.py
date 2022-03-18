@@ -119,7 +119,7 @@ class IChar:
             active_weapon_tab = self.get_active_weapon_tab()
         return active_weapon_tab == 1
 
-    def _build_stats_dict(self):
+    def _build_stats_dict_for_weapon_tab_detection(self):
         data = self._api.get_data()
         if data is not None:
             stats_dict = {}
@@ -133,7 +133,7 @@ class IChar:
     def _save_stats_for_weapon_tab_detection(self, tab: int):
         if tab == 1 and self._stats_with_weapon_tab1 is not None: return
         if tab == 2 and self._stats_with_weapon_tab2 is not None: return
-        stats_dict = self._build_stats_dict()
+        stats_dict = self._build_stats_dict_for_weapon_tab_detection()
         if tab == 1: self._stats_with_weapon_tab1 = stats_dict
         elif tab == 2: self._stats_with_weapon_tab2 = stats_dict
 
@@ -142,7 +142,7 @@ class IChar:
         tab2_was_stored = self._stats_with_weapon_tab2 is not None
         data = self._api.get_data()
         if data is None or (not tab1_was_stored and not tab2_was_stored): return -1
-        stats_dict = self._build_stats_dict()
+        stats_dict = self._build_stats_dict_for_weapon_tab_detection()
         strength = stats_dict["Strength"]
         dexterity = stats_dict["Dexterity"]
         energy = stats_dict["Energy"]
