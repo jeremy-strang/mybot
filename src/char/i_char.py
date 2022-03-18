@@ -145,8 +145,8 @@ class IChar:
         dexterity = stats_dict["Dexterity"]
         energy = stats_dict["Energy"]
         vitality = stats_dict["Vitality"]
-
         tab1_match = False
+
         if stored_tab1 and \
             strength == self._stats_with_weapon_tab1["Strength"] and \
             dexterity == self._stats_with_weapon_tab1["Dexterity"] and \
@@ -154,8 +154,8 @@ class IChar:
             vitality == self._stats_with_weapon_tab1["Vitality"]:
             Logger.info(f"Detected weapon tab 1 based on stats in memory")
             tab1_match = True
-
         tab2_match = False
+
         if stored_tab2 and \
             strength == self._stats_with_weapon_tab2["Strength"] and \
             dexterity == self._stats_with_weapon_tab2["Dexterity"] and \
