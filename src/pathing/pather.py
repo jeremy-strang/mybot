@@ -432,178 +432,181 @@ class Pather:
 
         while time.time() - start < time_out or sucess is False:
             data = self._api.get_data()
-            if data is not None:
-                if data is not None and "map" in data and data["map"] is not None:
-                    if type(end) is str and obj is False:
-                        if static_npc == True:
-                            for p in data["static_npcs"]:
-                                if p["name"].startswith(end):
-                                    map_pos = p["position"] - data["area_origin"]
-                                    x = map_pos[0]
-                                    y = map_pos[1]
-                                    break
-                        else:
-                            for p in data["poi"]:
-                                if p["label"].startswith(end):
-                                    map_pos = p["position"] - data["area_origin"]
-                                    x = map_pos[0]
-                                    y = map_pos[1]
-                                    break
-                            for p in data["monsters"]:
-                                if p["name"].startswith(end):
-                                    map_pos = p["position"] - data["area_origin"]
-                                    x = map_pos[0]
-                                    y = map_pos[1]
-                                    break
-                    elif obj is True:
-                        for p in data["objects"]:
+            if data is not None and "map" in data and data["map"] is not None:
+                if type(end) is str and obj is False:
+                    if static_npc == True:
+                        for p in data["static_npcs"]:
                             if p["name"].startswith(end):
                                 map_pos = p["position"] - data["area_origin"]
                                 x = map_pos[0]
                                 y = map_pos[1]
                                 break
                     else:
-                        x = end[0]
-                        y = end[1]
+                        for p in data["poi"]:
+                            if p["label"].startswith(end):
+                                map_pos = p["position"] - data["area_origin"]
+                                x = map_pos[0]
+                                y = map_pos[1]
+                                break
+                        for p in data["monsters"]:
+                            if p["name"].startswith(end):
+                                map_pos = p["position"] - data["area_origin"]
+                                x = map_pos[0]
+                                y = map_pos[1]
+                                break
+                elif obj is True:
+                    for p in data["objects"]:
+                        if p["name"].startswith(end):
+                            map_pos = p["position"] - data["area_origin"]
+                            x = map_pos[0]
+                            y = map_pos[1]
+                            break
+                else:
+                    x = end[0]
+                    y = end[1]
 
-                    target_x = x + data["area_origin"][0]
-                    target_y = y + data["area_origin"][1]
+                target_x = x + data["area_origin"][0]
+                target_y = y + data["area_origin"][1]
+                player_x = data["player_pos_world"][0]
+                player_y = data["player_pos_world"][1]
+
+                player_x_local = player_x - data["area_origin"][0]
+                player_y_local = player_y - data["area_origin"][1]
+
+                odist = math.dist([target_x, target_y],
+                                    [player_x, player_y])
+
+                # make paths
+                if data['map'] is not None:
+                    player_local = (int(player_y_local), int(player_x_local))
+                    dest = (int(y), int(x))
+                    # path_data = make_path_astar(player_local, dest, data["map"])
+                    pf = PathFinder(self._api)
+                    path_data = pf.make_path_astar(player_local, dest)
+                    self._api._current_path = path_data
+                    if path_data is not None:
+                        target = path_data
+                        end_click_pt = target[-1]
+                        random_offset = 0
+                    else:
+                        random_offset += 1
+                        Logger.debug('invalid path increasing search')
+                        random.seed(random_offset+123)
+                        RX = random.randint(-random_offset, +random_offset)
+                        random.seed(random_offset-43)
+                        RY = random.randint(-random_offset, +random_offset)
+                        rand = np.array([RX, RY])
+                        if random_offset > 15:
+                            return False
+                        continue
+                else:
+                    continue
+
+                if path_data is not None:
+                    keyboard.send(
+                        char._char_config["force_move"], do_release=False)
+
+                self._api._current_path = target
+                moves = 0
+                if target is None:
+                    Logger.debug('Invalid path: ' + str(target_x) + ' ' + str(target_y))
+                    sucess = True
+                    return False
+                pp = [0, 0]
+                randomize = 0
+                prev_p = [0, 0]
+                delta_p = 0
+                while len(target) > 0 and time.time() - start < time_out:
+                    try:
+                        data = self._api.get_data()
+                    except:
+                        pass
                     player_x = data["player_pos_world"][0]
                     player_y = data["player_pos_world"][1]
 
-                    player_x_local = player_x - data["area_origin"][0]
-                    player_y_local = player_y - data["area_origin"][1]
+                    delta_p = math.dist(prev_p, data["player_pos_world"])
 
-                    odist = math.dist([target_x, target_y],
-                                      [player_x, player_y])
+                    wp_x = target[0][0]+data["area_origin"][0]
+                    wp_y = target[0][1]+data["area_origin"][1]
 
-                    # make paths
-                    if data['map'] is not None:
-                        player_local = (int(player_y_local), int(player_x_local))
-                        dest = (int(y), int(x))
-                        # path_data = make_path_astar(player_local, dest, data["map"])
-                        pf = PathFinder(self._api)
-                        path_data = pf.make_path_astar(player_local, dest)
-                        self._api._current_path = path_data
-                        if path_data is not None:
-                            target = path_data
-                            end_click_pt = target[-1]
-                            random_offset = 0
-                        else:
-                            random_offset += 1
-                            Logger.debug('invalid path increasing search')
-                            random.seed(random_offset+123)
-                            RX = random.randint(-random_offset, +random_offset)
-                            random.seed(random_offset-43)
-                            RY = random.randint(-random_offset, +random_offset)
-                            rand = np.array([RX, RY])
-                            if random_offset > 15:
-                                return False
-                            continue
-                    else:
-                        continue
+                    odist = math.dist([wp_x, wp_y], [player_x, player_y])
 
-                    if path_data is not None:
-                        keyboard.send(
-                            char._char_config["force_move"], do_release=False)
+                    end_x = end_click_pt[0]+data["area_origin"][0]
+                    end_y = end_click_pt[1]+data["area_origin"][1]
 
-                    self._api._current_path = target
-                    moves = 0
-                    if target is None:
-                        Logger.debug('Invalid path: ' + str(target_x) + ' ' + str(target_y))
+                    end = math.dist([end_x, end_y], [player_x, player_y])
+
+                    # distance threshold to target
+                    if end < end_dist:
                         sucess = True
-                        return False
-                    pp = [0, 0]
-                    randomize = 0
-                    prev_p = [0, 0]
-                    delta_p = 0
-                    while len(target) > 0 and time.time() - start < time_out:
+                        keyboard.send(
+                            char._char_config["force_move"], do_press=False)
+                        Logger.info('Walked to destination')
+                        return True
+                        # break
+
+                    # how close to a node before we remove it
+                    if odist < threshold:
                         try:
-                            data = self._api.get_data()
+                            target.pop(0)
                         except:
                             pass
-                        player_x = data["player_pos_world"][0]
-                        player_y = data["player_pos_world"][1]
+                        try:
+                            target.pop(0)
+                        except:
+                            pass
 
-                        delta_p = math.dist(prev_p, data["player_pos_world"])
+                    # out of paths to traverse
+                    if len(target) < 1:
+                        keyboard.send(
+                            char._char_config["force_move"], do_press=False)
+                        return True
 
-                        wp_x = target[0][0]+data["area_origin"][0]
-                        wp_y = target[0][1]+data["area_origin"][1]
+                    player_p = data['player_pos_area'] + data['player_offset']
 
-                        odist = math.dist([wp_x, wp_y], [player_x, player_y])
+                    player_offset = data['player_offset']
 
-                        end_x = end_click_pt[0]+data["area_origin"][0]
-                        end_y = end_click_pt[1]+data["area_origin"][1]
+                    new_pos_mon = world_to_abs(
+                        [target[0][0], target[0][1]], player_p+data['player_offset'])
+                    random.seed()
 
-                        end = math.dist([end_x, end_y], [player_x, player_y])
+                    new_pos_mon = (new_pos_mon[0] + random.randint(-randomize, +randomize),
+                                    new_pos_mon[1] + random.randint(-randomize, +randomize))
+                    if delta_p < 1:
+                        # increase random offset to get around stuck
+                        randomize += 5
+                    else:
+                        randomize = 0
+                    prev_p = data["player_pos_world"]
 
-                        # distance threshold to target
-                        if end < end_dist:
-                            sucess = True
-                            keyboard.send(
-                                char._char_config["force_move"], do_press=False)
-                            Logger.info('Walked to destination')
-                            return True
-                            # break
+                    zero = self._screen.convert_abs_to_monitor(
+                        [new_pos_mon[0]-9.5, new_pos_mon[1]-39.5])
 
-                        # how close to a node before we remove it
-                        if odist < threshold:
-                            try:
-                                target.pop(0)
-                            except:
-                                pass
-                            try:
-                                target.pop(0)
-                            except:
-                                pass
-
-                        # out of paths to traverse
-                        if len(target) < 1:
-                            keyboard.send(
-                                char._char_config["force_move"], do_press=False)
-                            return True
-
-                        player_p = data['player_pos_area'] + data['player_offset']
-
-                        player_offset = data['player_offset']
-
-                        new_pos_mon = world_to_abs(
-                            [target[0][0], target[0][1]], player_p+data['player_offset'])
-                        random.seed()
-
-                        new_pos_mon = (new_pos_mon[0] + random.randint(-randomize, +randomize),
-                                       new_pos_mon[1] + random.randint(-randomize, +randomize))
-                        if delta_p < 1:
-                            # increase random offset to get around stuck
-                            randomize += 5
-                        else:
-                            randomize = 0
-                        prev_p = data["player_pos_world"]
-
-                        zero = self._screen.convert_abs_to_monitor(
-                            [new_pos_mon[0]-9.5, new_pos_mon[1]-39.5])
-
-                        if moves != 0:
-                            # average paths with previous point
-                            zero = [(zero[0]+pp[0])/2, (zero[1]+pp[1])/2]
-                        else:
-                            pp = zero
-
-                        _mouse.move(*zero, duration=.025)
-
+                    if moves != 0:
+                        # average paths with previous point
+                        zero = [(zero[0]+pp[0])/2, (zero[1]+pp[1])/2]
+                    else:
                         pp = zero
-                        moves += 1
 
-                        if moves > 530:
-                            sucess = True
-                            keyboard.send(
-                                char._char_config["force_move"], do_press=False)
-                            return False
+                    _mouse.move(*zero, duration=.025)
 
-                    keyboard.send(
-                        char._char_config["force_move"], do_press=False)
-                    return True
+                    pp = zero
+                    moves += 1
 
+                    if moves > 530:
+                        sucess = True
+                        keyboard.send(
+                            char._char_config["force_move"], do_press=False)
+                        return False
+
+                keyboard.send(
+                    char._char_config["force_move"], do_press=False)
+                return True
+            else:
+                print(f"  data is not None: {data is not None}")
+                print(f"  'map' in data: {'map' in data}")
+                print(f"  data['map'] is not None: {data['map'] is not None}")
+                wait(1)
         keyboard.send(char._char_config["force_move"], do_press=False)
         return True
 

@@ -26,6 +26,7 @@ class MapAssistApi:
         self._errors = 0
         self._raw_data_str = "{}"
         self._custom_files = custom_files
+        self._map = None
 
     def start_timer(self):
         self._num_updates = 0
@@ -53,6 +54,10 @@ class MapAssistApi:
             self._raw_data_str = data_str
             if data_obj["success"]:
                 self.data = self._mas.get_data(data_obj)
+                if self.data["map"] is not None:
+                    self._map = self.data["map"]
+                elif self._map is not None:
+                    self.data["map"] = self._map
                 self._errors = 0
                 self._num_updates += 1
                 self._player_pos = self.data['player_pos_world']

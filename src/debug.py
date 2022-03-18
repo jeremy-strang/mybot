@@ -143,7 +143,7 @@ if __name__ == "__main__":
             # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
             
             api.start_timer()
-            bot._town_manager.a3.trade_with_npc(Npc.ORMUS)
+            pather.traverse_walking("Kurast Docks", char, obj=False, threshold=16, time_out=4, end_dist=10)
             api.get_metrics()
 
             # ui_manager.throw_out_junk(item_finder)    

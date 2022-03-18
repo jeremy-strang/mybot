@@ -38,6 +38,9 @@ namespace MapAssist.Botty
         private Compositor _compositor = null;
         private volatile GameData _gameData;
         private List<PointOfInterest> _pointsOfInterest;
+        private string CurrentArea = "";
+        private int CurrentMapHeight = 0;
+        private int CurrentMapWidth = 0;
 
         private bool disposed;
 
@@ -63,7 +66,6 @@ namespace MapAssist.Botty
             }
         }
 
-
         public string RetrieveDataFromMemory(Formatting formatting = Formatting.None)
         {
             try
@@ -81,8 +83,7 @@ namespace MapAssist.Botty
                         var player_mana = stats.ContainsKey(Stat.Mana) ? stats[Stat.Mana] >> 8 : int.MaxValue;
                         var player_max_mana = stats.ContainsKey(Stat.MaxMana) ? stats[Stat.MaxMana] >> 8 : int.MaxValue;
                         var player_level = stats.ContainsKey(Stat.Level) ? stats[Stat.Level] : int.MaxValue;
-                        var player_experience =
-                            stats.ContainsKey(Stat.Experience) ? stats[Stat.Experience] : int.MaxValue;
+                        var player_experience = stats.ContainsKey(Stat.Experience) ? stats[Stat.Experience] : int.MaxValue;
                         var player_gold = stats.ContainsKey(Stat.Gold) ? stats[Stat.Gold] : int.MaxValue;
                         var player_stats = stats.Select(item =>
                         {
@@ -157,8 +158,29 @@ namespace MapAssist.Botty
                             }
                         }
 
+                        var current_area = _areaData.Area.ToString();
+                        var mapH = 0;
+                        var mapW = 0;
+                        if (_areaData.CollisionGrid != null)
+                        {
+                            mapH = _areaData.CollisionGrid.GetLength(0);
+                            if (mapH > 0)
+                            {
+                                mapW = _areaData.CollisionGrid[0].GetLength(0);
+                            }
+                        }
+
+                        var map_changed = current_area != CurrentArea || mapH != CurrentMapHeight || mapW != CurrentMapWidth;
+                        CurrentArea = current_area;
+                        CurrentMapHeight = mapH;
+                        CurrentMapWidth = mapW;
+
+                        var inventory_open = _gameData.MenuOpen.Inventory;
+                        var stash_open = _gameData.MenuOpen.Stash;
+                        var shop_open = _gameData.MenuOpen.NpcShop;
                         var msg = new
                         {
+                            map_changed,
                             success = true,
                             monsters = new List<dynamic>(),
                             objects = new List<dynamic>(),
@@ -169,12 +191,29 @@ namespace MapAssist.Botty
                             player_corpse,
                             player_pos = _gameData.PlayerPosition,
                             area_origin = _areaData.Origin,
-                            collision_grid = _areaData.CollisionGrid,
-                            current_area = _areaData.Area.ToString(),
+                            collision_grid = map_changed ? _areaData.CollisionGrid : null,
+                            current_area,
                             used_skill = _gameData.PlayerUnit.Skills.UsedSkillId,
                             left_skill = _gameData.PlayerUnit.Skills.LeftSkillId,
                             right_skill = _gameData.PlayerUnit.Skills.RightSkillId,
-                            wp_menu = _gameData.MenuOpen,
+                            menus = _gameData.MenuOpen,
+                            in_game = _gameData.MenuOpen.InGame,
+                            inventory_open = _gameData.MenuOpen.Inventory,
+                            character_open = _gameData.MenuOpen.Character,
+                            skill_select_open = _gameData.MenuOpen.SkillSelect,
+                            skill_tree_open = _gameData.MenuOpen.SkillTree,
+                            chat_open = _gameData.MenuOpen.Chat,
+                            npc_interact_open = _gameData.MenuOpen.NpcInteract,
+                            esc_menu_open = _gameData.MenuOpen.EscMenu,
+                            map_open = _gameData.MenuOpen.Map,
+                            npc_shop_open = _gameData.MenuOpen.NpcShop,
+                            quest_log_open = _gameData.MenuOpen.QuestLog,
+                            waypoint_open = _gameData.MenuOpen.Waypoint,
+                            party_open = _gameData.MenuOpen.Party,
+                            stash_open = _gameData.MenuOpen.Stash,
+                            cube_open = _gameData.MenuOpen.Cube,
+                            potion_belt_open = _gameData.MenuOpen.PotionBelt,
+                            mercenary_inventory_open = _gameData.MenuOpen.MercenaryInventory,
                             player_life,
                             player_max_life,
                             player_mana,
@@ -269,7 +308,7 @@ namespace MapAssist.Botty
                         foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
                         {
                             dynamic istats = null;
-                            
+
                             if (item.Stats != null)
                             {
                                 istats = item.Stats.Select(it =>
@@ -313,7 +352,8 @@ namespace MapAssist.Botty
             }
             catch (Exception ex)
             {
-                //_log.Error(ex);
+                _log.Error(ex);
+                _log.Error(ex.StackTrace);
             }
 
             return JsonConvert.SerializeObject(new { success = false }, formatting);

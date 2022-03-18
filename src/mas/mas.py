@@ -102,7 +102,7 @@ class MAS(Thread):
             "player_merc": None,
         }
 
-        _data["menus"] = data["wp_menu"]
+        _data["menus"] = data["menus"]
         _data["used_skill"] = data["used_skill"]
         _data["left_skill"] = data["left_skill"]
         _data["right_skill"] = data["right_skill"]
@@ -118,10 +118,12 @@ class MAS(Thread):
         _data["player_corpse"] = data["player_corpse"]
         _data["corpses"] = data["corpses"]
         # _data["items"] = data["items"]
-        _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
-        _data["map"][_data["map"] == 1] = 0
-        _data["map"] += 1
 
+        if data["map_changed"]:
+            print(f"Map changed: {len(data['collision_grid'])}")
+            _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
+            _data["map"][_data["map"] == 1] = 0
+            _data["map"] += 1
 
         px_int = int(data["player_pos"]["X"])
         py_int = int(data["player_pos"]["Y"])
