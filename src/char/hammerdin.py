@@ -536,16 +536,12 @@ class Hammerdin(IChar):
         elapsed = 0
         picked_up_items = 0
         data = game_state._data
-        initial_pos = None
         while elapsed < time_out and game_state._dead == 0 and game_state._target is not None:
             if not game_state._ready:
                 wait(0.1)
             else:
                 target_pos = game_state._target_pos
                 target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
-                if target_pos is not None and initial_pos is None:
-                    initial_pos = np.array(game_state._area_pos) if game_state._area_pos is not None else None
-                    
                 if time.time() - last_move > 6.0:
                     Logger.debug("Stood in one place too long, repositioning")
                     self.reposition(target_pos)
@@ -564,11 +560,6 @@ class Hammerdin(IChar):
             elapsed = time.time() - start
         
         picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
-
-        data = self._api.get_data()
-        if data is not None and initial_pos is not None and math.dist(initial_pos, data["player_pos_area"]) > 15:
-            self._pather.traverse(np.array(initial_pos), self, time_out = 6.0)
-            picked_up_items += pickit()
 
         # This is a hack to prevent Teleport from being used during pickit
         keyboard.send(self._skill_hotkeys["concentration"])
