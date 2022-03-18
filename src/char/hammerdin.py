@@ -459,7 +459,10 @@ class Hammerdin(IChar):
                     self.pre_move()
                     self.move(move_pos_m, force_tp=True)
                     last_move = time.time()
-                self._cast_hammers(1.2)
+                keyboard.send(self._skill_hotkeys["concentration"])
+                wait(0.03, 0.05)
+                if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target, stop_when_dead=False, max_distance=5): wait(0.1)
+                self.post_attack()
             elapsed = time.time() - start
         Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
         return True
@@ -509,11 +512,11 @@ class Hammerdin(IChar):
         mouse.press(button="left")
         wait(0.03, 0.05)
         return True
-         
+
     def post_attack(self) -> bool:
         mouse.release(button="left")
         wait(0.02, 0.4)
-        keyboard.send(self._char_config["stand_still"], do_press=False) 
+        keyboard.release(self._char_config["stand_still"]) 
         wait(0.02, 0.4)
         return True
 
