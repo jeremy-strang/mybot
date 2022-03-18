@@ -42,7 +42,7 @@ from utils.monsters import find_npc
 pp = pprint.PrettyPrinter(depth=6)
 
 if __name__ == "__main__":
-    from mas import world_to_abs
+    from utils.coordinates import world_to_abs
     from utils.custom_mouse import mouse
         
     def stop_debug(game_controller, overlay):

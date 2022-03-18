@@ -1,6 +1,6 @@
 from ast import Tuple
 import cv2
-from mas import world_to_abs
+from utils.coordinates import world_to_abs
 import numpy as np
 import pyastar2d
 from copy import deepcopy

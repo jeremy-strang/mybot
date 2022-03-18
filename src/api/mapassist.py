@@ -1,7 +1,7 @@
 import traceback
 import os
 import numpy as np
-from mas import MAS
+from .mas import MAS
 import math
 import time
 import threading

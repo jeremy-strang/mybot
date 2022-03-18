@@ -1,5 +1,5 @@
 import keyboard
-from mas import world_to_abs
+from utils.coordinates import world_to_abs
 from utils.custom_mouse import mouse
 from char import IChar, CharacterCapabilities
 from char.barbarian.barbarian import Barbarian

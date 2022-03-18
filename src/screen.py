@@ -1,4 +1,4 @@
-from mas import world_to_abs
+from utils.coordinates import world_to_abs
 import numpy as np
 from mss import mss
 import cv2
