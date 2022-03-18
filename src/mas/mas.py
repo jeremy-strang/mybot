@@ -31,6 +31,23 @@ class MAS(Thread):
         self._player_pos=None
         self._callback = callback
         self._custom_files = custom_files
+        self.in_game = False
+        self.inventory_open = False
+        self.character_open = False
+        self.skill_select_open = False
+        self.skill_tree_open = False
+        self.chat_open = False
+        self.npc_interact_open = False
+        self.esc_menu_open = False
+        self.map_open = False
+        self.npc_shop_open = False
+        self.quest_log_open = False
+        self.waypoint_open = False
+        self.party_open = False
+        self.stash_open = False
+        self.cube_open = False
+        self.potion_belt_open = False
+        self.mercenary_inventory_open = False
 
     def update(self):
         pass
@@ -56,7 +73,6 @@ class MAS(Thread):
 
     def run(self):
         ApiHost.Run(self._convert_config(), Action[String](self._callback))
-
 
     def cancel(self):
         ApiHost.Stop()
@@ -103,6 +119,43 @@ class MAS(Thread):
         }
 
         _data["menus"] = data["menus"]
+        
+        if self.in_game != data["in_game"]: print(f"in_game changed from {self.in_game} to {data['in_game']}")
+        if self.inventory_open != data["inventory_open"]: print(f"inventory_open changed from {self.inventory_open} to {data['inventory_open']}")
+        if self.character_open != data["character_open"]: print(f"character_open changed from {self.character_open} to {data['character_open']}")
+        if self.skill_select_open != data["skill_select_open"]: print(f"skill_select_open changed from {self.skill_select_open} to {data['skill_select_open']}")
+        if self.skill_tree_open != data["skill_tree_open"]: print(f"skill_tree_open changed from {self.skill_tree_open} to {data['skill_tree_open']}")
+        if self.chat_open != data["chat_open"]: print(f"chat_open changed from {self.chat_open} to {data['chat_open']}")
+        if self.npc_interact_open != data["npc_interact_open"]: print(f"npc_interact_open changed from {self.npc_interact_open} to {data['npc_interact_open']}")
+        if self.esc_menu_open != data["esc_menu_open"]: print(f"esc_menu_open changed from {self.esc_menu_open} to {data['esc_menu_open']}")
+        if self.map_open != data["map_open"]: print(f"map_open changed from {self.map_open} to {data['map_open']}")
+        if self.npc_shop_open != data["npc_shop_open"]: print(f"npc_shop_open changed from {self.npc_shop_open} to {data['npc_shop_open']}")
+        if self.quest_log_open != data["quest_log_open"]: print(f"quest_log_open changed from {self.quest_log_open} to {data['quest_log_open']}")
+        if self.waypoint_open != data["waypoint_open"]: print(f"waypoint_open changed from {self.waypoint_open} to {data['waypoint_open']}")
+        if self.party_open != data["party_open"]: print(f"party_open changed from {self.party_open} to {data['party_open']}")
+        if self.stash_open != data["stash_open"]: print(f"stash_open changed from {self.stash_open} to {data['stash_open']}")
+        if self.cube_open != data["cube_open"]: print(f"cube_open changed from {self.cube_open} to {data['cube_open']}")
+        if self.potion_belt_open != data["potion_belt_open"]: print(f"potion_belt_open changed from {self.potion_belt_open} to {data['potion_belt_open']}")
+        if self.mercenary_inventory_open != data["mercenary_inventory_open"]: print(f"mercenary_inventory_open changed from {self.mercenary_inventory_open} to {data['mercenary_inventory_open']}")
+        
+        self.in_game = data["in_game"]
+        self.inventory_open = data["inventory_open"]
+        self.character_open = data["character_open"]
+        self.skill_select_open = data["skill_select_open"]
+        self.skill_tree_open = data["skill_tree_open"]
+        self.chat_open = data["chat_open"]
+        self.npc_interact_open = data["npc_interact_open"]
+        self.esc_menu_open = data["esc_menu_open"]
+        self.map_open = data["map_open"]
+        self.npc_shop_open = data["npc_shop_open"]
+        self.quest_log_open = data["quest_log_open"]
+        self.waypoint_open = data["waypoint_open"]
+        self.party_open = data["party_open"]
+        self.stash_open = data["stash_open"]
+        self.cube_open = data["cube_open"]
+        self.potion_belt_open = data["potion_belt_open"]
+        self.mercenary_inventory_open = data["mercenary_inventory_open"]
+
         _data["used_skill"] = data["used_skill"]
         _data["left_skill"] = data["left_skill"]
         _data["right_skill"] = data["right_skill"]
