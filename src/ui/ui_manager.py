@@ -156,9 +156,15 @@ class UiManager():
         start = time.time()
         while (time.time() - start) < 15:
             Logger.debug(f"Saving and exiting (chicken: {does_chicken})")
-            data = self._api.get_data()
             esc_menu_open = False
             templates = ["SAVE_AND_EXIT_NO_HIGHLIGHT", "SAVE_AND_EXIT_HIGHLIGHT"]
+
+            try_api_start = time.time()
+            data = None
+            while data is None and time.time() - try_api_start < 1.0:
+                if self._api is not None:
+                    data = self._api.get_data()
+                wait(0.5)
 
             if data is not None:
                 if data["esc_menu_open"]:
@@ -182,9 +188,10 @@ class UiManager():
                 Logger.debug("    Opening escape menu...")
                 keyboard.send("esc")
                 wait(0.3)
-                data = self._api.get_data()
-                if self._api.data["esc_menu_open"]:
-                    esc_menu_open = True
+                if self._api is not None:
+                    data = self._api.get_data()
+                    if data is not None and data["esc_menu_open"]:
+                        esc_menu_open = True
             if esc_menu_open:
                 Logger.debug(f"    Escape menu detected from memory, skipping template search")
             else:
