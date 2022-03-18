@@ -76,8 +76,8 @@ class Trav:
             self._char.switch_weapon()
             self._char.verify_active_weapon_tab()
 
+        self._obs_recorder.start_recording_if_enabled()
         self._api.start_timer()
-        # self._obs_recorder.start_recording_if_enabled()
         if self._char._char_config['type'] == 'hammerdin':
             game_state = StateMonitor(['CouncilMember'], self._api, unique_id=-1, many=True)
             self._char.kill_council(game_state)
