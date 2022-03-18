@@ -77,7 +77,6 @@ class TownManager:
                 location = Location.A1_TOWN_START
             else:
                 wait(0.02, 0.04)
-        Logger.info(f"Determined location {location} from area in memory ({current_area})")
         return location
 
     def wait_for_town_spawn(self, time_out: float = None) -> Location:

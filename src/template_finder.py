@@ -184,7 +184,7 @@ class TemplateFinder:
         best_match: bool = False,
         take_ss: bool = True,
         use_grayscale: bool = False,
-        suppress_debug: bool = False,
+        suppress_debug: bool = True,
     ) -> TemplateMatch:
         """
         Helper function that will loop and keep searching for a template

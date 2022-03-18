@@ -155,7 +155,6 @@ class BeltManager:
                         keyboard.send(self._config.char[key])
                         self._pot_needs[potion_type] -= 1
                         wait(0.04, 0.06)
-            Logger.debug(f"Potion needs: {self._pot_needs}")
         # else:
         #     rows_left = {
         #         "rejuv": self._config.char["belt_rejuv_columns"],

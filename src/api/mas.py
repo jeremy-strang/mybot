@@ -163,7 +163,6 @@ class MAS(Thread):
 
         _data["map_changed"] = data["map_changed"]
         if data["map_changed"]:
-            print(f"Map changed: {len(data['collision_grid'])}")
             _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
             _data["map"][_data["map"] == 1] = 0
             _data["map"] += 1
