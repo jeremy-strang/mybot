@@ -129,10 +129,10 @@ class IChar:
             keyboard.send(self._config.char["inventory_screen"])
             wait(0.4, 0.05)
         
-        if self._template_finder.search_and_wait(["WS1"], threshold=0.84, time_out=1.5, roi=[862, 50, 110, 100]).valid:
+        if self._template_finder.search_and_wait(["WS1"], threshold=0.84, time_out=2.5, roi=[862, 50, 110, 100]).valid:
             Logger.info("Weapon slot 1 is active")
             active_slot = 1
-        elif self._template_finder.search_and_wait(["WS2"], threshold=0.84, time_out=1.5, roi=[862, 50, 110, 100]).valid:
+        elif self._template_finder.search_and_wait(["WS2"], threshold=0.84, time_out=2.5, roi=[862, 50, 110, 100]).valid:
             Logger.info("Weapon slot 2 is active")
             active_slot = 2
         else:
