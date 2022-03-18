@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using YamlDotNet.Core;
 
-namespace MapAssist.Botty
+namespace MapAssist.MyBot
 {
     public class ApiHost
     {
@@ -32,8 +32,8 @@ namespace MapAssist.Botty
         {
             try
             {
-                var interval = BottyConfiguration.Current.GetValue("map_assist", "polling_interval", 10);
-                var chicken = BottyConfiguration.Current.GetValue("char", "chicken", 0.5);
+                var interval = BotConfig.Current.GetValue("map_assist", "polling_interval", 10);
+                var chicken = BotConfig.Current.GetValue("char", "chicken", 0.5);
                 using (var api = new Api(chicken))
                 {
                     while (!token.IsCancellationRequested)
@@ -61,7 +61,7 @@ namespace MapAssist.Botty
             bool forceMap = true)
         {
             // _log.Info($"Initializing ApiHost with configuration: \n{JsonConvert.SerializeObject(rawConfiguration, Formatting.Indented)}");
-            BottyConfiguration.InitializeConfiguration(rawConfiguration);
+            BotConfig.InitializeConfiguration(rawConfiguration);
             if (BootstrapMapAssist())
             {
                 _runningTask = Task.Run(() => RunInternalAsync(onDataHandler, TokenSource.Token, forceMap));
@@ -158,7 +158,7 @@ namespace MapAssist.Botty
 
             var logfile = new FileTarget("logfile")
             {
-                FileName = Path.Combine(BottyConfiguration.Current.GetValue("general", "log_file_dir", Environment.CurrentDirectory), "map_assist_api.log"),
+                FileName = Path.Combine(BotConfig.Current.GetValue("general", "log_file_dir", Environment.CurrentDirectory), "map_assist_api.log"),
                 CreateDirs = true,
                 ArchiveNumbering = ArchiveNumberingMode.DateAndSequence,
                 ArchiveOldFileOnStartup = true,

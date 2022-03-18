@@ -12,7 +12,7 @@ from utils.coordinates import world_to_abs
 
 clr.AddReference(os.path.abspath(r'MapAssistApi/bin/x64/Release/MapAssist.dll'))
 
-from MapAssist.Botty import ApiHost
+from MapAssist.MyBot import ApiHost
 from System import Action
 from System import String
 from System import Object

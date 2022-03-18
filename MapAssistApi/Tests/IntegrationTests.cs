@@ -1,4 +1,4 @@
-﻿using MapAssist.Botty;
+﻿using MapAssist.MyBot;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using System;

@@ -9,7 +9,7 @@ ECHO.
 ECHO 1 - Install Env
 ECHO 2 - Update Env
 ECHO 3 - Compile
-ECHO 4 - Run Botty
+ECHO 4 - Run MyBot
 Echo 5 - Exit
 ECHO.
 SET /P M=Type 1, 2, 3, 4 or 5 then press ENTER:

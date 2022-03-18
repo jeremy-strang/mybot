@@ -35,7 +35,7 @@ def start_or_pause_bot(controllers: Controllers):
     if controllers.game.is_running:
         controllers.game.toggle_pause_bot()
     else:
-        # Kill any other controllers and start botty
+        # Kill any other controllers and start mybot
         controllers.debugger.stop()
         controllers.game.start()
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     except:
         traceback.print_exc()
         if game_controller is not None:
-            if game_controller.config is not None and game_controller.config.general['kill_d2r_on_botty_error']:
+            if game_controller.config is not None and game_controller.config.general['kill_d2r_on_bot_exception']:
                 kill_game()
         on_exit(game_controller)
     print("Press Enter to exit ...")

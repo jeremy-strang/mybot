@@ -26,7 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MapAssist.Botty
+namespace MapAssist.MyBot
 {
     public class Api : IDisposable
     {

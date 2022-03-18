@@ -92,7 +92,7 @@ class GameController:
                     kill_thread(self.bot_thread)
                     # Try to recover from whatever situation we are and go back to hero selection
                     if max_consecutive_fails_reached: 
-                        msg = f"Consecutive fails {self.game_stats.get_consecutive_runs_failed()} >= Max {self.config.general['max_consecutive_fails']}. Quitting botty."
+                        msg = f"Consecutive fails {self.game_stats.get_consecutive_runs_failed()} >= Max {self.config.general['max_consecutive_fails']}. Quitting MyBot."
                         Logger.error(msg)
                         if self.config.general["custom_message_hook"]:
                             messenger.send_message(msg)
@@ -127,12 +127,12 @@ class GameController:
                     Logger.error("Could not restart the game. Quitting.")
                     messenger.send_message("Got stuck and could not restart the game. Quitting.")
                 else:
-                    Logger.error("Could not recover from a max game length violation. Quitting botty.")
+                    Logger.error("Could not recover from a max game length violation. Quitting MyBot.")
                     if self.config.general["custom_message_hook"]:
-                        messenger.send_message("Got stuck and will now quit botty")
+                        messenger.send_message("Got stuck and will now quit MyBot")
                 self.safe_exit(1)
         except BaseException as err:
-            if self.config.general['kill_d2r_on_botty_error']:
+            if self.config.general['kill_d2r_on_bot_exception']:
                 kill_game()
             traceback.print_exc()
 

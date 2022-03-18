@@ -317,7 +317,7 @@ class Hammerdin(IChar):
             while not stop_hammers:
                 self._cast_hammers(1.5)
         hammer_thread = threading.Thread(target=pre_cast_hammers)
-        hammer_thread.name = 'botty_subthread_hdin_baal_idle_pre_cast_hammers'
+        hammer_thread.name = 'mybot_subthread_hdin_baal_idle_pre_cast_hammers'
         hammer_thread.daemon = True
 
         throne_area = [70, 0, 50, 95]

@@ -26,11 +26,3 @@ Changes!
 - no map assist icon in task manager or window, runs hidden
 - exposed more mapassist info (items)
 
-
-### ToDo
- 
-- map assist and botty need to be updated to latest live builds... again, maybe for better item/player location + OCR stuff
-- pickitv2
-- replace more town pathing location and vendor actions with mem functions
-- better overlay
-- necro class is next to add

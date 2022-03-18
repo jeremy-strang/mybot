@@ -107,9 +107,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Botty\Api.cs" />
-    <Compile Include="Botty\ApiHost.cs" />
-    <Compile Include="Botty\IBottyConfiguration.cs" />
+    <Compile Include="MyBot\Api.cs" />
+    <Compile Include="MyBot\ApiHost.cs" />
+    <Compile Include="MyBot\IBotConfig.cs" />
     <Compile Include="Files\ConfigurationParser.cs" />
     <Compile Include="Files\CRC32.cs" />
     <Compile Include="Files\FileManager.cs" />

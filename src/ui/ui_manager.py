@@ -753,7 +753,7 @@ class UiManager():
 
     def has_tps(self) -> bool:
         """
-        :return: Returns True if botty has town portals available. False otherwise
+        :return: Returns True if mybot has town portals available. False otherwise
         """
         if self._config.char["tp"]:
             keyboard.send(self._config.char["tp"])

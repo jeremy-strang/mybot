@@ -55,7 +55,7 @@ class MapAssistApi:
     def write_data_to_file(self, file_path=None):
         if file_path is None:
             current_area = self.data["current_area"]
-            file_path = f"./stats/botty_data_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
+            file_path = f"./stats/mybot_data_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
         with open(file_path, "w") as f:
             f.write(json.dumps(json.loads(self._raw_data_str), indent=4, sort_keys=True))
             f.close()

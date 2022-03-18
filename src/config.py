@@ -228,7 +228,7 @@ class Config:
             "games_via_lobby": bool(int(Config._select_val("general", "games_via_lobby"))),
             "d2r_path": Config._select_val("general", "d2r_path"),
             "restart_d2r_when_stuck": bool(int(Config._select_val("general", "restart_d2r_when_stuck"))),
-            "kill_d2r_on_botty_error": bool(int(Config._select_val("general", "kill_d2r_on_botty_error"))),
+            "kill_d2r_on_bot_exception": bool(int(Config._select_val("general", "kill_d2r_on_bot_exception"))),
         }
 
         # Added for dclone ip hunting

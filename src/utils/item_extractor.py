@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument("--file_path", type=str, help="Path to screenshots e.g. C:/data")
     args = parser.parse_args()
 
-    args.file_path = "C:\\Users\\aliig\\Desktop\\bot\\botty-gleed-ocr\\input_images"
+    args.file_path = "C:\\Users\\aliig\\Desktop\\bot\\mybot-gleed-ocr\\input_images"
     gen_truth = 1
 
     item_cropper = ItemCropper()

@@ -3,26 +3,26 @@ using System.Collections.Generic;
 using MapAssist.Settings;
 using MapAssist.Types;
 
-namespace MapAssist.Botty
+namespace MapAssist.MyBot
 {
-    public interface IBottyConfiguration
+    public interface IBotConfig
     {
         T GetValue<T>(string section, string key, T defaultValue = default);
     }
 
-    public class BottyConfiguration : IBottyConfiguration
+    public class BotConfig : IBotConfig
     {
         private static readonly object mutex = new object();
 
         private readonly Dictionary<string, Dictionary<string, object>> _rawConfiguration;
 
-        public BottyConfiguration(Dictionary<string, Dictionary<string, object>> rawConfiguration)
+        public BotConfig(Dictionary<string, Dictionary<string, object>> rawConfiguration)
         {
             _rawConfiguration = rawConfiguration;
         }
 
-        public static IBottyConfiguration Current { get; private set; } =
-            new BottyConfiguration(new Dictionary<string, Dictionary<string, object>>());
+        public static IBotConfig Current { get; private set; } =
+            new BotConfig(new Dictionary<string, Dictionary<string, object>>());
 
         public T GetValue<T>(string section, string key, T defaultValue = default)
         {
@@ -37,11 +37,11 @@ namespace MapAssist.Botty
         {
             lock (mutex)
             {
-                Current = new BottyConfiguration(rawData);
+                Current = new BotConfig(rawData);
             }
         }
 
-        public static Dictionary<Item, List<ItemFilter>> ConvertBottyPickit()
+        public static Dictionary<Item, List<ItemFilter>> ConvertMyBotPickit()
         {
             var result = new Dictionary<Item, List<ItemFilter>>();
 

@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 
-using MapAssist.Botty;
+using MapAssist.MyBot;
 using MapAssist.Settings;
 using MapAssist.Types;
 using Microsoft.Win32;
@@ -110,7 +110,7 @@ namespace MapAssist.Helpers
 
         private static string FindD2LoD()
         {
-            var providedPath = BottyConfiguration.Current.GetValue<string>("map_assist", "d2lod_path");
+            var providedPath = BotConfig.Current.GetValue<string>("map_assist", "d2lod_path");
             if (!string.IsNullOrEmpty(providedPath))
             {
                 if (IsValidD2LoDPath(providedPath))

@@ -33,7 +33,7 @@ class TemplateFinder:
         self._config = Config()
         self._save_last_res = save_last_res
         if self._save_last_res:
-            # do not use this when running botty as it is used accross multiple threads! Just used in shopper as a workaround for now
+            # do not use this when running MyBot as it is used accross multiple threads! Just used in shopper as a workaround for now
             self.last_res = None
         # load templates with their filename as key in the dict
         pathes = []
