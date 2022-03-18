@@ -52,14 +52,18 @@ class PathFinder:
         data = self._api.get_data()
         self._data = data
         if data is not None:
-            player_x_local = data["player_pos_world"][0] - data["area_origin"][0]
-            player_y_local = data["player_pos_world"][1] - data["area_origin"][1]
+            # print("----- update_map() -----")
+            # print(f"data['player_pos_world']: {data['player_pos_world']}")
+            # print(f"data['area_origin']: {data['area_origin']}")
+            # print(f"data['map_changed']: {data['map_changed']}")
+            # print(f"data['current_area': {data['current_area']}")
+            player_x_local = data['player_pos_world'][0] - data['area_origin'][0]
+            player_y_local = data['player_pos_world'][1] - data['area_origin'][1]
             self.player_node = (int(player_x_local + 1), int(player_y_local + 1))
-            if data["current_area"] != self._current_area:
+            if data['current_area'] != self._current_area or data['map_changed']:
                 self._map = data["map"]
                 self._current_area = data["current_area"]
                 self._clusters = cluster_nodes(self._map, self._max_cluster_ct)
-                # print(self._clusters)
                 float_map = self._map.astype(np.float32)
                 float_map[float_map == 0] = 999999.0
                 float_map[float_map == 1] = 0.0

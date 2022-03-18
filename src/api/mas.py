@@ -26,7 +26,7 @@ class MAS(Thread):
         self._pg_main = None
         self._pg=None
         self._data=None
-        self._player_pos=None
+        self._player_pos_world=None
         self._callback = callback
         self._custom_files = custom_files
         self.in_game = False
@@ -159,20 +159,22 @@ class MAS(Thread):
         _data["player_corpse"] = data["player_corpse"]
         _data["item_on_cursor"] = data["item_on_cursor"]
 
-
+        _data["map_changed"] = data["map_changed"]
         if data["map_changed"]:
             print(f"Map changed: {len(data['collision_grid'])}")
             _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
             _data["map"][_data["map"] == 1] = 0
             _data["map"] += 1
 
-        px_int = int(data["player_pos"]["X"])
-        py_int = int(data["player_pos"]["Y"])
-
-        _data["area_origin"] = np.array([int(data["area_origin"]["X"]), int(data["area_origin"]["Y"])])
-        _data["player_pos_world"] = np.array([px_int, py_int])
-        self._player_pos = _data["player_pos_world"]
-        _data["player_pos_area"] = _data["player_pos_world"] - _data["area_origin"]
+        player_x_world = int(data["player_pos_world"]["X"])
+        player_y_world = int(data["player_pos_world"]["Y"])
+        area_origin_x = int(data["area_origin"]["X"])
+        area_origin_y = int(data["area_origin"]["Y"])
+        _data["area_origin"] = np.array([area_origin_x, area_origin_y])
+        _data["player_pos_world"] = np.array([player_x_world, player_y_world])
+        self._player_pos_world = _data["player_pos_world"]
+        _data["player_pos_area"] = np.array([player_x_world - area_origin_x,
+                                             player_y_world - area_origin_y])
         
         _data["player_health"] = data["player_health"]
         _data["player_max_health"] = data["player_max_health"]
@@ -183,10 +185,10 @@ class MAS(Thread):
         _data["merc_alive"] = "player_merc" in data and data["player_merc"] is not None and data["player_merc"]["mode"] != 12
         _data["merc_health_pct"] = data["player_merc"]["heath_percentage"] if _data["merc_alive"] else 0.0
 
-        px_float = float(data["player_pos"]["X"])-float(px_int)
-        py_float = float(data["player_pos"]["Y"])-float(py_int)
-
-        _data["player_offset"] = np.array([px_float,py_float])
+        px_float = float(data["player_pos_world"]["X"]) - float(player_x_world)
+        py_float = float(data["player_pos_world"]["Y"]) - float(player_y_world)
+        _data["player_offset"] = np.array([px_float,
+                                           py_float])
 
         for npc in data["static_npcs"]:
             for p in npc["position"]:
@@ -196,25 +198,31 @@ class MAS(Thread):
 
         for monster in data["monsters"]:
             monster["position"] = np.array([int(monster["position"]["X"]), int(monster["position"]["Y"])])
-            monster["abs_screen_position"] = np.array(world_to_abs(monster["position"], self._player_pos))
+            monster["position_abs"] = np.array(world_to_abs(monster["position"], self._player_pos_world))
             monster["dist"] = math.dist(_data["player_pos_world"], monster["position"])
             _data["monsters"].append(monster)
 
         for poi in data["points_of_interest"]:
-            poi["position"] = np.array([int(poi["position"]["X"]), int(poi["position"]["Y"])])
-            poi["abs_screen_position"] = np.array(world_to_abs(poi["position"], self._player_pos))
+            poi_world_x = int(poi["position"]["X"])
+            poi_world_y = int(poi["position"]["Y"])
+            poi["position"] = np.array([poi_world_x, poi_world_y])
+            poi["position_abs"] = np.array(world_to_abs(poi["position"], self._player_pos_world))
+            poi["position_area"] = np.array([poi_world_x - area_origin_x, poi_world_y - area_origin_y])
             _data["poi"].append(poi)
 
         for obj in data["objects"]:
+            obj_world_x = int(obj["position"]["X"])
+            obj_world_y = int(obj["position"]["Y"])
             obj["position"] = np.array([int(obj["position"]["X"]), int(obj["position"]["Y"])])
-            obj["abs_screen_position"] = np.array(world_to_abs(obj["position"], self._player_pos))
+            obj["position_abs"] = np.array(world_to_abs(obj["position"], self._player_pos_world))
+            obj["position_area"] = np.array([obj_world_x - area_origin_x, obj_world_y - area_origin_y])
             _data["objects"].append(obj)
 
         for item in data["items"]:
             x = item["position"][0]
             y = item["position"][1]
             item["position"] = np.array([x, y])
-            item["abs_screen_position"] = np.array(world_to_abs(item["position"], self._player_pos))
+            item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
             item["dist"] = math.dist(_data["player_pos_world"], item["position"])
         _data["items"] = data["items"]
 
@@ -222,7 +230,7 @@ class MAS(Thread):
             x = item["position"][0]
             y = item["position"][1]
             item["position"] = np.array([x, y])
-            item["abs_screen_position"] = np.array(world_to_abs(item["position"], self._player_pos))
+            item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
             item["dist"] = math.dist(_data["player_pos_world"], item["position"])
         _data["items_logged"] = data["items_logged"]
 
