@@ -48,45 +48,95 @@ namespace MapAssist.MyBot
         public Dictionary<Item, List<ItemFilter>> ConvertMyBotPickit()
         {
             var result = new Dictionary<Item, List<ItemFilter>>();
+            var success = 0;
+            var fail = 0;
             if (_rawConfiguration.ContainsKey("items"))
             {
                 var pickit = _rawConfiguration["items"];
                 foreach (var key in pickit.Keys)
                 {
-                    int.TryParse((string)pickit[key], out var pickitType);
-                    if (pickitType > 0 && key != "misc_gold" && key.Contains("_"))
+                    if (ParsePickitLine(key, (string)pickit[key], result))
                     {
-                        TextInfo info = CultureInfo.CurrentCulture.TextInfo;
-                        var start = key.Substring(0, key.IndexOf("_"));
-                        var itemSnake = key.Substring(key.IndexOf("_") + 1, key.Length - key.IndexOf("_") - 1).Replace("_", " ");
-                        var itemPascal = "";
-                        var filter = new ItemFilter();
-                        //_log.Debug("Parsing " + key + ", start: " + start);
-                        if (start == "misc")
-                        {
-                            itemPascal = info.ToTitleCase(itemSnake).Replace(" ", string.Empty);
-                        }
-                        else if (start == "rune")
-                        {
-                            var lastIndex = key.LastIndexOf("_");
-                            itemPascal = info.ToTitleCase(itemSnake + " rune").Replace(" ", string.Empty);
-                        }
-                        else if (start == "magic" || start == "rare" || start == "set" || start == "unique")
-                        {
-                            itemPascal = info.ToTitleCase(itemSnake).Replace(" ", string.Empty);
-                            if (Enum.TryParse<ItemQuality>(start.ToUpper(), out var quality))
-                            {
-                                filter.Qualities = new ItemQuality[1] { quality };
-                            }
-                        }
-                        if (Enum.TryParse<Item>(itemPascal, out var item))
-                        {
-                            _log.Debug("    Parsed item " + itemPascal + " as " + item);
-                        }
+                        success++;
+                    }
+                    else
+                    {
+                        fail++;
                     }
                 }
             }
+            _log.Debug("Successfully parsed " + success + " lines, failed to parse " + fail);
             return result;
+        }
+
+        private bool ParsePickitLine(string key, string value, Dictionary<Item, List<ItemFilter>> dict)
+        {
+            var success = false;
+            int.TryParse(value.Substring(0, 1), out var pickitType);
+            //if (pickitType > 0 && key != "misc_gold" && key.Contains("_"))
+
+            if (key != "misc_gold" && key.Contains("_"))
+            {
+                TextInfo info = CultureInfo.CurrentCulture.TextInfo;
+                var start = key.Substring(0, key.IndexOf("_"));
+                var itemSnake = key.Substring(key.IndexOf("_") + 1, key.Length - key.IndexOf("_") - 1).Replace("_", " ");
+                var itemPascal = "";
+                var filter = new ItemFilter();
+                if (start == "misc")
+                {
+                    itemPascal = info.ToTitleCase(itemSnake).Replace(" ", string.Empty);
+                }
+                else if (start == "rune")
+                {
+                    var lastIndex = key.LastIndexOf("_");
+                    itemSnake = key.Substring(lastIndex + 1, key.Length - lastIndex - 1) + " rune";
+                    itemPascal = info.ToTitleCase(itemSnake).Replace(" ", string.Empty);
+                }
+                else if (start == "gray" || start == "white" || start == "magic" || start == "rare" || start == "set" || start == "uniq")
+                {
+
+                    switch (start)
+                    {
+                        case "gray":
+                            filter.Qualities = new ItemQuality[1] { key.StartsWith("gray_superior") ? ItemQuality.SUPERIOR : ItemQuality.NORMAL };
+                            break;
+                        case "white":
+                            filter.Qualities = new ItemQuality[1] { key.StartsWith("white_superior") ? ItemQuality.SUPERIOR : ItemQuality.NORMAL };
+                            break;
+                        case "magic":
+                            filter.Qualities = new ItemQuality[1] { ItemQuality.MAGIC };
+                            break;
+                        case "rare":
+                            filter.Qualities = new ItemQuality[1] { ItemQuality.RARE };
+                            break;
+                        case "set":
+                            filter.Qualities = new ItemQuality[1] { ItemQuality.SET };
+                            break;
+                        case "uniq":
+                            filter.Qualities = new ItemQuality[1] { ItemQuality.UNIQUE };
+                            break;
+                    }
+                    itemPascal = info.ToTitleCase(itemSnake.Replace(" superior", string.Empty)).Replace(" ", string.Empty);
+
+                    if (start == "uniq") start = "unique";
+                    if (Enum.TryParse<ItemQuality>(start.ToUpper(), out var quality))
+                    {
+
+                    }
+                }
+                if (Enum.TryParse<Item>(itemPascal, out var item))
+                {
+                    success = true;
+                    var qualStr = filter.Qualities != null ? string.Join(", ", filter.Qualities) : "none";
+                    _log.Debug("    Parsed item " + key + " as " + item + " with qualities: " + qualStr);
+                }
+                else
+                {
+                    _log.Debug("    Couldn't parse item " + key + " (" + itemPascal + ")");
+                }
+            }
+
+            return success;
         }
     }
 }

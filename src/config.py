@@ -214,7 +214,7 @@ class Config:
 
         Config.general = {
             "saved_games_folder": Config._select_val("general", "saved_games_folder"),
-            "name": Config._select_val("general", "name"),
+            "name": None,
             "summary": None,
             "max_game_length_s": float(Config._select_val("general", "max_game_length_s")),
             "max_consecutive_fails": int(Config._select_val("general", "max_consecutive_fails")),
