@@ -50,7 +50,9 @@ class IChar:
         self._last_tp = time.time()
         self._ocr = Ocr()
         # Add a bit to be on the save side
-        self._cast_duration = self._char_config["casting_frames"] * 0.04 + 0.015
+        self._cast_duration = self._char_config["casting_frames"] * 0.04 + 0.02
+        self._stats_with_weapon_tab1 = None
+        self._stats_with_weapon_tab2 = None
         self.capabilities = None
 
     def _discover_capabilities(self) -> CharacterCapabilities:
@@ -117,23 +119,78 @@ class IChar:
             active_weapon_tab = self.get_active_weapon_tab()
         return active_weapon_tab == 1
 
+    def _build_stats_dict(self):
+        data = self._api.get_data()
+        if data is not None:
+            stats_dict = {}
+            for stat_pair in data["player_stats"]:
+                stats_dict[stat_pair["key"]] = stat_pair["value"]
+            return stats_dict
+        return None
+
+    def _save_stats_for_weapon_tab_detection(self, tab: int):
+        if tab == 1 and self._stats_with_weapon_tab1 is not None: return
+        if tab == 2 and self._stats_with_weapon_tab2 is not None: return
+        stats_dict = self._build_stats_dict()
+        if tab == 1: self._stats_with_weapon_tab1 = stats_dict
+        elif tab == 2: self._stats_with_weapon_tab2 = stats_dict
+
+    def _try_stats_for_weapon_detection(self) -> int:
+        stored_tab1 = self._stats_with_weapon_tab1 is not None
+        stored_tab2 = self._stats_with_weapon_tab2 is not None
+        data = self._api.get_data()
+        if data is None or (not stored_tab1 and not stored_tab2): return -1
+        stats_dict = self._build_stats_dict()
+        strength = stats_dict["Strength"]
+        dexterity = stats_dict["Dexterity"]
+        energy = stats_dict["Energy"]
+        vitality = stats_dict["Vitality"]
+
+        tab1_match = False
+        if stored_tab1 and \
+            strength == self._stats_with_weapon_tab1["Strength"] and \
+            dexterity == self._stats_with_weapon_tab1["Dexterity"] and \
+            energy == self._stats_with_weapon_tab1["Energy"] and \
+            vitality == self._stats_with_weapon_tab1["Vitality"]:
+            Logger.info(f"Detected weapon tab 1 based on stats in memory")
+            tab1_match = True
+
+        tab2_match = False
+        if stored_tab2 and \
+            strength == self._stats_with_weapon_tab2["Strength"] and \
+            dexterity == self._stats_with_weapon_tab2["Dexterity"] and \
+            energy == self._stats_with_weapon_tab2["Energy"] and \
+            vitality == self._stats_with_weapon_tab2["Vitality"]:
+            Logger.info(f"Detected weapon tab 2 based on stats in memory")
+            tab2_match = True
+
+        if tab1_match and tab2_match:
+            Logger.info(f"Could not determine weapon tab, stats were equal for both")
+        if tab1_match and not tab2_match: return 1
+        if tab2_match and not tab1_match: return 2
+        return -1
+
     def get_active_weapon_tab(self) -> int:
-        active_slot = -1
+        active_slot = self._try_stats_for_weapon_detection()
+        if active_slot != -1: return active_slot
+
         #Check to make sure we are on our main weapon set in slot 1, and not the secondary set in slot 2
         wait(0.4, 0.05)
         keyboard.send(self._config.char["inventory_screen"])
         wait(0.4, 0.05)
         data = self._api.get_data()
-        if data is not None and "menus" in data and "Inventory" in data["menus"] and not data["menus"]["Inventory"]:
+        if data is not None and not data["inventory_open"]:
             keyboard.send(self._config.char["inventory_screen"])
-            wait(0.4, 0.05)
+            wait(0.25, 0.3)
         
         if self._template_finder.search_and_wait(["WS1"], threshold=0.84, time_out=2.5, roi=[862, 50, 110, 100]).valid:
             Logger.info("Weapon slot 1 is active")
             active_slot = 1
+            self._save_stats_for_weapon_tab_detection(1)
         elif self._template_finder.search_and_wait(["WS2"], threshold=0.84, time_out=2.5, roi=[862, 50, 110, 100]).valid:
             Logger.info("Weapon slot 2 is active")
             active_slot = 2
+            self._save_stats_for_weapon_tab_detection(2)
         else:
             Logger.warning("Could not determine the active weapon slot")
         keyboard.send(self._config.char["inventory_screen"])
