@@ -75,10 +75,10 @@ class Pather:
             abs_pos = (int(abs_pos[0] * f), int(abs_pos[1] * f))
         return abs_pos
 
-    def get_entity_coords_from_str(self, entity_str: str, collection: str="poi", entrance_in_wall=False) -> tuple[int, int]:
+    def get_entity_coords_from_str(self, entity_str: str, collection: str="points_of_interest", entrance_in_wall=False) -> tuple[int, int]:
         data = self._api.get_data()
         key_dict = {
-            "poi": "label",
+            "points_of_interest": "label",
             "objects": "name",
         }
         key = key_dict[collection] if collection in key_dict else None
@@ -136,7 +136,7 @@ class Pather:
 
                     pos_monitor = None
                     if type(obj) == str:
-                        for p in data["poi"]:
+                        for p in data["points_of_interest"]:
                             if p["label"].startswith(obj):
                                 # find the gradient for the grid position and move one back
                                 if entrance_in_wall:
@@ -208,7 +208,7 @@ class Pather:
                      poi: Union[tuple[int, int], str],
                      end_loc: str,
                      entrance_in_wall: bool = True,
-                     typ="poi",
+                     collection="points_of_interest",
                      char=None,
                      offset: list = [0, 0]
                     ) -> bool:
@@ -224,10 +224,10 @@ class Pather:
             if data is not None:
                 pos_monitor = None
                 if type(poi) == str:
-                    for p in data[typ]:
-                        if typ == "poi":
+                    for p in data[collection]:
+                        if collection == "points_of_interest":
                             ele = p["label"]
-                        elif typ == "objects":
+                        elif collection == "objects":
                             ele = p["name"]
                         if ele.startswith(poi):
                             obj = p
@@ -266,7 +266,7 @@ class Pather:
                     else:
                         pos_monitor = None
                 if pos_monitor is not None:
-                    if typ == "objects":
+                    if collection == "objects":
                         counter = 0
                         while (obj["mode"] == 0):
 
@@ -281,7 +281,7 @@ class Pather:
                             pos_monitor = world_to_abs(ap, player_p)
                             pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                             if char is not None:
-                                if typ == "objects":
+                                if collection == "objects":
                                     self.traverse(poi, char, obj=True)
                                 else:
                                     self.traverse(poi, char)
@@ -298,7 +298,7 @@ class Pather:
                             elif counter > 5:
                                 return False
                             data = self._api.get_data()
-                            for p in data[typ]:
+                            for p in data[collection]:
                                 if p["name"].startswith(poi):
                                     obj["mode"] = p["mode"]
 
@@ -333,7 +333,7 @@ class Pather:
             if data is not None:
                 pos_monitor = None
                 if type(poi) == str:
-                    for p in data["poi"]:
+                    for p in data["points_of_interest"]:
                         if p["label"].startswith(poi):
                             # find the gradient for the grid position and move one back
                             if entrance_in_wall:
@@ -486,7 +486,7 @@ class Pather:
                                 y = map_pos[1]
                                 break
                     else:
-                        for p in data["poi"]:
+                        for p in data["points_of_interest"]:
                             if p["label"].startswith(end):
                                 map_pos = p["position_area"]
                                 x = map_pos[0]
@@ -723,7 +723,7 @@ class Pather:
                 # Get endpoint
                 area_pos = None
                 if type(end) is str and obj is False:
-                    for poi in data["poi"]:
+                    for poi in data["points_of_interest"]:
                         if poi["label"].startswith(end):
                             area_pos = poi["position"] - data["area_origin"]
                 elif type(end) is str and obj is True:

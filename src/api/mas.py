@@ -80,7 +80,7 @@ class MAS(Thread):
         _data = {
             "monsters": [],
             "mercs": [],
-            "poi": [],
+            "points_of_interest": [],
             "objects": [],
             "items": [],
             "items_logged": [],
@@ -208,7 +208,7 @@ class MAS(Thread):
             poi["position"] = np.array([poi_world_x, poi_world_y])
             poi["position_abs"] = np.array(world_to_abs(poi["position"], self._player_pos_world))
             poi["position_area"] = np.array([poi_world_x - area_origin_x, poi_world_y - area_origin_y])
-            _data["poi"].append(poi)
+            _data["points_of_interest"].append(poi)
 
         for obj in data["objects"]:
             obj_world_x = int(obj["position"]["X"])

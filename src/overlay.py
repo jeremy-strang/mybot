@@ -145,7 +145,7 @@ class Overlay:
                     with dpg.table(header_row=False,tag="entity_table",parent="entities_main"):
                         dpg.add_table_column()
                         dpg.add_table_column()
-                        for poi in data['poi']:
+                        for poi in data["points_of_interest"]:
                             with dpg.table_row():
                                 dpg.add_text(poi['label'])
                                 dpg.add_text(poi['position']-data['area_origin'])
@@ -219,7 +219,7 @@ class Overlay:
                     dpg.draw_circle((1+x, 1+y), 2, color=(0, 255, 255, 255),parent="monsters")
                     dpg.draw_text((1+x, 1+y), name, color=(111, 222, 255, 255),size=12,parent="monsters")
 
-                for poi in data['poi']:
+                for poi in data["points_of_interest"]:
                     local = poi['position']-data["area_origin"]
                     #print(local)
                     x = local[0]

@@ -26,7 +26,7 @@ def find_npc(npc: Npc, api: MapAssistApi):
 
 def find_poi(poi: str, api: MapAssistApi):
     data = api.get_data()
-    for poi in data["poi"]:
+    for poi in data["points_of_interest"]:
         label = poi["label"]
         if label.lower().startswith(poi.lower()):
             return poi

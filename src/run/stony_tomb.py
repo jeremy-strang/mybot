@@ -80,7 +80,7 @@ class Stony_Tomb:
         self._char.post_travel()
 
         picked_up_items = 0
-        lvl2 = self._pather.get_entity_coords_from_str("Stony Tomb Level", "poi", False)
+        lvl2 = self._pather.get_entity_coords_from_str("Stony Tomb Level", "points_of_interest", False)
 
         pickit_func = lambda: self._pickit.pick_up_items(self._char)
         picked_up_items += self._char.clear_zone(lvl2, pickit_func)
@@ -92,7 +92,7 @@ class Stony_Tomb:
             if not self._pather.go_to_area("Stony Tomb Level 2", "StonyTombLevel2", entrance_in_wall=False, randomize=4, time_out=25):
                 return picked_up_items
 
-        coords = self._pather.get_entity_coords_from_str("SparklyChest", "poi", False)
+        coords = self._pather.get_entity_coords_from_str("SparklyChest", "points_of_interest", False)
         picked_up_items += self._char.clear_zone(coords, pickit_func)
 
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
