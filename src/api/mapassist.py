@@ -49,12 +49,12 @@ class MapAssistApi:
         elapsed = time.time() - self._initial_time
         n = self._num_updates
         n_per_sec = n / float(elapsed) if elapsed != 0 else 0
-        Logger.debug("Updated data {0} times in {1} sec ({2} per sec)".format(n, elapsed, n_per_sec))
+        Logger.debug(f"Updated data {n} times in {round(elapsed, 2)} sec ({round(n_per_sec, 2)} per sec)")
         return (elapsed, n, n_per_sec)
 
     def write_data_to_file(self, file_path=None):
-        current_area = self.data["current_area"]
         if file_path is None:
+            current_area = self.data["current_area"]
             file_path = f"./stats/botty_data_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
         with open(file_path, "w") as f:
             f.write(json.dumps(json.loads(self._raw_data_str), indent=4, sort_keys=True))
