@@ -105,7 +105,6 @@ class Pather:
         while area_pos[0] >= len(data["map"][0]):
             area_pos = area_pos - data["area_origin"]
 
-        print(f"-----\nentity_str: {entity_str}, area_pos: {area_pos}\n-----")
         return area_pos
 
     def activate_waypoint(self,
@@ -114,6 +113,7 @@ class Pather:
                           entrance_in_wall: bool = True,
                           is_wp: bool = True
                         ) -> bool:
+        Logger.info(f"Activating waypoint: {obj}")
         start = time.time()
         wp_menu = None
         data = None
@@ -212,7 +212,7 @@ class Pather:
                      char=None,
                      offset: list = [0, 0]
                     ) -> bool:
-        Logger.debug(f"Activating POI {poi}...")
+        Logger.debug(f"Activating POI: {poi}")
         start = time.time()
         while time.time() - start < 20:
             data = self._api.get_data()
@@ -677,15 +677,14 @@ class Pather:
                  verify_location=False,
                  time_out=20.0,
                  dest_distance=15
-                 ):
+                ):
         """
         Traverse to another location
         :param end: Either world coordinates as tuple [x, y] or a string e.g. 'Worldstone Keep Level 3'
         :param char
         :return: bool if successfull
         """
-        print(f"Traversing to {end}...")
-        # Logger.debug(f"Traverse to {end}")
+        Logger.debug(f"Traversing to {end}")
         if do_pre_move:
             char.pre_move()
         # reduce casting frame duration since we can check for teleport skill used in memory

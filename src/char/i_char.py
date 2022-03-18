@@ -478,12 +478,10 @@ class IChar:
         else:
             # We switched succesfully, let's pre buff
             delay = self._cast_duration + extra_cast_delay
-            Logger.debug("Casting Battle Command with key: " + self._char_config["battle_command"])
             mouse.click(button="right")
             wait(delay + 0.16, delay + 0.18)
             keyboard.send(self._char_config["battle_orders"])
             wait(0.1, 0.19)
-            Logger.debug("Casting Battle Orders with key: " + self._char_config["battle_orders"])
             mouse.click(button="right")
             wait(delay + 0.16, delay + 0.18)
             if "shout" in self._skill_hotkeys:
