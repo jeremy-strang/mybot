@@ -47,6 +47,8 @@ class MAS(Thread):
         self.cube_open = False
         self.potion_belt_open = False
         self.mercenary_inventory_open = False
+        self.player_summary = None
+        self.player_name = None
 
     def update(self):
         pass
@@ -93,6 +95,7 @@ class MAS(Thread):
             "used_skill": None,
             "right_skill": None,
             "left_skill": None,
+            "item_on_cursor": False,
             "menus": None,
             "player_health": 0.0,
             "player_mana": 0.0,
@@ -101,7 +104,6 @@ class MAS(Thread):
             "player_id": 0,
             "player_merc": None,
             "player_corpse": None,
-            "item_on_cursor": False,
         }
 
         _data["menus"] = data["menus"]
@@ -165,6 +167,10 @@ class MAS(Thread):
             _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
             _data["map"][_data["map"] == 1] = 0
             _data["map"] += 1
+        
+        if self.player_summary is None and self.in_game:
+            self.player_summary = f"Level {data['player_level']} {data['player_class']}"
+            self.player_name = data['player_name']
 
         player_x_world = int(data["player_pos_world"]["X"])
         player_y_world = int(data["player_pos_world"]["Y"])
@@ -213,24 +219,26 @@ class MAS(Thread):
         for obj in data["objects"]:
             obj_world_x = int(obj["position"]["X"])
             obj_world_y = int(obj["position"]["Y"])
-            obj["position"] = np.array([int(obj["position"]["X"]), int(obj["position"]["Y"])])
+            obj["position"] = np.array([obj_world_x, obj_world_y])
             obj["position_abs"] = np.array(world_to_abs(obj["position"], self._player_pos_world))
             obj["position_area"] = np.array([obj_world_x - area_origin_x, obj_world_y - area_origin_y])
             _data["objects"].append(obj)
 
         for item in data["items"]:
-            x = item["position"][0]
-            y = item["position"][1]
-            item["position"] = np.array([x, y])
+            item_world_x = int(item["position"][0])
+            item_world_y = int(item["position"][1])
+            item["position"] = np.array([item_world_x, item_world_y])
             item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
+            item["position_area"] = np.array([item_world_x - area_origin_x, item_world_y - area_origin_y])
             item["dist"] = math.dist(_data["player_pos_world"], item["position"])
         _data["items"] = data["items"]
 
         for item in data["items_logged"]:
-            x = item["position"][0]
-            y = item["position"][1]
-            item["position"] = np.array([x, y])
+            item_world_x = int(item["position"][0])
+            item_world_y = int(item["position"][1])
+            item["position"] = np.array([item_world_x, item_world_y])
             item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
+            item["position_area"] = np.array([item_world_x - area_origin_x, item_world_y - area_origin_y])
             item["dist"] = math.dist(_data["player_pos_world"], item["position"])
         _data["items_logged"] = data["items_logged"]
 

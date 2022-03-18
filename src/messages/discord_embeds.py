@@ -68,17 +68,18 @@ class DiscordEmbeds(GenericApi):
         self._send_embed(e)
 
     def send_message(self, msg: str):
-        msg = f"{self._config.general['name']}: {msg}"
-        e = discord.Embed(title=f"Update:", description=f"```{msg}```", color=Color.dark_teal())
+        player_summary = self._config.general['player_summary']
+        msg = f"{player_summary} {msg}" if player_summary is not None else msg
+        e = discord.Embed(title=self._config.general['name'], description=f"```{msg}```", color=Color.dark_teal())
         if not self._config.general['discord_status_condensed']:
             e.set_thumbnail(url=f"{self._psnURL}36L4a4994.png")
         self._send_embed(e)
 
     def _send_embed(self, e, file = None):
         if self._config.active_branch:
-            e.set_footer(text=f'MyBot, by Pokz, branch: {self._config.active_branch}, commit: {self._config.latest_commit_sha[:7]}')
+            e.set_footer(text=f'MyBot, branch: {self._config.active_branch}, commit: {self._config.latest_commit_sha[:7]}')
         else:
-            e.set_footer(text=f'MyBot, by Pokz')
+            e.set_footer(text=f'MyBot, v{__version__}')
         e.timestamp=datetime.datetime.now(datetime.timezone.utc)
         try:
             self._webhook.send(embed=e, file=file, username=self._config.general['name'])

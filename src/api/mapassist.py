@@ -27,6 +27,8 @@ class MapAssistApi:
         self.player_max_mana = 0
         self.player_health_pct = 0
         self.player_mana_pct = 0
+        self.player_summary = None
+        self.player_name = None
         self.merc_alive = False
         self.merc_health_pct = 0
 
@@ -88,6 +90,9 @@ class MapAssistApi:
                 self.merc_alive = data["merc_alive"]
                 self.merc_health_pct = data["merc_health_pct"]
                 self.should_chicken = data["should_chicken"]
+                if self._mas.player_summary is not None:
+                    self.player_summary = self._mas.player_summary
+                    self.player_name = self._mas.player_name
 
                 # We only want to change should_chicken if it goes from False to True, once it's triggered we will just leave
 

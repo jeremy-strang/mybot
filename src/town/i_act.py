@@ -82,7 +82,7 @@ class IAct:
                 if m is not None:
                     mouse.click(button="left")
                     wait(1.0)
-                    pp.pprint(m)
+                    # pp.pprint(m)
                     data = self._api.get_data()
                     menu_open = data is not None and data["menus"]["NpcInteract"]
                     if menu_open:
