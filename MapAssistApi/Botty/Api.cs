@@ -66,6 +66,33 @@ namespace MapAssist.Botty
             }
         }
 
+        private struct StatKeyValuePair
+        {
+            public string key { get; set; }
+            public int value { get; set; }
+        }
+
+        private List<StatKeyValuePair> GetItemStats(UnitItem item)
+        {
+            List<StatKeyValuePair> istats = null;
+            if (item != null && item.Stats != null)
+            {
+                istats = item.Stats.Select(it =>
+                {
+                    Stat key = it.Key;
+                    var value = it.Value;
+                    if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
+                    {
+                        value = value >> 8;
+                    }
+
+                    return new StatKeyValuePair { key = key.ToString(), value = value };
+                }).ToList();
+            }
+
+            return istats;
+        }
+
         public string RetrieveDataFromMemory(bool forceMap = true, Formatting formatting = Formatting.None)
         {
             try
@@ -162,22 +189,6 @@ namespace MapAssist.Botty
                         var items = new List<dynamic>();
                         foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
                         {
-                            dynamic istats = null;
-
-                            if (item.Stats != null)
-                            {
-                                istats = item.Stats.Select(it =>
-                                {
-                                    Stat key = it.Key;
-                                    var value = it.Value;
-                                    if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
-                                    {
-                                        value = value >> 8;
-                                    }
-
-                                    return new { key = key.ToString(), value };
-                                }).ToList();
-                            }
 
                             if (item.ItemMode == ItemMode.ONCURSOR)
                             {
@@ -197,7 +208,7 @@ namespace MapAssist.Botty
                                     is_hovered = item.IsHovered,
                                     item_mode = item.ItemMode.ToString(),
                                     item_mode_mapped = item.ItemModeMapped.ToString(),
-                                    stats = istats,
+                                    stats = GetItemStats(item),
                                     is_identified = item.IsIdentified,
                                     inventory_page = item.ItemData.InvPage.ToString(),
                                 });
@@ -231,7 +242,7 @@ namespace MapAssist.Botty
                             monsters = new List<dynamic>(),
                             objects = new List<dynamic>(),
                             items,
-                            item_log = new List<dynamic>(),
+                            items_logged = new List<dynamic>(),
                             points_of_interest = new List<dynamic>(),
                             corpses,
                             player_corpse,
@@ -344,11 +355,22 @@ namespace MapAssist.Botty
                         //ItemLog = Items.ItemLog[_currentProcessId].ToArray(),
                         foreach (ItemLogEntry item in _gameData.ItemLog)
                         {
-                            msg.item_log.Add(new
+                            msg.items_logged.Add(new
                             {
                                 text = item.Text,
                                 hash = item.ItemHashString,
-                                unit_item = item.UnitItem.ToString(),
+                                position = new int[2] { (int)item.UnitItem.Position.X, (int)item.UnitItem.Position.Y },
+                                id = item.UnitItem.UnitId,
+                                flags = item.UnitItem.ItemData.ItemFlags.ToString(),
+                                quality = item.UnitItem.ItemData.ItemQuality.ToString(),
+                                name = Items.GetItemName(item.UnitItem),
+                                base_name = item.UnitItem.ItemBaseName,
+                                is_hovered = item.UnitItem.IsHovered,
+                                item_mode = item.UnitItem.ItemMode.ToString(),
+                                item_mode_mapped = item.UnitItem.ItemModeMapped.ToString(),
+                                stats = GetItemStats(item.UnitItem),
+                                is_identified = item.UnitItem.IsIdentified,
+                                inventory_page = item.UnitItem.ItemData.InvPage.ToString(),
                             });
                         }
 

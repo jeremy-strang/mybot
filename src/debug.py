@@ -140,9 +140,7 @@ if __name__ == "__main__":
                 pather.traverse_walking("Kurast Docks", char, obj=False, threshold=16, time_out=4, end_dist=10)
                 api.get_metrics()
 
-                # ui_manager.throw_out_junk(item_finder)    
-
-
+                # ui_manager.throw_out_junk(item_finder) 
                 # akara = find_npc(Npc.AKARA, api)
                 # pf = PathFinder(api)
                 # start = pf.player_node

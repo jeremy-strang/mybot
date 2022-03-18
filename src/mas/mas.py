@@ -19,7 +19,6 @@ from System import String
 from System import Object
 from System.Collections.Generic import Dictionary
 
-
 class MAS(Thread):
     def __init__(self, callback, custom_files=[]):
         super(MAS, self).__init__()
@@ -100,6 +99,7 @@ class MAS(Thread):
             "poi": [],
             "objects": [],
             "items": [],
+            "items_logged": [],
             "static_npcs": [],
             "map": None,
             "player_pos_world": None,
@@ -232,5 +232,13 @@ class MAS(Thread):
             item["abs_screen_position"] = np.array(world_to_abs(item["position"], self._player_pos))
             item["dist"] = math.dist(_data["player_pos_world"], item["position"])
         _data["items"] = data["items"]
+
+        for item in data["items_logged"]:
+            x = item["position"][0]
+            y = item["position"][1]
+            item["position"] = np.array([x, y])
+            item["abs_screen_position"] = np.array(world_to_abs(item["position"], self._player_pos))
+            item["dist"] = math.dist(_data["player_pos_world"], item["position"])
+        _data["items_logged"] = data["items_logged"]
 
         return _data
