@@ -27,6 +27,7 @@ class MapAssistApi:
         self._raw_data_str = "{}"
         self._custom_files = custom_files
         self._map = None
+        self._mas = None
 
     def start_timer(self):
         self._num_updates = 0
