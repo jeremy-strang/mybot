@@ -111,7 +111,7 @@ class PathFinder:
             if not end_given or (end_given and i != N-1):
                 path.append(nodes[i])
         elapsed = time.time() - start
-        print(f"Done solving TSP in {elapsed} seconds, distance: {distance}, permutation: {permutation}")
+        print(f"Done solving TSP in {round(elapsed, 2)} seconds, distance: {round(distance, 2)}")
         return path[:-1] if end_given else path
 
     # def _solve_tsp(self, end=None):
