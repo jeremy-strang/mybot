@@ -18,7 +18,18 @@ def sleep(duration, get_now=time.perf_counter):
 
 class MapAssistApi:
     def __init__(self, custom_files=[]):
-        self.data=None
+        self.data = None
+        self.should_chicken = False
+        self.in_game = False
+        self.player_health = 0
+        self.player_max_health = 0
+        self.player_mana = 0
+        self.player_max_mana = 0
+        self.player_health_pct = 0
+        self.player_mana_pct = 0
+        self.merc_alive = False
+        self.merc_health_pct = 0
+
         self._current_path = []
         self._astar_current_path = []
         self._player_pos = None
@@ -58,15 +69,30 @@ class MapAssistApi:
             data_obj = json.loads(data_str)
             self._raw_data_str = data_str
             if data_obj["success"]:
-                self.data = self._mas.get_data(data_obj)
-                if self.data["map"] is not None:
-                    self._map = self.data["map"]
+                data = self._mas.get_data(data_obj)
+                if data["map"] is not None:
+                    self._map = data["map"]
                 elif self._map is not None:
-                    self.data["map"] = self._map
+                    data["map"] = self._map
                 self._errors = 0
                 self._num_updates += 1
-                self._player_pos = self.data['player_pos_world']
-                events.emit("data", self.data)
+                self._player_pos = data["player_pos_world"]
+                
+                self.in_game = data["in_game"]
+                self.player_health = data["player_health"]
+                self.player_max_health = data["player_max_health"]
+                self.player_mana = data["player_mana"]
+                self.player_max_mana = data["player_max_mana"]
+                self.player_health_pct = data["player_health_pct"]
+                self.player_mana_pct = data["player_mana_pct"]
+                self.merc_alive = data["merc_alive"]
+                self.merc_health_pct = data["merc_health_pct"]
+                self.should_chicken = data["should_chicken"]
+
+                # We only want to change should_chicken if it goes from False to True, once it's triggered we will just leave
+
+                self.data = data
+                events.emit("data", data)
             else:
                 self._errors += 1                
         except BaseException as e:

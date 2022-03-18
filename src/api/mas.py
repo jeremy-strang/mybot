@@ -30,6 +30,7 @@ class MAS(Thread):
         self._callback = callback
         self._custom_files = custom_files
         self.in_game = False
+        self.should_chicken = False
         self.inventory_open = False
         self.character_open = False
         self.skill_select_open = False
@@ -106,6 +107,7 @@ class MAS(Thread):
         _data["menus"] = data["menus"]
         
         if self.in_game != data["in_game"]: print(f"in_game changed from {self.in_game} to {data['in_game']}")
+        if self.should_chicken != data["should_chicken"]: print(f"should_chicken changed from {self.should_chicken} to {data['should_chicken']}")
         if self.inventory_open != data["inventory_open"]: print(f"inventory_open changed from {self.inventory_open} to {data['inventory_open']}")
         if self.character_open != data["character_open"]: print(f"character_open changed from {self.character_open} to {data['character_open']}")
         if self.skill_select_open != data["skill_select_open"]: print(f"skill_select_open changed from {self.skill_select_open} to {data['skill_select_open']}")
@@ -124,6 +126,7 @@ class MAS(Thread):
         if self.mercenary_inventory_open != data["mercenary_inventory_open"]: print(f"mercenary_inventory_open changed from {self.mercenary_inventory_open} to {data['mercenary_inventory_open']}")
         
         self.in_game = _data["in_game"] = data["in_game"]
+        self.should_chicken = _data["should_chicken"] = data["should_chicken"]
         self.inventory_open = _data["inventory_open"] = data["inventory_open"]
         self.character_open = _data["character_open"] = data["character_open"]
         self.skill_select_open = _data["skill_select_open"] = data["skill_select_open"]
@@ -156,6 +159,7 @@ class MAS(Thread):
         _data["player_corpse"] = data["player_corpse"]
         _data["item_on_cursor"] = data["item_on_cursor"]
 
+
         if data["map_changed"]:
             print(f"Map changed: {len(data['collision_grid'])}")
             _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
@@ -170,16 +174,14 @@ class MAS(Thread):
         self._player_pos = _data["player_pos_world"]
         _data["player_pos_area"] = _data["player_pos_world"] - _data["area_origin"]
         
-        health = data["player_life"]
-        max_health = data["player_max_life"]
-        mana = data["player_mana"]
-        max_mana = data["player_max_mana"]
-        _data["player_health"] = health
-        _data["player_max_health"] = max_health
-        _data["player_mana"] = mana
-        _data["player_max_mana"] = max_mana
-        _data["player_health_pct"] = float(health) / max_health if max_health > 0 else 0.0
-        _data["player_mana_pct"] = float(mana) / max_mana if max_mana > 0 else 0.0
+        _data["player_health"] = data["player_health"]
+        _data["player_max_health"] = data["player_max_health"]
+        _data["player_mana"] = data["player_mana"]
+        _data["player_max_mana"] = data["player_max_mana"]
+        _data["player_health_pct"] = data["player_health_pct"]
+        _data["player_mana_pct"] = data["player_mana_pct"]
+        _data["merc_alive"] = "player_merc" in data and data["player_merc"] is not None and data["player_merc"]["mode"] != 12
+        _data["merc_health_pct"] = data["player_merc"]["heath_percentage"] if _data["merc_alive"] else 0.0
 
         px_float = float(data["player_pos"]["X"])-float(px_int)
         py_float = float(data["player_pos"]["Y"])-float(py_int)

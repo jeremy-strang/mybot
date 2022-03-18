@@ -110,7 +110,7 @@ namespace MapAssist.Helpers
 
         private static string FindD2LoD()
         {
-            var providedPath = BottyConfiguration.Current.GetValue<string>("general","d2lod_path" );
+            var providedPath = BottyConfiguration.Current.GetValue<string>("map_assist", "d2lod_path");
             if (!string.IsNullOrEmpty(providedPath))
             {
                 if (IsValidD2LoDPath(providedPath))

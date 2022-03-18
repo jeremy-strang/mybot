@@ -137,7 +137,8 @@ if __name__ == "__main__":
                 # curr_loc = bot._town_manager.open_stash(bot.get_curr_location())
                 
                 api.start_timer()
-                pather.traverse_walking("Kurast Docks", char, obj=False, threshold=16, time_out=4, end_dist=10)
+                # pather.traverse_walking("Kurast Docks", char, obj=False, threshold=16, time_out=4, end_dist=10)
+                ui_manager.save_and_exit(True)
                 api.get_metrics()
 
                 # ui_manager.throw_out_junk(item_finder) 
@@ -162,6 +163,11 @@ if __name__ == "__main__":
                 print(e)
                 traceback.print_exc()
             print("Done doing stuff")
+            
+        api.start_timer()
+        # pather.traverse_walking("Kurast Docks", char, obj=False, threshold=16, time_out=4, end_dist=10)
+        ui_manager.save_and_exit(True)
+        api.get_metrics()
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file())

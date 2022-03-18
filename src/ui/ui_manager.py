@@ -155,13 +155,44 @@ class UiManager():
         """
         start = time.time()
         while (time.time() - start) < 15:
-            templates = ["SAVE_AND_EXIT_NO_HIGHLIGHT","SAVE_AND_EXIT_HIGHLIGHT"]
-            if not self._template_finder.search(templates, self._screen.grab(), roi=self._config.ui_roi["save_and_exit"], threshold=0.85).valid:
+            Logger.debug(f"Saving and exiting (chicken: {does_chicken})")
+            data = self._api.get_data()
+            esc_menu_open = False
+            templates = ["SAVE_AND_EXIT_NO_HIGHLIGHT", "SAVE_AND_EXIT_HIGHLIGHT"]
+
+            if data is not None:
+                if data["esc_menu_open"]:
+                    esc_menu_open = True
+                    Logger.debug("    Escape menu detected already open from memory")
+                elif data["inventory_open"] or \
+                        data["character_open"] or \
+                        data["skill_select_open"] or \
+                        data["skill_tree_open"] or \
+                        data["npc_interact_open"] or \
+                        data["npc_shop_open"] or \
+                        data["quest_log_open"] or \
+                        data["waypoint_open"] or \
+                        data["party_open"] or \
+                        data["mercenary_inventory_open"]:
+                    Logger.debug("    Some other menu detected already open from memory, closing it...")
+                    keyboard.send("esc")
+                    wait(0.25)
+
+            if not esc_menu_open:
+                Logger.debug("    Opening escape menu...")
                 keyboard.send("esc")
-            wait(0.3)
+                wait(0.3)
+                data = self._api.get_data()
+                if self._api.data["esc_menu_open"]:
+                    esc_menu_open = True
+            if esc_menu_open:
+                Logger.debug(f"    Escape menu detected from memory, skipping template search")
+            else:
+                if not self._template_finder.search(templates, self._screen.grab(), roi=self._config.ui_roi["save_and_exit"], threshold=0.85).valid:
+                    keyboard.send("esc")
+                    wait(0.3)
             exit_btn_pos = (self._config.ui_pos["save_and_exit_x"], self._config.ui_pos["save_and_exit_y"])
             x_m, y_m = self._screen.convert_screen_to_monitor(exit_btn_pos)
-            # TODO: Add hardcoded coordinates to ini file
             away_x_m, away_y_m = self._screen.convert_abs_to_monitor((-167, 0))
             while self._template_finder.search_and_wait(templates, roi=self._config.ui_roi["save_and_exit"], time_out=1.5, take_ss=False).valid:
                 delay = [0.9, 1.1]

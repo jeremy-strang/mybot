@@ -38,15 +38,15 @@ namespace MapAssist.Botty
         private Compositor _compositor = null;
         private volatile GameData _gameData;
         private List<PointOfInterest> _pointsOfInterest;
-        private string CurrentArea = "";
-        private int CurrentMapHeight = 0;
-        private int CurrentMapWidth = 0;
-
+        private string _currentArea = "";
+        private int _currentMapHeight = 0;
+        private int _currentMapWidth = 0;
+        private double _chicken = 0.5;
         private bool disposed;
-
-
-        public Api()
+        
+        public Api(double chicken = 0.5)
         {
+            _chicken = chicken;
             _gameDataReader = new GameDataReader();
             TimerService.EnableHighPrecisionTimers();
         }
@@ -70,6 +70,16 @@ namespace MapAssist.Botty
         {
             public string key { get; set; }
             public int value { get; set; }
+        }
+
+        private bool IsInTown(string currentArea)
+        {
+            if (currentArea == "RogueEncampment") return true;
+            if (currentArea == "LutGholein") return true;
+            if (currentArea == "KurastDocks") return true;
+            if (currentArea == "ThePandemoniumFortress") return true;
+            if (currentArea == "Harrogath") return true;
+            return false;
         }
 
         private List<StatKeyValuePair> GetItemStats(UnitItem item)
@@ -105,10 +115,12 @@ namespace MapAssist.Botty
                     {
                         var playerUnit = _gameData.PlayerUnit;
                         Dictionary<Stat, int> stats = playerUnit.Stats;
-                        var player_life = stats.ContainsKey(Stat.Life) ? stats[Stat.Life] >> 8 : int.MaxValue;
-                        var player_max_life = stats.ContainsKey(Stat.MaxLife) ? stats[Stat.MaxLife] >> 8 : int.MaxValue;
+                        var player_health = stats.ContainsKey(Stat.Life) ? stats[Stat.Life] >> 8 : int.MaxValue;
+                        var player_max_health = stats.ContainsKey(Stat.MaxLife) ? stats[Stat.MaxLife] >> 8 : int.MaxValue;
+                        var player_health_pct = player_max_health > 0 ? (double)player_health / player_max_health : 1.0;
                         var player_mana = stats.ContainsKey(Stat.Mana) ? stats[Stat.Mana] >> 8 : int.MaxValue;
                         var player_max_mana = stats.ContainsKey(Stat.MaxMana) ? stats[Stat.MaxMana] >> 8 : int.MaxValue;
+                        var player_mana_pct = player_max_mana > 0 ? player_mana / player_max_mana : 1.0;
                         var player_level = stats.ContainsKey(Stat.Level) ? stats[Stat.Level] : int.MaxValue;
                         var player_experience = stats.ContainsKey(Stat.Experience) ? stats[Stat.Experience] : int.MaxValue;
                         var player_gold = stats.ContainsKey(Stat.Gold) ? stats[Stat.Gold] : int.MaxValue;
@@ -140,6 +152,7 @@ namespace MapAssist.Botty
                         }
 
                         var merc = _gameData.Mercs.Where(a => a.IsPlayerOwned).FirstOrDefault();
+                        var merc_health_pct = 0.0;
                         dynamic player_merc = null;
                         if (merc != null)
                         {
@@ -160,6 +173,7 @@ namespace MapAssist.Botty
                                 state_strings = merc.StateStrings,
                                 is_hovered = merc.IsHovered,
                             };
+                            merc_health_pct = player_merc.heath_percentage;
                         }
 
                         var corpses = new List<dynamic>();
@@ -189,7 +203,6 @@ namespace MapAssist.Botty
                         var items = new List<dynamic>();
                         foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
                         {
-
                             if (item.ItemMode == ItemMode.ONCURSOR)
                             {
                                 item_on_cursor = true;
@@ -227,10 +240,13 @@ namespace MapAssist.Botty
                             }
                         }
 
-                        var map_changed = current_area != CurrentArea || mapH != CurrentMapHeight || mapW != CurrentMapWidth;
-                        CurrentArea = current_area;
-                        CurrentMapHeight = mapH;
-                        CurrentMapWidth = mapW;
+                        var map_changed = current_area != _currentArea || mapH != _currentMapHeight || mapW != _currentMapWidth;
+                        _currentArea = current_area;
+                        _currentMapHeight = mapH;
+                        _currentMapWidth = mapW;
+
+                        var in_game = _gameData.MenuOpen.InGame;
+                        var should_chicken = in_game && player_health_pct < _chicken && !IsInTown(current_area) && _areaData.Area != Area.None;
 
                         var inventory_open = _gameData.MenuOpen.Inventory;
                         var stash_open = _gameData.MenuOpen.Stash;
@@ -239,6 +255,7 @@ namespace MapAssist.Botty
                         {
                             map_changed = map_changed || forceMap,
                             success = true,
+                            should_chicken,
                             monsters = new List<dynamic>(),
                             objects = new List<dynamic>(),
                             items,
@@ -254,7 +271,7 @@ namespace MapAssist.Botty
                             left_skill = _gameData.PlayerUnit.Skills.LeftSkillId,
                             right_skill = _gameData.PlayerUnit.Skills.RightSkillId,
                             menus = _gameData.MenuOpen,
-                            in_game = _gameData.MenuOpen.InGame,
+                            in_game,
                             inventory_open = _gameData.MenuOpen.Inventory,
                             character_open = _gameData.MenuOpen.Character,
                             skill_select_open = _gameData.MenuOpen.SkillSelect,
@@ -271,10 +288,12 @@ namespace MapAssist.Botty
                             cube_open = _gameData.MenuOpen.Cube,
                             potion_belt_open = _gameData.MenuOpen.PotionBelt,
                             mercenary_inventory_open = _gameData.MenuOpen.MercenaryInventory,
-                            player_life,
-                            player_max_life,
+                            player_health,
+                            player_max_health,
+                            player_health_pct,
                             player_mana,
                             player_max_mana,
+                            player_mana_pct,
                             player_level,
                             player_experience,
                             player_gold,
@@ -285,6 +304,7 @@ namespace MapAssist.Botty
                             player_class = playerUnit.Struct.playerClass.ToString(),
                             player_id = playerUnit.UnitId,
                             player_merc,
+                            merc_health_pct,
                             static_npcs = new List<dynamic>(),
                             belt_health_pots, // number of health pots in player's belt
                             belt_mana_pots, // number of mana pots in player's belt

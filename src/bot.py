@@ -321,10 +321,14 @@ class Bot:
                 self.handle_item_on_cursor()
                 data = self._api.get_data()
             self._pick_corpse = "player_corpse" in data and data["player_corpse"] is not None and type(data["player_corpse"]) is dict
-            merc_alive = "player_merc" in data and data["player_merc"] is not None and data["player_merc"]["mode"] != 12
+            merc_alive = "merc_alive" in data and data["merc_alive"]
             health_pct = data["player_health_pct"]
             mana_pct = data["player_mana_pct"]
             Logger.debug(f"Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
+            Logger.debug(f"    player_health:       {data['player_health']}")
+            Logger.debug(f"    player_max_health:   {data['player_max_health']}")
+            Logger.debug(f"    player_mana:         {data['player_mana']}")
+            Logger.debug(f"    player_max_mana:     {data['player_max_mana']}")
 
         # Figure out how many pots need to be picked up
         self._belt_manager.update_pot_needs()

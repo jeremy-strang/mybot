@@ -34,6 +34,7 @@ class HealthManager:
         self._pausing = True
         self._last_chicken_screenshot = None
         self._last_location = ""
+        self._api = api
 
     def stop_monitor(self):
         self._do_monitor = False
@@ -104,6 +105,7 @@ class HealthManager:
         if self._config.general["info_screenshots"]:
             self._last_chicken_screenshot = "./info_screenshots/info_debug_chicken_" + time.strftime("%Y%m%d_%H%M%S") + ".png"
             cv2.imwrite(self._last_chicken_screenshot, img)
+    
         # clean up key presses that might be pressed in the run_thread
         keyboard.release(self._config.char["stand_still"])
         wait(0.02, 0.05)
@@ -124,21 +126,41 @@ class HealthManager:
         start = time.time()
         while self._do_monitor:
             time.sleep(0.1)
+
             # Wait until the flag is reset by main.py
             if self._did_chicken or self._pausing: continue
-            img = self._screen.grab()
-            # TODO: Check if in town or not! Otherwise risk endless chicken loop
-            ingame_template_match = self._template_finder.search("WINDOW_INGAME_OFFSET_REFERENCE", img, roi=self._config.ui_roi["window_ingame_ref"], threshold=0.9)
-            if ingame_template_match.valid:
+
+            in_game = False
+            health_percentage = 1.0
+            mana_percentage = 1.0
+            merc_alive = True
+            merc_health_percentage = 1.0
+            should_chicken = False
+
+            if self._api is not None:
+                in_game = self._api.in_game
+                health_percentage = self._api.player_health_pct
+                mana_percentage = self._api.player_mana_pct
+                merc_alive = self._api.merc_alive
+                merc_health_percentage = self._api.merc_health_pct
+                should_chicken= self._api.should_chicken
+            else:
+                img = self._screen.grab()
+                in_game = self._template_finder.search("WINDOW_INGAME_OFFSET_REFERENCE", img, roi=self._config.ui_roi["window_ingame_ref"], threshold=0.9).valid
                 health_percentage = self.get_health(img)
                 mana_percentage = self.get_mana(img)
+                merc_alive = self._template_finder.search(["MERC_A2", "MERC_A1", "MERC_A5", "MERC_A3"], img, roi=self._config.ui_roi["merc_icon"]).valid
+                merc_health_percentage = self.get_merc_health(img)
+
+            if in_game:
                 # check rejuv
                 success_drink_rejuv = False
                 last_drink = time.time() - self._last_rejuv
                 if (health_percentage < self._config.char["take_rejuv_potion_health"] and last_drink > 1) or \
-                   (mana_percentage < self._config.char["take_rejuv_potion_mana"] and last_drink > 2):
+                (mana_percentage < self._config.char["take_rejuv_potion_mana"] and last_drink > 2):
                     success_drink_rejuv = self._belt_manager.drink_potion("rejuv", stats=[health_percentage, mana_percentage])
                     self._last_rejuv = time.time()
+
                 # in case no rejuv was used, check for chicken, health pot and mana pot usage
                 if not success_drink_rejuv:
                     # check health
@@ -147,18 +169,18 @@ class HealthManager:
                         self._belt_manager.drink_potion("health", stats=[health_percentage, mana_percentage])
                         self._last_health = time.time()
                     # give the chicken a 6 sec delay to give time for a healing pot and avoid endless loop of chicken
-                    elif health_percentage < self._config.char["chicken"] and (time.time() - start) > 6:
+                    elif should_chicken or health_percentage < self._config.char["chicken"] and (time.time() - start) > 6:
                         Logger.warning(f"Trying to chicken, player HP {(health_percentage*100):.1f}%!")
+                        img = self._screen.grab()
                         self._do_chicken(img)
                     # check mana
                     last_drink = time.time() - self._last_mana
                     if mana_percentage < self._config.char["take_mana_potion"] and last_drink > 4:
                         self._belt_manager.drink_potion("mana", stats=[health_percentage, mana_percentage])
                         self._last_mana = time.time()
+                
                 # check merc
-                merc_alive = self._template_finder.search(["MERC_A2", "MERC_A1", "MERC_A5", "MERC_A3"], img, roi=self._config.ui_roi["merc_icon"]).valid
                 if merc_alive:
-                    merc_health_percentage = self.get_merc_health(img)
                     last_drink = time.time() - self._last_merc_healh
                     if merc_health_percentage < self._config.char["merc_chicken"]:
                         Logger.warning(f"Trying to chicken, merc HP {(merc_health_percentage*100):.1f}%!")

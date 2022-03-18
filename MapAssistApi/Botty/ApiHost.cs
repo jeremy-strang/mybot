@@ -33,7 +33,8 @@ namespace MapAssist.Botty
             try
             {
                 var interval = BottyConfiguration.Current.GetValue("map_assist", "polling_interval", 10);
-                using (var api = new Api())
+                var chicken = BottyConfiguration.Current.GetValue("char", "chicken", 0.5);
+                using (var api = new Api(chicken))
                 {
                     while (!token.IsCancellationRequested)
                     {

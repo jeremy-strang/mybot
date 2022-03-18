@@ -108,7 +108,12 @@ class Pather:
         print(f"-----\nentity_str: {entity_str}, area_pos: {area_pos}\n-----")
         return area_pos
 
-    def activate_waypoint(self, obj: Union[tuple[int, int], str], char, entrance_in_wall: bool = True, is_wp: bool = True) -> bool:
+    def activate_waypoint(self,
+                          obj: Union[tuple[int, int], str],
+                          char,
+                          entrance_in_wall: bool = True,
+                          is_wp: bool = True
+                        ) -> bool:
         start = time.time()
         wp_menu = None
         data = None
@@ -117,6 +122,11 @@ class Pather:
 
         while time.time() - start < 20:
             data = self._api.get_data()
+
+            if data is not None and data["should_chicken"]:
+                Logger.warning(f"Aborting activate_waypoint() because chicken life threshold was reached")
+                return False
+
             if data is not None:
                 if data is not None and "map" in data and data["map"] is not None:
                     if is_wp:
@@ -194,11 +204,23 @@ class Pather:
 
         return False
     
-    def activate_poi(self, poi: Union[tuple[int, int], str], end_loc: str, entrance_in_wall: bool = True, typ="poi", char=None, offset: list = [0, 0]) -> bool:
+    def activate_poi(self,
+                     poi: Union[tuple[int, int], str],
+                     end_loc: str,
+                     entrance_in_wall: bool = True,
+                     typ="poi",
+                     char=None,
+                     offset: list = [0, 0]
+                    ) -> bool:
         Logger.debug(f"Activating POI {poi}...")
         start = time.time()
         while time.time() - start < 20:
             data = self._api.get_data()
+
+            if data is not None and data["should_chicken"]:
+                Logger.warning(f"Aborting activate_poi() because chicken life threshold was reached")
+                return False
+
             if data is not None:
                 pos_monitor = None
                 if type(poi) == str:
@@ -298,11 +320,16 @@ class Pather:
                    time_out: float = 20.0,
                    char = None
                    ) -> bool:
-        Logger.debug(f"Going to area: {poi}, location: {end_loc}...")
+        Logger.debug(f"Going to area: {poi}, end location: {end_loc}...")
         num_clicks = 0
         start = time.time()
         while time.time() - start < time_out:
             data = self._api.get_data()
+
+            if data is not None and data["should_chicken"]:
+                Logger.warning(f"Aborting go_to_area() because chicken life threshold was reached")
+                return False
+
             if data is not None:
                 pos_monitor = None
                 if type(poi) == str:
@@ -421,8 +448,19 @@ class Pather:
                 if dist < 25:
                     next = route.pop(0)
 
-    def traverse_walking(self, end: Union[str, tuple[int, int]], char, obj: bool = False, x: int = 0, y: int = 0, threshold=4, static_npc=False, end_dist=19, time_out=50.0):
-        """slightly different traversal for moving in town/walking"""
+    def traverse_walking(self,
+                         end: Union[str, tuple[int, int]],
+                         char,
+                         obj: bool = False,
+                         x: int = 0,
+                         y: int = 0,
+                         threshold=4,
+                         static_npc=False,
+                         end_dist=19,
+                         time_out=50.0
+                        ):
+        """Slightly different traversal for moving in town/walking"""
+        Logger.debug(f"Traverse (walking) to end: {end}")
         char.pre_move()
         data = None
         sucess = False
@@ -432,6 +470,11 @@ class Pather:
 
         while time.time() - start < time_out or sucess is False:
             data = self._api.get_data()
+
+            if data is not None and data["should_chicken"]:
+                Logger.warning(f"Aborting traverse_walking() because chicken life threshold was reached")
+                return False
+
             if data is not None and "map" in data and data["map"] is not None:
                 if type(end) is str and obj is False:
                     if static_npc == True:
@@ -607,7 +650,7 @@ class Pather:
                 print(f"  'map' in data: {'map' in data}")
                 print(f"  data['map'] is not None: {data['map'] is not None}")
                 wait(1)
-        keyboard.send(char._char_config["force_move"], do_press=False)
+        keyboard.release(char._char_config["force_move"])
         return True
 
     @staticmethod
