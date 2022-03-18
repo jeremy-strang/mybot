@@ -464,7 +464,7 @@ class Hammerdin(IChar):
                 if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target, stop_when_dead=False, max_distance=5): wait(0.1)
                 self.post_attack()
             elapsed = time.time() - start
-        Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
+        Logger.debug(f"Finished killing council, combat took {round(elapsed, 2)} sec")
         return True
 
     def _kill_mobs(self, names: list[str] = None, ignore_names: list[str] = None, boundary: list[int] = None, time_out = 60) -> bool:
@@ -493,6 +493,7 @@ class Hammerdin(IChar):
                             success = True
             if not is_alive:
                 return success
+        Logger.debug(f"Finished killing council, combat took {round(time.time() - start, 2)} sec")
         return False
 
     def move_to_monster(self, monster, offset) -> bool:
@@ -573,7 +574,7 @@ class Hammerdin(IChar):
         keyboard.send(self._skill_hotkeys["concentration"])
         wait(0.03, 0.05)
         self.post_attack()
-        Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
+        Logger.debug(f"Finished killing mobs, combat took {round(elapsed, 2)} sec")
         game_state.stop()
         return picked_up_items
 
