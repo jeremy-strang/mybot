@@ -56,21 +56,32 @@ namespace MapAssist.MyBot
                     int.TryParse((string)pickit[key], out var pickitType);
                     if (pickitType > 0 && key != "misc_gold" && key.Contains("_"))
                     {
+                        TextInfo info = CultureInfo.CurrentCulture.TextInfo;
                         var start = key.Substring(0, key.IndexOf("_"));
+                        var itemSnake = key.Substring(key.IndexOf("_") + 1, key.Length - key.IndexOf("_") - 1).Replace("_", " ");
+                        var itemPascal = "";
+                        var filter = new ItemFilter();
                         //_log.Debug("Parsing " + key + ", start: " + start);
                         if (start == "misc")
                         {
-                            var itemPascal = key.Substring(key.IndexOf("_") + 1, key.Length - key.IndexOf("_") - 1).Replace("_", " ");
-                            TextInfo info = CultureInfo.CurrentCulture.TextInfo;
-                            itemPascal = info.ToTitleCase(itemPascal).Replace(" ", string.Empty);
-                            if (Enum.TryParse<Item>(itemPascal, out var item))
+                            itemPascal = info.ToTitleCase(itemSnake).Replace(" ", string.Empty);
+                        }
+                        else if (start == "rune")
+                        {
+                            var lastIndex = key.LastIndexOf("_");
+                            itemPascal = info.ToTitleCase(itemSnake + " rune").Replace(" ", string.Empty);
+                        }
+                        else if (start == "magic" || start == "rare" || start == "set" || start == "unique")
+                        {
+                            itemPascal = info.ToTitleCase(itemSnake).Replace(" ", string.Empty);
+                            if (Enum.TryParse<ItemQuality>(start.ToUpper(), out var quality))
                             {
-                                _log.Debug("    Parsed item " + itemPascal + " as " + item);
+                                filter.Qualities = new ItemQuality[1] { quality };
                             }
-                            else
-                            {
-                                _log.Debug("    Couldn't parse item from " + itemPascal);
-                            }
+                        }
+                        if (Enum.TryParse<Item>(itemPascal, out var item))
+                        {
+                            _log.Debug("    Parsed item " + itemPascal + " as " + item);
                         }
                     }
                 }
