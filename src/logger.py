@@ -8,7 +8,7 @@ import warnings
 class Logger:
     """Manage logging"""
     _logger_level = None
-    _formatter = logging.Formatter('[%(asctime)s] %(levelname)-10s %(message)s')
+    _formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(message)s', datefmt="%m-%d %H:%M:%S")
     _log_contents = io.StringIO()
     _current_log_file_path = "info.log"
     _output = ""  # intercepted output from stdout and stderr
@@ -49,12 +49,11 @@ class Logger:
         Logger._logger_level = lvl
 
         if Logger.logger is not None:
-            Logger.logger.warning("WARNING: logger was setup already, deleting all previously existing handlers")
             for hdlr in Logger.logger.handlers[:]:  # remove all old handlers
                 Logger.logger.removeHandler(hdlr)
 
         # Create the logger
-        Logger.logger = logging.getLogger("botty")
+        Logger.logger = logging.getLogger("mybot")
         for hdlr in Logger.logger.handlers:
             Logger.logger.removeHandler(hdlr)
         Logger.logger.setLevel(Logger._logger_level)

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using MapAssist.Settings;
+using MapAssist.Types;
 
 namespace MapAssist.Botty
 {
@@ -31,13 +33,19 @@ namespace MapAssist.Botty
             return defaultValue;
         }
 
-
         public static void InitializeConfiguration(Dictionary<string, Dictionary<string, object>> rawData)
         {
             lock (mutex)
             {
                 Current = new BottyConfiguration(rawData);
             }
+        }
+
+        public static Dictionary<Item, List<ItemFilter>> ConvertBottyPickit()
+        {
+            var result = new Dictionary<Item, List<ItemFilter>>();
+
+            return result;
         }
     }
 }

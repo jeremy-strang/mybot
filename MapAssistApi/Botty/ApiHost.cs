@@ -32,7 +32,7 @@ namespace MapAssist.Botty
         {
             try
             {
-                var interval = BottyConfiguration.Current.GetValue("general", "polling_interval", 10);
+                var interval = BottyConfiguration.Current.GetValue("map_assist", "polling_interval", 10);
                 using (var api = new Api())
                 {
                     while (!token.IsCancellationRequested)
@@ -157,10 +157,7 @@ namespace MapAssist.Botty
 
             var logfile = new FileTarget("logfile")
             {
-                FileName =
-                    Path.Combine(
-                        BottyConfiguration.Current.GetValue("mapassist", "log_file_dir",
-                            Environment.CurrentDirectory), "map_assist_api.log"),
+                FileName = Path.Combine(BottyConfiguration.Current.GetValue("general", "log_file_dir", Environment.CurrentDirectory), "map_assist_api.log"),
                 CreateDirs = true,
                 ArchiveNumbering = ArchiveNumberingMode.DateAndSequence,
                 ArchiveOldFileOnStartup = true,

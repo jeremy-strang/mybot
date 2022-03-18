@@ -80,14 +80,6 @@ def main():
     )
 
     config = Config()
-    if config.advanced_options["logg_lvl"] == "info":
-        Logger.init(logging.INFO)
-    elif config.advanced_options["logg_lvl"] == "debug":
-        Logger.init(logging.DEBUG)
-    else:
-        Logger.error(f"ERROR: Unkown logg_lvl {config.advanced_options['logg_lvl']}. Must be one of [info, debug]")
-
-    # Create folder for debug screenshots if they dont exist yet
     try:
         if not os.path.exists("stats"):
             os.system("mkdir stats")
@@ -97,6 +89,13 @@ def main():
             os.system("mkdir loot_screenshots")
     except BaseException as e:
         print(f"Error creating directories: {e}")
+
+    if config.advanced_options["logg_lvl"] == "info":
+        Logger.init(logging.INFO)
+    elif config.advanced_options["logg_lvl"] == "debug":
+        Logger.init(logging.DEBUG)
+    else:
+        Logger.error(f"ERROR: Unkown logg_lvl {config.advanced_options['logg_lvl']}. Must be one of [info, debug]")
 
     print("\n" + pad_str_sides(f"MyBot {__version__} [name: {config.general['name']}]", "="))
     print(f"Active branch:        {config.active_branch}")
