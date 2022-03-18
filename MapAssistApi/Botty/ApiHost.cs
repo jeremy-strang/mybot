@@ -28,7 +28,7 @@ namespace MapAssist.Botty
             LoadLoggingConfiguration();
         }
 
-        private static async Task RunInternalAsync(Action<string> onDataHandler, CancellationToken token)
+        private static async Task RunInternalAsync(Action<string> onDataHandler, CancellationToken token, bool forceMap = true)
         {
             try
             {
@@ -37,8 +37,8 @@ namespace MapAssist.Botty
                 {
                     while (!token.IsCancellationRequested)
                     {
-                        onDataHandler(api.RetrieveDataFromMemory());
-
+                        onDataHandler(api.RetrieveDataFromMemory(forceMap));
+                        forceMap = false;
                         await Task.Delay(interval, token);
                     }
                 }
@@ -54,14 +54,16 @@ namespace MapAssist.Botty
         }
 
 
-        public static void Run(Dictionary<string, Dictionary<string, object>> rawConfiguration,
-            Action<string> onDataHandler)
+        public static void Run(
+            Dictionary<string, Dictionary<string, object>> rawConfiguration,
+            Action<string> onDataHandler,
+            bool forceMap = true)
         {
             // _log.Info($"Initializing ApiHost with configuration: \n{JsonConvert.SerializeObject(rawConfiguration, Formatting.Indented)}");
             BottyConfiguration.InitializeConfiguration(rawConfiguration);
             if (BootstrapMapAssist())
             {
-                _runningTask = Task.Run(() => RunInternalAsync(onDataHandler, TokenSource.Token));
+                _runningTask = Task.Run(() => RunInternalAsync(onDataHandler, TokenSource.Token, forceMap));
                 _runningTask.GetAwaiter().GetResult();
             }
         }

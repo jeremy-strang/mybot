@@ -66,7 +66,7 @@ namespace MapAssist.Botty
             }
         }
 
-        public string RetrieveDataFromMemory(Formatting formatting = Formatting.None)
+        public string RetrieveDataFromMemory(bool forceMap = true, Formatting formatting = Formatting.None)
         {
             try
             {
@@ -180,7 +180,7 @@ namespace MapAssist.Botty
                         var shop_open = _gameData.MenuOpen.NpcShop;
                         var msg = new
                         {
-                            map_changed,
+                            map_changed = map_changed || forceMap,
                             success = true,
                             monsters = new List<dynamic>(),
                             objects = new List<dynamic>(),
@@ -191,7 +191,7 @@ namespace MapAssist.Botty
                             player_corpse,
                             player_pos = _gameData.PlayerPosition,
                             area_origin = _areaData.Origin,
-                            collision_grid = map_changed ? _areaData.CollisionGrid : null,
+                            collision_grid = map_changed || forceMap ? _areaData.CollisionGrid : null,
                             current_area,
                             used_skill = _gameData.PlayerUnit.Skills.UsedSkillId,
                             left_skill = _gameData.PlayerUnit.Skills.LeftSkillId,

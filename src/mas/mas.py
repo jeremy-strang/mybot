@@ -72,7 +72,7 @@ class MAS(Thread):
         return config
 
     def run(self):
-        ApiHost.Run(self._convert_config(), Action[String](self._callback))
+        ApiHost.Run(self._convert_config(), Action[String](self._callback), True)
 
     def cancel(self):
         ApiHost.Stop()
