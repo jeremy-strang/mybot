@@ -20,7 +20,8 @@ import cv2
 
 from api.mapassist import MapAssistApi
 from pathing import Pather
-from state_monitor import StateMonitor, MonsterPriorityRule, MonsterType
+from state_monitor import StateMonitor
+from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
 
 class ZerkerBarb(Barbarian):
@@ -73,11 +74,11 @@ class ZerkerBarb(Barbarian):
     def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
         Logger.debug(f"Beginning combat")
         rules = [
-            MonsterPriorityRule(auras = ["CONVICTION"]),
-            MonsterPriorityRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-            MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
-            MonsterPriorityRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
-            # MonsterPriorityRule(monster_types = [MonsterType.MINION]),
+            MonsterRule(auras = ["CONVICTION"]),
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+            MonsterRule(monster_types = [MonsterType.UNIQUE]),
+            MonsterRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
+            # MonsterRule(monster_types = [MonsterType.MINION]),
         ]
         start = time.time()
         game_state = StateMonitor(rules, self._api, False, -1, True, False, None)
@@ -138,11 +139,11 @@ class ZerkerBarb(Barbarian):
 
     def kill_council(self, game_state: StateMonitor = None) -> bool:
         rules = [
-            MonsterPriorityRule(auras = ["CONVICTION"]),
-            MonsterPriorityRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"]),
-            MonsterPriorityRule(names = ["CouncilMember"], monster_types = [MonsterType.SUPER_UNIQUE]),
-            MonsterPriorityRule(names = ["CouncilMember"]),
-            MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
+            MonsterRule(auras = ["CONVICTION"]),
+            MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"]),
+            MonsterRule(names = ["CouncilMember"], monster_types = [MonsterType.SUPER_UNIQUE]),
+            MonsterRule(names = ["CouncilMember"]),
+            MonsterRule(monster_types = [MonsterType.UNIQUE]),
         ]
         game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
         if not self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113)): return False
@@ -185,5 +186,5 @@ class ZerkerBarb(Barbarian):
         Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
         return True
 
-    def _kill_mobs_v2(self, priority_rules: list[MonsterPriorityRule] = []):
+    def _kill_mobs_v2(self, priority_rules: list[MonsterRule] = []):
         pass

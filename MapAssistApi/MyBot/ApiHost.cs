@@ -20,8 +20,7 @@ namespace MapAssist.MyBot
         private static Task _runningTask;
         private static readonly Logger _log = LogManager.GetCurrentClassLogger();
 
-        private static readonly Lazy<bool> lazyConfig = new Lazy<bool>(() =>
-            LoadMainConfiguration() && LoadLootLogConfiguration());
+        private static readonly Lazy<bool> lazyConfig = new Lazy<bool>(() => LoadMainConfiguration() && LoadLootLogConfiguration());
 
         static ApiHost()
         {

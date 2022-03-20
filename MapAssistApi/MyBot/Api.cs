@@ -327,18 +327,18 @@ namespace MapAssist.MyBot
                             {
                                 msg.monsters.Add(new
                                 {
+                                    id = m.UnitId,
+                                    boss_id = m.MonsterData.BossLineID,
                                     position = m.Position,
                                     immunities = m.Immunities,
                                     unit_type = m.UnitType.ToString(),
                                     type = m.MonsterData.MonsterType.ToString(),
-                                    id = m.UnitId,
                                     name = ((Npc)m.TxtFileNo).ToString(),
                                     mode = m.Struct.Mode,
                                     is_targetable_corpse = m.IsTargetableCorpse,
                                     number = m.TxtFileNo,
                                     heath_percentage = m.HealthPercentage,
                                     corpse = m.IsCorpse,
-                                    bossID = m.MonsterData.BossLineID,
                                     state_strings = m.StateStrings,
                                     is_hovered = m.IsHovered,
                                 });

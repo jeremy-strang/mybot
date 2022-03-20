@@ -95,7 +95,7 @@ class Diablo:
                 if do_pre_buff: self._char.pre_buff()
             monster = self._pather.traverse(poi, self._char, kill=True)
             while (type(monster)==dict):
-                if monster ["bossID"] == 37:
+                if monster ["boss_id"] == 37:
                     self._char.kill_uniques (monster, offset=[10,10])            
                 self._char.kill_uniques (monster)
                 picked_up_items = self._pickit.pick_up_items (self._char)  

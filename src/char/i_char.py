@@ -9,7 +9,7 @@ import numpy as np
 from char.capabilities import CharacterCapabilities
 import obs
 from pathing import PathFinder, Pather, OldPather
-from state_monitor import MonsterType
+from monsters import MonsterType
 from utils.custom_mouse import mouse
 from utils.misc import rotate_vec, unit_vector, wait, cut_roi, is_in_roi, color_filter
 
@@ -537,7 +537,7 @@ class IChar:
         filtered_monster = []
         boss = False
         for monster in monsterlist:
-            if monster["bossID"] != 0 and monster["corpse"] == False:
+            if monster["boss_id"] != 0 and monster["corpse"] == False:
                 filtered_monster.append(monster)
                 boss = True    
             if monster["dist"] < area and monster["corpse"] == False:
@@ -564,7 +564,7 @@ class IChar:
             MonsterType.MINION,
         ]
         def _calc_distance(mon):
-            if mon["bossID"] != 0: return 0
+            if mon["boss_id"] != 0: return 0
             elif mon["type"] in "SuperUnique": return 0.05
             elif any (mobtype in mon["type"] for mobtype in special_types): return 0.1
             elif mon["type"] in "Minion": return 0.2

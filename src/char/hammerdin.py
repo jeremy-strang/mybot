@@ -19,7 +19,8 @@ import random
 
 from api.mapassist import MapAssistApi
 from pathing import Pather
-from state_monitor import MonsterPriorityRule, MonsterType, StateMonitor
+from state_monitor import StateMonitor
+from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
 
 class Hammerdin(IChar):
@@ -524,11 +525,11 @@ class Hammerdin(IChar):
     def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
         Logger.debug(f"Beginning combat")
         rules = [
-            MonsterPriorityRule(auras = ["CONVICTION"]),
-            MonsterPriorityRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-            MonsterPriorityRule(monster_types = [MonsterType.UNIQUE]),
-            MonsterPriorityRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
-            # MonsterPriorityRule(monster_types = [MonsterType.MINION]),
+            MonsterRule(auras = ["CONVICTION"]),
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+            MonsterRule(monster_types = [MonsterType.UNIQUE]),
+            MonsterRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
+            # MonsterRule(monster_types = [MonsterType.MINION]),
         ]
         start = time.time()
         game_state = StateMonitor(rules, self._api, False, -1, True, False, None)
