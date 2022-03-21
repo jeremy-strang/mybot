@@ -60,8 +60,10 @@ class ZerkerBarb(Barbarian):
 
     def post_attack(self):
         mouse.release(button="left")
+        wait(0.02, 0.03)
+        keyboard.release(self._char_config["force_move"])
         wait(0.03, 0.04)
-        keyboard.send(self._char_config["stand_still"], do_press=False) 
+        keyboard.release(self._char_config["stand_still"])
         wait(0.03, 0.04)
 
     def mouse_follow_unit(self, monster, offset):
