@@ -386,7 +386,9 @@ class Bot:
             if buy_pots:
                 if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 Logger.info("Maintenance: Buy pots at next possible Vendor")
+                self._belt_manager.update_pot_needs()
                 pot_needs = self._belt_manager.get_pot_needs()
+                Logger.debug(f"Potion needs: {pot_needs}")
                 self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
                 wait(0.5)
                 self._belt_manager.update_pot_needs()

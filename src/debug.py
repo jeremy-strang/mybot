@@ -81,8 +81,8 @@ if __name__ == "__main__":
         belt_manager = BeltManager(screen, template_finder, api)
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api)
 
-        char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities(force=True)
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
         pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
@@ -104,9 +104,6 @@ if __name__ == "__main__":
                 # potion_type = "health"
                 # pp.pprint(data["flattened_belt"])
 
-                tab = char.get_active_weapon_tab()
-                print(f"Weapon tab: {tab}")
-
                 # if data is not None:
                 #     if "flattened_belt" in data and data["flattened_belt"] is not None:
                 #         belt = data["flattened_belt"]
@@ -127,8 +124,10 @@ if __name__ == "__main__":
                 # bot._town_manager.open_stash(Location.A4_TOWN_START)
                 # write_data_to_file(data, api._raw_data_str)
                 
-                
-                # print(data["belt_items"])
+                pot_needs = belt_manager.update_pot_needs()
+                pot_needs = belt_manager.get_pot_needs()
+                print(f"Potion needs: {pot_needs}")
+                bot._town_manager.buy_pots(Location.A3_ORMUS, pot_needs["health"], pot_needs["mana"])
 
                 # bank = None
                 # for obj in data["objects"]:w
@@ -160,10 +159,10 @@ if __name__ == "__main__":
                 # api._current_path = path
                 # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
 
-                # stop_debug(game_controller, overlay)
             except BaseException as e:
                 print(e)
                 traceback.print_exc()
+            stop_debug(game_controller, overlay)
             print("Done doing stuff")
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))

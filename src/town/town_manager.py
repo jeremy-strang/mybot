@@ -140,6 +140,7 @@ class TownManager:
         return curr_loc
 
     def buy_pots(self, curr_loc: Location, healing_pots: int = 0, mana_pots: int = 0) -> Union[Location, bool]:
+        Logger.debug(f"Buying {healing_pots} health and {mana_pots} mana potions")
         curr_act = self.get_act_from_current_area()
         if curr_act is None:
             curr_act = TownManager.get_act_from_location(curr_loc)
