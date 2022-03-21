@@ -889,9 +889,9 @@ class UiManager():
                 mouse.click(button="right")
                 wait(0.9, 1.1)
 
-        m_pot = self._template_finder.search_and_wait("SUPER_MANA_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3,normalize_monitor=True)
+        m_pot = self._template_finder.search_and_wait("SUPER_MANA_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
         if m_pot.valid is False:  # If not available in shop, try to shop next best potion.
-            m_pot = self._template_finder.search_and_wait("GREATER_MANA_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3,normalize_monitor=True)
+            m_pot = self._template_finder.search_and_wait("GREATER_MANA_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
         if m_pot.valid:
             mouse.move(*m_pot.center, randomize=8, delay_factor=[1.0, 1.5])
             for _ in range(mana_pots):
