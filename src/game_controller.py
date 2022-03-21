@@ -140,7 +140,7 @@ class GameController:
         # Check if we user should update the d2r settings
         diff = check_settings()
         if len(diff) > 0:
-            Logger.warning("Your D2R settings differ from the requiered ones. Please use Auto Settings to adjust them. The differences are:")
+            Logger.warning("Your D2R settings differ from the required ones. Please use Auto Settings to adjust them. The differences are:")
             Logger.warning(f"{diff}")
         set_d2r_always_on_top()
         self.setup_screen()
