@@ -144,7 +144,7 @@ class ZerkerBarb(Barbarian):
             MonsterRule(auras = ["CONVICTION"]),
         ]
         game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=8)
+        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=12)
         game_state.stop()
 
         rules = [
@@ -158,7 +158,7 @@ class ZerkerBarb(Barbarian):
             MonsterRule(names = ["CouncilMember"], monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
         game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=15)
+        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=16)
         game_state.stop()
         
         rules = [
