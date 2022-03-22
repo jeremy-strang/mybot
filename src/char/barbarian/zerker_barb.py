@@ -142,6 +142,12 @@ class ZerkerBarb(Barbarian):
     def kill_council(self, game_state: StateMonitor = None) -> bool:
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
+        ]
+        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
+        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=8)
+        game_state.stop()
+
+        rules = [
             MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"]),
         ]
         game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
