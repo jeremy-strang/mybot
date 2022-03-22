@@ -9,8 +9,6 @@ class Monster:
         self.id = data["id"]
         self.mob_number = data["mob_number"]
         self.type = data["type"]
-        self.id = data["id"]
-        self.id = data["id"]
 
 class MonsterTracker:
     def __init__(self, api: MapAssistApi, rules: MonsterRule=None):

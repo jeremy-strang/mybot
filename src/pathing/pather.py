@@ -267,7 +267,6 @@ class Pather:
                         pos_monitor = None
                 if pos_monitor is not None:
                     if collection == "objects":
-                        counter = 0
                         while (obj["mode"] == 0):
 
                             stash_menu = data['menus']['Stash']
@@ -290,19 +289,10 @@ class Pather:
                             time.sleep(0.75)
                             mouse.click("left")
                             time.sleep(0.75)
-                            if counter == 2:
-                                if char is not None:
-                                    monster = char.kill_around(self._api, 1, 5, True)
-                                    if type(monster) == dict:
-                                        char.kill_uniques(monster)
-                            elif counter > 5:
-                                return False
                             data = self._api.get_data()
                             for p in data[collection]:
                                 if p["name"].startswith(poi):
                                     obj["mode"] = p["mode"]
-
-                            counter += 1
                     else:
                         pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
                         mouse.move(*pos_monitor)
@@ -791,14 +781,6 @@ class Pather:
                     if i > len(route_list)-4:
                         # slow down on the last few jumps for accuracy, there might be a better way but ???
                         time.sleep(.4)
-                    if kill:
-                        density = self._config.char["density"]
-                        area = self._config.char["area"]
-                        monster = char.kill_around(self._api, density, area, True)
-                        if monster:
-                            return monster
-                        if do_pre_move:
-                            char.pre_move()
                 data = self._api.get_data()
                 player_pos = data['player_pos_area'] + data['player_offset']
                 recalc_dist = math.dist(player_pos, area_pos)
