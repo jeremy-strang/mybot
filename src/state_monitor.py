@@ -61,6 +61,7 @@ class ApiThread:
         data = self._sm._api.get_data()
         if data is not None:
             monsters = sort_and_filter_monsters(data, self._sm._rules, self._sm._boundary)
+            if len(monsters) == 0: self._sm._dead = 1
             # print(f"State monitor targeting {len(monsters)} monsters")
             for m in monsters:
                 proceed = True

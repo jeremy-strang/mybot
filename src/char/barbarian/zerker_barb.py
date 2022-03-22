@@ -143,12 +143,24 @@ class ZerkerBarb(Barbarian):
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
             MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"]),
+        ]
+        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
+        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=8)
+        game_state.stop()
+        
+        rules = [
             MonsterRule(names = ["CouncilMember"], monster_types = [MonsterType.SUPER_UNIQUE]),
+        ]
+        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
+        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=15)
+        game_state.stop()
+        
+        rules = [
             MonsterRule(names = ["CouncilMember"]),
             MonsterRule(monster_types = [MonsterType.UNIQUE]),
         ]
         game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        if not self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113)): return False
+        if not self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=25): return False
         game_state.stop()
         return True
 
