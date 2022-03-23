@@ -160,7 +160,7 @@ class PickIt:
                     char.move((x_m, y_m), force_move=True)
                     if not char.capabilities.can_teleport_natively:
                         time.sleep(0.3)
-                    time.sleep(0.1)
+                    time.sleep(char._cast_duration + 0.01)
                     # save closeset item for next time to check potential endless loops of not reaching it or of telekinsis/teleport
                     self._last_closest_item = closest_item
     
