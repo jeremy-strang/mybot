@@ -36,6 +36,7 @@ from char.necro import Necro
 from char.basic import Basic
 from char.basic_ranged import Basic_Ranged
 from obs import ObsRecorder
+from utils.misc import wait, hms
 
 from run import Pindle, ShenkEld, Trav, Nihlathak, Arcane, Diablo, Baal, Andy, Tower, Meph, Pit
 from town import TownManager, A1, A2, A3, A4, A5, town_manager
@@ -164,6 +165,7 @@ class Bot:
         self._current_threads = []
         self._no_stash_counter = 0
         self._ran_no_pickup = False
+        self._timer = time.time()
         self._char_selector = CharSelector(self._screen, self._template_finder)
 
         # Create State Machine
@@ -520,6 +522,27 @@ class Bot:
         self._pre_buffed = False
         self._ui_manager.save_and_exit()
         self._game_stats.log_end_game(failed=failed)
+
+        if Config().general["max_runtime_before_break_m"] and Config().general["break_length_m"]:
+            elapsed_time = time.time() - self._timer
+            Logger.info(f'Session length = {elapsed_time} s, max_runtime_before_break_m {Config().general["max_runtime_before_break_m"]*60} s.')
+
+            if elapsed_time > (Config().general["max_runtime_before_break_m"]*60):
+                Logger.info(f'Max session length reached, taking a break for {Config().general["break_length_m"]} minutes.')
+                self._messenger.send_message(f'Ran for {hms(elapsed_time)}, taking a break for {Config().general["break_length_m"]} minutes.')
+                if not self._pausing:
+                    self.toggle_pause()
+
+                wait(Config().general["break_length_m"]*60)
+
+                break_msg = f'Break over, now running for {Config().general["max_runtime_before_break_m"]} more minutes.'
+                Logger.info(break_msg)
+                self._messenger.send_message(break_msg)
+                if self._pausing:
+                    self.toggle_pause()
+
+                self._timer = time.time()
+
         self._do_runs = copy(self._do_runs_reset)
         if self._config.general["randomize_runs"]:
             self.shuffle_runs()
