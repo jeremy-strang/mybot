@@ -15,6 +15,7 @@ generated/
 mybot_v/
 custom.ini
 config/custom.ini
+config/custom.*.ini
 *info_*.png
 .vscode
 .vs/
