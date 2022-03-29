@@ -10,6 +10,8 @@ import ast
 
 config_lock = threading.Lock()
 
+def _default_iff(value, iff, default = None):
+    return default if value == iff else value
 
 @dataclass
 class ItemProps:
@@ -218,8 +220,8 @@ class Config:
             "summary": None,
             "max_game_length_s": float(Config._select_val("general", "max_game_length_s")),
             "max_consecutive_fails": int(Config._select_val("general", "max_consecutive_fails")),
-            "max_runtime_before_break_m": float(_default_iff(self._select_val("general", "max_runtime_before_break_m"), '', 0)),
-            "break_length_m": float(_default_iff(self._select_val("general", "break_length_m"), '', 0)),
+            "max_runtime_before_break_m": float(_default_iff(Config._select_val("general", "max_runtime_before_break_m"), '', 0)),
+            "break_length_m": float(_default_iff(Config._select_val("general", "break_length_m"), '', 0)),
             "randomize_runs": bool(int(Config._select_val("general", "randomize_runs"))),
             "difficulty": Config._select_val("general", "difficulty"),
             "message_api_type": Config._select_val("general", "message_api_type"),
