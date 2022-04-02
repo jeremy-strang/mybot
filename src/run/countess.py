@@ -59,25 +59,21 @@ class Countess:
         for destination in ["Forgotten Tower", *map(lambda x: f"Tower Cellar Level {x}", [1, 2, 3, 4, 5])]:
             if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=jump_dist):
                 if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=8): return False
-            if not self._pather.go_to_area(destination, destination, entrance_in_wall=False, randomize=4): return False
+            if not self._pather.go_to_area(destination, destination, entrance_in_wall=False, randomize=4, char=self._char): return False
             jump_dist = 10
         self._char.post_travel()
 
-        if not self._pather.traverse("GoodChest", self._char): return False
-
+        if not self._pather.traverse("GoodChest", self._char, verify_location=True): return False
         chest = find_poi("GoodChest", self._api)
         roi = None
         if chest is not None:
-            roi = [
-                max(chest["position"][0] - 20, 0),
-                max(chest["position"][1] - 20, 0),
-                40,
-                35,
-            ]
+            roi_x = max(chest["position"][0] - 20, 0)
+            roi_y = max(chest["position"][1] - 20, 0)
+            roi = [roi_x, roi_y, 40, 35]
 
         pickit_func = lambda: self._pickit.pick_up_items(self._char)
         picked_up_items = self._char.kill_uniques(pickit_func, 25, boundary=roi)
-        self._pather.traverse("GoodChest", self._char)
+        self._pather.traverse("GoodChest", self._char, verify_location=True)
         picked_up_items += self._pickit.pick_up_items(self._char)
         Logger.debug(f"    Picked up {picked_up_items} items")
         return (Location.A1_TOWER_END, picked_up_items)
