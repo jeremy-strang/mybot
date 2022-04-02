@@ -12,10 +12,10 @@ import sys
 from npc_manager import Npc
 from obs import obs_recorder
 from pathing import PathFinder
-from run.andy import Andy
+from run.andariel import Andariel
 from run.pit import Pit
-from run.trav import Trav
-from run.tower import Tower
+from run.travincal import Travincal
+from run.countess import Countess
 
 from screen import Screen
 from bot import Bot
@@ -87,9 +87,9 @@ if __name__ == "__main__":
         char.discover_capabilities(force=True)
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
         pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        trav = Trav(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        tower = Tower(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        andy = Andy(screen, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        travincal = Travincal(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        countess = Countess(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        andariel = Andariel(screen, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
 
         data = None
         print(("-" * 80) + "\n\nStarting API...")

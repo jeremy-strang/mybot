@@ -14,7 +14,7 @@ from utils.misc import wait
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
-class Trav:
+class Travincal:
     def __init__(
         self,
         template_finder: TemplateFinder,

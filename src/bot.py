@@ -8,7 +8,7 @@ import cv2
 from copy import copy
 from typing import Union
 from collections import OrderedDict
-from run.stony_tomb import Stony_Tomb
+from run.stony_tomb import StonyTomb
 from transmute import Transmute
 from utils.custom_mouse import mouse
 from utils.misc import wait
@@ -38,7 +38,7 @@ from char.basic_ranged import Basic_Ranged
 from obs import ObsRecorder
 from utils.misc import wait, hms
 
-from run import Pindle, ShenkEld, Trav, Nihlathak, Arcane, Diablo, Baal, Andy, Tower, Meph, Pit
+from run import Pindleskin, ShenkEldritch, Travincal, Nihlathak, Summoner, Diablo, Baal, Andariel, Countess, Mephisto, Pit
 from town import TownManager, A1, A2, A3, A4, A5, town_manager
 
 # Added for dclone ip hunt
@@ -120,16 +120,16 @@ class Bot:
             Logger.error("Running shenk without eldtritch is not supported. Either run none or both")
             os._exit(1)
         self._do_runs = {
-            "run_trav": self._route_config["run_trav"],
-            "run_pindle": self._route_config["run_pindle"],
+            "run_travincal": self._route_config["run_travincal"],
+            "run_pindleskin": self._route_config["run_pindleskin"],
             "run_shenk": self._route_config["run_shenk"] or self._route_config["run_eldritch"],
             "run_nihlathak": self._route_config["run_nihlathak"],
-            "run_arcane": self._route_config["run_arcane"],
+            "run_summoner": self._route_config["run_summoner"],
             "run_diablo": self._route_config["run_diablo"],
             "run_baal": self._route_config["run_baal"],
-            "run_meph": self._route_config["run_meph"],
-            "run_andy": self._route_config["run_andy"],
-            "run_tower": self._route_config["run_tower"],
+            "run_mephisto": self._route_config["run_mephisto"],
+            "run_andariel": self._route_config["run_andariel"],
+            "run_countess": self._route_config["run_countess"],
             "run_pit": self._route_config["run_pit"],
             "run_stony_tomb": self._route_config["run_stony_tomb"]
         }
@@ -139,20 +139,20 @@ class Bot:
         Logger.info(f"Doing runs: {self._do_runs_reset.keys()}")
         if self._config.general["randomize_runs"]:
             self.shuffle_runs()
-        self._pindle = Pindle(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._shenk = ShenkEld(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)       
+        self._pindleskin = Pindleskin(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._shenk = ShenkEldritch(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)       
         self._nihlatak = Nihlathak(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._arcane = Arcane(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._summoner = Summoner(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         # mem-reading
-        self._trav = Trav(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._travincal = Travincal(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._baal = Baal(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._meph = Meph(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._mephisto = Mephisto(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         #INCLUDED TEMPLATE FOR NOWA, runs with light sorc now
-        self._andy = Andy(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._tower = Tower(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._andariel = Andariel(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._countess = Countess(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._diablo = Diablo(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._pit = Pit(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._stony = Stony_Tomb(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._stony_tomb = StonyTomb(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         
         # Create member variables
         self._pick_corpse = pick_corpse
@@ -169,7 +169,7 @@ class Bot:
         self._char_selector = CharSelector(self._screen, self._template_finder)
 
         # Create State Machine
-        self._states=['initialization','hero_selection', 'town', 'pindle', 'shenk', 'trav', 'nihlathak', 'arcane', 'diablo', 'baal', 'meph', 'andy','tower', 'pit', 'stony']
+        self._states=['initialization', 'hero_selection', 'town', 'pindleskin', 'shenk', 'travincal', 'nihlathak', 'summoner', 'diablo', 'baal', 'mephisto', 'andariel','countess', 'pit', 'stony_tomb']
         self._transitions = [
             { 'trigger': 'init', 'source': 'initialization', 'dest': '=','before': "on_init"},
             { 'trigger': 'select_character', 'source': 'initialization', 'dest': 'hero_selection', 'before': "on_select_character"},
@@ -178,31 +178,31 @@ class Bot:
             # Tasks within town
             { 'trigger': 'maintenance', 'source': 'town', 'dest': 'town', 'before': "on_maintenance"},
             # Different runs
-            { 'trigger': 'run_pindle', 'source': 'town', 'dest': 'pindle', 'before': "on_run_pindle"},
+            { 'trigger': 'run_pindleskin', 'source': 'town', 'dest': 'pindleskin', 'before': "on_run_pindleskin"},
             { 'trigger': 'run_shenk', 'source': 'town', 'dest': 'shenk', 'before': "on_run_shenk"},
-            { 'trigger': 'run_trav', 'source': 'town', 'dest': 'trav', 'before': "on_run_trav"},
+            { 'trigger': 'run_travincal', 'source': 'town', 'dest': 'travincal', 'before': "on_run_travincal"},
             { 'trigger': 'run_nihlathak', 'source': 'town', 'dest': 'nihlathak', 'before': "on_run_nihlathak"},
-            { 'trigger': 'run_arcane', 'source': 'town', 'dest': 'arcane', 'before': "on_run_arcane"},
+            { 'trigger': 'run_summoner', 'source': 'town', 'dest': 'summoner', 'before': "on_run_summoner"},
             { 'trigger': 'run_baal', 'source': 'town', 'dest': 'baal', 'before': "on_run_baal"},
-            { 'trigger': 'run_meph', 'source': 'town', 'dest': 'meph', 'before': "on_run_meph"},
-            { 'trigger': 'run_andy', 'source': 'town', 'dest': 'andy', 'before': "on_run_andy"},
+            { 'trigger': 'run_mephisto', 'source': 'town', 'dest': 'mephisto', 'before': "on_run_mephisto"},
+            { 'trigger': 'run_andariel', 'source': 'town', 'dest': 'andariel', 'before': "on_run_andariel"},
             { 'trigger': 'run_diablo', 'source': 'town', 'dest': 'nihlathak', 'before': "on_run_diablo"},
-            { 'trigger': 'run_tower', 'source': 'town', 'dest': 'tower', 'before': "on_run_tower"},
+            { 'trigger': 'run_countess', 'source': 'town', 'dest': 'countess', 'before': "on_run_countess"},
             { 'trigger': 'run_pit', 'source': 'town', 'dest': 'pit', 'before': "on_run_pit"},
-            { 'trigger': 'run_stony_tomb', 'source': 'town', 'dest': 'stony', 'before': "on_run_stony_tomb"},
+            { 'trigger': 'run_stony_tomb', 'source': 'town', 'dest': 'stony_tomb', 'before': "on_run_stony_tomb"},
             # End run / game
-            { 'trigger': 'end_run', 'source': ['shenk', 'pindle', 'nihlathak', 'trav', 'arcane', 'diablo', 'baal', 'meph', 'andy','tower', 'pit', 'stony_tomb'], 'dest': 'town', 'before': "on_end_run"},
-            { 'trigger': 'end_game', 'source': ['town', 'shenk', 'pindle', 'nihlathak', 'trav', 'arcane', 'diablo', 'baal', 'meph', 'andy','tower', 'pit', 'stony_tomb', 'end_run'], 'dest': 'initialization', 'before': "on_end_game"},
+            { 'trigger': 'end_run', 'source': ['shenk', 'pindleskin', 'nihlathak', 'travincal', 'summoner', 'diablo', 'baal', 'mephisto', 'andariel','countess', 'pit', 'stony_tomb'], 'dest': 'town', 'before': "on_end_run"},
+            { 'trigger': 'end_game', 'source': ['town', 'shenk', 'pindleskin', 'nihlathak', 'travincal', 'summoner', 'diablo', 'baal', 'mephisto', 'andariel','countess', 'pit', 'stony_tomb', 'end_run'], 'dest': 'initialization', 'before': "on_end_game"},
 
         ]
         self.machine = Machine(model=self, states=self._states, initial="initialization", transitions=self._transitions, queued=True)
         self._transmute = Transmute(self._screen, self._template_finder, self._game_stats, self._ui_manager)
     
-    def draw_graph(self):
-        # Draw the whole graph, graphviz binaries must be installed and added to path for this!
-        from transitions.extensions import GraphMachine
-        self.machine = GraphMachine(model=self, states=self._states, initial="initialization", transitions=self._transitions, queued=True)
-        self.machine.get_graph().draw('my_state_diagram.png', prog='dot')
+    # def draw_graph(self):
+    #     # Draw the whole graph, graphviz binaries must be installed and added to path for this!
+    #     from transitions.extensions import GraphMachine
+    #     self.machine = GraphMachine(model=self, states=self._states, initial="initialization", transitions=self._transitions, queued=True)
+    #     self.machine.get_graph().draw('my_state_diagram.png', prog='dot')
         
     def get_belt_manager(self) -> BeltManager:
         return self._belt_manager
@@ -584,13 +584,13 @@ class Bot:
         else:
             self.trigger_or_stop("end_run")
 
-    def on_run_pindle(self):
+    def on_run_pindleskin(self):
         res = False
-        self._do_runs["run_pindle"] = False
+        self._do_runs["run_pindleskin"] = False
         self._game_stats.update_location("Pin" if self._config.general['discord_status_condensed'] else "Pindle")
-        self._curr_loc = self._pindle.approach(self._curr_loc)
+        self._curr_loc = self._pindleskin.approach(self._curr_loc)
         if self._curr_loc:
-            res = self._pindle.battle(not self._pre_buffed)
+            res = self._pindleskin.battle(not self._pre_buffed)
         self._ending_run_helper(res)
 
     def on_run_shenk(self):
@@ -601,13 +601,13 @@ class Bot:
             res = self._shenk.battle(self._route_config["run_shenk"], not self._pre_buffed, self._game_stats)
         self._ending_run_helper(res)
 
-    def on_run_trav(self):
+    def on_run_travincal(self):
         res = False
-        self._do_runs["run_trav"] = False
+        self._do_runs["run_travincal"] = False
         self._game_stats.update_location("Trav" if self._config.general['discord_status_condensed'] else "Travincal")
-        self._curr_loc = self._trav.approach(self._curr_loc)
+        self._curr_loc = self._travincal.approach(self._curr_loc)
         if self._curr_loc:
-            res = self._trav.battle(not self._pre_buffed)
+            res = self._travincal.battle(not self._pre_buffed)
         self._ending_run_helper(res)
 
     def on_run_nihlathak(self):
@@ -619,14 +619,14 @@ class Bot:
             res = self._nihlathak.battle(not self._pre_buffed)
         self._ending_run_helper(res)
 
-    def on_run_arcane(self):
+    def on_run_summoner(self):
         res = False
-        self._do_runs["run_arcane"] = False
+        self._do_runs["run_summoner"] = False
         self._game_stats.update_location("Arc" if self._config.general['discord_status_condensed'] else "Arcane")
-        self._curr_loc = self._arcane.approach(self._curr_loc)
+        self._curr_loc = self._summoner.approach(self._curr_loc)
         if self._curr_loc:
-            res = self._arcane.battle(not self._pre_buffed)
-        self._tps_left -= self._arcane.used_tps
+            res = self._summoner.battle(not self._pre_buffed)
+        self._tps_left -= self._summoner.used_tps
         self._ending_run_helper(res)
 
     def on_run_diablo(self):
@@ -648,31 +648,31 @@ class Bot:
             res = self._baal.battle(not self._pre_buffed)
         self._ending_run_helper(res)
 
-    def on_run_meph(self):
+    def on_run_mephisto(self):
         res = False
-        self._do_runs["run_meph"] = False
+        self._do_runs["run_mephisto"] = False
         self._game_stats.update_location("Meph")
-        self._curr_loc = self._meph.approach(self._curr_loc)
+        self._curr_loc = self._mephisto.approach(self._curr_loc)
         if self._curr_loc:
-            res = self._meph.battle(not self._pre_buffed)
+            res = self._mephisto.battle(not self._pre_buffed)
         self._ending_run_helper(res)
 
-    def on_run_andy(self):
+    def on_run_andariel(self):
         res = False
-        self._do_runs["run_andy"] = False
+        self._do_runs["run_andariel"] = False
         self._game_stats.update_location("Andy")
-        self._curr_loc = self._andy.approach(self._curr_loc)
+        self._curr_loc = self._andariel.approach(self._curr_loc)
         if self._curr_loc:
-            res = self._andy.battle(not self._pre_buffed)
+            res = self._andariel.battle(not self._pre_buffed)
         self._ending_run_helper(res)
 
-    def on_run_tower(self):
+    def on_run_countess(self):
         res = False
-        self._do_runs["run_tower"] = False
+        self._do_runs["run_countess"] = False
         self._game_stats.update_location("Tower")
-        self._curr_loc = self._tower.approach(self._curr_loc)
+        self._curr_loc = self._countess.approach(self._curr_loc)
         if self._curr_loc:
-            res = self._tower.battle(not self._pre_buffed)
+            res = self._countess.battle(not self._pre_buffed)
         self._ending_run_helper(res)
 
     def on_run_pit(self):
@@ -688,7 +688,7 @@ class Bot:
         res = False
         self._do_runs["run_stony_tomb"] = False
         self._game_stats.update_location("stony_tomb")
-        self._curr_loc = self._stony.approach(self._curr_loc)
+        self._curr_loc = self._stony_tomb.approach(self._curr_loc)
         if self._curr_loc:
-            res = self._stony.battle(not self._pre_buffed)
+            res = self._stony_tomb.battle(not self._pre_buffed)
         self._ending_run_helper(res)

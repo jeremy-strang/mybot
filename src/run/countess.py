@@ -15,7 +15,7 @@ import time
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
-class Tower:
+class Countess:
     def __init__(
         self,
         screen: Screen,

@@ -333,7 +333,7 @@ if __name__ == "__main__":
     old_pather = OldPather(screen, template_finder)
 
     bot = Bot(screen, game_stats, template_finder ,api)
-    self = bot._andy
+    self = bot._andariel
 
 
     pather = Pather(screen, api)

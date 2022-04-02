@@ -13,7 +13,7 @@ from state_monitor import StateMonitor
 from pathing import Pather
 from obs import ObsRecorder
 
-class ShenkEld:
+class ShenkEldritch:
     def __init__(
         self,
         template_finder: TemplateFinder,

@@ -15,8 +15,7 @@ from chest import Chest
 from screen import Screen
 from obs import ObsRecorder
 
-
-class Arcane:
+class Summoner:
     def __init__(
         self,
         screen: Screen,
@@ -143,4 +142,4 @@ if __name__ == "__main__":
     screen = Screen()
     game_stats = GameStats()
     bot = Bot(screen, game_stats, False)
-    bot._arcane._find_summoner([(500, 40)])
+    bot._summoner._find_summoner([(500, 40)])

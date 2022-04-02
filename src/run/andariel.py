@@ -12,11 +12,11 @@ from utils.misc import wait, is_in_roi
 from utils.custom_mouse import mouse
 from screen import Screen
 import time
+
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
-
-class Meph:
+class Andariel:
     def __init__(
         self,
         screen: Screen,
@@ -41,48 +41,49 @@ class Meph:
         self._obs_recorder = obs_recorder
 
     def approach(self, start_loc: Location) -> Union[bool, Location, bool]:
-        Logger.info("Run Meph")
+        Logger.info(f"Run Andy from {start_loc}")
         if not self._char.capabilities.can_teleport_natively:
-            raise ValueError("Meph requires teleport")
+            raise ValueError("Andy requires teleport")
         if not self._town_manager.open_wp(start_loc):
             return False
         wait(0.4)
-        if self._ui_manager.use_wp(3, 8):
-            return Location.A3_MEPH_START
+        if self._ui_manager.use_wp(1, 8):
+            return Location.A1_ANDY_START
         return False
 
+    # "Catacombs Level 3"
+    # CatacombsLevel1
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather.wait_for_location("DuranceOfHateLevel2"): return False
-        if do_pre_buff:
-            self._char.pre_buff()
-
-        if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
-            self._char.switch_weapon()
-
-        if not self._pather.traverse("Durance of Hate Level 3", self._char,verify_location=True): return False
-        if not self._pather.go_to_area("Durance of Hate Level 3", "DuranceOfHateLevel3"): return False
-        if not self._pather.traverse((69, 54), self._char, verify_location=True): return False
-
-        if self._config.char["teleport_weapon_swap"]:
-            self._char.switch_weapon()
-            self._char.verify_active_weapon_tab()
+        if not self._pather.wait_for_location("CatacombsLevel2"): return False
+        
+        self._char.pre_travel(do_pre_buff)
+        if not self._pather.traverse("Catacombs Level 3", self._char,verify_location=True): return False
+        if not self._pather.go_to_area("Catacombs Level 3", "CatacombsLevel3", entrance_in_wall=False): return False
+        if not self._pather.traverse("Catacombs Level 4", self._char,verify_location=True): return False
+        if not self._pather.go_to_area("Catacombs Level 4", "CatacombsLevel4", entrance_in_wall=False): return False
+        self._char.post_travel()
 
         if self._char._char_config['type'] == 'hammerdin':
-            self._char.kill_mephisto()
+            if not self._pather.traverse((65, 85), self._char): return False
+            self._char.kill_andariel()
         elif self._char._char_config['type'] in ['light_sorc', 'necro', 'zerker_barb']:
-            game_state = StateMonitor(['Mephisto'],self._api)
-            self._char.kill_mephisto(game_state)
+            if not self._pather.traverse((46, 23), self._char): return False
+            game_state = StateMonitor(['Andariel'], self._api)
+            result = self._char.kill_andariel(game_state)
+            if result:
+                Logger.info("Andy died...")
+            wait(0.1, .2)
             x = game_state._area_pos[0]
             y = game_state._area_pos[1]
+            #go to andys body
             self._pather.traverse((x, y), self._char)
             game_state.stop()
-        elif self._char._char_config['type'] == 'zerker_barb':
-            game_state = StateMonitor(['Mephisto'], self._api)
         else:
-            raise ValueError("Andy hdin or light sorc or necro")
+            raise ValueError(f"Andariel is not implemented for characters of type {self._char._char_config['type']}")
+
 
         picked_up_items = self._pickit.pick_up_items(self._char)
-        return (Location.A3_MEPH_END, picked_up_items)
+        return (Location.A1_ANDY_END, picked_up_items)
 
 
 if __name__ == "__main__":
@@ -97,13 +98,7 @@ if __name__ == "__main__":
     screen = Screen(config.general["monitor"])
     game_stats = GameStats()
     bot = Bot(screen, game_stats)
-    self = bot._meph
-    # self._pather.wait_for_location("DuranceOfHateLevel2")
-    # self._pather.traverse("Durance of Hate Level 3", self._char)
-    # self._go_to_area("Durance of Hate Level 3", "DuranceOfHateLevel3")
-    # # if not self._pather.traverse((136, 176), self._char): return False
-    # self._char.kill_mephisto(self._api, self._pather)
-    # picked_up_items = self._pickit.pick_up_items(self._char)
+    self = bot._andariel
     while 1:
         data = self._api.get_data()
         if data is not None:

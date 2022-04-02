@@ -18,8 +18,7 @@ from api.mapassist import MapAssistApi
 from pathing import Pather
 from obs import ObsRecorder
 
-
-class Stony_Tomb:
+class StonyTomb:
     def __init__(
         self,
         screen: Screen,

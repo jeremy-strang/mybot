@@ -89,7 +89,7 @@ All MyBot configuration files are located in the __config__ folder. To ease the 
 name=MyCustomName
 
 [routes]
-run_pindle=1
+run_pindleskin=1
 run_shenk=0
 ```
 
@@ -113,12 +113,12 @@ run_shenk=0
 
 | [routes]     | Descriptions                                                             |
 | ------------ | ------------------------------------------------------------------------ |
-| run_trav     | Run Trav in each new game. Select "1" to run it "0" to leave it out. Specific trav gear is suggested |
-| run_pindle   | Run Pindle in each new game. Select "1" to run it "0" to leave it out.   |
+| run_travincal     | Run Trav in each new game. Select "1" to run it "0" to leave it out. Specific trav gear is suggested |
+| run_pindleskin   | Run Pindle in each new game. Select "1" to run it "0" to leave it out.   |
 | run_eldritch | Run Eldritch in each new game. Select "1" to run it "0" to leave it out. |
 | run_shenk    | Run shenk in each new game. Select "1" to run it "0" to leave it out.    |
 | run_nihlathak | Run Nihlathak in each new game. Select "1" to run it "0" to leave it out. (Teleport required) |
-| run_arcane   | Run Arcane Sanctuary in each new game. Select "1" to run it "0" to leave it out. (Teleport required) |
+| run_summoner   | Run Arcane Sanctuary in each new game. Select "1" to run it "0" to leave it out. (Teleport required) |
 | run_diablo   | Run Diablo (just the Boss, not the trashmobs) in each new game. Select "1" to run it "0" to leave it out. (Teleport required) |
 
 | [char]             | Descriptions |

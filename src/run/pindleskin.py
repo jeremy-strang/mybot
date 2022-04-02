@@ -13,7 +13,7 @@ from state_monitor import StateMonitor
 from pathing import Pather
 from obs import ObsRecorder
 
-class Pindle:
+class Pindleskin:
     def __init__(
         self,
         template_finder: TemplateFinder,
@@ -39,7 +39,7 @@ class Pindle:
 
     def approach(self, start_loc: Location) -> Union[bool, Location]:
         # Go through Red Portal in A5
-        Logger.info("Run Pindle")
+        Logger.info("Run Pindleskin")
         loc = self._town_manager.go_to_act(5, start_loc)
         if not loc:
             return False
