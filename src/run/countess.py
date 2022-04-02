@@ -54,10 +54,12 @@ class Countess:
         if not self._pather.wait_for_location("BlackMarsh"): return False
 
         self._char.pre_travel(do_pre_buff)
+        jump_dist = 15
         for destination in ["Forgotten Tower", *map(lambda x: f"Tower Cellar Level {x}", [1, 2, 3, 4, 5])]:
-            if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=12):
+            if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=jump_dist):
                 if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=8): return False
             if not self._pather.go_to_area(destination, destination, entrance_in_wall=False, randomize=4): return False
+            jump_dist = 10
         self._char.post_travel()
 
         if not self._pather.traverse("GoodChest", self._char): return False
