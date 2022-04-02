@@ -380,9 +380,13 @@ class Bot:
             elif "a5_" in self._curr_loc:
                 dest = "Malah" if buy_pots or should_heal else "Harrogath"
                 dest_loc = Location.A5_MALAH if buy_pots or should_heal else Location.A5_STASH
+
             if dest is not None:
                 Logger.info(f"Maintenance: Heading toward {dest}. Buy pots: {buy_pots}, need to heal: {should_heal}")
-                self._pather.traverse_walking(dest, self._char, obj=False, threshold=16, time_out=pre_walk_time, end_dist=10)
+                if dest == "Akara":
+                    self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True)
+                else:
+                    self._pather.traverse_walking(dest, self._char, obj=False, threshold=16, time_out=pre_walk_time, end_dist=10)
                 self._curr_loc = dest_loc
 
         if should_heal or buy_pots:

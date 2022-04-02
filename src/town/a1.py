@@ -33,7 +33,7 @@ class A1(IAct):
     def open_wp(self, curr_loc: Location) -> bool:
         if not self._pather.traverse_walking("Rogue Encampment", self._char, obj=False, threshold=10): return False
         wait(0.5, 0.7)
-        result = self._pather.activate_waypoint("Rogue Encampment", self._char,entrance_in_wall=False, is_wp = True)
+        result = self._pather.activate_waypoint("Rogue Encampment", self._char, entrance_in_wall=False, is_wp = True)
         return result        
 
     def wait_for_tp(self) -> Union[Location, bool]:
@@ -51,25 +51,25 @@ class A1(IAct):
         return False
 
     def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Akara",self._char, obj=False, threshold=10, static_npc=True): return False
+        if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
         if not self.trade_with_npc(Npc.AKARA):
             self._npc_manager.open_npc_menu(Npc.AKARA)
             self._npc_manager.press_npc_btn(Npc.AKARA, "trade")
         return Location.A1_AKARA
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=8): return False
+        if not self._pather.traverse_walking("Bank", self._char, obj=True, threshold=10, static_npc=False, end_dist=8): return False
         self._pather.activate_poi("Bank", "Bank", collection='objects', char=self._char)   
         return Location.A1_STASH
 
     def heal(self, curr_loc: Location) -> Union[Location, bool]:
         #if not self._old_pather.traverse_nodes((curr_loc, Location.A1_AKARA), self._char, force_move=True): return False
-        if not self._pather.traverse_walking("Akara",self._char, obj=False,threshold=10,static_npc=True): return False
+        if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
         self._npc_manager.open_npc_menu(Npc.AKARA)
         return Location.A1_AKARA
 
     def open_trade_and_repair_menu(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Charsi",self._char, obj=False,threshold=10,static_npc=True): return False    
+        if not self._pather.traverse_walking("Charsi", self._char, obj=False,threshold=10, static_npc=True): return False    
         #if not self._old_pather.traverse_nodes((curr_loc, Location.A1_CHARSI), self._char): return False
         self._npc_manager.open_npc_menu(Npc.CHARSI)
         self._npc_manager.press_npc_btn(Npc.CHARSI, "trade_repair")
