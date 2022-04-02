@@ -328,6 +328,7 @@ class Bot:
                 data = self._api.get_data()
             self._pick_corpse = "player_corpse" in data and data["player_corpse"] is not None and type(data["player_corpse"]) is dict
             merc_alive = "merc_alive" in data and data["merc_alive"]
+            Logger.info(f"Detected that merc is {'alive' if merc_alive else 'dead'} from memory")
             health_pct = data["player_health_pct"]
             mana_pct = data["player_mana_pct"]
             Logger.debug(f"Maintenance: Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
