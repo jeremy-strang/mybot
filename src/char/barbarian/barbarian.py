@@ -124,6 +124,7 @@ class Barbarian(IChar):
         Logger.debug(f"Finished horking corpses after {round(time.time() - start, 2)} sec")
 
     def pre_buff_swap(self, switch_back=True):
+        print(f"pre_buff_swap, switch_back: {switch_back}")
         self.switch_weapon()
         keyboard.send(self._char_config["battle_command"])
         wait(0.04, 0.07)
@@ -143,6 +144,7 @@ class Barbarian(IChar):
             self.verify_active_weapon_tab()
 
     def pre_buff(self, switch_back=True):
+        print(f"do_pre_buff, switch_back: {switch_back}")
         if self._char_config["barb_pre_buff_weapon_swap"]:
             self.pre_buff_swap(switch_back)
         else:

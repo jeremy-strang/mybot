@@ -12,6 +12,7 @@ import sys
 from npc_manager import Npc
 from obs import obs_recorder
 from pathing import PathFinder
+from run.summoner import Summoner
 from run.andariel import Andariel
 from run.pit import Pit
 from run.travincal import Travincal
@@ -90,6 +91,7 @@ if __name__ == "__main__":
         travincal = Travincal(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
         countess = Countess(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
         andariel = Andariel(screen, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        summoner = Summoner(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
 
         data = None
         print(("-" * 80) + "\n\nStarting API...")
@@ -97,7 +99,7 @@ if __name__ == "__main__":
             wait(0.2)
             data = api.get_data()
         
-        overlay = start_overlay(bot, game_stats)
+        # overlay = start_overlay(bot, game_stats)
 
         def do_stuff():
             print("Doing stuff...")
@@ -105,6 +107,9 @@ if __name__ == "__main__":
                 data = api.get_data()
                 # potion_type = "health"
                 # pp.pprint(data["flattened_belt"])
+
+                summoner.approach(bot._curr_loc)
+                summoner.battle(True)
 
                 # bot._town_manager.open_stash(Location.A4_TOWN_START)
                 # write_data_to_file(data, api._raw_data_str)

@@ -43,9 +43,9 @@ class Summoner:
         self._obs_recorder = obs_recorder
 
     def approach(self, start_loc: Location) -> Union[bool, Location]:
-        Logger.info("Run Arcane")
+        Logger.info("Run Summoner")
         if not self._char.capabilities.can_teleport_natively:
-            raise ValueError("Arcane requires teleport")
+            raise ValueError("Summoner requires Teleport")
         if not self._town_manager.open_wp(start_loc):
             return False
         wait(0.4)
@@ -53,76 +53,23 @@ class Summoner:
             return Location.A2_ARC_START
         return False
 
-    def _find_summoner(self, traverse_to_summoner: list[tuple[float, float]]) -> bool:
-        # Check if we arrived at platform
-        templates_platform = ["ARC_PLATFORM_1", "ARC_PLATFORM_2", "ARC_PLATFORM_3", "ARC_CENTER"]
-        tempaltes_summoner = ["ARC_ALTAR", "ARC_ALTAR3", "ARC_END_STAIRS", "ARC_END_STAIRS_2"]
-        match_platform = self._template_finder.search_and_wait(templates_platform, threshold=0.55, time_out=0.5, use_grayscale=True, take_ss=False)
-        match_summoner = self._template_finder.search_and_wait(tempaltes_summoner, threshold=0.79, time_out=0.5, use_grayscale=True, take_ss=False)
-        if not match_platform.valid and not match_summoner.valid:
-            # We might have arrived at summoner, move up stairs with static traverse
-            self._old_pather.traverse_nodes_fixed(traverse_to_summoner, self._char)
-            # try to match summoner again
-            match_summoner = self._template_finder.search_and_wait(tempaltes_summoner, threshold=0.79, time_out=1.0, use_grayscale=True, take_ss=False)
-        if match_summoner.valid:
-            if self._old_pather.traverse_nodes([461], self._char, time_out=2.2, force_tp=True):
-                return True
-        else:
-            # Traverse to center of platform
-            self._old_pather.traverse_nodes([462], self._char, time_out=1.3, force_tp=True)
-        return False
+    def _go_to_summoner(self, dest_dist):
+        if not self._pather.traverse("The Summoner", self._char, verify_location=True, dest_distance=dest_dist):
+            if not self._pather.traverse("The Summoner", self._char, verify_location=True, jump_distance=8, dest_distance=dest_dist): return False
+        return True
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        picked_up_items = False
-        @dataclass
-        class PathData:
-            calib_node_start: int
-            static_path_forward: str
-            jump_to_summoner: list[tuple[float, float]]
+        if not self._pather.wait_for_location("ArcaneSanctuary"): return False
+        
+        self._char.pre_travel(do_pre_buff)
 
-        path_arr = [
-            PathData(450, "arc_top_right", [(500, 40)]),
-            PathData(453, "arc_top_left", [(500, 40)]),
-            PathData(456, "arc_bottom_right", [(500, 40)]),
-            PathData(459, "arc_bottom_left", [(500, 20), (700, 100)])
-        ]
+        self._go_to_summoner(35)
+        if self._char._char_config["type"] == "zerker_barb": self._char.cast_aoe("howl")
+        self._char.post_travel()
 
-        picked_up_items = False
-        self.used_tps = 0
+        if not self._go_to_summoner(15): return False
 
-        for i, data in enumerate(path_arr):
-            if do_pre_buff:
-                self._char.pre_buff()
-
-            if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
-                self._char.switch_weapon()
-
-            # calibrating at start and moving towards the end of the arm
-            self._old_pather.traverse_nodes([data.calib_node_start], self._char, force_tp=True)
-            if not self._old_pather.traverse_nodes_fixed(data.static_path_forward, self._char):
-                return False
-            found = self._find_summoner(data.jump_to_summoner)
-
-            if self._config.char["teleport_weapon_swap"]:
-                self._char.switch_weapon()
-                self._char.verify_active_weapon_tab()
-                
-            # Kill the summoner or trash mob
-            self._char.kill_summoner()
-            if self._config.char["open_chests"]:
-                self._chest.open_up_chests()
-            picked_up_items |= self._pickit.pick_up_items(self._char)
-            if found:
-                return (Location.A2_ARC_END, picked_up_items)
-            elif i < len(path_arr) - 1:
-                # Open TP and return back to town, walk to wp and start over
-                if not self._char.tp_town():
-                    Logger.warning("TP to town failed, cancel run")
-                    self.used_tps += 20
-                    return False
-                self.used_tps += 1
-                if not self._town_manager.wait_for_tp(Location.A2_TP):
-                    return False
-                if not self.approach(Location.A2_FARA_STASH):
-                    return False
-        return False
+        self._char.kill_summoner()
+        
+        if self._char._char_config["type"] == "zerker_barb": self._char.cast_aoe("howl")
+        return (Location.A2_ARC_END, self._pickit.pick_up_items(self._char, False))
