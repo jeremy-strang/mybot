@@ -63,8 +63,7 @@ class Countess:
             jump_dist = 10
         self._char.post_travel()
 
-        if not self._pather.traverse("GoodChest", self._char): return False
-
+        if not self._pather.traverse("GoodChest", self._char, verify_location=True): return False
         chest = find_poi("GoodChest", self._api)
         roi = None
         if chest is not None:
@@ -74,7 +73,7 @@ class Countess:
 
         pickit_func = lambda: self._pickit.pick_up_items(self._char)
         picked_up_items = self._char.kill_uniques(pickit_func, 25, boundary=roi)
-        self._pather.traverse("GoodChest", self._char)
+        self._pather.traverse("GoodChest", self._char, verify_location=True)
         picked_up_items += self._pickit.pick_up_items(self._char)
         Logger.debug(f"    Picked up {picked_up_items} items")
         return (Location.A1_TOWER_END, picked_up_items)
