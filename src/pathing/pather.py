@@ -377,11 +377,11 @@ class Pather:
 
                     num_clicks += 1
                     wait(0.5, 0.6)
-                    if num_clicks == 10:
+                    if num_clicks == 10 and char is not None:
                         char.reposition(pos_abs)
                     if num_clicks == 12:
                         randomize += 2
-                    if num_clicks == 15:
+                    if num_clicks == 15 and char is not None:
                         char.pre_move()
                         char.move(pos_monitor, force_tp=True)
                     if num_clicks == 17:
