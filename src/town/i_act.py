@@ -71,7 +71,7 @@ class IAct:
     
     def gamble (self, curr_loc: Location) -> Union[Location, bool]: return False
 
-    def trade_with_npc(self, npc: Npc) -> bool:
+    def trade_with_npc(self, npc: Npc, action_btn_key="trade") -> bool:
         m = find_npc(npc, self._api)
         if m is not None:
             menu_open = False
@@ -84,8 +84,8 @@ class IAct:
                     wait(1.0)
                     # pp.pprint(m)
                     data = self._api.get_data()
-                    menu_open = data is not None and data["menus"]["NpcInteract"]
+                    menu_open = data is not None and data["npc_interact_open"]
                     if menu_open:
-                        self._npc_manager.press_npc_btn(npc, "trade")
+                        self._npc_manager.press_npc_btn(npc, action_btn_key)
                         return True
         return False
