@@ -484,9 +484,9 @@ class IChar:
                 mid = monster['id']
                 Logger.debug(f"Attacking monster {mid} with {skill_key}, distance: {round(monster['dist'], 2)}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
                 keyboard.send(self._char_config["stand_still"], do_release=False)
-                wait(0.03, 0.4)
+                wait(0.03, 0.04)
                 keyboard.send(self._skill_hotkeys[skill_key])
-                wait(0.03, 0.4)
+                wait(0.03, 0.04)
                 start = time.time()
                 while (time.time() - start) < time_in_s:
                     monster = find_monster(mid, self._api)
