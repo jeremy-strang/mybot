@@ -21,7 +21,7 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from utils.misc import unit_vector, clip_abs_point
-from utils.monsters import find_poi, find_object, find_monster
+from utils.monsters import find_poi, find_object, find_monster, find_poi
 from scipy.ndimage.filters import gaussian_filter
 from pathing.path_finder import PathFinder
 
@@ -400,12 +400,26 @@ class Pather:
         Logger.debug(f"Failed to confirm arrival at {end_loc}")
         return False
 
-    def move_mouse_to_abs_pos(self, position_abs, dist):
+    def click_poi(self, poi_label: str, offset=None):
+        data = self._api.data
+        if data is not None:
+            next_lvl = find_poi(poi_label, self._api)
+            self.move_mouse_to_abs_pos(
+                world_to_abs(next_lvl["position"], data["player_pos_world"]),
+                math.dist(data["player_pos_area"], next_lvl["position"] - data["area_origin"]),
+                offset)
+            wait(0.1, 0.15)
+            mouse.click(button="left")
+            wait(0.5)
+
+    def move_mouse_to_abs_pos(self, position_abs, dist, offset=None):
+        offset_x = offset[0] if offset is not None else 0
+        offset_y = offset[1] if offset is not None else 0
         x = np.clip(position_abs[0], -638, 638)
         y = np.clip(position_abs[1], -350, 225)
         pos_m = self._screen.convert_abs_to_monitor([x, y])
-        x_m = pos_m[0]
-        y_m = pos_m[1]
+        x_m = pos_m[0] + offset_x
+        y_m = pos_m[1] + offset_y
         adjusted_pos_m = [x_m - 5, y_m - 35] if dist < 25 else [x_m, y_m]
         mouse.move(*adjusted_pos_m, delay_factor=[0.1, 0.2])
 

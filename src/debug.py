@@ -1,4 +1,5 @@
 import json
+import math
 import pprint
 import time
 import traceback
@@ -40,7 +41,7 @@ from main import on_exit
 from utils.custom_mouse import mouse
 from utils.misc import wait
 from obs import ObsRecorder
-from utils.monsters import find_npc
+from utils.monsters import find_npc, find_monster, find_poi
 pp = pprint.PrettyPrinter(depth=6)
 
 if __name__ == "__main__":
@@ -107,9 +108,15 @@ if __name__ == "__main__":
                 data = api.get_data()
                 # potion_type = "health"
                 # pp.pprint(data["flattened_belt"])
+                # next_lvl = find_poi("Halls of Vaught", api)
+                # pather.move_mouse_to_abs_pos(
+                #     world_to_abs(next_lvl["position"], data["player_pos_world"]),
+                #     math.dist(data["player_pos_area"], next_lvl["position"] - data["area_origin"]),
+                #     offset=(35, -39.5))
 
-                if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):
-                    print("F")
+                # if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):
+                #     print("F")
+                pather.click_poi("Halls of Vaught")
 
                 # bot._town_manager.open_stash(Location.A4_TOWN_START)
                 # write_data_to_file(data, api._raw_data_str)
@@ -152,7 +159,7 @@ if __name__ == "__main__":
             except BaseException as e:
                 print(e)
                 traceback.print_exc()
-            stop_debug(game_controller, overlay)
+            # stop_debug(game_controller, overlay)
             print("Done doing stuff")
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))

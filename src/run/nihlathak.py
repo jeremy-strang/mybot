@@ -76,11 +76,14 @@ class Nihlathak:
         
         if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True):
             if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True, jump_distance=8): return False
-        if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, char=self._char): return False
-        
-        if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=25, offset=[15, -10]):
-            if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=False, randomize=4, time_out=25, offset=[15, -10]):
-                return False
+
+        self._pather.click_poi("Halls of Vaught", offset=(35, -39.5))
+        if not self._pather.wait_for_location("HallsOfVaught"):
+            self._pather.click_poi("Halls of Vaught", offset=(35, -39.5))
+            if not self._pather.wait_for_location("HallsOfVaught"):
+                if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=False, randomize=2, time_out=25, offset=[44, 0]):
+                    if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=4, time_out=25, offset=[35, -39.5]):
+                        return False
 
         self._go_to_nihlathak(50)
         if self._check_dangerous_monsters(): return False
