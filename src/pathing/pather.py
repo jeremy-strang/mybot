@@ -313,6 +313,7 @@ class Pather:
         Logger.debug(f"Going to area: {poi}, end location: {end_loc}...")
         num_clicks = 0
         start = time.time()
+        end_loc = end_loc.replace(" ", "")
         while time.time() - start < time_out:
             data = self._api.get_data()
 
@@ -340,7 +341,6 @@ class Pather:
                                     ap = p["position"]
                             else:
                                 ap = p["position"]
-                            print(p)
                             dist = math.dist(ap, data['player_pos_area'])
                             mult = 1
                             if dist < 40:
@@ -665,7 +665,8 @@ class Pather:
                  pickit=None,
                  verify_location=False,
                  time_out=20.0,
-                 dest_distance=15
+                 dest_distance=15,
+                 jump_distance=15,
                 ):
         """
         Traverse to another location
@@ -680,6 +681,7 @@ class Pather:
         tmp_duration = char._cast_duration
         char._cast_duration = max(0.18, char._cast_duration - 0.3)
         last_pos = None
+        last_node_pos_abs = None
         repeated_pos_count = 0
         reached_destination = 2
         hard_exit = 0
@@ -699,6 +701,12 @@ class Pather:
                 # Some fail save checking for when we get stuck
                 if last_pos is not None and np.array_equal(player_pos_area, last_pos):
                     repeated_pos_count += 1
+                    if repeated_pos_count == 2 and last_node_pos_abs is not None:
+                        char.reposition(last_node_pos_abs)
+                    if repeated_pos_count == 4 and last_node_pos_abs is not None:
+                        char.reposition(last_node_pos_abs)
+                    if repeated_pos_count == 6 and last_node_pos_abs is not None:
+                        char.reposition(last_node_pos_abs)
                     if repeated_pos_count == 8:
                         Logger.debug("Increasing end point reached range")
                         reached_destination += 5
@@ -748,12 +756,11 @@ class Pather:
                 route_list = route.tolist()
                 decimation = []
 
-                jump_dist = 15
                 prev_node = route_list[0]
                 for node in route_list:
                     # manhattan distance from our current step to the next node
                     d = cityblock(node, prev_node)
-                    if d > jump_dist:
+                    if d > jump_distance:
                         # if its greater than how far we can teleport save it
                         decimation.append(node)
                         prev_node = node
@@ -772,7 +779,7 @@ class Pather:
                     node_pos_w = [node[1], node[0]]
                     data = self._api.get_data()
                     player_pos = data['player_pos_area']+data['player_offset']
-                    node_pos_abs = world_to_abs(node_pos_w, player_pos)
+                    node_pos_abs = last_node_pos_abs = world_to_abs(node_pos_w, player_pos)
                     node_pos_m = self._screen.convert_abs_to_monitor(node_pos_abs, clip_input=True)
 
                     if math.dist(player_pos, node_pos_w) < 10:
@@ -787,7 +794,7 @@ class Pather:
                 if recalc_dist < dest_distance and verify_location:
                     Logger.debug(f"Traverse to {end} completed ({round(recalc_dist, 2)} from destination)")
                     return True
-                elif verify_location is False:
+                elif not verify_location:
                     Logger.debug(f"Traverse completed without verification ({round(recalc_dist, 2)} from destination)")
                     return True
                 else:
@@ -803,7 +810,7 @@ class Pather:
             data = self._api.get_data()
             if data is not None and data["current_area"] == name:
                 return True
-            time.sleep(0.2)
+            time.sleep(0.1)
         return False
 
 

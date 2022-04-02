@@ -159,10 +159,10 @@ class SingerBarb(Barbarian):
     def kill_baal(self) -> bool:
         return self._kill_mobs(["BaalCrab"], ignore_names=["BaalCrabClone"])
 
-    def kill_meph(self) -> bool:
+    def kill_mephisto(self) -> bool:
         return self._kill_mobs(["Mephisto"])
 
-    def kill_andy(self) -> bool:
+    def kill_andariel(self) -> bool:
         return self._kill_mobs(["Andariel"])
 
     def _get_updated_monster(self, monster):

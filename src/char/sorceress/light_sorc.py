@@ -260,7 +260,7 @@ class LightSorc(Sorceress):
         return True
 
 
-    def kill_meph(self, game_state: StateMonitor) -> bool:
+    def kill_mephisto(self, game_state: StateMonitor) -> bool:
 
         odist = 999999
         while odist > 10:
@@ -278,13 +278,13 @@ class LightSorc(Sorceress):
         self._kill_mobs(["Mephisto"], game_state,static=0,kite=True,kite_dist=.2)
         return True
 
-    def kill_tower(self, game_state: StateMonitor) -> bool:
+    def kill_countess(self, game_state: StateMonitor) -> bool:
         #use unique id for now
         self._kill_mobs(["DarkStalker"], game_state,1,kite=True,kite_dist=.2)
         return True
 
 
-    def kill_andy(self, game_state: StateMonitor) -> bool:
+    def kill_andariel(self, game_state: StateMonitor) -> bool:
 
         self._kill_mobs(["Andariel"], game_state,kite=True,kite_dist=.67)
         return True

@@ -644,14 +644,20 @@ class IChar:
     def kill_council(self) -> bool:
         raise ValueError("Council is not implemented!")
 
+    def kill_mephisto(self) -> bool:
+        raise ValueError("Mephisto is not implemented!")
+
+    def kill_andariel(self) -> bool:
+        raise ValueError("Andariel is not implemented!")
+
+    def kill_countess(self) -> bool:
+        raise ValueError("Countess is not implemented!")
+
     def kill_nihlathak(self, end_nodes: list[int]) -> bool:
         raise ValueError("Nihlathak is not implemented!")
 
     def kill_summoner(self) -> bool:
         raise ValueError("Arcane is not implemented!")
-
-    def kill_meph(self) -> bool:
-        raise ValueError("Meph is not implemented!")
 
     def kill_diablo(self) -> bool:
         raise ValueError("Diablo is not implemented!")

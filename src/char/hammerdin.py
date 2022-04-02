@@ -429,10 +429,10 @@ class Hammerdin(IChar):
     def kill_baal(self) -> bool:
         return self._kill_mobs(["BaalCrab"], ignore_names=["BaalCrabClone"], time_out=90)
 
-    def kill_meph(self) -> bool:
+    def kill_mephisto(self) -> bool:
         return self._kill_mobs(["Mephisto"])
 
-    def kill_andy(self) -> bool:
+    def kill_andariel(self) -> bool:
         return self._kill_mobs(["Andariel"])
 
     def _get_updated_monster(self, monster):
@@ -580,7 +580,7 @@ class Hammerdin(IChar):
                 if dist < 8:
                     self._cast_hammers(1.0)
 
-    def kill_tower(self, game_state: StateMonitor) -> bool:
+    def kill_countess(self, game_state: StateMonitor) -> bool:
         #use unique id for now
         self._kill_mobs_adv(["DarkStalker"], game_state)
         return True

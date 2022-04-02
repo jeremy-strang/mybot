@@ -124,7 +124,7 @@ class ZerkerBarb(Barbarian):
         game_state.stop()
         return picked_up_items
 
-    def kill_andy(self, game_state: StateMonitor = None) -> bool:
+    def kill_andariel(self, game_state: StateMonitor = None) -> bool:
         game_state = StateMonitor(["Andariel"], self._api)
         self.cast_aoe("howl")
         self._kill_mobs(game_state, atk_len=4, time_out=10)
@@ -133,7 +133,7 @@ class ZerkerBarb(Barbarian):
         game_state.stop()
         return True
 
-    def kill_meph(self, game_state: StateMonitor = None) -> bool:
+    def kill_mephisto(self, game_state: StateMonitor = None) -> bool:
         game_state = StateMonitor(["Mephisto"], self._api)
         self._kill_mobs(game_state, reposition_pos=(69, 54), reposition_time=10)
         game_state.stop()
@@ -170,7 +170,7 @@ class ZerkerBarb(Barbarian):
         game_state.stop()
         return True
 
-    def kill_tower(self, game_state: StateMonitor) -> bool:
+    def kill_countess(self, game_state: StateMonitor) -> bool:
         self._kill_mobs(game_state, 1.7, 15, do_howl=True)
         return True
 

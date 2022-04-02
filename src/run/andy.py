@@ -66,11 +66,11 @@ class Andy:
 
         if self._char._char_config['type'] == 'hammerdin':
             if not self._pather.traverse((65, 85), self._char): return False
-            self._char.kill_andy()
+            self._char.kill_andariel()
         elif self._char._char_config['type'] in ['light_sorc', 'necro', 'zerker_barb']:
             if not self._pather.traverse((46, 23), self._char): return False
             game_state = StateMonitor(['Andariel'], self._api)
-            result = self._char.kill_andy(game_state)
+            result = self._char.kill_andariel(game_state)
             if result:
                 Logger.info("Andy died...")
             wait(0.1, .2)

@@ -68,10 +68,10 @@ class Meph:
             self._char.verify_active_weapon_tab()
 
         if self._char._char_config['type'] == 'hammerdin':
-            self._char.kill_meph()
+            self._char.kill_mephisto()
         elif self._char._char_config['type'] in ['light_sorc', 'necro', 'zerker_barb']:
             game_state = StateMonitor(['Mephisto'],self._api)
-            self._char.kill_meph(game_state)
+            self._char.kill_mephisto(game_state)
             x = game_state._area_pos[0]
             y = game_state._area_pos[1]
             self._pather.traverse((x, y), self._char)
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     # self._pather.traverse("Durance of Hate Level 3", self._char)
     # self._go_to_area("Durance of Hate Level 3", "DuranceOfHateLevel3")
     # # if not self._pather.traverse((136, 176), self._char): return False
-    # self._char.kill_meph(self._api, self._pather)
+    # self._char.kill_mephisto(self._api, self._pather)
     # picked_up_items = self._pickit.pick_up_items(self._char)
     while 1:
         data = self._api.get_data()

@@ -15,6 +15,7 @@ from pathing import PathFinder
 from run.andy import Andy
 from run.pit import Pit
 from run.trav import Trav
+from run.tower import Tower
 
 from screen import Screen
 from bot import Bot
@@ -81,12 +82,13 @@ if __name__ == "__main__":
         belt_manager = BeltManager(screen, template_finder, api)
         pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api)
 
-        # char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities(force=True)
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
         pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
         trav = Trav(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        tower = Tower(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
         andy = Andy(screen, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
 
         data = None
@@ -104,30 +106,13 @@ if __name__ == "__main__":
                 # potion_type = "health"
                 # pp.pprint(data["flattened_belt"])
 
-                # if data is not None:
-                #     if "flattened_belt" in data and data["flattened_belt"] is not None:
-                #         belt = data["flattened_belt"]
-                #         if belt is not None and len(belt) > 0:
-                #             for i in range(min(len(belt), 4)):
-                #                 print(f"\n\nbelt[{i}]['ItemBaseName'] = {belt[i]['ItemBaseName']} type(belt[i]) = {type(belt[i])}\n\n")
-                #                 pp.pprint(belt[i])
-                #                 print("\n")
-                #                 print(len(belt) > i and type(belt[i]) is dict)
-                #                 print("ItemBaseName" in belt[i])
-                #                 print(belt[i]["ItemBaseName"])
-                #                 print(potion_type.lower() in belt[i]["ItemBaseName"].lower())
-                #                 if len(belt) > i and type(belt[i]) is dict and "ItemBaseName" in belt[i] and potion_type.lower() in belt[i]["ItemBaseName"].lower():
-                #                     print(f"potion{i+1}")
-                # belt_manager.update_pot_needs(True)
-                # print(belt_manager.get_pot_needs())
-
                 # bot._town_manager.open_stash(Location.A4_TOWN_START)
                 # write_data_to_file(data, api._raw_data_str)
                 
-                pot_needs = belt_manager.update_pot_needs()
-                pot_needs = belt_manager.get_pot_needs()
-                print(f"Potion needs: {pot_needs}")
-                bot._town_manager.buy_pots(Location.A3_ORMUS, pot_needs["health"], pot_needs["mana"])
+                # pot_needs = belt_manager.update_pot_needs()
+                # pot_needs = belt_manager.get_pot_needs()
+                # print(f"Potion needs: {pot_needs}")
+                # bot._town_manager.buy_pots(Location.A3_ORMUS, pot_needs["health"], pot_needs["mana"])
 
                 # bank = None
                 # for obj in data["objects"]:w
