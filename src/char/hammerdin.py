@@ -183,21 +183,6 @@ class Hammerdin(IChar):
             self._move_and_attack((40, 10), atk_len)
         return True
 
-    def kill_nihlathak(self, end_nodes: list[int]) -> bool:
-        # Move close to nihlathak
-        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8, do_pre_move=False)
-        # move mouse to center, otherwise hammers sometimes dont fly, not sure why
-        pos_m = self._screen.convert_abs_to_monitor((0, 0))
-        mouse.move(*pos_m, randomize=80, delay_factor=[0.5, 0.7])
-        self._cast_hammers(self._char_config["atk_len_nihlathak"] * 0.4)
-        self._cast_hammers(0.8, "redemption")
-        self._move_and_attack((30, 15), self._char_config["atk_len_nihlathak"] * 0.3)
-        self._cast_hammers(0.8, "redemption")
-        self._move_and_attack((-30, -15), self._char_config["atk_len_nihlathak"] * 0.4)
-        wait(0.1, 0.15)
-        self._cast_hammers(1.2, "redemption")
-        return True
-
     # Chaos Sanctuary, Seal Bosses (a = Vizier, b = De Seis, c = Infector) & Diablo
     def kill_cs_trash(self) -> bool:
         # move mouse to center, otherwise hammers sometimes dont fly, not sure why
@@ -296,20 +281,6 @@ class Hammerdin(IChar):
 
     def kill_diablo(self) -> bool:
         return self._kill_mobs(["Diablo"], time_out=90)
-
-    def kill_summoner(self) -> bool:
-        # move mouse to below altar
-        pos_m = self._screen.convert_abs_to_monitor((0, 20))
-        mouse.move(*pos_m, randomize=80, delay_factor=[0.5, 0.7])
-        # Attack
-        self._cast_hammers(self._char_config["atk_len_arc"])
-        wait(0.1, 0.15)
-        self._cast_hammers(1.6, "redemption")
-        # Move a bit back and another round
-        self._move_and_attack((0, 80), self._char_config["atk_len_arc"] * 0.5)
-        wait(0.1, 0.15)
-        self._cast_hammers(1.6, "redemption")
-        return True
 
     def baal_idle(self, monster_filter: list[str], start_time: float) -> tuple[bool, list[str]]:
         found_monsters = []
@@ -437,6 +408,9 @@ class Hammerdin(IChar):
 
     def kill_summoner(self) -> bool:
         return self._kill_mobs(["Summoner"])
+
+    def kill_nihlathak(self) -> bool:
+        return self._kill_mobs(["Nihlathak"])
 
     def _get_updated_monster(self, monster):
         fresh_data = self._api.get_data()
