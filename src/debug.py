@@ -97,7 +97,7 @@ if __name__ == "__main__":
             wait(0.2)
             data = api.get_data()
         
-        overlay = start_overlay(bot, game_stats)
+        # overlay = start_overlay(bot, game_stats)
 
         def do_stuff():
             print("Doing stuff...")
@@ -105,9 +105,7 @@ if __name__ == "__main__":
                 data = api.get_data()
                 # potion_type = "health"
                 # pp.pprint(data["flattened_belt"])
-
-                # bot._town_manager.open_stash(Location.A4_TOWN_START)
-                # write_data_to_file(data, api._raw_data_str)
+                pather.go_to_area("Tower Cellar Level 4", "Tower Cellar Level 4", entrance_in_wall=False, randomize=4, char=char)
                 
                 # pot_needs = belt_manager.update_pot_needs()
                 # pot_needs = belt_manager.get_pot_needs()
