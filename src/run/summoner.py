@@ -59,15 +59,20 @@ class Summoner:
         return True
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
+        is_barb = "_barb" in self._char._char_config["type"]
         if not self._pather.wait_for_location("ArcaneSanctuary"): return False
         
         self._char.pre_travel(do_pre_buff)
 
-        self._go_to_summoner(35)
-        if self._char._char_config["type"] == "zerker_barb": self._char.cast_aoe("howl")
-        self._char.post_travel()
+        if is_barb:
+            self._go_to_summoner(49)
+            self._char.cast_aoe("howl")
+            self._char.post_travel()
 
         if not self._go_to_summoner(15): return False
+
+        if not is_barb:
+            self._char.post_travel()
 
         self._char.kill_summoner()
         
