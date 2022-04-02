@@ -50,18 +50,18 @@ def find_npc(npc: Npc, api: MapAssistApi):
 
 def find_poi(poi: str, api: MapAssistApi):
     data = api.get_data()
-    for poi in data["points_of_interest"]:
-        label = poi["label"]
+    for p in data["points_of_interest"]:
+        label = p["label"]
         if label.lower().startswith(poi.lower()):
-            return poi
+            return p
     return None
 
 def find_object(object: str, api: MapAssistApi):
     data = api.get_data()
-    for object in data["objects"]:
-        name = object["name"]
+    for o in data["objects"]:
+        name = o["name"]
         if name.lower().startswith(object.lower()):
-            return object
+            return o
     return None
 
 def get_unlooted_monsters(api: MapAssistApi, rules: list[MonsterRule], looted_monsters: set, boundary=None, max_distance=100) -> list[dict]:

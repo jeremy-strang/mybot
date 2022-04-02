@@ -322,6 +322,7 @@ class Pather:
                 return False
 
             if data is not None:
+                pos_abs = None
                 pos_monitor = None
                 if type(poi) == str:
                     for p in data["points_of_interest"]:
@@ -347,17 +348,17 @@ class Pather:
                                 mult = .5
                             #pos_monitor = self._api.world_to_abs_screen(ap)
                             player_p = data['player_pos_area']
-                            new_pos_mon = world_to_abs(
+                            pos_abs = world_to_abs(
                                 (ap-data["area_origin"]), player_p+data['player_offset'])
-                            pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
+                            pos_monitor = [pos_abs[0], pos_abs[1]]
                             if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
                                 pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor*mult)
                             else:
                                 pos_monitor = None
                 else:
                     player_p = data['player_pos_area']
-                    new_pos_mon = world_to_abs((poi-data["area_origin"]), player_p + data['player_offset'])
-                    pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
+                    pos_abs = world_to_abs((poi-data["area_origin"]), player_p + data['player_offset'])
+                    pos_monitor = [pos_abs[0], pos_abs[1]]
                     if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
                         pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                     else:
@@ -376,9 +377,17 @@ class Pather:
 
                     num_clicks += 1
                     wait(0.5, 0.6)
-                    if num_clicks == 10: randomize += 1
-                    if num_clicks == 15: randomize += 2
-                    if num_clicks == 20: randomize += 3
+                    if num_clicks == 10:
+                        char.reposition(pos_abs)
+                    if num_clicks == 12:
+                        randomize += 2
+                    if num_clicks == 15:
+                        char.pre_move()
+                        char.move(pos_monitor, force_tp=True)
+                    if num_clicks == 17:
+                        randomize += 3
+                    if num_clicks == 20:
+                        randomize += 4
                     data = self._api.get_data()
                 if data["current_area"] == end_loc:
                     Logger.debug(f"Done going to area {end_loc} after {time.time() - start} sec")

@@ -14,6 +14,7 @@ from screen import Screen
 import time
 from state_monitor import StateMonitor
 from obs import ObsRecorder
+from utils.monsters import find_poi
 
 class Countess:
     def __init__(
@@ -63,13 +64,20 @@ class Countess:
         self._char.post_travel()
 
         if not self._pather.traverse("GoodChest", self._char): return False
-        game_state = StateMonitor(['DarkStalker'], self._api, super_unique=True)
-        if self._char.kill_countess(game_state):
-            Logger.info("Countess died...")
-        wait(0.2, .4)
-        x = game_state._area_pos[0]
-        y = game_state._area_pos[1]
-        self._pather.traverse((x, y), self._char)
-        game_state.stop()
-        picked_up_items = self._pickit.pick_up_items(self._char)
+
+        chest = find_poi("GoodChest", self._api)
+        roi = None
+        if chest is not None:
+            roi = [
+                max(chest["position"][0] - 20, 0),
+                max(chest["position"][1] - 20, 0),
+                40,
+                35,
+            ]
+
+        pickit_func = lambda: self._pickit.pick_up_items(self._char)
+        picked_up_items = self._char.kill_uniques(pickit_func, 25, boundary=roi)
+        self._pather.traverse("GoodChest", self._char)
+        picked_up_items += self._pickit.pick_up_items(self._char)
+        Logger.debug(f"    Picked up {picked_up_items} items")
         return (Location.A1_TOWER_END, picked_up_items)

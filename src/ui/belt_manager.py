@@ -112,7 +112,7 @@ class BeltManager:
                 belt = data["flattened_belt"]
                 if belt is not None and len(belt) > 0:
                     for i in range(min(len(belt), 4)):
-                        if len(belt) > i and type(belt[i]) is dict and "ItemBaseName" in belt[i] and potion_type[:4].lower() in belt[i]["ItemBaseName"].lower():
+                        if len(belt) > i and type(belt[i]) is dict and "name" in belt[i] and potion_type[:4].lower() in belt[i]["name"].lower():
                             return f"potion{i+1}"
         # img = self._screen.grab()
         # for i in range(4):
@@ -131,76 +131,30 @@ class BeltManager:
         # else:
         #     Logger.warning(f"BeltManager does not know about item: {item_name}")
 
-    def update_pot_needs(self, read_memory=True):
+    def update_pot_needs(self):
         """
         Check how many pots are needed
         """
         self._pot_needs = {"rejuv": 0, "health": 0, "mana": 0}
-        if read_memory:
-            wait(0.05, 0.07)
-            data = self._api.get_data()
-            rows = self._config.char["belt_rows"]
-            if data is not None and "belt_rejuv_pots" in data and "belt_health_pots" in data and "belt_mana_pots" in data:
-                self._pot_needs["rejuv"] = self._config.char["belt_rejuv_columns"] * rows - data["belt_rejuv_pots"]
-                self._pot_needs["health"] = self._config.char["belt_hp_columns"] * rows - data["belt_health_pots"]
-                self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * rows - data["belt_mana_pots"]
-            
-            for potion_type in ["health", "mana", "rejuv"]:
-                while self._pot_needs[potion_type] < 0:
-                    key = self._get_potion_key(potion_type)
-                    if not key:
-                        self._pot_needs[potion_type] = 0
-                    else:
-                        wait(0.04, 0.06)
-                        keyboard.send(self._config.char[key])
-                        self._pot_needs[potion_type] -= 1
-                        wait(0.04, 0.06)
-        # else:
-        #     rows_left = {
-        #         "rejuv": self._config.char["belt_rejuv_columns"],
-        #         "health": self._config.char["belt_hp_columns"],
-        #         "mana": self._config.char["belt_mp_columns"],
-        #     }
-        #     # In case we are in danger that the mouse hovers the belt rows, move it to the center
-        #     screen_mouse_pos = self._screen.convert_monitor_to_screen(mouse.get_position())
-        #     if screen_mouse_pos[1] > self._config.ui_pos["screen_height"] * 0.72:
-        #         center_m = self._screen.convert_abs_to_monitor((-200, -120))
-        #         mouse.move(*center_m, randomize=100)
-        #     keyboard.send(self._config.char["show_belt"])
-        #     wait(0.5)
-        #     # first clean up columns that might be too much
-        #     img = self._screen.grab()
-        #     for column in range(4):
-        #         potion_type = self._potion_type(self._cut_potion_img(img, column, 0))
-        #         if potion_type != "empty":
-        #             rows_left[potion_type] -= 1
-        #             if rows_left[potion_type] < 0:
-        #                 rows_left[potion_type] += 1
-        #                 key = f"potion{column+1}"
-        #                 for _ in range(5):
-        #                     keyboard.send(self._config.char[key])
-        #                     wait(0.2, 0.3)
-        #     # calc how many potions are needed
-        #     img = self._screen.grab()
-        #     current_column = None
-        #     for column in range(4):
-        #         for row in range(self._config.char["belt_rows"]):
-        #             potion_type = self._potion_type(self._cut_potion_img(img, column, row))
-        #             if row == 0:
-        #                 if potion_type != "empty":
-        #                     current_column = potion_type
-        #                 else:
-        #                     for key in rows_left:
-        #                         if rows_left[key] > 0:
-        #                             rows_left[key] -= 1
-        #                             self._pot_needs[key] += self._config.char["belt_rows"]
-        #                             break
-        #                     break
-        #             elif current_column is not None and potion_type == "empty":
-        #                 self._pot_needs[current_column] += 1
-        #     wait(0.2)
-        #     Logger.debug(f"Will pickup: {self._pot_needs}")
-        #     keyboard.send(self._config.char["show_belt"])
+        wait(0.05, 0.07)
+        data = self._api.get_data()
+        rows = self._config.char["belt_rows"]
+        if data is not None and "belt_rejuv_pots" in data and "belt_health_pots" in data and "belt_mana_pots" in data:
+            self._pot_needs["rejuv"] = self._config.char["belt_rejuv_columns"] * rows - data["belt_rejuv_pots"]
+            self._pot_needs["health"] = self._config.char["belt_hp_columns"] * rows - data["belt_health_pots"]
+            self._pot_needs["mana"] = self._config.char["belt_mp_columns"] * rows - data["belt_mana_pots"]
+        
+        for potion_type in ["health", "mana", "rejuv"]:
+            while self._pot_needs[potion_type] < 0:
+                key = self._get_potion_key(potion_type)
+                if not key:
+                    self._pot_needs[potion_type] = 0
+                else:
+                    wait(0.04, 0.06)
+                    keyboard.send(self._config.char[key])
+                    self._pot_needs[potion_type] -= 1
+                    wait(0.04, 0.06)
+        print(self._pot_needs)
 
     def fill_up_belt_from_inventory(self, num_loot_columns: int):
         """
@@ -228,16 +182,3 @@ class BeltManager:
         keyboard.send(self._config.char["inventory_screen"])
         wait(0.5)
         self.update_pot_needs()
-
-
-if __name__ == "__main__":
-    from obs import ObsRecorder
-    keyboard.wait("f11")
-    config = Config()
-    obs_recorder = ObsRecorder(config)
-    screen = Screen()
-    template_finder = TemplateFinder(screen)
-    ui_manager = UiManager(screen, template_finder, obs_recorder)
-    belt_manager = BeltManager(screen, template_finder)
-    belt_manager.update_pot_needs()
-    print(belt_manager._pot_needs)

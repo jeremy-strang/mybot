@@ -522,7 +522,7 @@ class Hammerdin(IChar):
         wait(0.02, 0.4)
         return True
 
-    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
+    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None):
         Logger.debug(f"Beginning combat")
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
@@ -566,7 +566,7 @@ class Hammerdin(IChar):
         keyboard.send(self._skill_hotkeys["concentration"])
         wait(0.03, 0.05)
         self.post_attack()
-        Logger.debug(f"Finished killing mobs, combat took {round(elapsed, 2)} sec")
+        Logger.debug(f"Finished killing uniques, combat took {round(elapsed, 2)} sec")
         game_state.stop()
         return picked_up_items
 
@@ -580,7 +580,6 @@ class Hammerdin(IChar):
                 if dist < 8:
                     self._cast_hammers(1.0)
 
-    def kill_countess(self, game_state: StateMonitor) -> bool:
-        #use unique id for now
-        self._kill_mobs_adv(["DarkStalker"], game_state)
+    def kill_countess(self, pickit=None) -> bool:
+        self.kill_uniques(pickit, 20)
         return True

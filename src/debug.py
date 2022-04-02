@@ -97,7 +97,7 @@ if __name__ == "__main__":
             wait(0.2)
             data = api.get_data()
         
-        # overlay = start_overlay(bot, game_stats)
+        overlay = start_overlay(bot, game_stats)
 
         def do_stuff():
             print("Doing stuff...")

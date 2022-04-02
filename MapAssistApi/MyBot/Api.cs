@@ -42,15 +42,42 @@ namespace MapAssist.MyBot
         private int _currentMapHeight = 0;
         private int _currentMapWidth = 0;
         private double _chicken = 0.5;
-        private double _merc_chicken = 0.0;
+        private double _mercChicken = 0.0;
         private bool _disposed;
         private IBotConfig _config;
+        private HashSet<Stat> _usefulStats = new HashSet<Stat>() {
+            Stat.Strength,
+            Stat.Energy,
+            Stat.Dexterity,
+            Stat.Vitality,
+            Stat.Life,
+            Stat.MaxLife,
+            Stat.Mana,
+            Stat.MaxMana,
+            Stat.Level,
+            Stat.Experience,
+            Stat.Gold,
+            Stat.StashGold,
+            Stat.VelocityPercent,
+            Stat.AttackRate,
+            Stat.Durability,
+            Stat.MaxDurability,
+            Stat.MaxHPPercent,
+            Stat.MaxManaPercent,
+            Stat.FasterCastRate,
+            Stat.AllSkills,
+            Stat.FasterRunWalk,
+            Stat.FireResist,
+            Stat.LightningResist,
+            Stat.ColdResist,
+            Stat.PoisonResist,
+        };
         
         public Api(IBotConfig config = null)
         {
             _config = config;
             _chicken = config.GetValue("char", "chicken", 0.5);
-            _merc_chicken = config.GetValue("char", "merc_chicken", 0.0);
+            _mercChicken = config.GetValue("char", "merc_chicken", 0.0);
             _gameDataReader = new GameDataReader();
             TimerService.EnableHighPrecisionTimers();
         }
@@ -128,7 +155,7 @@ namespace MapAssist.MyBot
                         var player_level = stats.ContainsKey(Stat.Level) ? stats[Stat.Level] : int.MaxValue;
                         var player_experience = stats.ContainsKey(Stat.Experience) ? stats[Stat.Experience] : int.MaxValue;
                         var player_gold = stats.ContainsKey(Stat.Gold) ? stats[Stat.Gold] : int.MaxValue;
-                        var player_stats = stats.Select(item =>
+                        var player_stats = stats.Where(item => _usefulStats.Contains(item.Key)).Select(item =>
                         {
                             Stat key = item.Key;
                             var value = item.Value;
@@ -140,7 +167,18 @@ namespace MapAssist.MyBot
                             return new { key = key.ToString(), value };
                         }).ToList();
 
-                        UnitItem[] flattened_belt = playerUnit.BeltItems.SelectMany(x => x).ToArray();
+                        var flattened_belt = new List<dynamic>();
+                        foreach (var item in playerUnit.BeltItems.SelectMany(x => x).ToList())
+                        {
+                            if (item != null)
+                            {
+                                flattened_belt.Add(new
+                                {
+                                    name = "" + item.ItemBaseName,
+                                    hash_string = "" + item.HashString,
+                                });
+                            }
+                        }
 
                         var belt_health_pots = 0;
                         var belt_mana_pots = 0;
@@ -252,7 +290,7 @@ namespace MapAssist.MyBot
                         var in_game = _gameData.MenuOpen.InGame;
                         var should_chicken = in_game && !IsInTown(current_area) && _areaData.Area != Area.None && (
                             (player_health_pct < _chicken) ||
-                            (merc_health_pct < _merc_chicken));
+                            (merc_health_pct < _mercChicken));
 
                         var inventory_open = _gameData.MenuOpen.Inventory;
                         var stash_open = _gameData.MenuOpen.Stash;
@@ -406,8 +444,8 @@ namespace MapAssist.MyBot
             }
             catch (Exception ex)
             {
-                //_log.Error(ex);
-                //_log.Error(ex.StackTrace);
+                _log.Error(ex);
+                _log.Error(ex.StackTrace);
             }
 
             return JsonConvert.SerializeObject(new { success = false }, formatting);
