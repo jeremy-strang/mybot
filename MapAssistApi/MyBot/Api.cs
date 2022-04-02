@@ -42,11 +42,15 @@ namespace MapAssist.MyBot
         private int _currentMapHeight = 0;
         private int _currentMapWidth = 0;
         private double _chicken = 0.5;
-        private bool disposed;
+        private double _merc_chicken = 0.0;
+        private bool _disposed;
+        private IBotConfig _config;
         
-        public Api(double chicken = 0.5)
+        public Api(IBotConfig config = null)
         {
-            _chicken = chicken;
+            _config = config;
+            _chicken = config.GetValue("char", "chicken", 0.5);
+            _merc_chicken = config.GetValue("char", "merc_chicken", 0.0);
             _gameDataReader = new GameDataReader();
             TimerService.EnableHighPrecisionTimers();
         }
@@ -57,9 +61,9 @@ namespace MapAssist.MyBot
             //listener.Close();
             lock (_lock)
             {
-                if (!disposed)
+                if (!_disposed)
                 {
-                    disposed = true; // This first to let GraphicsWindow.DrawGraphics know to return instantly
+                    _disposed = true; // This first to let GraphicsWindow.DrawGraphics know to return instantly
                     if (_compositor != null)
                         _compositor.Dispose(); // This last so it's disposed after GraphicsWindow stops using it
                 }
@@ -152,7 +156,7 @@ namespace MapAssist.MyBot
                         }
 
                         var merc = _gameData.Mercs.Where(a => a.IsPlayerOwned).FirstOrDefault();
-                        var merc_health_pct = 0.0;
+                        var merc_health_pct = 1.0;
                         dynamic player_merc = null;
                         if (merc != null)
                         {
@@ -246,7 +250,9 @@ namespace MapAssist.MyBot
                         _currentMapWidth = mapW;
 
                         var in_game = _gameData.MenuOpen.InGame;
-                        var should_chicken = in_game && player_health_pct < _chicken && !IsInTown(current_area) && _areaData.Area != Area.None;
+                        var should_chicken = in_game && !IsInTown(current_area) && _areaData.Area != Area.None && (
+                            (player_health_pct < _chicken) ||
+                            (merc_health_pct < _merc_chicken));
 
                         var inventory_open = _gameData.MenuOpen.Inventory;
                         var stash_open = _gameData.MenuOpen.Stash;

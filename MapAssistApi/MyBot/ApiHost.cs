@@ -32,8 +32,7 @@ namespace MapAssist.MyBot
             try
             {
                 var interval = BotConfig.Current.GetValue("map_assist", "polling_interval", 10);
-                var chicken = BotConfig.Current.GetValue("char", "chicken", 0.5);
-                using (var api = new Api(chicken))
+                using (var api = new Api(BotConfig.Current))
                 {
                     while (!token.IsCancellationRequested)
                     {
