@@ -65,7 +65,7 @@ class A5(IAct):
 
     def open_trade_and_repair_menu(self, curr_loc: Location) -> Union[Location, bool]:
         if not self._pather.traverse_walking([141, 43], self._char, obj=False, threshold=10, static_npc=False, end_dist=5): return False
-        if not self.trade_with_npc(Npc.ORMUS):
+        if not self.trade_with_npc(Npc.LARZUK):
             self._npc_manager.open_npc_menu(Npc.LARZUK)
             self._npc_manager.press_npc_btn(Npc.LARZUK, "trade_repair")
         return Location.A5_LARZUK
