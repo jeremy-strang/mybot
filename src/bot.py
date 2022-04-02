@@ -363,6 +363,7 @@ class Bot:
                 dest_loc = Location.A1_AKARA if buy_pots or should_heal else Location.A1_WP_NORTH
                 if self._picked_up_items or should_res_merc:
                     dest = None
+                pre_walk_time = 1.5
             elif "a2_" in self._curr_loc:
                 dest = "Lysander" if buy_pots or should_heal else "Lut Gholein"
                 dest_loc = Location.A2_FARA_STASH if buy_pots or should_heal else Location.A2_WP
@@ -382,7 +383,7 @@ class Bot:
                 dest_loc = Location.A5_MALAH if buy_pots or should_heal else Location.A5_STASH
 
             if dest is not None:
-                Logger.info(f"Maintenance: Heading toward {dest}. Buy pots: {buy_pots}, need to heal: {should_heal}")
+                Logger.info(f"Maintenance: Heading toward {dest}, buy pots: {buy_pots}, need to heal: {should_heal}")
                 if dest == "Akara":
                     self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True)
                 else:
