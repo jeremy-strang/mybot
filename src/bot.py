@@ -462,6 +462,7 @@ class Bot:
             Logger.info(f"Detected that merc is dead in memory, confirming via pixels...")
             if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             merc_alive = self._template_finder.search(["MERC_A2", "MERC_A1", "MERC_A5", "MERC_A3"], self._screen.grab(), threshold=0.9, roi=self._config.ui_roi["merc_icon"]).valid
+            should_res_merc = not merc_alive and self._config.char["use_merc"]
             Logger.info(f"Confirmed via pixels that merc is {'alive' if merc_alive else 'dead'}")
         if should_res_merc:
             Logger.info("Maintenance: Resurrect merc")
