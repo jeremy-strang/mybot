@@ -78,8 +78,8 @@ class Nihlathak:
             if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True, jump_distance=8): return False
         if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, char=self._char): return False
         
-        if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=25, offset=[7, -5]):
-            if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=False, randomize=4, time_out=25, offset=[7, -5]):
+        if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=25, offset=[15, -10]):
+            if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=False, randomize=4, time_out=25, offset=[15, -10]):
                 return False
 
         self._go_to_nihlathak(50)

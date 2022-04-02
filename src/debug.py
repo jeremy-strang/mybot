@@ -108,6 +108,8 @@ if __name__ == "__main__":
                 # potion_type = "health"
                 # pp.pprint(data["flattened_belt"])
 
+                if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):
+                    print("F")
 
                 # bot._town_manager.open_stash(Location.A4_TOWN_START)
                 # write_data_to_file(data, api._raw_data_str)
