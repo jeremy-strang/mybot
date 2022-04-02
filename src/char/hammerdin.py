@@ -435,6 +435,9 @@ class Hammerdin(IChar):
     def kill_andariel(self) -> bool:
         return self._kill_mobs(["Andariel"])
 
+    def kill_summoner(self) -> bool:
+        return self._kill_mobs(["Summoner"])
+
     def _get_updated_monster(self, monster):
         fresh_data = self._api.get_data()
         fresh_m = next(filter(lambda x: x["id"] == monster and x["mode"] != 12, fresh_data["monsters"]), monster)
