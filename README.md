@@ -181,6 +181,7 @@ run_shenk=0
 | transmute_every_x_game               | How often to run transmute routine (currently transmutes flawless gems into perfect gems). Transmute routine depends on stashing routine it will only start after items stashing is done. E.g. so it could take more than X games to perform transmutes if there were no items to stash at the time. Default: 20  |
 | stash_destination | Stash tabs by priority to place the results of the transmute. Default: 3,2,1,0. (It means the result will be first placed in stash 3 untils it's full, then to stash 2, etc. 0 - personal tab)
 =======
+| chicken_nihlathak_conviction | Chicken if Nihlathak has conviction |
 | chicken_if_dolls | Chicken if dolls are detected in the Throne of Destruction |
 | chicken_if_souls | Chicken if souls are detected in the Throne of Destruction |
 | send_throne_leecher_tp | Will put a TP in the corner of the Throne of Destruction for leechers |

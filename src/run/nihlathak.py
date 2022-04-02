@@ -52,77 +52,44 @@ class Nihlathak:
         if self._ui_manager.use_wp(5, 5): # use Halls of Pain Waypoint (5th in A5)
             return Location.A5_NIHLATHAK_START
         return False
+    
+    def _check_dangerous_monsters(self):
+        if self._config.char["chicken_nihlathak_conviction"]:
+            data = self._api.get_data()
+            for m in data["monsters"]:
+                if "Nihlathak" in m["name"] and "CONVICTION" in m["state_strings"]:
+                    Logger.info("Detected a Conviction on Nihlathak, will chicken...")
+                    self._ui_manager.save_and_exit(does_chicken=True)
+                    return True
+        return False
+
+    def _go_to_nihlathak(self, dest_dist):
+        if not self._pather.traverse("Nihlathak", self._char, verify_location=True, dest_distance=dest_dist):
+            if not self._pather.traverse("Nihlathak", self._char, verify_location=True, jump_distance=8, dest_distance=dest_dist): return False
+        return True
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        # TODO: We might need a second template for each option as merc might run into the template and we dont find it then
-        # Let's check which layout ("NI1_A = bottom exit" , "NI1_B = large room", "NI1_C = small room")
-        template_match = self._template_finder.search_and_wait(["NI1_A", "NI1_B", "NI1_C"], threshold=0.65, time_out=20)
-        if not template_match.valid:
-            return False
-        if do_pre_buff:
-            self._char.pre_buff()
-
-        if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
-            self._char.switch_weapon()
-
-        # Depending on what template is found we do static pathing to the stairs on level1.
-        # Its xpects that the static routes defined in game.ini are named: "ni1_a", "ni1_b", "ni1_c"
-        self._old_pather.traverse_nodes_fixed(template_match.name.lower(), self._char)
-        found_loading_screen_func = lambda: self._ui_manager.wait_for_loading_screen(2.0) or \
-            self._template_finder.search_and_wait(["NI2_SEARCH_0", "NI2_SEARCH_1"], threshold=0.8, time_out=0.5).valid
-        # look for stairs
-        if not self._char.select_by_template(["NI1_STAIRS", "NI1_STAIRS_2", "NI1_STAIRS_3", "NI1_STAIRS_4"], found_loading_screen_func, threshold=0.63, time_out=4):
-            # do a random tele jump and try again
-            pos_m = self._screen.convert_abs_to_monitor((random.randint(-70, 70), random.randint(-70, 70)))
-            self._char.move(pos_m, force_move=True)
-            if not self._char.select_by_template(["NI1_STAIRS", "NI1_STAIRS_2", "NI1_STAIRS_3", "NI1_STAIRS_4"], found_loading_screen_func, threshold=0.63, time_out=4):
+        is_barb = "_barb" in self._char._char_config["type"]
+        if not self._pather.wait_for_location("HallsOfPain"): return False
+        
+        self._char.pre_travel(do_pre_buff, force_switch_back=True)
+        
+        if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True):
+            if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True, jump_distance=8): return False
+        if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, char=self._char): return False
+        
+        if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=25, offset=[7, -5]):
+            if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=False, randomize=4, time_out=25, offset=[7, -5]):
                 return False
-        # Wait until templates in lvl 2 entrance are found
-        if not self._template_finder.search_and_wait(["NI2_SEARCH_0", "NI2_SEARCH_1", "NI2_SEARCH_2"], threshold=0.8, time_out=20).valid:
-            return False
-        wait(1.0) # wait to make sure the red writing is gone once we check for the eye
-        @dataclass
-        class EyeCheckData:
-            template_name: list[str]
-            destination_static_path_key: str
-            circle_static_path_key: str
-            save_dist_nodes: list[int]
-            end_nodes: list[int]
 
-        check_arr = [
-            EyeCheckData(["NI2_A_1_SAFE_DIST", "NI2_A_2_SAFE_DIST", "NI2_A_1_NOATTACK", "NI2_A_2_NOATTACK"], "ni2_a_safe_dist", "ni2_circle_a", [500], [501]),
-            EyeCheckData(["NI2_B_1_SAFE_DIST", "NI2_B_1_NOATTACK", "NI2_B_2_NOATTACK"], "ni2_b_safe_dist", "ni2_circle_b", [505], [506]),
-            EyeCheckData(["NI2_C_1_SAFE_DIST", "NI2_C_1_NOATTACK"], "ni2_c_safe_dist", "ni2_circle_c", [510], [511]),
-            EyeCheckData(["NI2_D_1_SAFE_DIST", "NI2_D_1_NOATTACK"], "ni2_d_safe_dist", "ni2_circle_d", [515], [516, 517]),
-        ]
+        self._go_to_nihlathak(50)
+        if self._check_dangerous_monsters(): return False
+        if is_barb: self._char.cast_aoe("howl")
+        self._char.post_travel(skip_weapon_swap=True)
 
-        end_nodes = None
-        for data in check_arr:
-            # Move to spot where eye would be visible
-            self._old_pather.traverse_nodes_fixed(data.circle_static_path_key, self._char)
-            # Search for eye
-            template_match = self._template_finder.search_and_wait(data.template_name, threshold=0.7, best_match=True, time_out=3)
-            # If it is found, move down that hallway
-            if template_match.valid and template_match.name.endswith("_SAFE_DIST"):
-                self._old_pather.traverse_nodes_fixed(data.destination_static_path_key, self._char)
-                self._old_pather.traverse_nodes(data.save_dist_nodes, self._char, time_out=2, do_pre_move=False)
-                end_nodes = data.end_nodes
-                break
-
-        if self._config.char["teleport_weapon_swap"]:
-            self._char.switch_weapon()
-            self._char.verify_active_weapon_tab()
-
-        # circle back and just assume path a if we failed to find the "eye"
-        if end_nodes is None:
-            self._old_pather.traverse_nodes_fixed("ni2_circle_back_to_a", self._char)
-            self._old_pather.traverse_nodes_fixed(check_arr[0].destination_static_path_key, self._char)
-            self._old_pather.traverse_nodes(check_arr[0].save_dist_nodes, self._char, time_out=2, do_pre_move=False)
-            end_nodes = check_arr[0].end_nodes
-
-        # Attack & Pick items
-        if not self._char.kill_nihlathak(end_nodes):
-            return False
-        wait(0.2, 0.3)
-        picked_up_items = self._pickit.pick_up_items(self._char)
-        return (Location.A5_NIHLATHAK_END, picked_up_items)
+        if not self._go_to_nihlathak(15): return False
+        if self._check_dangerous_monsters(): return False
+        self._char.kill_nihlathak()
+        
+        if is_barb: self._char.cast_aoe("howl")
+        return (Location.A5_NIHLATHAK_END, self._pickit.pick_up_items(self._char, False))

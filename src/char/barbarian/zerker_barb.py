@@ -144,15 +144,21 @@ class ZerkerBarb(Barbarian):
         game_state.stop()
         return True
 
-    def kill_summoner(self, game_state: StateMonitor = None) -> bool:
+    def _kill_boss(self, name) -> bool:
         rules = [
-            MonsterRule(names=["Summoner"]),
+            MonsterRule(names=[name]),
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
         game_state = StateMonitor(rules, self._api, unique_id=-1, many=True)
         self._kill_mobs(game_state, atk_len=3, time_out=16, do_howl=True)
         game_state.stop()
         return True
+
+    def kill_summoner(self, game_state: StateMonitor = None) -> bool:
+        return self._kill_boss("Summoner")
+
+    def kill_nihlathak(self, game_state: StateMonitor = None) -> bool:
+        return self._kill_boss("Nihlathak")
         
     def kill_countess(self, game_state: StateMonitor) -> bool:
         self._kill_mobs(game_state, 1.7, 15, do_howl=True)

@@ -141,7 +141,7 @@ class Bot:
             self.shuffle_runs()
         self._pindleskin = Pindleskin(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._shenk = ShenkEldritch(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)       
-        self._nihlatak = Nihlathak(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._nihlathak = Nihlathak(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._summoner = Summoner(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         # mem-reading
         self._travincal = Travincal(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)

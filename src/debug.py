@@ -108,8 +108,6 @@ if __name__ == "__main__":
                 # potion_type = "health"
                 # pp.pprint(data["flattened_belt"])
 
-                summoner.approach(bot._curr_loc)
-                summoner.battle(True)
 
                 # bot._town_manager.open_stash(Location.A4_TOWN_START)
                 # write_data_to_file(data, api._raw_data_str)

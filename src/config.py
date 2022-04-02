@@ -307,6 +307,7 @@ class Config:
             "gamble_items": False if not Config._select_val("char", "gamble_items") else Config._select_val("char", "gamble_items").replace(" ","").split(","),
             "chicken_if_dolls": bool(int(Config._select_val("char", "chicken_if_dolls"))),
             "chicken_if_souls": bool(int(Config._select_val("char", "chicken_if_souls"))),
+            "chicken_nihlathak_conviction": bool(int(Config._select_val("char", "chicken_nihlathak_conviction"))),
             "send_throne_leecher_tp": bool(int(Config._select_val("char", "send_throne_leecher_tp"))),
             "density": ast.literal_eval (Config._select_val("char", "density")),
             "area": ast.literal_eval (Config._select_val("char", "area")),

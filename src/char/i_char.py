@@ -436,12 +436,12 @@ class IChar:
                 mouse.move(*pos_away, randomize=40, delay_factor=[0.8, 1.4])
         return False
 
-    def pre_travel(self, do_pre_buff=True):
+    def pre_travel(self, do_pre_buff=True, force_switch_back=False):
         if do_pre_buff:
-            self.pre_buff(switch_back=not self._config.char["teleport_weapon_swap"])
+            self.pre_buff(switch_back=force_switch_back or not self._config.char["teleport_weapon_swap"])
 
-    def post_travel(self):
-        if self._config.char["teleport_weapon_swap"]:
+    def post_travel(self, skip_weapon_swap=False):
+        if self._config.char["teleport_weapon_swap"] and not skip_weapon_swap:
             self.switch_weapon()
             self.verify_active_weapon_tab()
 

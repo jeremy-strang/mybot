@@ -63,18 +63,12 @@ class Summoner:
         if not self._pather.wait_for_location("ArcaneSanctuary"): return False
         
         self._char.pre_travel(do_pre_buff)
-
-        if is_barb:
-            self._go_to_summoner(49)
-            self._char.cast_aoe("howl")
-            self._char.post_travel()
+        self._go_to_summoner(50)
+        if is_barb: self._char.cast_aoe("howl")
+        self._char.post_travel()
 
         if not self._go_to_summoner(15): return False
-
-        if not is_barb:
-            self._char.post_travel()
-
         self._char.kill_summoner()
         
-        if self._char._char_config["type"] == "zerker_barb": self._char.cast_aoe("howl")
+        if is_barb: self._char.cast_aoe("howl")
         return (Location.A2_ARC_END, self._pickit.pick_up_items(self._char, False))

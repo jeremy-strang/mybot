@@ -32,14 +32,11 @@ class A5(IAct):
         return Location.A5_TOWN_START
 
     def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
-        #75 24
-        #if not self._old_pather.traverse_nodes((curr_loc, Location.A5_MALAH), self._char, force_move=True): return False
-        if not self._pather.traverse_walking("Malah",self._char, obj=False,threshold=10,static_npc=True,end_dist=0): return False
-        if not self._pather.traverse_walking("Malah",self._char, obj=False,threshold=10,static_npc=False,end_dist=0): return False
-        if self._npc_manager.open_npc_menu(Npc.MALAH):
-            self._npc_manager.press_npc_btn(Npc.MALAH, "trade")
-            return Location.A5_MALAH
-        return False
+        if not self._pather.traverse_walking("Malah", self._char, obj=False, threshold=16, static_npc=True): return False
+        if not self.trade_with_npc(Npc.MALAH):
+            if self._npc_manager.open_npc_menu(Npc.MALAH):
+                self._npc_manager.press_npc_btn(Npc.MALAH, "trade")
+        return Location.A5_MALAH
 
     def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
         #if not self._old_pather.traverse_nodes((curr_loc, Location.A5_QUAL_KEHK), self._char): return False

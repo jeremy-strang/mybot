@@ -308,7 +308,8 @@ class Pather:
                    entrance_in_wall: bool = True,
                    randomize: int = 0,
                    time_out: float = 20.0,
-                   char = None
+                   char = None,
+                   offset: tuple[int, int] = None,
                    ) -> bool:
         Logger.debug(f"Going to area: {poi}, end location: {end_loc}...")
         num_clicks = 0
@@ -369,6 +370,8 @@ class Pather:
                     pos_monitor = (pos_monitor[0] + random.randint(-randomize, +randomize),
                                    pos_monitor[1] + random.randint(-randomize, +randomize))
                     pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
+                    if offset is not None:
+                        pos_monitor = [pos_monitor[0] + offset[0], pos_monitor[1] + offset[1]]
                     _mouse.move(*pos_monitor, duration=.07)
                     wait(0.1, 0.15)
                     mouse.press(button="left")
