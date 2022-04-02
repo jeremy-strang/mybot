@@ -444,8 +444,8 @@ namespace MapAssist.MyBot
             }
             catch (Exception ex)
             {
-                _log.Error(ex);
-                _log.Error(ex.StackTrace);
+                //_log.Error(ex);
+                //_log.Error(ex.StackTrace);
             }
 
             return JsonConvert.SerializeObject(new { success = false }, formatting);
