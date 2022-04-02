@@ -15,7 +15,6 @@ import time
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
-
 class Mephisto:
     def __init__(
         self,
@@ -83,30 +82,3 @@ class Mephisto:
 
         picked_up_items = self._pickit.pick_up_items(self._char)
         return (Location.A3_MEPH_END, picked_up_items)
-
-
-if __name__ == "__main__":
-    import keyboard
-    import os
-    keyboard.add_hotkey('f12', lambda: os._exit(1))
-    keyboard.wait("f11")
-    from bot import Bot
-    from config import Config
-    from game_stats import GameStats
-    config = Config()
-    screen = Screen(config.general["monitor"])
-    game_stats = GameStats()
-    bot = Bot(screen, game_stats)
-    self = bot._mephisto
-    # self._pather.wait_for_location("DuranceOfHateLevel2")
-    # self._pather.traverse("Durance of Hate Level 3", self._char)
-    # self._go_to_area("Durance of Hate Level 3", "DuranceOfHateLevel3")
-    # # if not self._pather.traverse((136, 176), self._char): return False
-    # self._char.kill_mephisto(self._api, self._pather)
-    # picked_up_items = self._pickit.pick_up_items(self._char)
-    while 1:
-        data = self._api.get_data()
-        if data is not None:
-            print(data["player_pos_area"])
-        print("-----")
-        time.sleep(0.5)

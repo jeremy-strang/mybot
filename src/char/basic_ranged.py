@@ -189,22 +189,3 @@ class Basic_Ranged(IChar):
         wait(self._cast_duration, self._cast_duration + 0.2)
         self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8)
         return True
-
-
-if __name__ == "__main__":
-    import os
-    import keyboard
-    from screen import Screen
-    from template_finder import TemplateFinder
-    from pathing import OldPather
-    keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
-    keyboard.wait("f11")
-    from config import Config
-    from ui import UiManager
-    from obs import ObsRecorder
-    config = Config()
-    obs_recorder = ObsRecorder(config)
-    screen = Screen()
-    t_finder = TemplateFinder(screen)
-    old_pather = OldPather(screen, t_finder)
-    ui_manager = UiManager(screen, t_finder, obs_recorder)

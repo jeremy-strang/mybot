@@ -159,27 +159,3 @@ class Baal:
         # Restore initial greater mana pot pickit setting
         self._config.items["misc_greater_mana_potion"].pickit_type = greatermp_pickit_type
         return (Location.A5_BAAL_WORLDSTONE_CHAMBER, picked_up_items)
-
-
-if __name__ == "__main__":
-    import keyboard
-    import os
-    keyboard.add_hotkey('f12', lambda: os._exit(1))
-    keyboard.wait("f11")
-    from bot import Bot
-    from config import Config
-    from game_stats import GameStats
-    config = Config()
-    screen = Screen(config.general["monitor"])
-    game_stats = GameStats()
-    bot = Bot(screen, game_stats)
-    self = bot._baal
-    # self._go_to_area((15089, 5006), "TheWorldstoneChamber")
-    # self._char.kill_baal()
-    self._char.clear_throne(monster_filter=["BaalSubjectMummy", "BaalColdMage"])
-    # while 1:
-    #     data = self._api.get_data()
-    #     if data is not None:
-    #         print(data["player_pos_area"])
-    #     print("-----")
-    #     time.sleep(0.5)

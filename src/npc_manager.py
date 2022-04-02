@@ -303,18 +303,3 @@ class NpcManager:
         else:
             Logger.error(f"Could not find {action_btn_key} btn. Should not happen! Continue...")
             keyboard.send("esc")
-
-
-# Testing: Stand close to Qual-Kehk or Malah and run
-if __name__ == "__main__":
-    from screen import Screen
-    from config import Config
-    import os
-    import keyboard
-    keyboard.add_hotkey('f12', lambda: os._exit(1))
-    keyboard.wait("f11")
-    screen = Screen()
-    template_finder = TemplateFinder(screen)
-    npc_manager = NpcManager(screen, template_finder)
-    npc_manager.open_npc_menu(Npc.MALAH)
-    # npc_manager.press_npc_btn(Npc.ORMUS, "trade")

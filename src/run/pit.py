@@ -89,4 +89,3 @@ class Pit:
         self._pather.activate_poi(coords, "PitLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False) 
         picked_up_items = self._pickit.pick_up_items(self._char)  
         return (Location.A1_PIT_END, picked_up_items)
-

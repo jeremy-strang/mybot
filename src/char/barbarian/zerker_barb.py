@@ -32,32 +32,6 @@ class ZerkerBarb(Barbarian):
         self._pather = pather
         self._do_pre_move = True
 
-    # def kill_b(self, game_state: StateMonitor) -> bool: # TODO
-    #     atk_len = self._char_config["atk_len_trav"]
-    #     self._kill_mobs(game_state, atk_len)
-    #     return True
-
-    # def distance(self, monster, offset):
-    #     if type(monster) is dict:
-    #         player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
-    #         dist = math.dist(player_p, monster["position"]) -(offset [0] + offset [1]) 
-    #         return dist
-    #     return 0
-
-    # def prepare_attack(self):
-    #     wait(0.05, 0.1)
-    #     keyboard.send(self._skill_hotkeys["howl"])
-    #     wait(0.05)
-    #     mouse.click(button="right")
-    #     wait(0.05)
-    #     if self._skill_hotkeys["berserk"]:
-    #         keyboard.send(self._skill_hotkeys["berserk"])
-    #         wait(0.05)
-    #     mouse.press(button="left")
-    #     wait(0.1, 0.2)
-    #     keyboard.send(self._char_config["stand_still"], do_release=False) 
-    #     wait(0.05, 0.1)
-
     def post_attack(self):
         mouse.release(button="left")
         wait(0.02, 0.03)

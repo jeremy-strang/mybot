@@ -334,23 +334,3 @@ class LightSorc(Sorceress):
                     except:
                         Logger.error("Something went wrong with movement...")
                         pass
-
-if __name__ == "__main__":
-    import os
-    import keyboard
-    from screen import Screen
-    from template_finder import TemplateFinder
-    from pathing import OldPather
-    keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
-    keyboard.wait("f11")
-    from config import Config
-    from ui import UiManager
-    from obs import ObsRecorder
-    config = Config()
-    obs_recorder = ObsRecorder(config)
-    screen = Screen(config.general["monitor"])
-    t_finder = TemplateFinder(screen)
-    old_pather = OldPather(screen, t_finder)
-    ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = LightSorc(config.light_sorc, config.char, screen, t_finder, ui_manager, old_pather)
-    char.kill_council()

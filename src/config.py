@@ -442,21 +442,3 @@ class Config:
 
         Config.active_branch = Config.get_active_branch()
         Config.latest_commit_sha = Config.get_latest_commit_sha()
-
-if __name__ == "__main__":
-    from copy import deepcopy
-    config = Config()
-
-    # Check if any added items miss templates
-    for k in config.items:
-        if not os.path.exists(f"./assets/items/{k}.png"):
-            print(f"Template not found: {k}")
-
-    # Check if any item templates miss a config
-    for filename in os.listdir(f'assets/items'):
-        filename = filename.lower()
-        if filename.endswith('.png'):
-            item_name = filename[:-4]
-            blacklist_item = item_name.startswith("bl__")
-            if item_name not in config.items and not blacklist_item:
-                print(f"Config not found for: " + filename)

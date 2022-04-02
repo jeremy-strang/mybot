@@ -39,7 +39,6 @@ class Countess:
         self._pather = pather
         self._obs_recorder = obs_recorder
 
-
     def approach(self, start_loc: Location) -> Union[bool, Location, bool]:
         Logger.info("Run Tower")
         if not self._char.capabilities.can_teleport_natively:

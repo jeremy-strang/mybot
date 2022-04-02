@@ -812,22 +812,3 @@ class Pather:
                 return True
             time.sleep(0.1)
         return False
-
-
-if __name__ == "__main__":
-    import keyboard
-    import os
-    keyboard.add_hotkey('f12', lambda: os._exit(1))
-    keyboard.wait("f11")
-    from bot import Bot
-    from config import Config
-    from game_stats import GameStats
-    config = Config()
-    screen = Screen(config.general["monitor"])
-    game_stats = GameStats()
-    bot = Bot(screen, game_stats)
-
-    api = MapAssistApi()
-    pather = Pather(screen, api)
-    pather.traverse("Worldstone Keep Level 3", bot._char)
-    # print(pather.wait_for_location("TheWorldStoneKeepLevel2"))

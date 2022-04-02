@@ -83,12 +83,3 @@ class DeathManager:
             if self._died: continue
             self.handle_death_screen()
         Logger.debug("Stop death monitoring")
-
-
-# Testing:
-if __name__ == "__main__":
-    keyboard.wait("f11")
-    config = Config()
-    screen = Screen()
-    manager = DeathManager(screen)
-    manager.pick_up_corpse(screen)

@@ -74,32 +74,3 @@ class Screen:
     def grab(self) -> np.ndarray:
         img = np.array(self._sct.grab(self._monitor_roi))
         return img[:, :, :3]
-
-
-if __name__ == "__main__":
-    config = Config()
-    screen = Screen()
-    while 1:
-        start = time.time()
-        test_img = screen.grab().copy()
-        # print(time.time() - start)
-
-        show_roi = True
-        show_pt = True
-
-        if show_roi:
-            for roi_key in config.ui_roi:
-                x, y, w, h = config.ui_roi[roi_key]
-                # t = screen.convert_screen_to_monitor((0, 0))
-                # p1 = screen.convert_screen_to_monitor((x, y))
-                # p2 = screen.convert_screen_to_monitor((x+w, y+h))
-                p1 = (x, y)
-                p2 = (x+w, y+h)
-                cv2.rectangle(test_img, p1, p2, (0, 255, 0), 2)
-                cv2.putText(test_img, roi_key, (p1[0], p1[1]+20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1, cv2.LINE_AA)
-
-        if show_pt:
-            pass
-
-        cv2.imshow("test", test_img)
-        cv2.waitKey(1)

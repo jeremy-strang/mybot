@@ -673,34 +673,3 @@ class IChar:
 
     def kill_cs_trash(self) -> bool:
         raise ValueError("Diablo CS Trash is not implemented!")
-
-
-if __name__ == "__main__":
-    import os
-    import keyboard
-    keyboard.add_hotkey('f12', lambda: os._exit(1))
-    print(f"Get on D2R screen and press F11 when ready")
-    keyboard.wait("f11")
-    from utils.misc import cut_roi
-    from config import Config
-    from template_finder import TemplateFinder
-    from ui import UiManager
-    from ocr import Ocr
-    from obs import ObsRecorder
-
-    config = Config()
-    obs_recorder = ObsRecorder(config)
-    skill_hotkeys = {}
-    char_config = config.char
-    screen = Screen()
-    template_finder = TemplateFinder(screen)
-    ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._pather, self._game_stats)
-    ocr = Ocr()
-
-    i_char = IChar({}, screen, template_finder, ui_manager)
-
-    while True:
-        print(i_char.get_skill_charges(screen.grab()))
-        wait(1)
-        raise ValueError("Diablo CS Trash is not implemented!")
-

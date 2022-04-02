@@ -16,7 +16,6 @@ from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
-
 class Sorceress(IChar):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, old_pather)

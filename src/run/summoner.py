@@ -126,20 +126,3 @@ class Summoner:
                 if not self.approach(Location.A2_FARA_STASH):
                     return False
         return False
-
-
-if __name__ == "__main__":
-    from screen import Screen
-    import keyboard
-    from game_stats import GameStats
-    import os
-    keyboard.add_hotkey('f12', lambda: os._exit(1))
-    keyboard.wait("f11")
-    from config import Config
-    from ui import UiManager
-    from bot import Bot
-    config = Config()
-    screen = Screen()
-    game_stats = GameStats()
-    bot = Bot(screen, game_stats, False)
-    bot._summoner._find_summoner([(500, 40)])

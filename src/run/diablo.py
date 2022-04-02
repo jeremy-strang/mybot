@@ -18,7 +18,6 @@ from api.mapassist import MapAssistApi
 from pathing import Pather
 from obs import ObsRecorder
 
-
 class Diablo:
     def __init__(
         self,

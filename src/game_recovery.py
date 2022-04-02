@@ -50,16 +50,3 @@ class GameRecovery:
                 keyboard.send("esc")
             time.sleep(1)
         return False
-
-
-if __name__ == "__main__":
-    from death_manager import DeathManager
-    import keyboard
-    import os
-    keyboard.add_hotkey('f12', lambda: os._exit(1))
-    keyboard.wait("f11")
-    screen = Screen()
-    template_finder = TemplateFinder(screen)
-    death_manager = DeathManager(screen, template_finder)
-    game_recovery = GameRecovery(screen, death_manager, template_finder)
-    print(game_recovery.go_to_hero_selection())

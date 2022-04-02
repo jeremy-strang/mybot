@@ -531,19 +531,19 @@ class Bot:
         self._ui_manager.save_and_exit()
         self._game_stats.log_end_game(failed=failed)
 
-        if Config().general["max_runtime_before_break_m"] and Config().general["break_length_m"]:
+        if self._config.general["max_runtime_before_break_m"] and self._config.general["break_length_m"]:
             elapsed_time = time.time() - self._timer
-            Logger.info(f'Session length = {elapsed_time} s, max_runtime_before_break_m {Config().general["max_runtime_before_break_m"]*60} s.')
+            Logger.info(f'Session length = {elapsed_time} s, max_runtime_before_break_m {self._config.general["max_runtime_before_break_m"]*60} s.')
 
-            if elapsed_time > (Config().general["max_runtime_before_break_m"]*60):
-                Logger.info(f'Max session length reached, taking a break for {Config().general["break_length_m"]} minutes.')
-                self._messenger.send_message(f'Ran for {hms(elapsed_time)}, taking a break for {Config().general["break_length_m"]} minutes.')
+            if elapsed_time > (self._config.general["max_runtime_before_break_m"]*60):
+                Logger.info(f'Max session length reached, taking a break for {self._config.general["break_length_m"]} minutes.')
+                self._messenger.send_message(f'Ran for {hms(elapsed_time)}, taking a break for {self._config.general["break_length_m"]} minutes.')
                 if not self._pausing:
                     self.toggle_pause()
 
-                wait(Config().general["break_length_m"]*60)
+                wait(self._config.general["break_length_m"]*60)
 
-                break_msg = f'Break over, now running for {Config().general["max_runtime_before_break_m"]} more minutes.'
+                break_msg = f'Break over, now running for {self._config.general["max_runtime_before_break_m"]} more minutes.'
                 Logger.info(break_msg)
                 self._messenger.send_message(break_msg)
                 if self._pausing:

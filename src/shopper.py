@@ -41,12 +41,3 @@ def main():
             merchant.run()
             break
         time.sleep(0.02)
-
-if __name__ == "__main__":
-    # To avoid cmd just closing down, except any errors and add a input() to the end
-    try:
-        main()
-    except:
-        traceback.print_exc()
-    print("Press Enter to exit ...")
-    input()

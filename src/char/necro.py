@@ -571,20 +571,3 @@ class Necro(IChar):
                         #Logger.error("Something went wrong with movement...")
 
         self._pather.traverse(game_state._area_pos, self)
-
-if __name__ == "__main__":
-    import os
-    import keyboard
-    keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
-    keyboard.wait("f11")
-    from config import Config
-    from char import Necro
-    from ui import UiManager
-    from obs import ObsRecorder
-    config = Config()
-    obs_recorder = ObsRecorder(config)
-    screen = Screen()
-    t_finder = TemplateFinder(screen)
-    old_pather = OldPather(screen, t_finder)
-    ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = Necro(config.necro, config.char, screen, t_finder, ui_manager, old_pather)

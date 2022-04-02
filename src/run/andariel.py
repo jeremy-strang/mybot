@@ -84,24 +84,3 @@ class Andariel:
 
         picked_up_items = self._pickit.pick_up_items(self._char)
         return (Location.A1_ANDY_END, picked_up_items)
-
-
-if __name__ == "__main__":
-    import keyboard
-    import os
-    keyboard.add_hotkey('f12', lambda: os._exit(1))
-    keyboard.wait("f11")
-    from bot import Bot
-    from config import Config
-    from game_stats import GameStats
-    config = Config()
-    screen = Screen(config.general["monitor"])
-    game_stats = GameStats()
-    bot = Bot(screen, game_stats)
-    self = bot._andariel
-    while 1:
-        data = self._api.get_data()
-        if data is not None:
-            print(data["player_pos_area"])
-        print("-----")
-        time.sleep(0.5)

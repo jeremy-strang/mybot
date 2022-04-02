@@ -57,26 +57,3 @@ class Chest:
                     templates.remove(template_match.name)
         Logger.debug("No chests left")
         return found_chest
-
-
-if __name__ == "__main__":
-    import keyboard
-    import os
-    from obs import ObsRecorder
-    keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
-    print("Move to d2r window and press f11")
-    keyboard.wait("f11")
-    from char.hammerdin import Hammerdin
-    from screen import Screen
-    from pathing import OldPather
-    from config import Config
-    from ui import UiManager
-    config = Config()
-    obs_recorder = ObsRecorder
-    screen = Screen()
-    template_finder = TemplateFinder(screen)
-    old_pather = OldPather(screen, template_finder)
-    ui_manager = UiManager(screen, template_finder, obs_recorder)
-    char = Hammerdin(config.hammerdin, config.char, screen, template_finder, ui_manager, old_pather)
-    chest = Chest(screen, char, template_finder, 'arcane')
-    chest.open_up_chests(threshold=0.8)

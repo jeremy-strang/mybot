@@ -187,9 +187,3 @@ class GameStats:
 
         with open(file=f"stats/{self._stats_filename}", mode="w+", encoding="utf-8") as f:
             f.write(msg)
-
-
-if __name__ == "__main__":
-    game_stats = GameStats()
-    game_stats.log_item_keep("rune_12", True)
-    game_stats._save_stats_to_file()

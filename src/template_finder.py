@@ -211,28 +211,3 @@ class TemplateFinder:
                     if take_ss:
                         Logger.debug(f"Could not find any of the above templates")
                     return template_match
-
-
-# Testing: Have whatever you want to find on the screen
-if __name__ == "__main__":
-    from screen import Screen
-    screen = Screen()
-    template_finder = TemplateFinder(screen)
-    search_templates = ["DIABLO_PENT_0", "DIABLO_PENT_1", "DIABLO_PENT_2", "DIABLO_PENT_3"]
-
-    while 1:
-        # img = cv2.imread("")
-        img = screen.grab()
-        display_img = img.copy()
-        start = time.time()
-        for key in search_templates:
-            template_match = template_finder.search(key, img, best_match=True, threshold=0.5, use_grayscale=True)
-            if template_match.valid:
-                cv2.putText(display_img, str(template_match.name), template_match.center, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                cv2.circle(display_img, template_match.center, 7, (255, 0, 0), thickness=5)
-                print(f"Name: {template_match.name} Pos: {template_match.center}, Dist: {625-x, 360-y}, Score: {template_match.score}")
-
-        # print(time.time() - start)
-        # display_img = cv2.resize(display_img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_NEAREST)
-        cv2.imshow('test', display_img)
-        key = cv2.waitKey(1)

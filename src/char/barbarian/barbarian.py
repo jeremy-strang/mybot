@@ -158,4 +158,3 @@ class Barbarian(IChar):
           wait(0.08, 0.19)
           mouse.click(button="right")
           wait(self._cast_duration + 0.08, self._cast_duration + 0.1)
-

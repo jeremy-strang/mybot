@@ -18,7 +18,6 @@ from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
-
 class NovaSorc(Sorceress):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         Logger.info("Setting up Nova Sorc")
@@ -125,24 +124,3 @@ class NovaSorc(Sorceress):
         wait(0.1, 0.15)
         self._nova(self._char_config["atk_len_arc"] * 0.5)
         return True
-
-
-if __name__ == "__main__":
-    import os
-    import keyboard
-    from screen import Screen
-    from template_finder import TemplateFinder
-    from pathing import OldPather
-    keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
-    keyboard.wait("f11")
-    from config import Config
-    from ui import UiManager
-    from obs import ObsRecorder
-    config = Config()
-    obs_recorder = ObsRecorder(config)
-    screen = Screen()
-    t_finder = TemplateFinder(screen)
-    old_pather = OldPather(screen, t_finder)
-    ui_manager = UiManager(screen, t_finder, obs_recorder)
-    char = NovaSorc(config.nova_sorc, config.char, screen, t_finder, ui_manager, old_pather)
-    char.kill_council()
