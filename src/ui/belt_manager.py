@@ -154,7 +154,6 @@ class BeltManager:
                     keyboard.send(self._config.char[key])
                     self._pot_needs[potion_type] -= 1
                     wait(0.04, 0.06)
-        print(self._pot_needs)
 
     def fill_up_belt_from_inventory(self, num_loot_columns: int):
         """
