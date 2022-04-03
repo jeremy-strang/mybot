@@ -73,6 +73,7 @@ class Countess:
 
         pickit_func = lambda: self._pickit.pick_up_items(self._char)
         picked_up_items = self._char.kill_uniques(pickit_func, 25, boundary=roi)
+        picked_up_items += self._pickit.pick_up_items(self._char)
         self._pather.traverse("GoodChest", self._char, verify_location=True)
         picked_up_items += self._pickit.pick_up_items(self._char)
         Logger.debug(f"    Picked up {picked_up_items} items")
