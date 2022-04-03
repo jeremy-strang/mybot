@@ -40,13 +40,6 @@ class ZerkerBarb(Barbarian):
         keyboard.release(self._char_config["stand_still"])
         wait(0.03, 0.04)
 
-    def mouse_follow_unit(self, monster, offset):
-        player_p = self._api.data['player_pos_world']+self._api.data['player_offset']
-        pos_monitor = world_to_abs([monster["position"][0]+offset[0]-2, monster["position"][1]+offset[1]-2],player_p)
-        pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)    
-        wait(0.1)
-        mouse.move(*pos_monitor)
-
     def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
         Logger.debug(f"Beginning combat")
         rules = [
@@ -195,6 +188,3 @@ class ZerkerBarb(Barbarian):
         self.post_attack()
         Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
         return True
-
-    def _kill_mobs_v2(self, priority_rules: list[MonsterRule] = []):
-        pass
