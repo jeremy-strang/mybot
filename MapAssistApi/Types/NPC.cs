@@ -956,6 +956,7 @@ namespace MapAssist.Types
             [Npc.Navi] = "navi",
             [Npc.Izual2] = "Izual",
             [Npc.BaalCrab] = "Baal",
+            [Npc.DarkStalker] = "TheCountess"
         };
 
         public static readonly HashSet<Npc> _npcTownsfolk = new HashSet<Npc>()
