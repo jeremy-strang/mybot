@@ -423,12 +423,12 @@ class Pather:
         adjusted_pos_m = [x_m - 9.5, y_m - 39.5] if dist < 25 else [x_m, y_m]
         mouse.move(*adjusted_pos_m, delay_factor=[0.1, 0.2])
 
-    def move_mouse_to_item(self, item, time_out=5.0):
+    def move_mouse_to_item(self, item, time_out=3.0):
         start = time.time()
         is_hovered = False
         while item is not None and time.time() - start < time_out:
             self.move_mouse_to_abs_pos(item["position_abs"], item["dist"], offset=(5, -9.5))
-            wait(0.1)
+            wait(0.2)
             item = find_item(item["id"], self._api)
             if item is not None and item["is_hovered"]:
                 return True

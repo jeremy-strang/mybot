@@ -103,6 +103,7 @@ if __name__ == "__main__":
             data = api.get_data()
         
         # overlay = start_overlay(bot, game_stats)
+        pp.pprint(config.items)
 
         def do_stuff():
             print("Doing stuff...")
