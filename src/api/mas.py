@@ -225,6 +225,7 @@ class MAS(Thread):
             obj["position"] = np.array([obj_world_x, obj_world_y])
             obj["position_abs"] = np.array(world_to_abs(obj["position"], self._player_pos_world))
             obj["position_area"] = np.array([obj_world_x - area_origin_x, obj_world_y - area_origin_y])
+            obj["dist"] = math.dist(_data["player_pos_world"], obj["position"])
             _data["objects"].append(obj)
 
         for item in data["items"]:

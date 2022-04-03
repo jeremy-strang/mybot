@@ -56,6 +56,13 @@ def find_poi(poi: str, api: MapAssistApi):
             return p
     return None
 
+def find_object(name: str, api: MapAssistApi):
+    data = api.get_data()
+    for obj in data["object"]:
+        if obj["name"].lower().startswith(name.lower()):
+            return obj
+    return None
+
 def find_item(id: int, api: MapAssistApi) -> dict:
     data = api.get_data()
     if data is not None and "items" in data and type(data["items"]) is list:

@@ -412,6 +412,21 @@ class Pather:
             mouse.click(button="left")
             wait(0.5)
 
+    def click_object(self, name: str, offset=None):
+        data = self._api.data
+        if data is not None:
+            object = find_object(name, self._api)
+            if object is None:
+                return False
+            self.move_mouse_to_abs_pos(
+                world_to_abs(object["position"], data["player_pos_world"]),
+                math.dist(data["player_pos_area"], object["position"] - data["area_origin"]),
+                offset)
+            wait(0.1, 0.15)
+            mouse.click(button="left")
+            wait(0.5)
+        return True
+
     def move_mouse_to_abs_pos(self, position_abs, dist, offset=None):
         offset_x = offset[0] if offset is not None else 0
         offset_y = offset[1] if offset is not None else 0
@@ -864,5 +879,15 @@ class Pather:
             data = self._api.get_data()
             if data is not None and data["current_area"] == name:
                 return True
+            time.sleep(0.1)
+        return False
+
+    def wait_for_town(self, time_out: float = 7.0) -> bool:
+        start = time.time()
+        while time.time() - start < time_out:
+            data = self._api.data
+            if data is not None:
+                if data["in_town"]:
+                    return True
             time.sleep(0.1)
         return False

@@ -392,6 +392,12 @@ class IChar:
 
     def tp_town(self):
         if not self.open_tp(): return False
+        wait(0.8, 1.3) # takes quite a while for tp to be visible
+        self._pather.click_object("TownPortal")
+        if self._pather.wait_for_town(4): return True
+
+        Logger.warning("Failed to TP to town using memory, falling back to pixels")
+
         roi_mouse_move = [
             int(self._config.ui_pos["screen_width"] * 0.3),
             0,

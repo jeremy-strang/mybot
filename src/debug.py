@@ -103,7 +103,7 @@ if __name__ == "__main__":
             data = api.get_data()
         
         # overlay = start_overlay(bot, game_stats)
-        pp.pprint(config.items)
+        # pp.pprint(config.items)
 
         def do_stuff():
             print("Doing stuff...")
@@ -121,7 +121,8 @@ if __name__ == "__main__":
                 #     print("F")
                 # pather.click_poi("Halls of Vaught")
 
-                pickit2.pick_up_items(char, False)
+                char.tp_town()
+                # pickit2.pick_up_items(char, False)
                 # item = pickit2._next_item()
                 # pather.move_mouse_to_item(item)
 
