@@ -7,6 +7,7 @@ from tracemalloc import stop
 from char.hammerdin import Hammerdin
 import game_controller
 from item.pickit import PickIt
+from item.pickit2 import Pickit2
 import keyboard
 import os
 import sys
@@ -82,9 +83,10 @@ if __name__ == "__main__":
         item_finder = ItemFinder()
         ui_manager = UiManager(screen, template_finder, obs_recorder, api, game_stats)
         belt_manager = BeltManager(screen, template_finder, api)
-        pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api)
 
         char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
+        pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api)
+        pickit2 = Pickit2(screen, ui_manager, belt_manager, char, pather, api)
         # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities(force=True)
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
@@ -116,7 +118,11 @@ if __name__ == "__main__":
 
                 # if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):
                 #     print("F")
-                pather.click_poi("Halls of Vaught")
+                # pather.click_poi("Halls of Vaught")
+
+                pickit2.pick_up_items(char, False)
+                # item = pickit2._next_item()
+                # pather.move_mouse_to_item(item)
 
                 # bot._town_manager.open_stash(Location.A4_TOWN_START)
                 # write_data_to_file(data, api._raw_data_str)

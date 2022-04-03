@@ -287,7 +287,8 @@ namespace MapAssist.MyBot
                         _currentMapWidth = mapW;
 
                         var in_game = _gameData.MenuOpen.InGame;
-                        var should_chicken = in_game && !IsInTown(current_area) && _areaData.Area != Area.None && (
+                        var in_town = IsInTown(current_area);
+                        var should_chicken = in_game && !in_town && _areaData.Area != Area.None && (
                             (player_health_pct < _chicken) ||
                             (merc_health_pct < _mercChicken));
 
@@ -315,6 +316,7 @@ namespace MapAssist.MyBot
                             right_skill = _gameData.PlayerUnit.Skills.RightSkillId,
                             menus = _gameData.MenuOpen,
                             in_game,
+                            in_town,
                             inventory_open = _gameData.MenuOpen.Inventory,
                             character_open = _gameData.MenuOpen.Character,
                             skill_select_open = _gameData.MenuOpen.SkillSelect,

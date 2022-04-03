@@ -128,6 +128,7 @@ class MAS(Thread):
         # if self.mercenary_inventory_open != data["mercenary_inventory_open"]: print(f"mercenary_inventory_open changed from {self.mercenary_inventory_open} to {data['mercenary_inventory_open']}")
         
         self.in_game = _data["in_game"] = data["in_game"]
+        self.in_game = _data["in_town"] = data["in_town"]
         self.should_chicken = _data["should_chicken"] = data["should_chicken"]
         self.inventory_open = _data["inventory_open"] = data["inventory_open"]
         self.character_open = _data["character_open"] = data["character_open"]
