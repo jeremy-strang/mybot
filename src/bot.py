@@ -628,7 +628,7 @@ class Bot:
     def on_run_summoner(self):
         res = False
         self._do_runs["run_summoner"] = False
-        self._game_stats.update_location("Arc" if self._config.general['discord_status_condensed'] else "Arcane")
+        self._game_stats.update_location("Summ" if self._config.general['discord_status_condensed'] else "Summoner")
         self._curr_loc = self._summoner.approach(self._curr_loc)
         if self._curr_loc:
             res = self._summoner.battle(not self._pre_buffed)
