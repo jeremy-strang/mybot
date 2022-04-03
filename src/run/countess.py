@@ -75,6 +75,7 @@ class Countess:
         picked_up_items = self._char.kill_uniques(pickit_func, 25, boundary=roi)
         picked_up_items += self._pickit.pick_up_items(self._char)
         self._pather.traverse("GoodChest", self._char, verify_location=True)
+        self._char.kill_countess()
         picked_up_items += self._pickit.pick_up_items(self._char)
         Logger.debug(f"    Picked up {picked_up_items} items")
         return (Location.A1_TOWER_END, picked_up_items)

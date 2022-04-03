@@ -411,6 +411,9 @@ class Hammerdin(IChar):
 
     def kill_nihlathak(self) -> bool:
         return self._kill_mobs(["Nihlathak"])
+    
+    def kill_countess(self) -> bool:
+        return self._kill_mobs(["DarkStalker"])
 
     def _get_updated_monster(self, monster):
         fresh_data = self._api.get_data()
@@ -520,11 +523,11 @@ class Hammerdin(IChar):
             else:
                 target_pos = game_state._target_pos
                 target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
-                if time.time() - last_move > 6.0:
+                if time.time() - last_move > 7.0:
                     Logger.debug("Stood in one place too long, repositioning")
                     self.reposition(target_pos)
                     last_move = time.time()
-                elif game_state._dist > 7:
+                elif game_state._dist > 5:
                     move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
                     move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
                     self.pre_move()
