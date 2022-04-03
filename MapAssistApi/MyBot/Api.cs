@@ -211,7 +211,6 @@ namespace MapAssist.MyBot
                                 number = merc.TxtFileNo,
                                 heath_percentage = merc.HealthPercentage,
                                 corpse = merc.IsCorpse,
-                                bossID = merc.MonsterData.BossLineID,
                                 state_strings = merc.StateStrings,
                                 is_hovered = merc.IsHovered,
                             };
@@ -373,6 +372,7 @@ namespace MapAssist.MyBot
                                 {
                                     id = m.UnitId,
                                     boss_id = m.MonsterData.BossLineID,
+                                    npc = m.Npc,
                                     position = m.Position,
                                     immunities = m.Immunities,
                                     unit_type = m.UnitType.ToString(),
