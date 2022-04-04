@@ -62,7 +62,7 @@ class IChar:
                     return CharacterCapabilities(can_teleport_natively=False, can_teleport_with_charges=True)
                 else:
                     return CharacterCapabilities(can_teleport_natively=True, can_teleport_with_charges=False)
-            return CharacterCapabilities(can_teleport_natively=False, can_teleport_with_charges=True)
+            return CharacterCapabilities(can_teleport_natively=False, can_teleport_with_charges=False)
         else:
             return CharacterCapabilities(can_teleport_natively=False, can_teleport_with_charges=False)
 
