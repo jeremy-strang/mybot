@@ -107,299 +107,6 @@ class Pather:
 
         return area_pos
 
-    def activate_waypoint(self,
-                          obj: Union[tuple[int, int], str],
-                          char,
-                          entrance_in_wall: bool = True,
-                          is_wp: bool = True
-                        ) -> bool:
-        Logger.info(f"Activating waypoint: {obj}")
-        start = time.time()
-        wp_menu = None
-        data = None
-        while data is None:
-            data = self._api.get_data()
-
-        while time.time() - start < 20:
-            data = self._api.get_data()
-
-            if data is not None and data["should_chicken"]:
-                Logger.warning(f"Aborting activate_waypoint() because chicken life threshold was reached")
-                return False
-
-            if data is not None:
-                if data is not None and "map" in data and data["map"] is not None:
-                    if is_wp:
-                        wp_menu = data['menus']['Waypoint']
-                        if wp_menu and is_wp:
-                            return True
-
-                    pos_monitor = None
-                    if type(obj) == str:
-                        for p in data["points_of_interest"]:
-                            if p["label"].startswith(obj):
-                                # find the gradient for the grid position and move one back
-                                if entrance_in_wall:
-                                    ap = p["position"] - data["area_origin"]
-                                    if data["map"][ap[1] - 1][ap[0]] == 1:
-                                        ap = [p["position"][0],
-                                              p["position"][1] + 2]
-                                    elif data["map"][ap[1] + 1][ap[0]] == 1:
-                                        ap = [p["position"][0],
-                                              p["position"][1] - 2]
-                                    elif data["map"][ap[1]][ap[0] - 1] == 1:
-                                        ap = [p["position"][0] +
-                                              2, p["position"][1]]
-                                    elif data["map"][ap[1]][ap[0] + 1] == 1:
-                                        ap = [p["position"][0] -
-                                              2, p["position"][1]]
-                                    else:
-                                        ap = p["position"]
-                                else:
-                                    ap = p["position"]
-                                #pos_monitor = self._api.world_to_abs_screen(ap)
-                                # print(pos_monitor)
-                                player_p = data['player_pos_area']
-                                new_pos_mon = world_to_abs(
-                                    (ap-data["area_origin"]), player_p + data['player_offset'])
-                                pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
-
-                                if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                                    pos_monitor = self._screen.convert_abs_to_monitor(
-                                        pos_monitor)
-                                else:
-                                    pos_monitor = None
-
-                    else:
-                        player_p = data['player_pos_area']
-                        new_pos_mon = world_to_abs((obj-data["area_origin"]), player_p+data['player_offset'])
-                        pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
-
-                        if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                            pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
-                        else:
-                            pos_monitor = None
-                    if pos_monitor is not None:
-                        if is_wp and wp_menu:
-                            return True
-                        if is_wp and not wp_menu:
-                            pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1] - 39.5]
-                            mouse.move(*pos_monitor)
-                            time.sleep(0.5)
-                            mouse.click("left")
-
-                            time.sleep(1)
-
-                            data = self._api.get_data()
-                            wp_menu = data['menus']['Waypoint']
-                            if wp_menu and is_wp:
-                                Logger.info('WP menu open!')
-                                return True
-
-                        if not is_wp:
-                            mouse.move(*pos_monitor)
-                            time.sleep(0.25)
-                            mouse.click("left")
-                            return True
-
-        return False
-    
-    def activate_poi(self,
-                     poi: Union[tuple[int, int], str],
-                     end_loc: str,
-                     entrance_in_wall: bool = True,
-                     collection="points_of_interest",
-                     char=None,
-                     offset: list = [0, 0]
-                    ) -> bool:
-        Logger.debug(f"Activating POI: {poi}")
-        start = time.time()
-        while time.time() - start < 20:
-            data = self._api.get_data()
-
-            if data is not None and data["should_chicken"]:
-                Logger.warning(f"Aborting activate_poi() because chicken life threshold was reached")
-                return False
-
-            if data is not None:
-                pos_monitor = None
-                if type(poi) == str:
-                    for p in data[collection]:
-                        if collection == "points_of_interest":
-                            ele = p["label"]
-                        elif collection == "objects":
-                            ele = p["name"]
-                        if ele.startswith(poi):
-                            obj = p
-                            # find the gradient for the grid position and move one back
-                            ap = p["position"] - data["area_origin"]
-                            if entrance_in_wall:
-                                if data["map"][ap[1] - 1][ap[0]] == 1:
-                                    ap = [p["position"][0],
-                                          p["position"][1] + 2]
-                                elif data["map"][ap[1] + 1][ap[0]] == 1:
-                                    ap = [p["position"][0],
-                                          p["position"][1] - 2]
-                                elif data["map"][ap[1]][ap[0] - 1] == 1:
-                                    ap = [p["position"][0] +
-                                          2, p["position"][1]]
-                                elif data["map"][ap[1]][ap[0] + 1] == 1:
-                                    ap = [p["position"][0] -
-                                          2, p["position"][1]]
-                                else:
-                                    ap = p["position"]
-                            ap = [ap[0] + offset[0], ap[1]+offset[1]]
-                            #pos_monitor = self._api.world_to_abs_screen(ap)
-                            player_p = data['player_pos_world'] + data['player_offset']
-                            pos_monitor = world_to_abs(ap, player_p)
-                            if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                                pos_monitor = self._screen.convert_abs_to_monitor(
-                                    pos_monitor)
-                            else:
-                                pos_monitor = None
-                else:
-                    player_p = data['player_pos_area']+data['player_offset']
-                    pos_monitor = world_to_abs(poi, player_p)
-                    if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                        pos_monitor = self._screen.convert_abs_to_monitor(
-                            pos_monitor)
-                    else:
-                        pos_monitor = None
-                if pos_monitor is not None:
-                    if collection == "objects":
-                        while (obj["mode"] == 0):
-
-                            stash_menu = data['menus']['Stash']
-                            if stash_menu:
-                                Logger.debug('Stash menu opened!')
-                                return True
-
-                            player_p = data['player_pos_area'] + \
-                                data['player_offset']
-                            ap = obj["position"] - data["area_origin"]
-                            pos_monitor = world_to_abs(ap, player_p)
-                            pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
-                            if char is not None:
-                                if collection == "objects":
-                                    self.traverse(poi, char, obj=True)
-                                else:
-                                    self.traverse(poi, char)
-                            pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1]-39.5]
-                            mouse.move(*pos_monitor)
-                            time.sleep(0.75)
-                            mouse.click("left")
-                            time.sleep(0.75)
-                            data = self._api.get_data()
-                            for p in data[collection]:
-                                if p["name"].startswith(poi):
-                                    obj["mode"] = p["mode"]
-                    else:
-                        pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
-                        mouse.move(*pos_monitor)
-                        time.sleep(0.25)
-                        mouse.click("left")
-                        # we did it!
-                    return True
-        return False
-
-    def go_to_area(self,
-                   poi: Union[tuple[int, int], str],
-                   end_loc: str,
-                   entrance_in_wall: bool = True,
-                   randomize: int = 0,
-                   time_out: float = 20.0,
-                   char = None,
-                   offset: tuple[int, int] = None,
-                   ) -> bool:
-        Logger.debug(f"Going to area: {poi}, end location: {end_loc}...")
-        num_clicks = 0
-        start = time.time()
-        end_loc = end_loc.replace(" ", "")
-        while time.time() - start < time_out:
-            data = self._api.get_data()
-
-            if data is not None and data["should_chicken"]:
-                Logger.warning(f"Aborting go_to_area() because chicken life threshold was reached")
-                return False
-
-            if data is not None:
-                pos_abs = None
-                pos_monitor = None
-                if type(poi) == str:
-                    for p in data["points_of_interest"]:
-                        if p["label"].startswith(poi):
-                            # find the gradient for the grid position and move one back
-                            if entrance_in_wall:
-                                ap = p["position"] - data["area_origin"]
-                                if data["map"][ap[1] - 1][ap[0]] == 1:
-                                    ap = [p["position"][0], p["position"][1] + 2]
-                                elif data["map"][ap[1] + 1][ap[0]] == 1:
-                                    ap = [p["position"][0], p["position"][1] - 2]
-                                elif data["map"][ap[1]][ap[0] - 1] == 1:
-                                    ap = [p["position"][0] + 2, p["position"][1]]
-                                elif data["map"][ap[1]][ap[0] + 1] == 1:
-                                    ap = [p["position"][0] - 2, p["position"][1]]
-                                else:
-                                    ap = p["position"]
-                            else:
-                                ap = p["position"]
-                            dist = math.dist(ap, data['player_pos_area'])
-                            mult = 1
-                            if dist < 40:
-                                mult = .5
-                            #pos_monitor = self._api.world_to_abs_screen(ap)
-                            player_p = data['player_pos_area']
-                            pos_abs = world_to_abs(
-                                (ap-data["area_origin"]), player_p+data['player_offset'])
-                            pos_monitor = [pos_abs[0], pos_abs[1]]
-                            if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                                pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor*mult)
-                            else:
-                                pos_monitor = None
-                else:
-                    player_p = data['player_pos_area']
-                    pos_abs = world_to_abs((poi-data["area_origin"]), player_p + data['player_offset'])
-                    pos_monitor = [pos_abs[0], pos_abs[1]]
-                    if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
-                        pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
-                    else:
-                        pos_monitor = None
-
-                if pos_monitor is not None:
-                    random.seed()
-                    pos_monitor = (pos_monitor[0] + random.randint(-randomize, +randomize),
-                                   pos_monitor[1] + random.randint(-randomize, +randomize))
-                    pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
-                    if offset is not None:
-                        pos_monitor = [pos_monitor[0] + offset[0], pos_monitor[1] + offset[1]]
-                    _mouse.move(*pos_monitor, duration=.07)
-                    wait(0.1, 0.15)
-                    mouse.press(button="left")
-                    wait(0.04, 0.05)
-                    mouse.release(button="left")
-
-                    num_clicks += 1
-                    wait(0.5, 0.6)
-                    if num_clicks == 10 and char is not None:
-                        char.pre_move()
-                        char.move(pos_monitor, force_tp=True)
-                    if num_clicks == 12:
-                        randomize += 2
-                    if num_clicks == 15 and char is not None:
-                        char.reposition(pos_abs)
-                    if num_clicks == 17:
-                        randomize += 3
-                    if num_clicks == 20:
-                        char.reposition(pos_abs)
-                    if num_clicks == 22:
-                        randomize += 4
-                    data = self._api.get_data()
-                if data["current_area"] == end_loc:
-                    Logger.debug(f"Done going to area {end_loc} after {time.time() - start} sec")
-                    return True
-        Logger.debug(f"Failed to confirm arrival at {end_loc}")
-        return False
-
     def click_poi(self, poi_label: str, offset=None):
         data = self._api.data
         if data is not None:
@@ -482,6 +189,345 @@ class Pather:
             return False
         return True
 
+    def activate_waypoint(self,
+                          obj: Union[tuple[int, int], str],
+                          char,
+                          entrance_in_wall: bool = True,
+                          is_wp: bool = True
+                        ) -> bool:
+        Logger.info(f"Activating waypoint: {obj}")
+        start = time.time()
+        wp_menu = None
+        data = None
+        while data is None:
+            data = self._api.get_data()
+
+        while time.time() - start < 20:
+            data = self._api.get_data()
+
+            if data is not None and data["should_chicken"]:
+                Logger.warning(f"    Aborting activate_waypoint() because chicken life threshold was reached")
+                return False
+
+            if data["inventory_open"]:
+                Logger.warning(f"    Aborting activate_waypoint(), inventory is open")
+                return False
+
+            if data is not None:
+                if data is not None and "map" in data and data["map"] is not None:
+                    if is_wp:
+                        wp_menu = data["waypoint_open"]
+                        if wp_menu and is_wp:
+                            return True
+
+                    pos_monitor = None
+                    if type(obj) == str:
+                        for p in data["points_of_interest"]:
+                            if p["label"].startswith(obj):
+                                # find the gradient for the grid position and move one back
+                                if entrance_in_wall:
+                                    ap = p["position"] - data["area_origin"]
+                                    if data["map"][ap[1] - 1][ap[0]] == 1:
+                                        ap = [p["position"][0],
+                                              p["position"][1] + 2]
+                                    elif data["map"][ap[1] + 1][ap[0]] == 1:
+                                        ap = [p["position"][0],
+                                              p["position"][1] - 2]
+                                    elif data["map"][ap[1]][ap[0] - 1] == 1:
+                                        ap = [p["position"][0] +
+                                              2, p["position"][1]]
+                                    elif data["map"][ap[1]][ap[0] + 1] == 1:
+                                        ap = [p["position"][0] -
+                                              2, p["position"][1]]
+                                    else:
+                                        ap = p["position"]
+                                else:
+                                    ap = p["position"]
+                                #pos_monitor = self._api.world_to_abs_screen(ap)
+                                # print(pos_monitor)
+                                player_p = data['player_pos_area']
+                                new_pos_mon = world_to_abs(
+                                    (ap-data["area_origin"]), player_p + data['player_offset'])
+                                pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
+
+                                if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
+                                    pos_monitor = self._screen.convert_abs_to_monitor(
+                                        pos_monitor)
+                                else:
+                                    pos_monitor = None
+
+                    else:
+                        player_p = data['player_pos_area']
+                        new_pos_mon = world_to_abs((obj-data["area_origin"]), player_p+data['player_offset'])
+                        pos_monitor = [new_pos_mon[0], new_pos_mon[1]]
+
+                        if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
+                            pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
+                        else:
+                            pos_monitor = None
+                    if pos_monitor is not None:
+                        if is_wp and wp_menu:
+                            return True
+                        if is_wp and not wp_menu:
+                            pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1] - 39.5]
+                            
+                            if data is not None and data["should_chicken"]:
+                                Logger.warning(f"    Aborting activate_waypoint() because chicken life threshold was reached")
+                                return False
+
+                            if data["inventory_open"]:
+                                Logger.warning(f"    Aborting activate_waypoint(), inventory is open")
+                                return False
+
+                            mouse.move(*pos_monitor)
+                            time.sleep(0.5)
+                            mouse.click("left")
+                            time.sleep(1)
+
+                            data = self._api.get_data()
+                            wp_menu = data["waypoint_open"]
+                            if wp_menu and is_wp:
+                                Logger.info('WP menu open!')
+                                return True
+
+                        if not is_wp:
+                            if data is not None and data["should_chicken"]:
+                                Logger.warning(f"    Aborting activate_waypoint() because chicken life threshold was reached")
+                                return False
+
+                            if data["inventory_open"]:
+                                Logger.warning(f"    Aborting activate_waypoint(), inventory is open")
+                                return False
+
+                            mouse.move(*pos_monitor)
+                            time.sleep(0.25)
+                            mouse.click("left")
+                            return True
+
+        return False
+    
+    def activate_poi(self,
+                     poi: Union[tuple[int, int], str],
+                     end_loc: str,
+                     entrance_in_wall: bool = True,
+                     collection="points_of_interest",
+                     char=None,
+                     offset: list = [0, 0]
+                    ) -> bool:
+        Logger.debug(f"Activating POI: {poi}")
+        start = time.time()
+        while time.time() - start < 20:
+            data = self._api.get_data()
+
+            if data is not None and data["should_chicken"]:
+                Logger.warning(f"    Aborting activate_poi() because chicken life threshold was reached")
+                return False
+
+            if data["inventory_open"]:
+                Logger.warning(f"    Aborting activate_poi(), inventory is open")
+                return False
+
+            if data is not None:
+                pos_monitor = None
+                if type(poi) == str:
+                    for p in data[collection]:
+                        if collection == "points_of_interest":
+                            ele = p["label"]
+                        elif collection == "objects":
+                            ele = p["name"]
+                        if ele.startswith(poi):
+                            obj = p
+                            # find the gradient for the grid position and move one back
+                            ap = p["position"] - data["area_origin"]
+                            if entrance_in_wall:
+                                if data["map"][ap[1] - 1][ap[0]] == 1:
+                                    ap = [p["position"][0],
+                                          p["position"][1] + 2]
+                                elif data["map"][ap[1] + 1][ap[0]] == 1:
+                                    ap = [p["position"][0],
+                                          p["position"][1] - 2]
+                                elif data["map"][ap[1]][ap[0] - 1] == 1:
+                                    ap = [p["position"][0] +
+                                          2, p["position"][1]]
+                                elif data["map"][ap[1]][ap[0] + 1] == 1:
+                                    ap = [p["position"][0] -
+                                          2, p["position"][1]]
+                                else:
+                                    ap = p["position"]
+                            ap = [ap[0] + offset[0], ap[1]+offset[1]]
+                            #pos_monitor = self._api.world_to_abs_screen(ap)
+                            player_p = data['player_pos_world'] + data['player_offset']
+                            pos_monitor = world_to_abs(ap, player_p)
+                            if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
+                                pos_monitor = self._screen.convert_abs_to_monitor(
+                                    pos_monitor)
+                            else:
+                                pos_monitor = None
+                else:
+                    player_p = data['player_pos_area']+data['player_offset']
+                    pos_monitor = world_to_abs(poi, player_p)
+                    if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
+                        pos_monitor = self._screen.convert_abs_to_monitor(
+                            pos_monitor)
+                    else:
+                        pos_monitor = None
+                if pos_monitor is not None:
+                    if collection == "objects":
+                        while (obj["mode"] == 0):
+
+                            stash_menu = data['menus']['Stash']
+                            if stash_menu:
+                                Logger.debug('Stash menu opened!')
+                                return True
+
+                            player_p = data['player_pos_area'] + \
+                                data['player_offset']
+                            ap = obj["position"] - data["area_origin"]
+                            pos_monitor = world_to_abs(ap, player_p)
+                            pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
+                            if char is not None:
+                                if collection == "objects":
+                                    self.traverse(poi, char, obj=True)
+                                else:
+                                    self.traverse(poi, char)
+                            pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1]-39.5]
+
+                            if data is not None and data["should_chicken"]:
+                                Logger.warning(f"    Aborting activate_poi() because chicken life threshold was reached")
+                                return False
+
+                            if data["inventory_open"]:
+                                Logger.warning(f"    Aborting activate_poi(), inventory is open")
+                                return False
+
+                            mouse.move(*pos_monitor)
+                            time.sleep(0.75)
+                            mouse.click("left")
+                            time.sleep(0.75)
+                            data = self._api.get_data()
+                            for p in data[collection]:
+                                if p["name"].startswith(poi):
+                                    obj["mode"] = p["mode"]
+                    else:
+                        pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
+                        mouse.move(*pos_monitor)
+                        time.sleep(0.25)
+                        mouse.click("left")
+                        # we did it!
+                    return True
+        return False
+
+    def go_to_area(self,
+                   poi: Union[tuple[int, int], str],
+                   end_loc: str,
+                   entrance_in_wall: bool = True,
+                   randomize: int = 0,
+                   time_out: float = 20.0,
+                   char = None,
+                   offset: tuple[int, int] = None,
+                   ) -> bool:
+        Logger.debug(f"Going to area: {poi}, end location: {end_loc}...")
+        num_clicks = 0
+        start = time.time()
+        end_loc = end_loc.replace(" ", "")
+        while time.time() - start < time_out:
+            data = self._api.get_data()
+
+            if data is not None and data["should_chicken"]:
+                Logger.warning(f"    Aborting go_to_area() because chicken life threshold was reached")
+                return False
+
+            if data["inventory_open"]:
+                Logger.warning(f"    Aborting go_to_area(), inventory is open")
+                return False
+
+            if data is not None:
+                pos_abs = None
+                pos_monitor = None
+                if type(poi) == str:
+                    for p in data["points_of_interest"]:
+                        if p["label"].startswith(poi):
+                            # find the gradient for the grid position and move one back
+                            if entrance_in_wall:
+                                ap = p["position"] - data["area_origin"]
+                                if data["map"][ap[1] - 1][ap[0]] == 1:
+                                    ap = [p["position"][0], p["position"][1] + 2]
+                                elif data["map"][ap[1] + 1][ap[0]] == 1:
+                                    ap = [p["position"][0], p["position"][1] - 2]
+                                elif data["map"][ap[1]][ap[0] - 1] == 1:
+                                    ap = [p["position"][0] + 2, p["position"][1]]
+                                elif data["map"][ap[1]][ap[0] + 1] == 1:
+                                    ap = [p["position"][0] - 2, p["position"][1]]
+                                else:
+                                    ap = p["position"]
+                            else:
+                                ap = p["position"]
+                            dist = math.dist(ap, data['player_pos_area'])
+                            mult = 1
+                            if dist < 40:
+                                mult = .5
+                            #pos_monitor = self._api.world_to_abs_screen(ap)
+                            player_p = data['player_pos_area']
+                            pos_abs = world_to_abs(
+                                (ap-data["area_origin"]), player_p+data['player_offset'])
+                            pos_monitor = [pos_abs[0], pos_abs[1]]
+                            if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
+                                pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor*mult)
+                            else:
+                                pos_monitor = None
+                else:
+                    player_p = data['player_pos_area']
+                    pos_abs = world_to_abs((poi-data["area_origin"]), player_p + data['player_offset'])
+                    pos_monitor = [pos_abs[0], pos_abs[1]]
+                    if -640 < pos_monitor[0] < 640 and -360 < pos_monitor[1] < 360:
+                        pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
+                    else:
+                        pos_monitor = None
+
+                if pos_monitor is not None:
+                    random.seed()
+                    pos_monitor = (pos_monitor[0] + random.randint(-randomize, +randomize),
+                                   pos_monitor[1] + random.randint(-randomize, +randomize))
+                    pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
+                    if offset is not None:
+                        pos_monitor = [pos_monitor[0] + offset[0], pos_monitor[1] + offset[1]]
+
+                    if data is not None and data["should_chicken"]:
+                        Logger.warning(f"    Aborting go_to_area() because chicken life threshold was reached")
+                        return False
+
+                    if data["inventory_open"]:
+                        Logger.warning(f"    Aborting go_to_area(), inventory is open")
+                        return False
+
+                    _mouse.move(*pos_monitor, duration=.07)
+                    wait(0.1, 0.15)
+                    mouse.press(button="left")
+                    wait(0.04, 0.05)
+                    mouse.release(button="left")
+
+                    num_clicks += 1
+                    wait(0.5, 0.6)
+                    if num_clicks == 10 and char is not None:
+                        char.pre_move()
+                        char.move(pos_monitor, force_tp=True)
+                    if num_clicks == 12:
+                        randomize += 2
+                    if num_clicks == 15 and char is not None:
+                        char.reposition(pos_abs)
+                    if num_clicks == 17:
+                        randomize += 3
+                    if num_clicks == 20:
+                        char.reposition(pos_abs)
+                    if num_clicks == 22:
+                        randomize += 4
+                    data = self._api.get_data()
+                if data["current_area"] == end_loc:
+                    Logger.debug(f"Done going to area {end_loc} after {time.time() - start} sec")
+                    return True
+        Logger.debug(f"Failed to confirm arrival at {end_loc}")
+        return False
+
     def traverse_route(self, route, char, time_out=10):
         if route is not None:
             dist = 0
@@ -519,7 +565,7 @@ class Pather:
                          time_out=50.0
                         ):
         """Slightly different traversal for moving in town/walking"""
-        Logger.debug(f"Traverse (walking) to end: {end}")
+        Logger.debug(f"Traverse (walking) to: {end}")
         char.pre_move()
         data = None
         sucess = False
@@ -532,7 +578,11 @@ class Pather:
             data = self._api.get_data()
 
             if data is not None and data["should_chicken"]:
-                Logger.warning(f"Aborting traverse_walking() because chicken life threshold was reached")
+                Logger.warning(f"    Aborting traverse_walking() because chicken life threshold was reached")
+                return False
+
+            if data["inventory_open"]:
+                Logger.warning(f"    Aborting traverse_walking(), inventory is open")
                 return False
 
             if data is not None and "map" in data and data["map"] is not None:
@@ -711,18 +761,6 @@ class Pather:
         keyboard.release(char._char_config["force_move"])
         return True
 
-    @staticmethod
-    def _closest_node(node, nodes):
-        return nodes[cdist([node], nodes).argmin()]
-
-    @staticmethod
-    def _find_next_node(route, p):
-        for r in route:
-            dist = math.dist([r[1], r[0]], p)
-            if dist < 29:
-                return r
-        return None
-
     def traverse(self,
                  end: Union[str, tuple[int, int]],
                  char,
@@ -758,13 +796,23 @@ class Pather:
         while time.time() - start < time_out:
             data = self._api.get_data()
             if data is None:
-                Logger.warning(f"Couldnt get api data retrying")
+                Logger.warning(f"    Couldnt get API, data retrying...")
+                wait(0.1)
                 continue
-            if data is not None and "map" in data and data["map"] is not None:
+            
+            if data is not None and data["should_chicken"]:
+                Logger.warning(f"    Aborting traverse_walking() because chicken life threshold was reached")
+                return False
+
+            if data["inventory_open"]:
+                Logger.warning(f"    Aborting traverse_walking(), inventory is open")
+                return False
+
+            if "map" in data and data["map"] is not None:
                 player_pos_area = data["player_pos_area"]
                 if data["used_skill"] == "SKILL_TELEPORT":
                     Logger.debug("Used teleport")
-                    time.sleep(0.18)
+                    time.sleep(char._cast_duration if char is not None else 0.18)
                     continue
 
                 # Some fail save checking for when we get stuck
@@ -853,7 +901,17 @@ class Pather:
 
                     if math.dist(player_pos, node_pos_w) < 10:
                         continue
+
+                    if data is not None and data["should_chicken"]:
+                        Logger.warning(f"    Aborting traverse_walking() because chicken life threshold was reached")
+                        return False
+
+                    if data["inventory_open"]:
+                        Logger.warning(f"    Aborting traverse_walking(), inventory is open")
+                        return False
+
                     char.move((node_pos_m[0], node_pos_m[1]), force_move=force)
+
                     if i > len(route_list)-4:
                         # slow down on the last few jumps for accuracy, there might be a better way but ???
                         time.sleep(.4)
@@ -872,6 +930,18 @@ class Pather:
             time.sleep(0.02)
             self._api._astar_current_path = None
         return False
+
+    @staticmethod
+    def _closest_node(node, nodes):
+        return nodes[cdist([node], nodes).argmin()]
+
+    @staticmethod
+    def _find_next_node(route, p):
+        for r in route:
+            dist = math.dist([r[1], r[0]], p)
+            if dist < 29:
+                return r
+        return None
 
     def wait_for_location(self, name) -> bool:
         start = time.time()
