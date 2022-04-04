@@ -24,6 +24,7 @@ class StateMonitor:
         self._dead = 0
         self._status = 'unk'
         self._target = None
+        self._targets = []
         self._target_pos = None
         self._area_pos = None
         self._names = names
@@ -61,6 +62,7 @@ class ApiThread:
         data = self._sm._api.get_data()
         if data is not None:
             monsters = sort_and_filter_monsters(data, self._sm._rules, self._sm._boundary)
+            self._sm._targets = list(filter(lambda x: x["mode"] != 12, monsters))
             if len(monsters) == 0: self._sm._dead = 1
             # print(f"State monitor targeting {len(monsters)} monsters")
             for m in monsters:

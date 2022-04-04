@@ -10,6 +10,7 @@ from logger import Logger
 from screen import Screen
 from utils.misc import rotate_vec, unit_vector, wait, is_in_roi
 from utils.monsters import get_unlooted_monsters, CHAMPS_UNIQUES
+from constants import Roi
 import time
 from pathing import OldPather, Location
 import math
@@ -156,7 +157,7 @@ class Hammerdin(IChar):
         self._cast_hammers(1.6, "redemption")
         return True
 
-    def kill_council(self, game_state: StateMonitor) -> bool:
+    def kill_council(self, game_state: StateMonitor=None) -> bool:
         if not self._do_pre_move:
             keyboard.send(self._skill_hotkeys["concentration"])
             wait(0.05, 0.10)
@@ -164,23 +165,24 @@ class Hammerdin(IChar):
         atk_len = self._char_config["atk_len_trav"]
         # Here we have two different attack sequences depending if tele is available or not
         if self.capabilities.can_teleport_natively:
-            self._kill_council(game_state)
-            keyboard.send(self._skill_hotkeys["concentration"])
-            wait(0.05, 0.10)
+            self._kill_council_with_tp()
         else:
-            # Start hammers near the entrance
-            self._cast_hammers(atk_len)
-            # Go left of center stairs a bit
-            self._old_pather.traverse_nodes([226, 227], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True)
-            self._cast_hammers(atk_len)
-            # Move a bit to the top and more hammer
-            self._move_and_attack((20, 10), atk_len)
-            # Go inside and hammer a bit
-            if not self._old_pather.traverse_nodes([228, 229], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True):
-                self._move_and_attack((-5, 5), atk_len / 2)
-            self._cast_hammers(atk_len)
-            # Stay inside and cast hammers again moving forward
-            self._move_and_attack((40, 10), atk_len)
+            self._kill_council_walking()
+            # # Start hammers near the entrance
+            # self._cast_hammers(atk_len)
+            # # Go left of center stairs a bit
+            # self._old_pather.traverse_nodes([226, 227], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True)
+            # self._cast_hammers(atk_len)
+            # # Move a bit to the top and more hammer
+            # self._move_and_attack((20, 10), atk_len)
+            # # Go inside and hammer a bit
+            # if not self._old_pather.traverse_nodes([228, 229], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True):
+            #     self._move_and_attack((-5, 5), atk_len / 2)
+            # self._cast_hammers(atk_len)
+            # # Stay inside and cast hammers again moving forward
+            # self._move_and_attack((40, 10), atk_len)
+        keyboard.send(self._skill_hotkeys["concentration"])
+        wait(0.05, 0.10)
         return True
 
     # Chaos Sanctuary, Seal Bosses (a = Vizier, b = De Seis, c = Infector) & Diablo
@@ -420,11 +422,12 @@ class Hammerdin(IChar):
         fresh_m = next(filter(lambda x: x["id"] == monster and x["mode"] != 12, fresh_data["monsters"]), monster)
         return fresh_m
 
-    def _kill_council(self, game_state: StateMonitor):
-        Logger.debug(f"Beginning combat...")
+    def _kill_council_with_tp(self):
+        Logger.debug(f"Beginning combat with Council Members (with Teleport)...")
         start = time.time()
         last_move = start
         elapsed = 0
+        game_state = StateMonitor(['CouncilMember'], self._api, unique_id=-1, many=True)
         while elapsed < 50 and game_state._dead == 0:
             if game_state._ready:
                 target_pos = game_state._target_pos
@@ -448,6 +451,61 @@ class Hammerdin(IChar):
         Logger.debug(f"Finished killing council, combat took {round(elapsed, 2)} sec")
         return True
 
+    def _kill_council_walking(self):
+        Logger.debug(f"Beginning combat with Council Members (walking)...")
+        rules = [
+            MonsterRule(auras = ["CONVICTION"]),
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE, MonsterType.UNIQUE]),
+            MonsterRule(names = ["CouncilMember"]),
+        ]
+        roi_tups = [
+            ((157, 113), Roi.TRAV_STAIRS), 
+            ((141, 115), Roi.TRAV_PATIO), 
+            ((124, 109), Roi.TRAV_CORNER),
+            ((142,  92), Roi.TRAV_FULL)
+        ]
+        for tup in roi_tups:
+            game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=tup[1])
+            if len(game_state._targets) > 0:
+                self._pather.traverse_walking(tup[0], self, time_out=3)
+                self._cast_hammers((self._cast_duration - 0.01) * 4)
+                self._kill_mobs_walking(game_state, time_out=15)
+            game_state.stop()
+            for _ in range(2):
+                self.move(self._screen.convert_world_to_monitor((153, 94), self._api.data["player_pos_area"], True), force_move=True)
+        return True
+    
+    def _kill_mobs_walking(self, game_state: StateMonitor, time_out = 60) -> bool:
+        start = time.time()
+        last_move = start
+        elapsed = 0
+        while elapsed < time_out and game_state._dead == 0 and game_state._target is not None:
+            if not game_state._ready:
+                wait(0.1)
+            else:
+                target_pos = game_state._target_pos
+                target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
+                if time.time() - last_move > 7.0:
+                    Logger.debug("Stood in one place too long, repositioning")
+                    self.reposition(target_pos)
+                    last_move = time.time()
+                elif game_state._dist > 6:
+                    move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
+                    move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
+                    if self._do_pre_move:
+                        self.pre_move()
+                    self.move(move_pos_m, force_move=True)
+                    last_move = time.time()
+                num_targets = len(game_state._targets)
+                if num_targets > 0:
+                    Logger.debug(f"    Casting hammers, current target count: {num_targets}")
+                    keyboard.send(self._skill_hotkeys["concentration"])
+                    wait(0.03, 0.05)
+                    self._cast_hammers((self._cast_duration - 0.01) * 3)
+                self.post_attack()
+            elapsed = time.time() - start
+        return True
+
     def _kill_mobs(self, names: list[str] = None, ignore_names: list[str] = None, boundary: list[int] = None, time_out = 60) -> bool:
         start = time.time()
         success = False
@@ -468,7 +526,7 @@ class Hammerdin(IChar):
                             # self._pather.traverse(area_pos, self, time_out=1.0)
                             self._pather.move_to_monster(self, m)
                             if dist < 8:
-                                self._cast_hammers(self._cast_duration * 3)
+                                self._cast_hammers((self._cast_duration - 0.01) * 3)
                             wait(0.1)
                             is_alive = True
                             success = True
@@ -504,6 +562,7 @@ class Hammerdin(IChar):
 
     def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None):
         Logger.debug(f"Beginning combat")
+        start = time.time()
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
@@ -511,7 +570,6 @@ class Hammerdin(IChar):
             MonsterRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
             # MonsterRule(monster_types = [MonsterType.MINION]),
         ]
-        start = time.time()
         game_state = StateMonitor(rules, self._api, False, -1, True, False, None)
         last_move = start
         elapsed = 0

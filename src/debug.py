@@ -102,13 +102,16 @@ if __name__ == "__main__":
             wait(0.2)
             data = api.get_data()
         
-        # overlay = start_overlay(bot, game_stats)
+        overlay = start_overlay(bot, game_stats)
         # pp.pprint(config.items)
 
         def do_stuff():
             print("Doing stuff...")
             try:
                 data = api.get_data()
+                # node_pos_abs = world_to_abs((153, 94), data["player_pos_area"])
+                # node_pos_m = screen.convert_abs_to_monitor(node_pos_abs, clip_input=True)
+                # char.move(node_pos_m, False, True)
                 # potion_type = "health"
                 # pp.pprint(data["flattened_belt"])
                 # next_lvl = find_poi("Halls of Vaught", api)
@@ -121,7 +124,6 @@ if __name__ == "__main__":
                 #     print("F")
                 # pather.click_poi("Halls of Vaught")
 
-                char.tp_town()
                 # pickit2.pick_up_items(char, False)
                 # item = pickit2._next_item()
                 # pather.move_mouse_to_item(item)

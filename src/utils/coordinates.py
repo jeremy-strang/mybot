@@ -13,4 +13,3 @@ def world_to_abs(dest, player):
     delta = delta_in_world_to_minimap_delta(dest-player, math.sqrt(w * w + h * h), 68.5, 30)
     screen_coords = (delta[0], delta[1])
     return screen_coords
-

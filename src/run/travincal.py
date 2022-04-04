@@ -13,8 +13,10 @@ from ui import UiManager
 from utils.misc import wait
 from state_monitor import StateMonitor
 from obs import ObsRecorder
+from constants import Roi
 
 class Travincal:
+
     def __init__(
         self,
         template_finder: TemplateFinder,
@@ -69,8 +71,9 @@ class Travincal:
         if self._char.capabilities.can_teleport_natively:
             if self._char._char_config['type'] == 'necro' and not self._pather.traverse("Durance of Hate Level 1", self._char): return False
             elif not self._pather.traverse((156, 113), self._char, verify_location=False): return False
-        elif not self._pather.traverse_walking((155, 113), self._char):
-            return False
+        else:
+            for node in [(82, 164), (112, 157), (158, 109)]:
+                self._pather.traverse_walking(node, self._char, threshold=5)
         
         if tele_swap:
             self._char.switch_weapon()
@@ -79,10 +82,8 @@ class Travincal:
         self._obs_recorder.start_recording_if_enabled()
         self._api.start_timer()
         if self._char._char_config['type'] == 'hammerdin':
-            game_state = StateMonitor(['CouncilMember'], self._api, unique_id=-1, many=True)
-            self._char.kill_council(game_state)
+            self._char.kill_council(None)
             self._avoid_durance()
-            game_state.stop()
         elif self._char._char_config['type'] == 'barbarian' or self._char._char_config['type'] == 'zerker_barb':
             # First kill council
             self._char.kill_council(None)
@@ -120,12 +121,11 @@ class Travincal:
             self._pather.traverse((154, 111), self._char, time_out=4.0)
 
         else: # Else we need to make sure we loot both inside and outside the council room
-            self._old_pather.traverse_nodes([228, 226], self._char, time_out=2, force_move=True)
+            self._pather.traverse_walking((157, 104), self._char, time_out=2)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
-            wait(0.1, 0.2)
-            self._old_pather.traverse_nodes([226, 228, 229], self._char, time_out=2, force_move=True)
+            wait(0.1, 0.15)
+            self._pather.traverse_walking((141, 113), self._char, time_out=2)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
-            wait(0.1, 0.2)
-            self._old_pather.traverse_nodes([230], self._char, time_out=2)
+            wait(0.1, 0.15)
         # self._obs_recorder.stop_recording_if_enabled()
         return (Location.A3_TRAV_CENTER_STAIRS, picked_up_items)
