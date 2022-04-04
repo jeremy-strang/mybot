@@ -800,7 +800,7 @@ class Pather:
                 wait(0.1)
                 continue
             
-            if data is not None and data["should_chicken"]:
+            if data["should_chicken"]:
                 Logger.warning(f"    Aborting traverse_walking() because chicken life threshold was reached")
                 return False
 
@@ -812,7 +812,7 @@ class Pather:
                 player_pos_area = data["player_pos_area"]
                 if data["used_skill"] == "SKILL_TELEPORT":
                     Logger.debug("Used teleport")
-                    time.sleep(char._cast_duration if char is not None else 0.18)
+                    time.sleep(0.01)
                     continue
 
                 # Some fail save checking for when we get stuck
