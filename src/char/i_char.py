@@ -180,7 +180,7 @@ class IChar:
         wait(0.4, 0.05)
         keyboard.send(self._config.char["inventory_screen"])
         wait(0.4, 0.05)
-        data = self._api.get_data()
+        data = self._api.data
         if data is not None and not data["inventory_open"]:
             keyboard.send(self._config.char["inventory_screen"])
             wait(0.25, 0.3)
@@ -195,8 +195,10 @@ class IChar:
             self._save_stats_for_weapon_tab_detection(2)
         else:
             Logger.warning("Could not determine the active weapon slot")
-        keyboard.send(self._config.char["inventory_screen"])
-        wait(0.25, 0.3)
+        data = self._api.data
+        if data is not None and data["inventory_open"]:
+            keyboard.send(self._config.char["inventory_screen"])
+            wait(0.25, 0.3)
         return active_slot
 
     def switch_weapon(self):
