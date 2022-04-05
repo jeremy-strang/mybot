@@ -16,10 +16,19 @@ from utils.monsters import sort_and_filter_monsters, score_monster
 import time
 
 class StateMonitor:
-    def __init__(self, names: list, api: MapAssistApi, super_unique: bool = False, unique_id: int=-1, many=False, do_corpses=False, boundary=None):
+    def __init__(self,
+                 names: list,
+                 api: MapAssistApi,
+                 super_unique: bool = False,
+                 unique_id: int=-1,
+                 many=False,
+                 do_corpses=False,
+                 boundary=None,
+                 time_out=60.0
+                ):
         self._loop_delay = .08
-        self._game_thread = None
-        self._game=None
+        self._tracker_thread = None
+        self._tracker=None
         self._data=None
         self._dead = 0
         self._status = 'unk'
@@ -30,36 +39,49 @@ class StateMonitor:
         self._names = names
         self._rules = list(MonsterRule([rule]) if type(rule) is str else rule for rule in names)
         self._ready = False
-        self._super_unique=super_unique
-        self._player_x=None
-        self._player_y=None
+        self._super_unique = super_unique
+        self._player_x = None
+        self._player_y = None
         self._dist = 9999
         self._api = api
         self._unique_id = unique_id
         self._many = many
         self._do_corpses = do_corpses
         self._boundary = boundary
-        #print(self._names)
+        self._time_out = time_out
         self.start()
 
     def start(self):
-        self._game = ApiThread(self)
-        self._game_thread = threading.Thread(target=self._game.get_data)
-        self._game_thread.start()
+        self._started = time.time()
+        self._tracker = CombatTracker(self)
+        self._tracker_thread = threading.Thread(target=self._tracker.run)
+        self._tracker_thread.start()
 
     def stop(self):
-        if self._game_thread: kill_thread(self._game_thread)
+        if self._tracker_thread:
+            kill_thread(self._tracker_thread)
+            self._tracker_thread = None
 
-class ApiThread:
+class CombatTracker:
     def __init__(self, state: StateMonitor):
         self._api = state._api
         self._sm = state
 
+    def run(self):
+        start = time.time()
+        time_out = 9000
+        while time.time() - start < time_out:
+            self._sm._data = self._api.data
+            self._update_status()
+            time.sleep(.015)
+
     def _update_status(self):
-        '''
-        Gets status of current target position
-        '''
-        data = self._sm._api.get_data()
+        if time.time() - self._sm._started > self._sm._time_out:
+            Logger.warning("State monitor was not stopped before time out, stopping it")
+            self._sm.stop()
+            return
+
+        data = self._sm._api.data
         if data is not None:
             monsters = sort_and_filter_monsters(data, self._sm._rules, self._sm._boundary)
             self._sm._targets = list(filter(lambda x: x["mode"] != 12, monsters))
@@ -125,11 +147,3 @@ class ApiThread:
                                 self._sm._unique_id = -1
                     self._sm._ready = True
 
-    def get_data(self):
-        #print("get api data")
-        start = time.time()
-        time_out = 9000
-        while time.time() - start < time_out:
-            self._sm._data = self._api.get_data()
-            self._update_status()
-            time.sleep(.01)
