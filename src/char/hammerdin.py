@@ -317,8 +317,8 @@ class Hammerdin(IChar):
                             if hammer_thread.is_alive():
                                 hammer_thread.join()
                             return True, found_monsters
-            elpased = time.time() - start_time
-            if elpased > 5.5:
+            elapsed = time.time() - start_time
+            if elapsed > 5.5:
                 if not hammer_thread.is_alive():
                     hammer_thread.start()
             time.sleep(0.1)
