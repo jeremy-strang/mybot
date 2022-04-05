@@ -159,21 +159,42 @@ class ZerkerBarb(Barbarian):
         self._kill_mobs(game_state, 1.7, 15, do_howl=True)
         return True
 
-    def kill_mobs(self,
+    def _kill_mobs2(self,
                   prioritize: list[MonsterRule],
                   ignore: list[MonsterRule] = None,
-                  time_out: float = 60.0,
-                  boundary: Tuple[int, int, int, int] = None
+                  time_out: float = 40.0,
+                  boundary: Tuple[int, int, int, int] = None,
+                  reposition_pos = None,
+                  reposition_time: float = 6.0,
+                  do_howl: bool=False
                 ) -> bool:
         Logger.debug(f"Beginning combat")
         start = time.time()
         last_move = start
         elapsed = 0
 
-        monsters = sort_and_filter_monsters(prioritize, ignore, boundary)
         while elapsed < time_out and len(monsters) > 0:
-            for monster in monsters:
-                pass
+            if self._api.data:
+                data = self._api.data
+                monsters = sort_and_filter_monsters(data, prioritize, ignore, boundary, ignore_dead=True)
+                for monster in monsters:
+                    if time.time() - last_move > reposition_time and reposition_pos is not None:
+                        Logger.debug("Stood in one place too long, repositioning")
+                        self._pather.traverse(reposition_pos, self, time_out = 3.0)
+                        last_move = time.time()
+                    elif monster["dist"] > 3.0:
+                        self._pather.move_to_monster(self, monster)
+                        if do_howl: self.cast_aoe("howl")
+                        last_move = time.time()
+                    else:
+                        # self.cast_melee("berserk", atk_len, target_pos)
+                        if not self.tele_stomp_monster("berserk", 3.0, monster, max_distance=3):
+                            wait(0.1)
+            wait(0.1)
+            elapsed = time.time() - start
+        self.post_attack()
+        Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
+
         return True
 
     def _kill_mobs(self, game_state: StateMonitor, atk_len: float=2.3, time_out: float=40, reposition_pos=None, reposition_time=6.0, do_howl: bool=False) -> bool:

@@ -611,14 +611,6 @@ class IChar:
 
     def pre_buff(self, switch_back=True):
         pass
-    
-    def kill_mobs(self,
-                  prioritize: list[MonsterRule],
-                  ignore: list[MonsterRule] = None,
-                  time_out: float = 60.0,
-                  boundary: Tuple[int, int, int, int] = None
-                ):
-        raise ValueError("Kill mobs not implemented")
 
     def loot_uniques(self, pickit, time_out: float=16.0, looted_uniques: set=set(), boundary=None) -> int:
         picked_up_items = 0
