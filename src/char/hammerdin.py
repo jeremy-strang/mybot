@@ -448,6 +448,7 @@ class Hammerdin(IChar):
                 if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target, stop_when_dead=False, max_distance=5): wait(0.1)
                 self.post_attack()
             elapsed = time.time() - start
+        game_state.stop()
         Logger.debug(f"Finished killing council, combat took {round(elapsed, 2)} sec")
         return True
 
