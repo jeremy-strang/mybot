@@ -165,7 +165,6 @@ class Bot:
         self._current_threads = []
         self._no_stash_counter = 0
         self._ran_no_pickup = False
-        self._timer = time.time()
         self._char_selector = CharSelector(self._screen, self._template_finder)
 
         # Create State Machine
@@ -534,7 +533,7 @@ class Bot:
         self._game_stats.log_end_game(failed=failed)
 
         if self._config.general["max_runtime_before_break_m"] and self._config.general["break_length_m"]:
-            elapsed_time = time.time() - self._timer
+            elapsed_time = time.time() - self._game_stats._start_time
             Logger.info(f'Session length = {elapsed_time:.2f}s, max_runtime_before_break_m = {self._config.general["max_runtime_before_break_m"]*60:.2f}s.')
 
             if elapsed_time > (self._config.general["max_runtime_before_break_m"]*60):
@@ -550,9 +549,7 @@ class Bot:
                 self._messenger.send_message(break_msg)
                 if self._pausing:
                     self.toggle_pause()
-
-                self._timer = time.time()
-
+                    self._game_stats._start_time = time.time()
         self._do_runs = copy(self._do_runs_reset)
         if self._config.general["randomize_runs"]:
             self.shuffle_runs()
