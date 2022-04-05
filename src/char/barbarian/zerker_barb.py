@@ -115,8 +115,8 @@ class ZerkerBarb(Barbarian):
             (20, [MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE])]),
             (25, [MonsterRule(names = ["CouncilMember"]), MonsterRule(monster_types = [MonsterType.UNIQUE])]),
         ]
-        for tup in sequence:
-            self._kill_mobs2(tup[1], time_out=tup[0], reposition_pos=(156, 113), boundary=(122, 80, 50, 50))
+        for time, rules in sequence:
+            self._kill_mobs2(rules, time_out=time, reposition_pos=(156, 113), boundary=(122, 80, 50, 50))
         return True
 
     def _kill_boss(self, name) -> bool:
