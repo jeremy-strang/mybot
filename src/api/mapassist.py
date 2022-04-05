@@ -1,6 +1,8 @@
 import traceback
 import os
 import numpy as np
+
+from utils.monsters import find_monster_by_name
 from .mas import MAS
 import math
 import time
@@ -117,3 +119,14 @@ class MapAssistApi:
     def stop(self):
         Logger.info("Stopping MAS api")
         self._mas.cancel()
+    
+    def confirm_boss_death(self, name: str, exact=False):
+        corpse = find_monster_by_name(name, self, exact)
+        if corpse:
+            if corpse["mode"] == 12:
+                Logger.info(f"Confirmed that {name} is dead")
+                return True
+            else:
+                Logger.info(f"Ended combat with {name} still alive")
+                return False
+        Logger.warning(f"Ended combat, but {name}'s corpse was not found")

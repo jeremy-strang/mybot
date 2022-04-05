@@ -30,6 +30,8 @@ class Barbarian(IChar):
         self._old_pather = old_pather
         self._pather = pather
         self._do_pre_move = True
+        self._last_howl_pos = None
+        self._last_howl_time = 0
 
     def get_cast_frames(self):
         fcr = self.get_fcr()
@@ -45,6 +47,16 @@ class Barbarian(IChar):
     def on_capabilities_discovered(self, capabilities: CharacterCapabilities):
         if capabilities.can_teleport_natively:
             self._old_pather.offset_node(149, [120, 70])
+
+    def cast_howl(self):
+        if self._api.data:
+            data = self._api.data
+            current_pos = data["player_pos_area"]
+            should_howl = not self._last_howl_pos or math.dist(self._last_howl_pos, current_pos) > 20 or self._last_howl_time > 15
+            if should_howl:
+                self._last_howl_pos = current_pos
+                self._last_howl_time = time.time()
+                self.cast_aoe("howl")
 
     def get_next_corpse(self, names: list[str] = None, boundary: list[int] = None, skip_ids = set(), unique_only: bool = False):
         data = self._api.get_data()

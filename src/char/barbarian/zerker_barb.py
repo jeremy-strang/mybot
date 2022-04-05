@@ -24,7 +24,7 @@ from pathing import Pather
 from state_monitor import StateMonitor
 from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
-from utils.monsters import find_monster, sort_and_filter_monsters
+from utils.monsters import find_monster, find_monster_by_name, sort_and_filter_monsters
 
 class ZerkerBarb(Barbarian):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
@@ -84,31 +84,26 @@ class ZerkerBarb(Barbarian):
             elapsed = time.time() - start
         self.cast_aoe("howl")
         self.do_hork(None, time_out=9, unique_only=True)
-        # This is a hack to prevent Teleport from being used during pickit
-        keyboard.send(self._skill_hotkeys["howl"])
-        wait(0.03, 0.04)
         self.post_attack()
         picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
         Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
         game_state.stop()
         return picked_up_items
 
-    def kill_andariel(self, game_state: StateMonitor = None) -> bool:
-        game_state = StateMonitor(["Andariel"], self._api)
-        self.cast_aoe("howl")
-        self._kill_mobs(game_state, atk_len=4, time_out=10)
-        self.cast_aoe("howl")
-        self._kill_mobs(game_state, atk_len=4, time_out=30)
-        game_state.stop()
-        return True
+    def kill_andariel(self) -> bool:
+        rules = [MonsterRule(names="Andariel")]
+        self.cast_howl()
+        self._kill_mobs2(rules, time_out=10)
+        self.cast_howl()
+        self._kill_mobs2(rules, time_out=40)
+        return self._api.confirm_boss_death("Andariel")
 
-    def kill_mephisto(self, game_state: StateMonitor = None) -> bool:
-        game_state = StateMonitor(["Mephisto"], self._api)
-        self._kill_mobs(game_state, reposition_pos=(69, 54), reposition_time=10)
-        game_state.stop()
-        return True
+    def kill_mephisto(self) -> bool:
+        rules = [MonsterRule(names="Mephisto")]
+        self._kill_mobs2(rules, time_out=50)
+        return self._api.confirm_boss_death("Mephisto")
 
-    def kill_council(self, game_state: StateMonitor = None) -> bool:
+    def kill_council(self) -> bool:
         sequence = [
             (10, [MonsterRule(auras = ["CONVICTION"])]),
             (10, [MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"])]),
@@ -129,10 +124,10 @@ class ZerkerBarb(Barbarian):
         game_state.stop()
         return True
 
-    def kill_summoner(self, game_state: StateMonitor = None) -> bool:
+    def kill_summoner(self) -> bool:
         return self._kill_boss("Summoner")
 
-    def kill_nihlathak(self, game_state: StateMonitor = None) -> bool:
+    def kill_nihlathak(self) -> bool:
         return self._kill_boss("Nihlathak")
         
     def kill_countess(self, game_state: StateMonitor) -> bool:
@@ -170,8 +165,9 @@ class ZerkerBarb(Barbarian):
                                 Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
                                 self._pather.move_to_monster(self, monster)
                                 last_move = time.time()
-                                if do_howl: self.cast_aoe("howl")
                                 monster = find_monster(monster["id"], self._api)
+                                if do_howl and monster and monster["dist"] <= 3.0:
+                                    self.cast_howl()
                             if monster and monster["dist"] <= 3.0 and not self.tele_stomp_monster("berserk", 3.0, monster, max_distance=3):
                                 wait(0.1)
             wait(0.1)
