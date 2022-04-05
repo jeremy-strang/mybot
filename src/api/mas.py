@@ -208,7 +208,7 @@ class MAS(Thread):
             monster["position"] = np.array([monster_world_x, monster_world_y])
             monster["position_abs"] = np.array(world_to_abs(monster["position"], self._player_pos_world))
             monster["position_area"] = np.array([monster_world_x - area_origin_x, monster_world_y - area_origin_y])
-            monster["dist"] = math.dist(_data["player_pos_world"], monster["position"])
+            monster["dist"] = math.dist(_data["player_pos_area"], monster["position_area"])
             _data["monsters"].append(monster)
 
         for poi in data["points_of_interest"]:

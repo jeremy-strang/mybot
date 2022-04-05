@@ -1,4 +1,5 @@
 from operator import is_
+from typing import Tuple
 import keyboard
 from utils.coordinates import world_to_abs
 from utils.custom_mouse import mouse
@@ -23,6 +24,7 @@ from pathing import Pather
 from state_monitor import StateMonitor
 from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
+from utils.monsters import find_monster, sort_and_filter_monsters
 
 class ZerkerBarb(Barbarian):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
@@ -107,34 +109,40 @@ class ZerkerBarb(Barbarian):
         return True
 
     def kill_council(self, game_state: StateMonitor = None) -> bool:
+        bound = [122, 80, 50, 50]
+        reposition =  (156, 113)
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=12)
-        game_state.stop()
+        # game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
+        # self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=12)
+        # game_state.stop()
+        self._kill_mobs2(rules, time_out=12, reposition_pos=reposition, boundary=bound)
 
         rules = [
             MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=8)
-        game_state.stop()
+        # game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
+        # self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=8)
+        # game_state.stop()
+        self._kill_mobs2(rules, time_out=8, reposition_pos=reposition, boundary=bound)
         
         rules = [
-            MonsterRule(names = ["CouncilMember"], monster_types = [MonsterType.SUPER_UNIQUE]),
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=16)
-        game_state.stop()
+        # game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
+        # self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=16)
+        # game_state.stop()
+        self._kill_mobs2(rules, time_out=16, reposition_pos=reposition, boundary=bound)
         
         rules = [
             MonsterRule(names = ["CouncilMember"]),
             MonsterRule(monster_types = [MonsterType.UNIQUE]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        if not self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=25): return False
-        game_state.stop()
+        # game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
+        # if not self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=25): return False
+        # game_state.stop()
+        self._kill_mobs2(rules, time_out=25, reposition_pos=reposition, boundary=bound)
         return True
 
     def _kill_boss(self, name) -> bool:
@@ -157,6 +165,48 @@ class ZerkerBarb(Barbarian):
         self._kill_mobs(game_state, 1.7, 15, do_howl=True)
         return True
 
+    def _kill_mobs2(self,
+                  prioritize: list[MonsterRule],
+                  ignore: list[MonsterRule] = None,
+                  time_out: float = 40.0,
+                  boundary: Tuple[int, int, int, int] = None,
+                  reposition_pos = None,
+                  reposition_time: float = 6.0,
+                  do_howl: bool=False
+                ) -> bool:
+        start = time.time()
+        last_move = start
+        elapsed = 0
+        monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
+        if len(monsters) == 0: return True
+        Logger.debug(f"Beginning combat against {len(monsters)}...")
+        while elapsed < time_out and len(monsters) > 0:
+            data = self._api.get_data()
+            if data:
+                for monster in monsters:
+                    monster = find_monster(monster["id"], self._api)
+                    if monster:
+                        monster_start = time.time()
+                        if time.time() - last_move > reposition_time and reposition_pos is not None:
+                            Logger.debug("    Stood in one place too long, repositioning")
+                            self._pather.traverse(reposition_pos, self, time_out = 3.0)
+                            last_move = time.time()
+                        else:
+                            while monster and monster["dist"] > 3.0 and time.time() - monster_start < 5.0:
+                                Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
+                                self._pather.move_to_monster(self, monster)
+                                last_move = time.time()
+                                if do_howl: self.cast_aoe("howl")
+                                monster = find_monster(monster["id"], self._api)
+                            if monster and monster["dist"] <= 3.0 and not self.tele_stomp_monster("berserk", 3.0, monster, max_distance=3):
+                                wait(0.1)
+            wait(0.1)
+            monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
+            elapsed = time.time() - start
+        self.post_attack()
+        Logger.debug(f"    Finished killing mobs, combat took {elapsed} sec")
+        return True
+
     def _kill_mobs(self, game_state: StateMonitor, atk_len: float=2.3, time_out: float=40, reposition_pos=None, reposition_time=6.0, do_howl: bool=False) -> bool:
         Logger.debug(f"Beginning combat")
         start = time.time()
@@ -165,7 +215,7 @@ class ZerkerBarb(Barbarian):
         while elapsed < time_out and game_state._dead == 0:
             if game_state._ready:
                 target_pos = game_state._target_pos
-                target_pos = [target_pos[0]-9.5,target_pos[1]-39.5]
+                target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
                 # If we've been standing in one spot for too long, reposition
                 if time.time() - last_move > reposition_time and reposition_pos is not None:
                     Logger.debug("Stood in one place too long, repositioning")

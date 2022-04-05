@@ -11,6 +11,7 @@ from item.pickit2 import Pickit2
 import keyboard
 import os
 import sys
+from monsters.monster_rule import MonsterRule
 from npc_manager import Npc
 from obs import obs_recorder
 from pathing import PathFinder
@@ -42,7 +43,7 @@ from main import on_exit
 from utils.custom_mouse import mouse
 from utils.misc import wait
 from obs import ObsRecorder
-from utils.monsters import find_npc, find_monster, find_poi
+from utils.monsters import find_npc, find_monster, find_poi, sort_and_filter_monsters
 pp = pprint.PrettyPrinter(depth=6)
 
 if __name__ == "__main__":
@@ -102,25 +103,14 @@ if __name__ == "__main__":
             wait(0.2)
             data = api.get_data()
         
-        overlay = start_overlay(bot, game_stats)
+        # overlay = start_overlay(bot, game_stats)
         # pp.pprint(config.items)
 
         def do_stuff():
             print("Doing stuff...")
             try:
                 data = api.get_data()
-                pather.walk_to_poi("Kurast Docks")
-
-                # node_pos_abs = world_to_abs((153, 94), data["player_pos_area"])
-                # node_pos_m = screen.convert_abs_to_monitor(node_pos_abs, clip_input=True)
-                # char.move(node_pos_m, False, True)
-                # potion_type = "health"
-                # pp.pprint(data["flattened_belt"])
-                # next_lvl = find_poi("Halls of Vaught", api)
-                # pather.move_mouse_to_abs_pos(
-                #     world_to_abs(next_lvl["position"], data["player_pos_world"]),
-                #     math.dist(data["player_pos_area"], next_lvl["position"] - data["area_origin"]),
-                #     offset=(35, -39.5))
+                # pather.walk_to_poi("Kurast Docks")
 
                 # if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):
                 #     print("F")
