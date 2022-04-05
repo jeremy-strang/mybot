@@ -109,40 +109,14 @@ class ZerkerBarb(Barbarian):
         return True
 
     def kill_council(self, game_state: StateMonitor = None) -> bool:
-        bound = [122, 80, 50, 50]
-        reposition =  (156, 113)
-        rules = [
-            MonsterRule(auras = ["CONVICTION"]),
+        sequence = [
+            (10, [MonsterRule(auras = ["CONVICTION"])]),
+            (10, [MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"])]),
+            (20, [MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE])]),
+            (25, [MonsterRule(names = ["CouncilMember"]), MonsterRule(monster_types = [MonsterType.UNIQUE])]),
         ]
-        # game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        # self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=12)
-        # game_state.stop()
-        self._kill_mobs2(rules, time_out=12, reposition_pos=reposition, boundary=bound)
-
-        rules = [
-            MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"]),
-        ]
-        # game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        # self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=8)
-        # game_state.stop()
-        self._kill_mobs2(rules, time_out=8, reposition_pos=reposition, boundary=bound)
-        
-        rules = [
-            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        ]
-        # game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        # self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=16)
-        # game_state.stop()
-        self._kill_mobs2(rules, time_out=16, reposition_pos=reposition, boundary=bound)
-        
-        rules = [
-            MonsterRule(names = ["CouncilMember"]),
-            MonsterRule(monster_types = [MonsterType.UNIQUE]),
-        ]
-        # game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=[122, 80, 50, 50])
-        # if not self._kill_mobs(game_state, atk_len=3, reposition_pos=(156, 113), time_out=25): return False
-        # game_state.stop()
-        self._kill_mobs2(rules, time_out=25, reposition_pos=reposition, boundary=bound)
+        for tup in sequence:
+            self._kill_mobs2(tup[1], time_out=tup[0], reposition_pos=(156, 113), boundary=(122, 80, 50, 50))
         return True
 
     def _kill_boss(self, name) -> bool:
