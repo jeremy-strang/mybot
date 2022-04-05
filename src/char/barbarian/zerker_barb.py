@@ -198,7 +198,7 @@ class ZerkerBarb(Barbarian):
                                 last_move = time.time()
                                 if do_howl: self.cast_aoe("howl")
                                 monster = find_monster(monster["id"], self._api)
-                            if monster["dist"] <= 3.0 and not self.tele_stomp_monster("berserk", 3.0, monster, max_distance=3):
+                            if monster and monster["dist"] <= 3.0 and not self.tele_stomp_monster("berserk", 3.0, monster, max_distance=3):
                                 wait(0.1)
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
