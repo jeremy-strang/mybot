@@ -535,7 +535,7 @@ class Bot:
 
         if self._config.general["max_runtime_before_break_m"] and self._config.general["break_length_m"]:
             elapsed_time = time.time() - self._timer
-            Logger.info(f'Session length = {elapsed_time} s, max_runtime_before_break_m {self._config.general["max_runtime_before_break_m"]*60} s.')
+            Logger.info(f'Session length = {elapsed_time:.2f}s, max_runtime_before_break_m = {self._config.general["max_runtime_before_break_m"]*60:.2f}s.')
 
             if elapsed_time > (self._config.general["max_runtime_before_break_m"]*60):
                 Logger.info(f'Max session length reached, taking a break for {self._config.general["break_length_m"]} minutes.')
