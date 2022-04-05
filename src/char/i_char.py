@@ -7,6 +7,7 @@ import math
 import keyboard
 import numpy as np
 from char.capabilities import CharacterCapabilities
+from monsters.monster_rule import MonsterRule
 import obs
 from pathing import PathFinder, Pather, OldPather
 from monsters import MonsterType
@@ -206,7 +207,6 @@ class IChar:
         keyboard.send(self._char_config["weapon_switch"])
         wait(0.25, 0.3)
         self._cast_duration = self.get_cast_frames() * 0.04 + 0.02
-        # Update our cast frames when weapon swapping based on our FCR with those weapons
 
     def get_player_gold(self):
         data = self._api.get_data()
@@ -611,6 +611,14 @@ class IChar:
 
     def pre_buff(self, switch_back=True):
         pass
+    
+    def kill_mobs(self,
+                  prioritize: list[MonsterRule],
+                  ignore: list[MonsterRule] = None,
+                  time_out: float = 60.0,
+                  boundary: Tuple[int, int, int, int] = None
+                ):
+        raise ValueError("Kill mobs not implemented")
 
     def loot_uniques(self, pickit, time_out: float=16.0, looted_uniques: set=set(), boundary=None) -> int:
         picked_up_items = 0

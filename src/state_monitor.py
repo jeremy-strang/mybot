@@ -4,7 +4,6 @@ from utils.coordinates import world_to_abs
 import numpy as np
 from copy import deepcopy
 import math
-import time
 from typing import Union
 import random
 from api import MapAssistApi
@@ -14,6 +13,8 @@ import threading
 from utils.misc import is_in_roi, kill_thread
 from utils.monsters import sort_and_filter_monsters, score_monster
 import time
+import pprint
+pp = pprint.PrettyPrinter(depth=6)
 
 class StateMonitor:
     def __init__(self,
@@ -83,7 +84,7 @@ class CombatTracker:
 
         data = self._sm._api.data
         if data is not None:
-            monsters = sort_and_filter_monsters(data, self._sm._rules, self._sm._boundary)
+            monsters = sort_and_filter_monsters(data, self._sm._rules, boundary=self._sm._boundary)
             self._sm._targets = list(filter(lambda x: x["mode"] != 12, monsters))
             if len(monsters) == 0: self._sm._dead = 1
             # print(f"State monitor targeting {len(monsters)} monsters")
@@ -133,7 +134,7 @@ class CombatTracker:
                         else:
                             data = self._sm._api.get_data()
                             more = -1
-                            for l in sort_and_filter_monsters(data, self._sm._rules, self._sm._boundary):
+                            for l in sort_and_filter_monsters(data, self._sm._rules, boundary=self._sm._boundary):
                                 # If we are targeting corpses, make sure it's dead, otherwise make sure it's alive
                                 is_correct_mode = (self._sm._do_corpses and l["is_targetable_corpse"]) or (not self._sm._do_corpses and l["mode"] != 12)
                                 if score_monster(l, self._sm._rules) > 0 and is_correct_mode:

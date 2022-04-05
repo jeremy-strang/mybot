@@ -1,4 +1,5 @@
 from operator import is_
+from typing import Tuple
 import keyboard
 from utils.coordinates import world_to_abs
 from utils.custom_mouse import mouse
@@ -23,6 +24,7 @@ from pathing import Pather
 from state_monitor import StateMonitor
 from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
+from utils.monsters import sort_and_filter_monsters
 
 class ZerkerBarb(Barbarian):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
@@ -157,6 +159,23 @@ class ZerkerBarb(Barbarian):
         self._kill_mobs(game_state, 1.7, 15, do_howl=True)
         return True
 
+    def kill_mobs(self,
+                  prioritize: list[MonsterRule],
+                  ignore: list[MonsterRule] = None,
+                  time_out: float = 60.0,
+                  boundary: Tuple[int, int, int, int] = None
+                ) -> bool:
+        Logger.debug(f"Beginning combat")
+        start = time.time()
+        last_move = start
+        elapsed = 0
+
+        monsters = sort_and_filter_monsters(prioritize, ignore, boundary)
+        while elapsed < time_out and len(monsters) > 0:
+            for monster in monsters:
+                pass
+        return True
+
     def _kill_mobs(self, game_state: StateMonitor, atk_len: float=2.3, time_out: float=40, reposition_pos=None, reposition_time=6.0, do_howl: bool=False) -> bool:
         Logger.debug(f"Beginning combat")
         start = time.time()
@@ -165,7 +184,7 @@ class ZerkerBarb(Barbarian):
         while elapsed < time_out and game_state._dead == 0:
             if game_state._ready:
                 target_pos = game_state._target_pos
-                target_pos = [target_pos[0]-9.5,target_pos[1]-39.5]
+                target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
                 # If we've been standing in one spot for too long, reposition
                 if time.time() - last_move > reposition_time and reposition_pos is not None:
                     Logger.debug("Stood in one place too long, repositioning")
