@@ -528,30 +528,94 @@ class Pather:
         Logger.debug(f"Failed to confirm arrival at {end_loc}")
         return False
 
-    def traverse_route(self, route, char, time_out=10):
+    def walk_to_monster(self, monster_id: int, time_out=10.0, step_size=4):
+        dest = find_monster(monster_id, self._api)
+        if dest is not None:
+            self.walk_to_position(dest["position"], time_out, step_size)
+            return True
+        return False
+
+    def walk_to_object(self, obj_name: str, time_out=10.0, step_size=4):
+        Logger.info(f"Walking to object {obj_name}...")
+        dest = find_object(obj_name, self._api)
+        if dest is not None:
+            self.walk_to_position(dest["position"], time_out, step_size)
+            return True
+        Logger.error(f"    No object found named {obj_name}")
+        return False
+
+    def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=10):
+        dest = find_poi(poi_label, self._api)
+        if dest is not None:
+            self.walk_to_position(dest["position"], time_out, step_size)
+            return True
+        return False
+
+    def walk_to_position(self, dest_world, time_out=10.0, step_size=10):
+        Logger.debug(f"Walking to position {dest_world}...")
+        route = self.make_route_to_position(dest_world)
+        self.walk_route(route, time_out, step_size)
+        Logger.debug(f"    done walking to {dest_world}")
+
+    def make_route_to_position(self, dest_world):
+        route = None
+        data = self._api.data
+        if data is not None:
+            pf = PathFinder(self._api)
+            dest_area = (int(dest_world[1]), int(dest_world[0])) - data["area_origin"]
+            player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
+            route = pf.make_path_astar(player_area, dest_area, False)
+            self._api._current_path = route
+        return route
+
+    def _get_next_node(self, nodes, step_size=10):
+        node = None
+        popped = 0
+        while popped < step_size and len(nodes) > 0:
+            node = nodes.pop(0)
+            popped += 1
+        print(f"    Node: {node}")
+        return node
+
+    def walk_route(self, route, time_out=10.0, step_size=10, threshold=8):
+        Logger.debug(f"Walking along route of length {len(route)} and step size {step_size}...")
         if route is not None:
-            dist = 0
-            next = route.pop(0)
+            self._api._current_path = route
+            mem_retries = 0
+            num_repeats = 0 
+            current = self._get_next_node(route, step_size)
             start = time.time()
-            while len(route) > 0 and time.time() - start < time_out:
-                data = self._api.get_data()
-                wp_x = next[0] + data["area_origin"][0]
-                wp_y = next[1] + data["area_origin"][1]
-                player_pos_world = data["player_pos_world"]
-                dist = math.dist(
-                    [wp_x, wp_y], [player_pos_world[0], player_pos_world[1]])
-                move_pos_abs = world_to_abs(
-                    next, data['player_pos_area'] + data['player_offset'])
-                move_pos_m = self._screen.convert_abs_to_monitor(
-                    [move_pos_abs[0], move_pos_abs[1]])
+            while current is not None and time.time() - start < time_out:
+                data = self._api.data
+                if data is None:
+                    mem_retries += 1
+                    if mem_retries > 4:
+                        Logger.error(f"    Failed to walk route, could not read data")
+                        return False
+                    wait(0.2)
+                    continue
+
+                if data["should_chicken"]:
+                    Logger.warning(f"    Aborting walk_route() because chicken life threshold was reached")
+                    return False
+
+                if data["inventory_open"]:
+                    Logger.warning(f"    Aborting walk_route(), inventory is open")
+                    return False
+
+                move_pos_abs = world_to_abs(current, data['player_pos_area'] + data['player_offset'])
+                move_pos_m = self._screen.convert_abs_to_monitor([move_pos_abs[0], move_pos_abs[1]])
                 mouse.move(*move_pos_m)
                 keyboard.send(self._config.char["force_move"])
-                wait(0.5)
+                wait(0.2)
                 data = self._api.get_data()
-                dist = math.dist(
-                    [wp_x, wp_y], [player_pos_world[0], player_pos_world[1]])
-                if dist < 25:
-                    next = route.pop(0)
+                distance = math.dist(current, data["player_pos_area"])
+                if distance < threshold or num_repeats > 4:
+                    current = self._get_next_node(route, step_size)
+                    num_repeats = 0
+                else:
+                    num_repeats += 1
+        return True
 
     def traverse_walking(self,
                          end: Union[str, tuple[int, int]],

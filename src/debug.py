@@ -109,6 +109,8 @@ if __name__ == "__main__":
             print("Doing stuff...")
             try:
                 data = api.get_data()
+                pather.walk_to_poi("Kurast Docks")
+
                 # node_pos_abs = world_to_abs((153, 94), data["player_pos_area"])
                 # node_pos_m = screen.convert_abs_to_monitor(node_pos_abs, clip_input=True)
                 # char.move(node_pos_m, False, True)
