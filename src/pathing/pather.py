@@ -184,7 +184,7 @@ class Pather:
                 wait(char._cast_duration)
             else:
                 mouse.click(button="left")
-                wait(0.7)
+                wait(0.5)
         else:
             return False
         return True
