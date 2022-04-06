@@ -44,7 +44,5 @@ class MonsterRule:
             if self.mob_number is not None and "mob_number" in monster and self.mob_number == monster["mob_number"]:
                 rules_met += 1
         score = rules_met + min_score if rules_met > 0 else 0
-        if score > 0:
-            print(f"Monster {monster['name']} ({monster['id']}) scored {score} with {rules_met} rules met")
         return score
         
