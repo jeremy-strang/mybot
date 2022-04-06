@@ -1,3 +1,4 @@
+import re
 import time
 import keyboard
 import cv2
@@ -13,6 +14,7 @@ from item import ItemFinder, Item
 from ui import UiManager
 from ui import BeltManager
 from char import IChar
+from item.pickit_utils import get_pickit_priority
 
 class Pickit2:
     def __init__(self,
@@ -32,30 +34,28 @@ class Pickit2:
         self._last_closest_item: Item = None
         self._api = api
     
-    def get_pickit_priority(self, item: dict):
-        if item is not None and type(item) is dict:
-            return 1
-        return 0
-    
     def _next_item(self) -> dict:
         data = self._api.data
         items_found = []
         if data is not None:
             for item in data["items"]:
-                item_priority = self.get_pickit_priority(item)
+                item_priority = get_pickit_priority(item)
                 if item["item_mode"] == "ONGROUND" and item_priority > 0:
                     items_found.append(item)
-            items_found = sorted(data["items"], key = lambda item: (self.get_pickit_priority(item), item["dist"]))
+            items_found = sorted(items_found, key = lambda item: item["dist"])
+            items_found = sorted(items_found, key = lambda item: get_pickit_priority(item), reverse=True)
+            print("\n\n--pickit order--\n\n")
+            for item in items_found:
+                print(f"    {item['name']}, dist: {item['dist']}")
         return items_found[0] if len(items_found) > 0 else None
 
-    def pick_up_items(self, char: IChar, is_at_trav: bool = False, time_out: float = 22) -> bool:
+    def pick_up_items(self, time_out: float = 22) -> bool:
         """
         Pick up all items with specified char
         :param char: The character used to pick up the item
         :param is_at_trav: Dirty hack to reduce gold pickup only to trav area, should be removed once we can determine the amount of gold reliably
         :return: Bool if any items were picked up or not. (Does not account for picking up scrolls and pots)
         """
-        Logger.debug("Starting pickit2...")
         start = prev_cast_start = time.time()
         elapsed = 0
         #Creating a screenshot of the current loot
@@ -67,49 +67,34 @@ class Pickit2:
         # same_item_timer = None
         # did_force_move = False
 
+
+        disabled_nopickup = False
         item = self._next_item()
-        while item is not None and not did_time_out:
+        if item:
+            Logger.info(f"\n{'*'*80}\nMemory pickit found items, disabling /nopickup...")
+            self._ui_manager.disable_no_pickup()
+            disabled_nopickup = True
+
+        while item and not did_time_out:
             elapsed = time.time() - start
             if elapsed >= time_out:
                 did_time_out = True
-                Logger.warning("Timed out during pickit, skipping it this time...")
+                Logger.warning("Timed out during memory pickit, skipping it this time...")
                 break
             
-            Logger.info(f"Picking up {item['name']}, quality: {item['quality']}...")
+            Logger.info(f"    Picking up {item['name']}, quality: {item['quality']}...")
 
             if self._pather.click_item(item, self._char):
                 picked_up_items.append(item)
 
 
-
-
-
-
-
-
-
             item = self._next_item()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        if disabled_nopickup:
+            Logger.info(f"    Re-enabling /nopickup...")
+            self._ui_manager.enable_no_pickup()
+            Logger.info(f"    Done picking up {len(picked_up_items)} items\n{'*'*80}")
+        return len(picked_up_items) > 0
         #     # Check if we need to pick up certain pots more pots
         #     need_pots = self._belt_manager.get_pot_needs()
         #     if need_pots["mana"] <= 0:

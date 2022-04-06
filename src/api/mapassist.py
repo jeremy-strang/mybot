@@ -173,10 +173,17 @@ class MapAssistApi:
                     return obj
         return None
 
-    def find_item(self, id: int) -> dict:
-        if self.data and "items" in self.data and type(self.data["items"]) is list:
-            for item in self.data["items"]:
+    def find_item(self, id: int, list_name: str = "items") -> dict:
+        if self.data and list_name in self.data and type(self.data[list_name]) is list:
+            for item in self.data[list_name]:
                 if item["id"] == id:
+                    return item
+        return None
+
+    def find_item_by_position(self, pos: tuple[int, int], list_name: str = "inventory_items") -> dict:
+        if self.data and list_name in self.data and type(self.data[list_name]) is list:
+            for item in self.data[list_name]:
+                if item["position"][0] == pos[0] and item["position"][1] == pos[1]:
                     return item
         return None
 

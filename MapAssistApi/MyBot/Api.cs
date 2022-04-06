@@ -150,6 +150,7 @@ namespace MapAssist.MyBot
                 stats = GetItemStats(item),
                 is_identified = item.IsIdentified,
                 inventory_page = item.ItemData.InvPage.ToString(),
+                //item,
             };
         }
 

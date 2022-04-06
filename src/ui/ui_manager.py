@@ -6,6 +6,7 @@ import itertools
 import os
 import numpy as np
 from api.mapassist import MapAssistApi
+from item.item_finder import Item
 import obs
 from obs import obs_recorder
 
@@ -26,6 +27,7 @@ from api import MapAssistApi
 import random 
 import string
 
+from item.pickit_utils import get_pickit_priority
 
 class UiManager():
     """Everything that is clicking on some static 2D UI or is checking anything in regard to it should be placed here."""
@@ -378,7 +380,7 @@ class UiManager():
                 return True
         return False
 
-    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True) -> bool:
+    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None, roi = None) -> bool:
         """
         Check if an item should be kept, the item should be hovered and in own inventory when function is called
         :param item_finder: ItemFinder to check if item is in pickit
@@ -386,6 +388,14 @@ class UiManager():
         :param do_logging: Bool value to turn on/off logging for items that are found and should be kept
         :return: Bool if item should be kept
         """
+
+        if inv_pos is not None and self._api.data:
+            data = self._api.data
+            item = self._api.find_item_by_position(inv_pos, "inventory_items")
+            if item and get_pickit_priority(item) > 0:
+                Logger.debug(f"    Keeping item '{item['name']}' based on memory data")
+                return [Item(center, item["name"], 1)]
+
         wait(0.2, 0.3)
         _, w, _ = img.shape
         img = img[:, (w//2):,:]
@@ -554,7 +564,7 @@ class UiManager():
                             wait(0.5, 0.6)
                             return self.stash_all_items(num_loot_columns, item_finder)
         else:
-            self.transfer_shared_to_private_gold (self._gambling_round)
+            self.transfer_shared_to_private_gold(self._gambling_round)
         # stash stuff
         self._move_to_stash_tab(self._curr_stash["items"])
         center_m = self._screen.convert_abs_to_monitor((0, 0))
@@ -567,7 +577,7 @@ class UiManager():
                 # check item again and discard it or stash it
                 wait(1.2, 1.4)
                 hovered_item = self._screen.grab()
-                found_items = self._keep_item(item_finder, hovered_item)
+                found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=center_m)
                 if len(found_items) > 0:
                     keyboard.send('ctrl', do_release=False)
                     wait(0.2, 0.25)
@@ -580,11 +590,12 @@ class UiManager():
                     # check the _keep_item again. In case stash is full we will still find the same item
                     wait(0.3)
                     did_stash_test_img = self._screen.grab()
-                    if len(self._keep_item(item_finder, did_stash_test_img, False)) > 0:
+                    if len(self._keep_item(item_finder, did_stash_test_img, False, inv_pos=(column, row), center=center_m)) > 0:
                         Logger.debug("Wanted to stash item, but its still in inventory. Assumes full stash. Move to next.")
                         break
                     else:
-                        self._game_stats.log_item_keep(found_items[0].name, self._config.items[found_items[0].name].pickit_type == 2, hovered_item)
+                        send_msg = found_items[0].name in self._config.items and self._config.items[found_items[0].name].pickit_type == 2
+                        self._game_stats.log_item_keep(found_items[0].name, send_msg, hovered_item)
                 else:
                     # make sure there is actually an item
                     time.sleep(0.3)
@@ -649,7 +660,7 @@ class UiManager():
                 # Sheck item again and discard it or stash it
                 wait(0.4, 0.6)
                 hovered_item = self._screen.grab()
-                found_items = self._keep_item(item_finder, hovered_item)
+                found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=(x_m, y_m))
                 if len(found_items) == 0:
                     keyboard.release(self._config.char["show_items"])
                     wait(0.1, 0.2)
@@ -789,7 +800,7 @@ class UiManager():
     def gambling_needed(self) -> bool:
         return self._gold_full
 
-    def set__gold_full (self, bool: bool):
+    def set__gold_full(self, bool: bool):
         self._gold_full = bool
         self._gambling_round = 1
 
@@ -872,6 +883,20 @@ class UiManager():
         wait(0.08, 0.14)
         keyboard.send('enter')
         wait(0.08, 0.14)
+        return True
+    
+    def disable_no_pickup(self) -> bool:
+        """
+        Checks the best match between enabled and disabled an retrys if already set.
+        :return: Returns True if we succesfully set the nopickup option
+        """
+        wait(0.03, 0.05)
+        keyboard.send('enter')
+        wait(0.08, 0.14)
+        keyboard.write('/nopickup', delay=.10)
+        wait(0.02, 0.04)
+        keyboard.send('enter')
+        wait(0.17, 0.22)
         return True
 
     def buy_pots(self, healing_pots: int = 0, mana_pots: int = 0):

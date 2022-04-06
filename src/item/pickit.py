@@ -3,6 +3,7 @@ import keyboard
 import cv2
 from operator import itemgetter
 from api.mapassist import MapAssistApi
+from item.pickit2 import Pickit2
 from pathing import Pather
 
 from utils.custom_mouse import mouse
@@ -22,6 +23,8 @@ class PickIt:
                  ui_manager: UiManager,
                  belt_manager: BeltManager,
                  api: MapAssistApi,
+                 char: IChar,
+                 pather: Pather
                  ):
         self._item_finder = item_finder
         self._screen = screen
@@ -30,6 +33,9 @@ class PickIt:
         self._config = Config()
         self._last_closest_item: Item = None
         self._api = api
+        self._char = char
+        self._pather = pather
+        self._pickit2 = Pickit2(screen, ui_manager, belt_manager, char, pather, api)
 
     def pick_up_items(self, char: IChar, is_at_trav: bool = False) -> bool:
         """
@@ -38,10 +44,11 @@ class PickIt:
         :param is_at_trav: Dirty hack to reduce gold pickup only to trav area, should be removed once we can determine the amount of gold reliably
         :return: Bool if any items were picked up or not. (Does not account for picking up scrolls and pots)
         """
-        Logger.debug("Starting pickit...")
+        found_items = self._pickit2.pick_up_items()
+
+        Logger.debug("Starting pixel pickit...")
         start = prev_cast_start = time.time()
         found_nothing = 0
-        found_items = False
         keyboard.send(self._config.char["show_items"])
         time.sleep(0.7) # sleep needed here to give d2r time to display items on screen on keypress
         #Creating a screenshot of the current loot

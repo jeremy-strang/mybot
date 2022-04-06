@@ -86,7 +86,7 @@ if __name__ == "__main__":
         belt_manager = BeltManager(screen, template_finder, api)
 
         char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api)
+        pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api, char, pather)
         pickit2 = Pickit2(screen, ui_manager, belt_manager, char, pather, api)
         # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities(force=True)
@@ -111,14 +111,15 @@ if __name__ == "__main__":
             start = time.time()
             try:
                 data = api.get_data()
-                travincal.battle(False)
+                # travincal.battle(False)
                 # pather.walk_to_poi("Kurast Docks")
 
                 # if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):
                 #     print("F")
                 # pather.click_poi("Halls of Vaught")
 
-                # pickit2.pick_up_items(char, False)
+                # pickit2.pick_up_items(False)
+                ui_manager.stash_all_items(4, item_finder, False)
                 # item = pickit2._next_item()
                 # pather.move_mouse_to_item(item)
 
