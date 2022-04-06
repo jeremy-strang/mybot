@@ -50,7 +50,6 @@ class ZerkerBarb(Barbarian):
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
             MonsterRule(monster_types = [MonsterType.UNIQUE]),
             MonsterRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
-            # MonsterRule(monster_types = [MonsterType.MINION]),
         ]
         start = time.time()
         game_state = StateMonitor(rules, self._api, False, -1, True, False, None)
@@ -93,12 +92,12 @@ class ZerkerBarb(Barbarian):
 
     def kill_andariel(self) -> bool:
         rules = [MonsterRule(names=["Andariel"])]
-        self._kill_mobs2(rules, time_out=40, do_howl=True)
+        self._kill_mobs(rules, time_out=40, do_howl=True)
         return True
 
     def kill_mephisto(self) -> bool:
         rules = [MonsterRule(names=["Mephisto"])]
-        self._kill_mobs2(rules, time_out=40)
+        self._kill_mobs(rules, time_out=40)
         return True
 
     def kill_council(self) -> bool:
@@ -109,7 +108,7 @@ class ZerkerBarb(Barbarian):
             (25, [MonsterRule(names = ["CouncilMember"]), MonsterRule(monster_types = [MonsterType.UNIQUE])]),
         ]
         for time, rules in sequence:
-            self._kill_mobs2(rules, time_out=time, reposition_pos=(156, 113), boundary=(122, 80, 50, 50))
+            self._kill_mobs(rules, time_out=time, reposition_pos=(156, 113), boundary=(122, 80, 50, 50))
         return True
 
     def kill_summoner(self) -> bool:
@@ -117,7 +116,7 @@ class ZerkerBarb(Barbarian):
             MonsterRule(names=["Summoner"]),
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
-        self._kill_mobs2(rules, time_out=20, do_howl=True)
+        self._kill_mobs(rules, time_out=20, do_howl=True)
         return True
 
     def kill_nihlathak(self) -> bool:
@@ -125,17 +124,17 @@ class ZerkerBarb(Barbarian):
             MonsterRule(names=["Nihlathak"]),
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
-        self._kill_mobs2(rules, time_out=20, do_howl=True)
+        self._kill_mobs(rules, time_out=20, do_howl=True)
         return True
 
     def kill_countess(self) -> bool:
         rules = [
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
-        self._kill_mobs2(rules, time_out=20, do_howl=True)
+        self._kill_mobs(rules, time_out=20, do_howl=True)
         return True
 
-    def _kill_mobs2(self,
+    def _kill_mobs(self,
                   prioritize: list[MonsterRule],
                   ignore: list[MonsterRule] = None,
                   time_out: float = 40.0,
@@ -176,36 +175,4 @@ class ZerkerBarb(Barbarian):
             elapsed = time.time() - start
         self.post_attack()
         Logger.debug(f"    Finished killing mobs, combat took {elapsed} sec")
-        return True
-
-    def _kill_mobs(self, game_state: StateMonitor, atk_len: float=2.3, time_out: float=40, reposition_pos=None, reposition_time=6.0, do_howl: bool=False) -> bool:
-        Logger.debug(f"Beginning combat")
-        start = time.time()
-        last_move = start
-        elapsed = 0
-        while elapsed < time_out and game_state._dead == 0:
-            if game_state._ready:
-                target_pos = game_state._target_pos
-                target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
-                # If we've been standing in one spot for too long, reposition
-                if time.time() - last_move > reposition_time and reposition_pos is not None:
-                    Logger.debug("Stood in one place too long, repositioning")
-                    self._pather.traverse(reposition_pos, self, time_out = 3.0)
-                    last_move = time.time()
-                elif game_state._dist > 3:
-                    move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
-                    move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
-                    self.pre_move()
-                    self.move(move_pos_m, force_tp=True, force_move=True)
-                    if do_howl: self.cast_aoe("howl")
-                    last_move = time.time()
-                else:
-                    # self.cast_melee("berserk", atk_len, target_pos)
-                    if not self.tele_stomp_monster("berserk", atk_len, game_state._target, max_distance=3): wait(0.1)
-            elapsed = time.time() - start
-        # This is a hack to prevent Teleport from being used during pickit
-        keyboard.send(self._char_config["battle_orders"])
-        wait(0.03, 0.05)
-        self.post_attack()
-        Logger.debug(f"Finished killing mobs, combat took {elapsed} sec")
         return True
