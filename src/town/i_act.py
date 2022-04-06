@@ -12,7 +12,6 @@ from api import MapAssistApi
 from typing import Union
 from template_finder import TemplateFinder
 from utils.misc import wait
-from utils.monsters import find_monster, find_npc
 from utils.custom_mouse import mouse
 pp = pprint.PrettyPrinter(depth=6)
 
@@ -72,12 +71,12 @@ class IAct:
     def gamble (self, curr_loc: Location) -> Union[Location, bool]: return False
 
     def trade_with_npc(self, npc: Npc, action_btn_key="trade") -> bool:
-        m = find_npc(npc, self._api)
+        m = self._api.find_npc(npc)
         if m is not None:
             menu_open = False
             start = time.time()
             while not menu_open and time.time() - start < 10:
-                m = find_monster(m["id"], self._api)
+                m = self._api.find_npc(npc)
                 self._pather.move_mouse_to_abs_pos(m["position_abs"], m["dist"])
                 if m is not None:
                     mouse.click(button="left")

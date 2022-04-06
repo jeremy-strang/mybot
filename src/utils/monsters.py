@@ -12,7 +12,6 @@ CHAMPS_UNIQUES = [
     MonsterRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
 ]
 
-
 def score_monster(monster: dict, priority_rules: list[MonsterRule]):
     score = 0
     if monster is not None and type(monster) is dict and type(priority_rules) is list:
@@ -49,66 +48,9 @@ def sort_and_filter_monsters(data,
             monsters.sort(key=lambda m: score_monster(m, rules))
     return monsters
 
-def find_monster(id: int, api: MapAssistApi) -> dict:
-    data = api.get_data()
-    if data is not None and "monsters" in data and type(data["monsters"]) is list:
-        for m in data["monsters"]:
-            if m["id"] == id:
-                return m
-    return None
-
-def find_monster_by_name(name: str0, api: MapAssistApi, exact=False) -> dict:
-    data = api.get_data()
-    if data is not None and "monsters" in data and type(data["monsters"]) is list:
-        if name and not exact:
-            name = name.lower().replace(" ", "")
-        for m in data["monsters"]:
-            if m["id"] == name:
-                return m
-    return None
-
-def find_npc(npc: Npc, api: MapAssistApi):
-    data = api.get_data()
-    for m in data["monsters"]:
-        name = m["name"]
-        if name.lower() == npc.lower():
-            return m
-    return None
-
-def find_poi(poi: str, api: MapAssistApi):
-    data = api.get_data()
-    for p in data["points_of_interest"]:
-        label = p["label"]
-        if label.lower().startswith(poi.lower()):
-            return p
-    return None
-
-def find_object(name: str, api: MapAssistApi):
-    data = api.get_data()
-    for obj in data["object"]:
-        if obj["name"].lower().startswith(name.lower()):
-            return obj
-    return None
-
-def find_item(id: int, api: MapAssistApi) -> dict:
-    data = api.get_data()
-    if data is not None and "items" in data and type(data["items"]) is list:
-        for item in data["items"]:
-            if item["id"] == id:
-                return item
-    return None
-
-def find_object(object: str, api: MapAssistApi):
-    data = api.get_data()
-    for o in data["objects"]:
-        name = o["name"]
-        if name.lower().startswith(object.lower()):
-            return o
-    return None
-
 def get_unlooted_monsters(api: MapAssistApi, rules: list[MonsterRule], looted_monsters: set, boundary=None, max_distance=100) -> list[dict]:
-    data = api.get_data()
-    if data is not None and "monsters" in data:
+    data = api.data
+    if data and "monsters" in data:
         monsters = sort_and_filter_monsters(data, rules, None, boundary)
         return list(filter(lambda m: m["mode"] == 12 and m["id"] not in looted_monsters and m["dist"] < max_distance, monsters))
     return []

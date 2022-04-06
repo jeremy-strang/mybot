@@ -9,8 +9,8 @@ from ui import UiManager
 from pathing import OldPather
 from logger import Logger
 from screen import Screen
-from utils.misc import wait, is_in_roi, cut_roi, points_equal
-from utils.monsters import CHAMPS_UNIQUES, find_monster
+from utils.misc import wait, is_in_roi, points_equal
+from utils.monsters import CHAMPS_UNIQUES
 import time
 from pathing import OldPather, Location
 import math
@@ -52,11 +52,13 @@ class Barbarian(IChar):
         if self._api.data:
             data = self._api.data
             current_pos = data["player_pos_area"]
-            should_howl = not self._last_howl_pos or math.dist(self._last_howl_pos, current_pos) > 20 or self._last_howl_time > 15
+            should_howl = self._last_howl_pos is None or (self._last_howl_pos is not None and math.dist(self._last_howl_pos, current_pos) > 20) or self._last_howl_time > 15
             if should_howl:
+                Logger.debug("Casting Howl...")
                 self._last_howl_pos = current_pos
                 self._last_howl_time = time.time()
                 self.cast_aoe("howl")
+                Logger.debug(f"    Used skill: {self._api.data['used_skill']}")
 
     def get_next_corpse(self, names: list[str] = None, boundary: list[int] = None, skip_ids = set(), unique_only: bool = False):
         data = self._api.get_data()

@@ -19,32 +19,7 @@ Pixelbot (and memory reading bot) for Diablo 2 Resurrected. This project is for 
 | arcane             | legacy (all)|
 | nilithak           | legacy (all)|
 
-## New modules in v2
--mas and api
 
-#this makes the api.get_data() available from MapAssit
-```
-from api import MapAssistApi
-
-def __init__(
-        self,
-        api: MapAssistApi,
-        pather_v2: PatherV2,
-    ):
-
-	self._api = api
-	self._pather_v2 = pather_v2
-```
-```
-#in the run file, this makes info on meph available during the combat
-#game state is then available in the char file to check for deaths and update player position quickly
-
-from state_monitor import StateMonitor
-
-
-game_state = StateMonitor(['Mephisto'],self._pather,self._api)
-
-```
 
 
 

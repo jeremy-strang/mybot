@@ -23,7 +23,7 @@ from ocr import Ocr
 
 from api.mapassist import MapAssistApi
 from obs import ObsRecorder
-from utils.monsters import CHAMPS_UNIQUES, find_monster, get_unlooted_monsters
+from utils.monsters import CHAMPS_UNIQUES, get_unlooted_monsters
 
 class IChar:
     _CrossGameCapabilities: Union[None, CharacterCapabilities] = None
@@ -467,7 +467,7 @@ class IChar:
         mouse.click(button=button)
         wait(self._cast_duration + 0.01)
         if button == "left":
-            keyboard.send(self._char_config["stand_still"], do_press=False)
+            keyboard.release(self._char_config["stand_still"])
             wait(0.02, 0.03)
 
     def cast_melee(self, skill_key: str, time_in_s: float, abs_screen_pos: tuple[float, float], mouse_button: str = "left"):
@@ -497,12 +497,12 @@ class IChar:
                 wait(0.03, 0.04)
                 start = time.time()
                 while (time.time() - start) < time_in_s:
-                    monster = find_monster(mid, self._api)
+                    monster = self._api.find_monster(mid)
                     self._pather.move_mouse_to_monster(monster)
                     wait(0.03, 0.04)
                     mouse.press(button=mouse_button)
                     wait(0.03, 0.04)
-                    monster = find_monster(mid, self._api)
+                    monster = self._api.find_monster(mid)
                     if monster is None or monster["dist"] > max_distance or (monster["mode"] == 12 and stop_when_dead):
                         break
                 mouse.release(button=mouse_button)

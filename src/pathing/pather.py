@@ -21,7 +21,6 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from utils.misc import unit_vector, clip_abs_point
-from utils.monsters import find_poi, find_object, find_monster, find_poi, find_item
 from scipy.ndimage.filters import gaussian_filter
 from pathing.path_finder import PathFinder
 
@@ -110,7 +109,7 @@ class Pather:
     def click_poi(self, poi_label: str, offset=None):
         data = self._api.data
         if data is not None:
-            next_lvl = find_poi(poi_label, self._api)
+            next_lvl = self._api.find_poi(poi_label)
             self.move_mouse_to_abs_pos(
                 world_to_abs(next_lvl["position"], data["player_pos_world"]),
                 math.dist(data["player_pos_area"], next_lvl["position"] - data["area_origin"]),
@@ -122,7 +121,7 @@ class Pather:
     def click_object(self, name: str, offset=None):
         data = self._api.data
         if data is not None:
-            object = find_object(name, self._api)
+            object = self._api.find_object(name)
             if object is None:
                 return False
             self.move_mouse_to_abs_pos(
@@ -151,7 +150,7 @@ class Pather:
         while item is not None and time.time() - start < time_out:
             self.move_mouse_to_abs_pos(item["position_abs"], item["dist"], offset=(5, -9.5))
             wait(0.2)
-            item = find_item(item["id"], self._api)
+            item = self._api.find_item(item["id"])
             if item is not None and item["is_hovered"]:
                 return True
         return False
@@ -173,7 +172,7 @@ class Pather:
             wait(0.03, 0.05)
             mouse.click(button="left")
             wait(0.6)
-            item = find_item(item['id'], self._api)
+            item = self._api.find_item(item['id'])
 
     def move_to_monster(self, char, monster: dict) -> bool:
         if monster is not None and type(monster) is dict:
@@ -529,7 +528,7 @@ class Pather:
         return False
 
     def walk_to_monster(self, monster_id: int, time_out=10.0, step_size=4):
-        dest = find_monster(monster_id, self._api)
+        dest = self._api.find_monster(monster_id)
         if dest is not None:
             self.walk_to_position(dest["position"], time_out, step_size)
             return True
@@ -537,7 +536,7 @@ class Pather:
 
     def walk_to_object(self, obj_name: str, time_out=10.0, step_size=4):
         Logger.info(f"Walking to object {obj_name}...")
-        dest = find_object(obj_name, self._api)
+        dest = self._api.find_object(obj_name)
         if dest is not None:
             self.walk_to_position(dest["position"], time_out, step_size)
             return True
@@ -545,7 +544,7 @@ class Pather:
         return False
 
     def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=10):
-        dest = find_poi(poi_label, self._api)
+        dest = self._api.find_poi(poi_label)
         if dest is not None:
             self.walk_to_position(dest["position"], time_out, step_size)
             return True
@@ -874,7 +873,7 @@ class Pather:
 
             if "map" in data and data["map"] is not None:
                 player_pos_area = data["player_pos_area"]
-                if data["used_skill"] == "SKILL_TELEPORT":
+                if data["used_skill"] == 54:
                     Logger.debug("Used teleport")
                     time.sleep(0.01)
                     continue

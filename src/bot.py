@@ -48,7 +48,6 @@ from utils.dclone_ip import get_d2r_game_ip
 #mapassist api + new old_pather
 from pathing import Pather
 from api import MapAssistApi
-from utils.monsters import find_npc, find_monster
 
 class Bot:
 

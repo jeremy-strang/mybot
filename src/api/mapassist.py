@@ -2,7 +2,8 @@ import traceback
 import os
 import numpy as np
 
-from utils.monsters import find_monster_by_name
+from npc_manager import Npc
+
 from .mas import MAS
 import math
 import time
@@ -121,7 +122,7 @@ class MapAssistApi:
         self._mas.cancel()
     
     def confirm_boss_death(self, name: str, exact=False):
-        corpse = find_monster_by_name(name, self, exact)
+        corpse = self.find_monster_by_name(name, exact)
         if corpse:
             if corpse["mode"] == 12:
                 Logger.info(f"Confirmed that {name} is dead")
@@ -130,3 +131,59 @@ class MapAssistApi:
                 Logger.info(f"Ended combat with {name} still alive")
                 return False
         Logger.warning(f"Ended combat, but {name}'s corpse was not found")
+
+    def find_monster(self, id: int) -> dict:
+        data = self.data
+        if data and "monsters" in data and type(data["monsters"]) is list:
+            for m in data["monsters"]:
+                if m["id"] == id:
+                    return m
+        return None
+
+    def find_monster_by_name(self, name: str, exact=False) -> dict:
+        data = self.data
+        if data and "monsters" in data and type(data["monsters"]) is list:
+            if name and not exact:
+                name = name.lower().replace(" ", "")
+            for m in data["monsters"]:
+                if m["id"] == name:
+                    return m
+        return None
+
+    def find_npc(self, npc: Npc):
+        if self.data:
+            for m in self.data["monsters"]:
+                name = m["name"]
+                if name.lower() == npc.lower().replace(" ", ""):
+                    return m
+        return None
+
+    def find_poi(self, poi: str):
+        if self.data:
+            for p in self.data["points_of_interest"]:
+                label = p["label"]
+                if label.lower().startswith(poi.lower()):
+                    return p
+        return None
+
+    def find_object(self, name: str):
+        if self.data:
+            for obj in self.data["object"]:
+                if obj["name"].lower().startswith(name.lower()):
+                    return obj
+        return None
+
+    def find_item(self, id: int) -> dict:
+        if self.data and "items" in self.data and type(self.data["items"]) is list:
+            for item in self.data["items"]:
+                if item["id"] == id:
+                    return item
+        return None
+
+    def find_object(self, object: str):
+        if self.data:
+            for o in self.data["objects"]:
+                name = o["name"]
+                if name.lower().startswith(object.lower()):
+                    return o
+        return None

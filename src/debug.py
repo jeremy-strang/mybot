@@ -43,7 +43,7 @@ from main import on_exit
 from utils.custom_mouse import mouse
 from utils.misc import wait
 from obs import ObsRecorder
-from utils.monsters import find_npc, find_monster, find_poi, sort_and_filter_monsters
+from utils.monsters import sort_and_filter_monsters
 pp = pprint.PrettyPrinter(depth=6)
 
 if __name__ == "__main__":
@@ -108,8 +108,17 @@ if __name__ == "__main__":
 
         def do_stuff():
             print("Doing stuff...")
+            start = time.time()
             try:
                 data = api.get_data()
+
+                used = None
+                while time.time() - start < 5:
+                    if api.data["used_skill"] != used:
+                        used = api.data["used_skill"]
+                        print(used)
+                        wait(0.1)
+
                 # pather.walk_to_poi("Kurast Docks")
 
                 # if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):

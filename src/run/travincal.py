@@ -82,11 +82,11 @@ class Travincal:
         self._obs_recorder.start_recording_if_enabled()
         self._api.start_timer()
         if self._char._char_config['type'] == 'hammerdin':
-            self._char.kill_council(None)
+            self._char.kill_council()
             self._avoid_durance()
-        elif self._char._char_config['type'] == 'barbarian' or self._char._char_config['type'] == 'zerker_barb':
+        elif self._char._char_config['type'] == 'singer_barb' or self._char._char_config['type'] == 'zerker_barb':
             # First kill council
-            self._char.kill_council(None)
+            self._char.kill_council()
             # Loot once before hork to get anything that might get covered up after hork
             picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True)
             wait(0.1, 0.2)

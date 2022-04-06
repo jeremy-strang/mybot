@@ -14,7 +14,6 @@ from screen import Screen
 import time
 from state_monitor import StateMonitor
 from obs import ObsRecorder
-from utils.monsters import find_poi
 
 class Countess:
     def __init__(
@@ -64,18 +63,7 @@ class Countess:
         self._char.post_travel()
 
         if not self._pather.traverse("GoodChest", self._char, verify_location=True): return False
-        chest = find_poi("GoodChest", self._api)
-        roi = None
-        if chest is not None:
-            roi_x = max(chest["position"][0] - 20, 0)
-            roi_y = max(chest["position"][1] - 20, 0)
-            roi = [roi_x, roi_y, 40, 35]
-
-        pickit_func = lambda: self._pickit.pick_up_items(self._char)
-        picked_up_items = self._char.kill_uniques(pickit_func, 25, boundary=roi)
-        picked_up_items += self._pickit.pick_up_items(self._char)
-        self._pather.traverse("GoodChest", self._char, verify_location=True)
         self._char.kill_countess()
-        picked_up_items += self._pickit.pick_up_items(self._char)
-        Logger.debug(f"    Picked up {picked_up_items} items")
+        picked_up_items = self._pickit.pick_up_items(self._char)
+        Logger.debug(f"Picked up {picked_up_items} items")
         return (Location.A1_TOWER_END, picked_up_items)

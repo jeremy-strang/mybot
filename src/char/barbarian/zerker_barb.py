@@ -24,7 +24,7 @@ from pathing import Pather
 from state_monitor import StateMonitor
 from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
-from utils.monsters import find_monster, find_monster_by_name, sort_and_filter_monsters
+from utils.monsters import CHAMPS_UNIQUES, sort_and_filter_monsters
 
 class ZerkerBarb(Barbarian):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
@@ -92,15 +92,12 @@ class ZerkerBarb(Barbarian):
 
     def kill_andariel(self) -> bool:
         rules = [MonsterRule(names="Andariel")]
-        self.cast_howl()
-        self._kill_mobs2(rules, time_out=10)
-        self.cast_howl()
-        self._kill_mobs2(rules, time_out=40)
+        self._kill_mobs2(rules, time_out=40, do_howl=True)
         return self._api.confirm_boss_death("Andariel")
 
     def kill_mephisto(self) -> bool:
         rules = [MonsterRule(names="Mephisto")]
-        self._kill_mobs2(rules, time_out=50)
+        self._kill_mobs2(rules, time_out=40)
         return self._api.confirm_boss_death("Mephisto")
 
     def kill_council(self) -> bool:
@@ -114,24 +111,28 @@ class ZerkerBarb(Barbarian):
             self._kill_mobs2(rules, time_out=time, reposition_pos=(156, 113), boundary=(122, 80, 50, 50))
         return True
 
-    def _kill_boss(self, name) -> bool:
+    def kill_summoner(self) -> bool:
         rules = [
-            MonsterRule(names=[name]),
+            MonsterRule(names=["Summoner"]),
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
-        game_state = StateMonitor(rules, self._api, unique_id=-1, many=True)
-        self._kill_mobs(game_state, atk_len=3, time_out=16, do_howl=True)
-        game_state.stop()
-        return True
-
-    def kill_summoner(self) -> bool:
-        return self._kill_boss("Summoner")
+        self._kill_mobs2(rules, time_out=20, do_howl=True)
+        return self._api.confirm_boss_death("Summoner")
 
     def kill_nihlathak(self) -> bool:
-        return self._kill_boss("Nihlathak")
-        
-    def kill_countess(self, game_state: StateMonitor) -> bool:
-        self._kill_mobs(game_state, 1.7, 15, do_howl=True)
+        rules = [
+            MonsterRule(names=["Nihlathak"]),
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+        ]
+        self._kill_mobs2(rules, time_out=20, do_howl=True)
+        return self._api.confirm_boss_death("Nihlathak")
+
+    def kill_countess(self) -> bool:
+        rules = [
+            MonsterRule(names=["DarkStalker"]),
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+        ]
+        self._kill_mobs2(rules, time_out=20, do_howl=True)
         return True
 
     def _kill_mobs2(self,
@@ -153,7 +154,7 @@ class ZerkerBarb(Barbarian):
             data = self._api.get_data()
             if data:
                 for monster in monsters:
-                    monster = find_monster(monster["id"], self._api)
+                    monster = self._api.find_monster(monster["id"])
                     if monster:
                         monster_start = time.time()
                         if time.time() - last_move > reposition_time and reposition_pos is not None:
@@ -165,8 +166,8 @@ class ZerkerBarb(Barbarian):
                                 Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
                                 self._pather.move_to_monster(self, monster)
                                 last_move = time.time()
-                                monster = find_monster(monster["id"], self._api)
-                                if do_howl and monster and monster["dist"] <= 3.0:
+                                monster = self._api.find_monster(monster["id"])
+                                if do_howl and monster and monster["dist"] <= 4.0:
                                     self.cast_howl()
                             if monster and monster["dist"] <= 3.0 and not self.tele_stomp_monster("berserk", 3.0, monster, max_distance=3):
                                 wait(0.1)

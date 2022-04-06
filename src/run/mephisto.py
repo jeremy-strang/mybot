@@ -66,19 +66,6 @@ class Mephisto:
             self._char.switch_weapon()
             self._char.verify_active_weapon_tab()
 
-        if self._char._char_config['type'] == 'hammerdin':
-            self._char.kill_mephisto()
-        elif self._char._char_config['type'] in ['light_sorc', 'necro', 'zerker_barb']:
-            game_state = StateMonitor(['Mephisto'],self._api)
-            self._char.kill_mephisto(game_state)
-            x = game_state._area_pos[0]
-            y = game_state._area_pos[1]
-            self._pather.traverse((x, y), self._char)
-            game_state.stop()
-        elif self._char._char_config['type'] == 'zerker_barb':
-            game_state = StateMonitor(['Mephisto'], self._api)
-        else:
-            raise ValueError("Andy hdin or light sorc or necro")
-
+        self._char.kill_mephisto()
         picked_up_items = self._pickit.pick_up_items(self._char)
         return (Location.A3_MEPH_END, picked_up_items)

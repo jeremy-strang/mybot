@@ -63,24 +63,11 @@ class Andariel:
         if not self._pather.go_to_area("Catacombs Level 4", "CatacombsLevel4", entrance_in_wall=False): return False
         self._char.post_travel()
 
-        if self._char._char_config['type'] == 'hammerdin':
-            if not self._pather.traverse((65, 85), self._char): return False
-            self._char.kill_andariel()
-        elif self._char._char_config['type'] in ['light_sorc', 'necro', 'zerker_barb']:
-            if not self._pather.traverse((46, 23), self._char): return False
-            game_state = StateMonitor(['Andariel'], self._api)
-            result = self._char.kill_andariel(game_state)
-            if result:
-                Logger.info("Andy died...")
-            wait(0.1, .2)
-            x = game_state._area_pos[0]
-            y = game_state._area_pos[1]
-            #go to andys body
-            self._pather.traverse((x, y), self._char)
-            game_state.stop()
-        else:
-            raise ValueError(f"Andariel is not implemented for characters of type {self._char._char_config['type']}")
-
-
+        self._pather.traverse((65, 85), self._char)
+        self._char.kill_andariel()
         picked_up_items = self._pickit.pick_up_items(self._char)
+
+        # if self._char._char_config['type'] == 'singer_barb' or self._char._char_config['type'] == 'zerker_barb':
+        #     self._char.do_hork()
+        
         return (Location.A1_ANDY_END, picked_up_items)
