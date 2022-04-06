@@ -134,6 +134,25 @@ namespace MapAssist.MyBot
             return istats;
         }
 
+        private dynamic CleanItem(UnitItem item)
+        {
+            return new
+            {
+                position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
+                id = item.UnitId,
+                flags = item.ItemData.ItemFlags.ToString(),
+                quality = item.ItemData.ItemQuality.ToString(),
+                name = Items.GetItemName(item),
+                base_name = item.ItemBaseName,
+                is_hovered = item.IsHovered,
+                item_mode = item.ItemMode.ToString(),
+                item_mode_mapped = item.ItemModeMapped.ToString(),
+                stats = GetItemStats(item),
+                is_identified = item.IsIdentified,
+                inventory_page = item.ItemData.InvPage.ToString(),
+            };
+        }
+
         public string RetrieveDataFromMemory(bool forceMap = true, Formatting formatting = Formatting.None)
         {
             try
@@ -240,35 +259,6 @@ namespace MapAssist.MyBot
                             }
                         }
 
-                        var item_on_cursor = false;
-                        var items = new List<dynamic>();
-                        foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
-                        {
-                            if (item.ItemMode == ItemMode.ONCURSOR)
-                            {
-                                item_on_cursor = true;
-                            }
-
-                            if (item.ItemModeMapped == ItemModeMapped.Ground)
-                            {
-                                items.Add(new
-                                {
-                                    position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
-                                    id = item.UnitId,
-                                    flags = item.ItemData.ItemFlags.ToString(),
-                                    quality = item.ItemData.ItemQuality.ToString(),
-                                    name = Items.GetItemName(item),
-                                    base_name = item.ItemBaseName,
-                                    is_hovered = item.IsHovered,
-                                    item_mode = item.ItemMode.ToString(),
-                                    item_mode_mapped = item.ItemModeMapped.ToString(),
-                                    stats = GetItemStats(item),
-                                    is_identified = item.IsIdentified,
-                                    inventory_page = item.ItemData.InvPage.ToString(),
-                                });
-                            }
-                        }
-
                         var current_area = _areaData.Area.ToString();
                         var mapH = 0;
                         var mapW = 0;
@@ -295,6 +285,50 @@ namespace MapAssist.MyBot
                         var inventory_open = _gameData.MenuOpen.Inventory;
                         var stash_open = _gameData.MenuOpen.Stash;
                         var shop_open = _gameData.MenuOpen.NpcShop;
+
+                        var item_on_cursor = false;
+                        var items = new List<dynamic>();
+                        var inventory_items = new List<dynamic>();
+                        var stash_items = new List<dynamic>();
+                        var cube_items = new List<dynamic>();
+                        var vendor_items = new List<dynamic>();
+                        var equipped_items = new List<dynamic>();
+                        var merc_items = new List<dynamic>();
+                        foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
+                        {
+                            if (item.ItemMode == ItemMode.ONCURSOR)
+                            {
+                                item_on_cursor = true;
+                            }
+
+                            if (item.ItemModeMapped == ItemModeMapped.Ground)
+                            {
+                                items.Add(CleanItem(item));
+                            } else if (in_town)
+                            {
+
+                                if (item.ItemModeMapped == ItemModeMapped.Inventory)
+                                {
+                                    inventory_items.Add(CleanItem(item));
+                                }
+                                else if (item.ItemModeMapped == ItemModeMapped.Stash)
+                                {
+                                    stash_items.Add(CleanItem(item));
+                                }
+                                else if (item.ItemModeMapped == ItemModeMapped.Vendor)
+                                {
+                                    vendor_items.Add(CleanItem(item));
+                                }
+                                else if (item.ItemModeMapped == ItemModeMapped.Cube)
+                                {
+                                    cube_items.Add(CleanItem(item));
+                                }
+                                else if (item.ItemModeMapped == ItemModeMapped.Mercenary)
+                                {
+                                    merc_items.Add(CleanItem(item));
+                                }
+                            }
+                        }
                         var msg = new
                         {
                             map_changed = map_changed || forceMap,
@@ -303,6 +337,12 @@ namespace MapAssist.MyBot
                             monsters = new List<dynamic>(),
                             objects = new List<dynamic>(),
                             items,
+                            inventory_items,
+                            stash_items,
+                            cube_items,
+                            vendor_items,
+                            equipped_items,
+                            merc_items,
                             items_logged = new List<dynamic>(),
                             points_of_interest = new List<dynamic>(),
                             corpses,

@@ -25,7 +25,6 @@ class MonsterTracker:
                 score += rule.evaluate_monster(monster, min_score)
                 min_score -= 100
                 if score > 0: break
-        monster["score"] = score
         return score
 
 

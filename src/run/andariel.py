@@ -63,9 +63,11 @@ class Andariel:
         if not self._pather.go_to_area("Catacombs Level 4", "CatacombsLevel4", entrance_in_wall=False): return False
         self._char.post_travel()
 
-        self._pather.traverse((65, 85), self._char)
+        self._pather.traverse((47, 42), self._char)
         self._char.kill_andariel()
         picked_up_items = self._pickit.pick_up_items(self._char)
+        self._pather.traverse((47, 42), self._char)
+        picked_up_items += self._pickit.pick_up_items(self._char)
 
         # if self._char._char_config['type'] == 'singer_barb' or self._char._char_config['type'] == 'zerker_barb':
         #     self._char.do_hork()

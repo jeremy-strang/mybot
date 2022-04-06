@@ -1,4 +1,5 @@
 from operator import is_
+import pprint
 from typing import Tuple
 import keyboard
 from utils.coordinates import world_to_abs
@@ -91,14 +92,14 @@ class ZerkerBarb(Barbarian):
         return picked_up_items
 
     def kill_andariel(self) -> bool:
-        rules = [MonsterRule(names="Andariel")]
+        rules = [MonsterRule(names=["Andariel"])]
         self._kill_mobs2(rules, time_out=40, do_howl=True)
-        return self._api.confirm_boss_death("Andariel")
+        return True
 
     def kill_mephisto(self) -> bool:
-        rules = [MonsterRule(names="Mephisto")]
+        rules = [MonsterRule(names=["Mephisto"])]
         self._kill_mobs2(rules, time_out=40)
-        return self._api.confirm_boss_death("Mephisto")
+        return True
 
     def kill_council(self) -> bool:
         sequence = [
@@ -117,7 +118,7 @@ class ZerkerBarb(Barbarian):
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
         self._kill_mobs2(rules, time_out=20, do_howl=True)
-        return self._api.confirm_boss_death("Summoner")
+        return True
 
     def kill_nihlathak(self) -> bool:
         rules = [
@@ -125,7 +126,7 @@ class ZerkerBarb(Barbarian):
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
         self._kill_mobs2(rules, time_out=20, do_howl=True)
-        return self._api.confirm_boss_death("Nihlathak")
+        return True
 
     def kill_countess(self) -> bool:
         rules = [
@@ -166,7 +167,7 @@ class ZerkerBarb(Barbarian):
                                 self._pather.move_to_monster(self, monster)
                                 last_move = time.time()
                                 monster = self._api.find_monster(monster["id"])
-                                if do_howl and monster and monster["dist"] <= 4.0:
+                                if do_howl and monster and monster["dist"] <= 3.0:
                                     self.cast_howl()
                             if monster and monster["dist"] <= 3.0 and not self.tele_stomp_monster("berserk", 3.0, monster, max_distance=3):
                                 wait(0.1)

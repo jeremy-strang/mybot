@@ -15,12 +15,11 @@ CHAMPS_UNIQUES = [
 def score_monster(monster: dict, priority_rules: list[MonsterRule]):
     score = 0
     if monster is not None and type(monster) is dict and type(priority_rules) is list:
-        min_score = 100 * len(priority_rules)
+        min_score = 100 * (len(priority_rules) - 1)
         for rule in priority_rules:
             score += rule.evaluate_monster(monster, min_score)
             min_score -= 100
             if score > 0: break
-    monster["score"] = score
     return score
 
 def sort_and_filter_monsters(data,
@@ -45,7 +44,7 @@ def sort_and_filter_monsters(data,
     if data is not None:
         monsters = list(filter(_filter_check, data["monsters"]))
         if rules and len(rules) > 0:
-            monsters.sort(key=lambda m: score_monster(m, rules))
+            monsters.sort(key=lambda m: score_monster(m, rules), reverse=True)
     return monsters
 
 def get_unlooted_monsters(api: MapAssistApi, rules: list[MonsterRule], looted_monsters: set, boundary=None, max_distance=100) -> list[dict]:

@@ -389,12 +389,14 @@ class IChar:
         if not self._ui_manager.has_tps():
             Logger.debug("No TPs")
             return False
+        wait(0.1, 0.15)
         mouse.click(button="right")
+        wait(self._cast_duration)
         return True
 
     def tp_town(self):
         if not self.open_tp(): return False
-        wait(0.8, 1.3) # takes quite a while for tp to be visible
+        wait(1, 1.4) # takes quite a while for tp to be visible
         self._pather.click_object("TownPortal")
         if self._pather.wait_for_town(4): return True
 
@@ -407,7 +409,7 @@ class IChar:
             int(self._config.ui_pos["screen_height"] * 0.7)
         ]
         pos_away = self._screen.convert_abs_to_monitor((-167, -30))
-        wait(0.8, 1.3) # takes quite a while for tp to be visible
+        wait(1, 1.4) # takes quite a while for tp to be visible
         roi = self._config.ui_roi["tp_search"]
         start = time.time()
         retry_count = 0
@@ -420,7 +422,7 @@ class IChar:
                 self.move(pos_m)
                 if self._ui_manager.has_tps():
                     mouse.click(button="right")
-                wait(0.8, 1.3) # takes quite a while for tp to be visible
+                wait(1, 1.4) # takes quite a while for tp to be visible
             img = self._screen.grab()
             template_match = self._template_finder.search(
                 ["BLUE_PORTAL","BLUE_PORTAL_2"],
@@ -490,7 +492,7 @@ class IChar:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
                 mid = monster['id']
-                Logger.debug(f"Attacking monster {mid} with {skill_key}, distance: {round(monster['dist'], 2)}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
+                Logger.debug(f"Attacking monster '{monster['name']}' (ID: {mid}) with {skill_key}, distance: {round(monster['dist'], 2)}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
                 keyboard.send(self._char_config["stand_still"], do_release=False)
                 wait(0.03, 0.04)
                 keyboard.send(self._skill_hotkeys[skill_key])
@@ -498,13 +500,13 @@ class IChar:
                 start = time.time()
                 while (time.time() - start) < time_in_s:
                     monster = self._api.find_monster(mid)
+                    if monster is None: break
                     self._pather.move_mouse_to_monster(monster)
                     wait(0.03, 0.04)
                     mouse.press(button=mouse_button)
                     wait(0.03, 0.04)
                     monster = self._api.find_monster(mid)
-                    if monster is None or monster["dist"] > max_distance or (monster["mode"] == 12 and stop_when_dead):
-                        break
+                    if monster is None or monster["dist"] > max_distance or (monster["mode"] == 12 and stop_when_dead): break
                 mouse.release(button=mouse_button)
                 wait(0.02, 0.03)
                 keyboard.release(self._config.char["stand_still"])

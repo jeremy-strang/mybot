@@ -85,6 +85,12 @@ class MAS(Thread):
             "points_of_interest": [],
             "objects": [],
             "items": [],
+            "inventory_items": [],
+            "stash_items": [],
+            "cube_items": [],
+            "vendor_items": [],
+            "equipped_items": [],
+            "merc_items": [],
             "items_logged": [],
             "static_npcs": [],
             "map": None,
@@ -228,14 +234,15 @@ class MAS(Thread):
             obj["dist"] = math.dist(_data["player_pos_world"], obj["position"])
             _data["objects"].append(obj)
 
-        for item in data["items"]:
-            item_world_x = int(item["position"][0])
-            item_world_y = int(item["position"][1])
-            item["position"] = np.array([item_world_x, item_world_y])
-            item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
-            item["position_area"] = np.array([item_world_x - area_origin_x, item_world_y - area_origin_y])
-            item["dist"] = math.dist(_data["player_pos_world"], item["position"])
-        _data["items"] = data["items"]
+        for item_list in ["items", "inventory_items", "stash_items", "cube_items", "vendor_items", "equipped_items", "merc_items"]:
+            for item in data[item_list]:
+                item_world_x = int(item["position"][0])
+                item_world_y = int(item["position"][1])
+                item["position"] = np.array([item_world_x, item_world_y])
+                item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
+                item["position_area"] = np.array([item_world_x - area_origin_x, item_world_y - area_origin_y])
+                item["dist"] = math.dist(_data["player_pos_world"], item["position"])
+            _data[item_list] = data[item_list]
 
         for item in data["items_logged"]:
             item_world_x = int(item["position"][0])

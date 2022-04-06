@@ -57,8 +57,8 @@ class Barbarian(IChar):
                 Logger.debug("Casting Howl...")
                 self._last_howl_pos = current_pos
                 self._last_howl_time = time.time()
+                wait(0.1)
                 self.cast_aoe("howl")
-                Logger.debug(f"    Used skill: {self._api.data['used_skill']}")
 
     def get_next_corpse(self, names: list[str] = None, boundary: list[int] = None, skip_ids = set(), unique_only: bool = False):
         data = self._api.get_data()

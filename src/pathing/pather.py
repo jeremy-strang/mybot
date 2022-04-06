@@ -873,8 +873,7 @@ class Pather:
 
             if "map" in data and data["map"] is not None:
                 player_pos_area = data["player_pos_area"]
-                if data["used_skill"] == 54:
-                    Logger.debug("Used teleport")
+                if data["used_skill"] == "Teleport":
                     time.sleep(0.01)
                     continue
 
