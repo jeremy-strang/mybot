@@ -515,7 +515,7 @@ class Pather:
     def walk_to_monster(self, monster_id: int, time_out=10.0, step_size=4):
         dest = self._api.find_monster(monster_id)
         if dest:
-            self.walk_to_position(dest["position"], time_out, step_size)
+            self.walk_to_position(dest["position_area"], time_out, step_size)
             return True
         return False
 
@@ -523,7 +523,7 @@ class Pather:
         Logger.info(f"Walking to object {obj_name}...")
         dest = self._api.find_object(obj_name)
         if dest:
-            self.walk_to_position(dest["position"], time_out, step_size)
+            self.walk_to_position(dest["position_area"], time_out, step_size)
             return True
         Logger.error(f"    No object found named {obj_name}")
         return False
@@ -531,22 +531,20 @@ class Pather:
     def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=10):
         dest = self._api.find_poi(poi_label)
         if dest:
-            self.walk_to_position(dest["position"], time_out, step_size)
+            self.walk_to_position(dest["position_area"], time_out, step_size)
             return True
         return False
 
-    def walk_to_position(self, dest_world, time_out=10.0, step_size=10):
-        Logger.debug(f"Walking to position {dest_world}...")
-        route = self.make_route_to_position(dest_world)
+    def walk_to_position(self, dest_area, time_out=10.0, step_size=10):
+        route = self.make_route_to_position(dest_area)
         self.walk_route(route, time_out, step_size)
-        Logger.debug(f"    done walking to {dest_world}")
 
-    def make_route_to_position(self, dest_world):
+    def make_route_to_position(self, dest_area):
         route = None
         data = self._api.data
         if data:
             pf = PathFinder(self._api)
-            dest_area = (int(dest_world[1]), int(dest_world[0])) - data["area_origin"]
+            dest_area = (int(dest_area[1]), int(dest_area[0]))
             player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
             route = pf.make_path_astar(player_area, dest_area, False)
             self._api._current_path = route
@@ -558,7 +556,6 @@ class Pather:
         while popped < step_size and len(nodes) > 0:
             node = nodes.pop(0)
             popped += 1
-        print(f"    Node: {node}")
         return node
 
     def walk_route(self, route, time_out=10.0, step_size=10, threshold=8):

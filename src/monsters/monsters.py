@@ -46,7 +46,6 @@ def sort_and_filter_monsters(data,
         monsters = list(filter(_filter_check, data["monsters"]))
         if rules and len(rules) > 0:
             monsters.sort(key=lambda m: score_monster(m, rules), reverse=True)
-        print(f"    Filtered monsters from {m0} to {len(monsters)}")
     return monsters
 
 def get_unlooted_monsters(api: MapAssistApi, rules: list[MonsterRule], looted_monsters: set, boundary=None, max_distance=100) -> list[dict]:

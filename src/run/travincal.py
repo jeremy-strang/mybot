@@ -113,16 +113,13 @@ class Travincal:
         if self._char.capabilities.can_teleport_natively or self._char.capabilities.can_teleport_with_charges:
             self._pather.traverse((156, 113), self._char, time_out=4.0)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
-            #wait(0.1, 0.2)
-            # Go back to a good spot to TP
             self._avoid_durance()
             self._pather.traverse((154, 111), self._char, time_out=4.0)
-
         else: # Else we need to make sure we loot both inside and outside the council room
-            self._pather.traverse_walking((157, 104), self._char, time_out=2)
+            self._pather.walk_to_position((157, 104), time_out=3)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
             wait(0.1, 0.15)
-            self._pather.traverse_walking((141, 113), self._char, time_out=2)
+            self._pather.walk_to_position((141, 113), time_out=3)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
             wait(0.1, 0.15)
         # self._obs_recorder.stop_recording_if_enabled()

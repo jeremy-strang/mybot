@@ -526,7 +526,7 @@ class IChar:
             wait(0.1)
             picked_up_items += self.kill_uniques(pickit_func, 16.0, looted_uniques)
         self.post_attack()
-        Logger.debug(f"Killed and looted {picked_up_items} from {len(looted_uniques)} champion/unique packs")
+        Logger.info(f"Killed and looted {picked_up_items} items from {len(looted_uniques)} champion/unique packs")
         return picked_up_items
 
     def _pre_buff_cta(self, switch_back=True):

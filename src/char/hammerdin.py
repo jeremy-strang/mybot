@@ -175,19 +175,6 @@ class Hammerdin(IChar):
             self._kill_council_with_tp()
         else:
             self._kill_council_walking()
-            # # Start hammers near the entrance
-            # self._cast_hammers(atk_len)
-            # # Go left of center stairs a bit
-            # self._old_pather.traverse_nodes([226, 227], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True)
-            # self._cast_hammers(atk_len)
-            # # Move a bit to the top and more hammer
-            # self._move_and_attack((20, 10), atk_len)
-            # # Go inside and hammer a bit
-            # if not self._old_pather.traverse_nodes([228, 229], self, time_out=1, force_move=True, do_pre_move=self._do_pre_move, force_time_out=True):
-            #     self._move_and_attack((-5, 5), atk_len / 2)
-            # self._cast_hammers(atk_len)
-            # # Stay inside and cast hammers again moving forward
-            # self._move_and_attack((40, 10), atk_len)
         keyboard.send(self._skill_hotkeys["concentration"])
         wait(0.05, 0.10)
         return True
@@ -488,12 +475,11 @@ class Hammerdin(IChar):
         for pos_area, roi in roi_tups:
             monsters = sort_and_filter_monsters(self._api.data, rules, None, roi, ignore_dead=True)
             if len(monsters) > 0:
-                self._pather.traverse_walking(pos_area, self, time_out=4)
+                self._pather.walk_to_position(pos_area, time_out=4)
                 self._cast_hammers((self._cast_duration - 0.01) * 4)
                 self._kill_mobs_walking(rules, time_out=10, boundary=roi)
                 self.post_attack()
-        for _ in range(2):
-            self.move(self._screen.convert_area_to_monitor((153, 94), self._api.data["player_pos_area"], True), force_move=True)
+        self._pather.walk_to_position((157, 98), 3.0)
         return True
 
     def _kill_mobs(self,
@@ -552,7 +538,7 @@ class Hammerdin(IChar):
         elapsed = 0
         monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
         if len(monsters) == 0: return True
-        Logger.debug(f"Beginning combat against {len(monsters)}...")
+        Logger.debug(f"Beginning combat (walking) against {len(monsters)} monsters...")
         while elapsed < time_out and len(monsters) > 0:
             for monster in monsters:
                 monster = self._api.find_monster(monster["id"])
@@ -591,7 +577,7 @@ class Hammerdin(IChar):
         elapsed = 0
         picked_up_items = 0
         monsters = sort_and_filter_monsters(self._api.data, rules, None, boundary, ignore_dead=True)
-        Logger.debug(f"Beginning combat against {len(monsters)} monsters...")
+        Logger.debug(f"Beginning combat (tele stomping) against {len(monsters)} monsters...")
         while elapsed < time_out and len(monsters) > 0:
             if self._api.data:
                 for monster in monsters:
@@ -615,17 +601,10 @@ class Hammerdin(IChar):
                                     picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
                                 wait(0.1)
                                 last_move = time.time()
-
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, rules, None, boundary, ignore_dead=True)
             elapsed = time.time() - start
         self.post_attack()
-        
         picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
-
-        # This is a hack to prevent Teleport from being used during pickit
-        keyboard.send(self._skill_hotkeys["concentration"])
-        wait(0.03, 0.05)
-        self.post_attack()
         Logger.debug(f"Finished killing uniques, combat took {round(elapsed, 2)} sec")
         return picked_up_items
