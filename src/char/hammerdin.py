@@ -554,7 +554,7 @@ class Hammerdin(IChar):
                             self._pather.move_to_monster(self, monster)
                             last_move = time.time()
                             monster = self._api.find_monster(monster["id"])
-                        if monster and monster["dist"] <= 3:
+                        if monster and monster["dist"] <= 3 and monster["mode"] != 12:
                             keyboard.send(self._skill_hotkeys["concentration"])
                             wait(0.03, 0.05)
                             self._cast_hammers((self._cast_duration - 0.01) * 3)
