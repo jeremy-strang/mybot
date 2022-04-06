@@ -1,3 +1,4 @@
+from ast import Tuple
 from sre_parse import State
 import keyboard
 from utils.coordinates import world_to_abs
@@ -9,7 +10,7 @@ from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import rotate_vec, unit_vector, wait, is_in_roi
-from monsters import get_unlooted_monsters, CHAMPS_UNIQUES
+from monsters import sort_and_filter_monsters, get_unlooted_monsters, CHAMPS_UNIQUES
 from constants import Roi
 import time
 from pathing import OldPather, Location
@@ -423,33 +424,85 @@ class Hammerdin(IChar):
         return fresh_m
 
     def _kill_council_with_tp(self):
-        Logger.debug(f"Beginning combat with Council Members (with Teleport)...")
+        sequence = [
+            (10, [MonsterRule(auras = ["CONVICTION"])]),
+            (10, [MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"])]),
+            (20, [MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE])]),
+            (25, [MonsterRule(names = ["CouncilMember"]), MonsterRule(monster_types = [MonsterType.UNIQUE])]),
+        ]
+        for time, rules in sequence:
+            self._kill_mobs2(rules, time_out=time, reposition_pos=(156, 113), boundary=(122, 80, 50, 50))
+        return True
+        # Logger.debug(f"Beginning combat with Council Members (with Teleport)...")
+        # start = time.time()
+        # last_move = start
+        # elapsed = 0
+        # game_state = StateMonitor(['CouncilMember'], self._api, unique_id=-1, many=True)
+        # while elapsed < 50 and game_state._dead == 0:
+        #     if game_state._ready:
+        #         target_pos = game_state._target_pos
+        #         target_pos = [target_pos[0] - 9.5, target_pos[1] - 39.5]
+        #         # If we've been standing in one spot for too long, reposition
+        #         if time.time() - last_move > 5.0:
+        #             Logger.debug("Stood in one place too long, repositioning")
+        #             self._pather.traverse((156, 113), self, time_out = 3.0)
+        #             last_move = time.time()
+        #         elif game_state._dist > 8:
+        #             move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
+        #             move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
+        #             self.pre_move()
+        #             self.move(move_pos_m, force_tp=True)
+        #             last_move = time.time()
+        #         keyboard.send(self._skill_hotkeys["concentration"])
+        #         wait(0.03, 0.05)
+        #         if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target, stop_when_dead=False, max_distance=5): wait(0.1)
+        #         self.post_attack()
+        #     elapsed = time.time() - start
+        # game_state.stop()
+        # Logger.debug(f"Finished killing council, combat took {round(elapsed, 2)} sec")
+        # return True
+
+    def _kill_mobs2(self,
+                  prioritize: list[MonsterRule],
+                  ignore: list[MonsterRule] = None,
+                  time_out: float = 40.0,
+                  boundary: Tuple[int, int, int, int] = None,
+                  reposition_pos = None,
+                  reposition_time: float = 7.0
+                ) -> bool:
         start = time.time()
         last_move = start
         elapsed = 0
-        game_state = StateMonitor(['CouncilMember'], self._api, unique_id=-1, many=True)
-        while elapsed < 50 and game_state._dead == 0:
-            if game_state._ready:
-                target_pos = game_state._target_pos
-                target_pos = [target_pos[0] - 9.5, target_pos[1] - 39.5]
-                # If we've been standing in one spot for too long, reposition
-                if time.time() - last_move > 5.0:
-                    Logger.debug("Stood in one place too long, repositioning")
-                    self._pather.traverse((156, 113), self, time_out = 3.0)
-                    last_move = time.time()
-                elif game_state._dist > 8:
-                    move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
-                    move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
-                    self.pre_move()
-                    self.move(move_pos_m, force_tp=True)
-                    last_move = time.time()
-                keyboard.send(self._skill_hotkeys["concentration"])
-                wait(0.03, 0.05)
-                if not self.tele_stomp_monster("blessed_hammer", self._cast_duration * 3, game_state._target, stop_when_dead=False, max_distance=5): wait(0.1)
-                self.post_attack()
+        monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
+        if len(monsters) == 0: return True
+        Logger.debug(f"Beginning combat against {len(monsters)}...")
+        while elapsed < time_out and len(monsters) > 0:
+            data = self._api.get_data()
+            if data:
+                for monster in monsters:
+                    monster = self._api.find_monster(monster["id"])
+                    if monster:
+                        monster_start = time.time()
+                        if time.time() - last_move > reposition_time and reposition_pos is not None:
+                            Logger.debug("    Stood in one place too long, repositioning")
+                            self._pather.traverse(reposition_pos, self, time_out = 3.0)
+                            last_move = time.time()
+                        else:
+                            while monster and monster["dist"] > 3.5 and time.time() - monster_start < 5.0:
+                                Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
+                                self._pather.move_to_monster(self, monster)
+                                last_move = time.time()
+                                monster = self._api.find_monster(monster["id"])
+                            if monster and monster["dist"] <= 3.5:
+                                keyboard.send(self._skill_hotkeys["concentration"])
+                                wait(0.04, 0.06)
+                                if not self.tele_stomp_monster("blessed_hammer", 3.0, monster, max_distance=5):
+                                    wait(0.1)
+            wait(0.1)
+            monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
             elapsed = time.time() - start
-        game_state.stop()
-        Logger.debug(f"Finished killing council, combat took {round(elapsed, 2)} sec")
+        self.post_attack()
+        Logger.debug(f"    Finished killing mobs, combat took {elapsed} sec")
         return True
 
     def _kill_council_walking(self):

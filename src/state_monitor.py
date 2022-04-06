@@ -74,7 +74,7 @@ class CombatTracker:
         while time.time() - start < time_out:
             self._sm._data = self._api.data
             self._update_status()
-            time.sleep(.015)
+            time.sleep(.02)
 
     def _update_status(self):
         if time.time() - self._sm._started > self._sm._time_out:
