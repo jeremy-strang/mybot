@@ -25,7 +25,7 @@ from pathing import Pather
 from state_monitor import StateMonitor
 from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
-from utils.monsters import CHAMPS_UNIQUES, sort_and_filter_monsters
+from monsters import CHAMPS_UNIQUES, sort_and_filter_monsters
 
 class ZerkerBarb(Barbarian):
     def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: MapAssistApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):

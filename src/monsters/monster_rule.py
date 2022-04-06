@@ -28,23 +28,19 @@ class MonsterRule:
             m_types = monster["type"].split(", ") if type(monster["type"]) is str else []
             if self.names is not None and any(monster["name"].startswith(startstr) for startstr in self.names):
                 rules_met += 1
-                print("    names met")
             if self.monster_types is not None:
                 for monster_type in self.monster_types:
                     if any(monster_type == mtype for mtype in m_types):
                         rules_met += 1
                         break
-                print("    monster_types met")
-            # Not working corectly at the moment
+            # Not working corectly at the moment, only use for conviction
             if self.auras is not None:
                 for aura in self.auras:
                     if any(aura in state for state in monster["state_strings"]):
                         rules_met += 1
                         break
-                print("    auras met")
             if self.boss_id is not None and "boss_id" in monster and self.boss_id == monster["boss_id"]:
                 rules_met += 1
-                print("    boss_id met")
             if self.mob_number is not None and "mob_number" in monster and self.mob_number == monster["mob_number"]:
                 rules_met += 1
         score = rules_met + min_score if rules_met > 0 else 0
@@ -52,5 +48,3 @@ class MonsterRule:
             print(f"Monster {monster['name']} ({monster['id']}) scored {score} with {rules_met} rules met")
         return score
         
-
-

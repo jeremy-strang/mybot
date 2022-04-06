@@ -10,7 +10,7 @@ from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import wait, is_in_roi, points_equal
-from utils.monsters import CHAMPS_UNIQUES
+from monsters import CHAMPS_UNIQUES
 import time
 from pathing import OldPather, Location
 import math

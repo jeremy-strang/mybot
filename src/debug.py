@@ -43,7 +43,7 @@ from main import on_exit
 from utils.custom_mouse import mouse
 from utils.misc import wait
 from obs import ObsRecorder
-from utils.monsters import sort_and_filter_monsters
+from monsters import sort_and_filter_monsters
 pp = pprint.PrettyPrinter(depth=6)
 
 if __name__ == "__main__":

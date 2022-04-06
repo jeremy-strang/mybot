@@ -23,7 +23,7 @@ from ocr import Ocr
 
 from api.mapassist import MapAssistApi
 from obs import ObsRecorder
-from utils.monsters import CHAMPS_UNIQUES, get_unlooted_monsters
+from monsters import CHAMPS_UNIQUES, get_unlooted_monsters
 
 class IChar:
     _CrossGameCapabilities: Union[None, CharacterCapabilities] = None

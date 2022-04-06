@@ -9,7 +9,7 @@ from pathing import OldPather
 from logger import Logger
 from screen import Screen
 from utils.misc import rotate_vec, unit_vector, wait, is_in_roi
-from utils.monsters import get_unlooted_monsters, CHAMPS_UNIQUES
+from monsters import get_unlooted_monsters, CHAMPS_UNIQUES
 from constants import Roi
 import time
 from pathing import OldPather, Location

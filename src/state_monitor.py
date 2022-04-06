@@ -11,7 +11,7 @@ from config import Config
 from logger import Logger
 import threading
 from utils.misc import is_in_roi, kill_thread
-from utils.monsters import sort_and_filter_monsters, score_monster
+from monsters import sort_and_filter_monsters, score_monster
 import time
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
