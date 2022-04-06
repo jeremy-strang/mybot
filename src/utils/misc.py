@@ -230,7 +230,7 @@ def cluster_nodes(nodes, max_cluster_ct = None):
         x = 0
         y += 1
     features[0, 0:-1, ...] = features[0, 1:, ...]
-    cluster_count = int(features.size / 3000)
+    cluster_count = int(features.size / 4200)
     if max_cluster_ct is not None:
         cluster_count = min(max_cluster_ct, cluster_count)
     while features.size > 2048:

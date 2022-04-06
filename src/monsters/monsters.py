@@ -33,18 +33,20 @@ def sort_and_filter_monsters(data,
     def _filter_check(m):
         if ignore_dead and m["mode"] == 12:
             return False
-        if boundary and not is_in_roi(boundary, m["position"] - data["area_origin"]):
+        if boundary is not None and not is_in_roi(boundary, m["position"] - data["area_origin"]):
             return False
-        if rules and len(rules) > 0 and score_monster(m, rules) <= min_score:
+        if rules is not None and len(rules) > 0 and score_monster(m, rules) <= min_score:
             return False
-        if ignore and len(ignore) > 0 and score_monster(m, ignore) > 0:
+        if ignore is not None and len(ignore) > 0 and score_monster(m, ignore) > 0:
             return False
         return True
 
     if data is not None:
+        m0 = len(data["monsters"])
         monsters = list(filter(_filter_check, data["monsters"]))
         if rules and len(rules) > 0:
             monsters.sort(key=lambda m: score_monster(m, rules), reverse=True)
+        print(f"    Filtered monsters from {m0} to {len(monsters)}")
     return monsters
 
 def get_unlooted_monsters(api: MapAssistApi, rules: list[MonsterRule], looted_monsters: set, boundary=None, max_distance=100) -> list[dict]:
