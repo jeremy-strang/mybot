@@ -1,13 +1,39 @@
+RUNES = [
+    "Zod Rune",
+    "Cham Rune",
+    "Jah Rune",
+    "Ber Rune",
+    "Sur Rune",
+    "Lo Rune",
+    "Ohm Rune",
+    "Vex Rune",
+    "Gul Rune",
+    "Ist Rune",
+    "Mal Rune",
+    "Um Rune",
+    "Pul Rune",
+]
+
+EXACT_NAMES = [
+    "Token of Absolution",
+    "Topaz",
+    "Amethyst",
+]
+
 
 def get_pickit_priority(item: dict):
+    result = 0
     if item and type(item) is dict:
         name = "" + str(item["name"])
-        for rune in ["Zod", "Cham", "Jah", "Ber", "Sur", "Lo", "Ohm", "Vex", "Gul", "Ist", "Mal", "Um", "Pul"]:
+        if name == "ItemNotFound" and item["hash_string"]:
+            name = item["hash_string"][0:item["hash_string"].find("/")]
+        for rune in RUNES:
             rune_full = rune + " Rune"
             if name == rune_full or name.lower().replace(" ", "").startswith(rune_full.lower().replace(" ", "")):
-                return 2
-        if name == "Topaz" or name.lower().replace(" ", "") == "topaz":
-            return 1
-        if name == "Amethyst" or name.lower().replace(" ", "") == "amethyst":
-            return 1
-    return 0
+                result = 2
+                break
+        for n in EXACT_NAMES:
+            if name == n or name.lower().replace(" ", "") == n.lower().replace(" ", ""):
+                result = 1
+                break
+    return result

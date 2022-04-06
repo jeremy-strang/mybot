@@ -120,6 +120,7 @@ if __name__ == "__main__":
 
                 # pickit2.pick_up_items(False)
                 ui_manager.stash_all_items(4, item_finder, False)
+                # ui_manager.throw_out_junk(item_finder)
                 # item = pickit2._next_item()
                 # pather.move_mouse_to_item(item)
 

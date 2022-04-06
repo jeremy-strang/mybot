@@ -143,6 +143,7 @@ namespace MapAssist.MyBot
                 flags = item.ItemData.ItemFlags.ToString(),
                 quality = item.ItemData.ItemQuality.ToString(),
                 name = Items.GetItemName(item),
+                hash_string = item.HashString ?? "",
                 base_name = item.ItemBaseName,
                 is_hovered = item.IsHovered,
                 item_mode = item.ItemMode.ToString(),

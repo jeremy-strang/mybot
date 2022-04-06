@@ -380,7 +380,7 @@ class UiManager():
                 return True
         return False
 
-    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None, roi = None) -> bool:
+    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None) -> bool:
         """
         Check if an item should be kept, the item should be hovered and in own inventory when function is called
         :param item_finder: ItemFinder to check if item is in pickit
@@ -390,11 +390,13 @@ class UiManager():
         """
 
         if inv_pos is not None and self._api.data:
-            data = self._api.data
-            item = self._api.find_item_by_position(inv_pos, "inventory_items")
-            if item and get_pickit_priority(item) > 0:
-                Logger.debug(f"    Keeping item '{item['name']}' based on memory data")
-                return [Item(center, item["name"], 1)]
+            mem_items = []
+            for item in self._api.find_items_by_position(inv_pos, "inventory_items"):
+                if (item) and get_pickit_priority(item) > 0:
+                    Logger.info(f"    Keeping item '{item['name']}' (ID: {item['id']}) based on memory data")
+                    mem_items.append(Item(center, item["name"], 1))
+            if len(mem_items) > 0:
+                return [mem_items[0]]
 
         wait(0.2, 0.3)
         _, w, _ = img.shape
@@ -512,16 +514,19 @@ class UiManager():
         Stashing all items in inventory. Stash UI must be open when calling the function.
         :param num_loot_columns: Number of columns used for loot from left
         """
-        Logger.debug("Searching for inventory gold btn...")
-        # Move cursor to center
-        x, y = self._screen.convert_abs_to_monitor((0, 0))
-        mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
-        # Wait till gold btn is found
-        gold_btn = self._template_finder.search_and_wait("INVENTORY_GOLD_BTN", roi=self._config.ui_roi["gold_btn"], time_out=20, normalize_monitor=True)
-        if not gold_btn.valid:
-            Logger.error("Could not determine to be in stash menu. Continue...")
-            return
-        Logger.debug("Found inventory gold btn")
+        if self._api.data and self._api.data["stash_open"]:
+            Logger.debug("    Detected stash menu using memory")
+        else:
+            Logger.debug("    Could not detect stash menu from memory, searching for inventory gold btn...")
+            # Move cursor to center
+            x, y = self._screen.convert_abs_to_monitor((0, 0))
+            mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
+            # Wait till gold btn is found
+            gold_btn = self._template_finder.search_and_wait("INVENTORY_GOLD_BTN", roi=self._config.ui_roi["gold_btn"], time_out=20, normalize_monitor=True)
+            if not gold_btn.valid:
+                Logger.error("        Could not determine to be in stash menu. Continue...")
+                return
+            Logger.debug("       Found inventory gold btn")
         if not gamble:
             # stash gold
             if self._config.char["stash_gold"]:
@@ -578,6 +583,7 @@ class UiManager():
                 wait(1.2, 1.4)
                 hovered_item = self._screen.grab()
                 found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=center_m)
+                Logger.debug(f"    Keeping item found at position {column}, {row}...")
                 if len(found_items) > 0:
                     keyboard.send('ctrl', do_release=False)
                     wait(0.2, 0.25)
@@ -590,7 +596,7 @@ class UiManager():
                     # check the _keep_item again. In case stash is full we will still find the same item
                     wait(0.3)
                     did_stash_test_img = self._screen.grab()
-                    if len(self._keep_item(item_finder, did_stash_test_img, False, inv_pos=(column, row), center=center_m)) > 0:
+                    if len(self._keep_item(item_finder, did_stash_test_img, False)) > 0:
                         Logger.debug("Wanted to stash item, but its still in inventory. Assumes full stash. Move to next.")
                         break
                     else:
