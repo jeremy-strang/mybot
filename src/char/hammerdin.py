@@ -519,46 +519,86 @@ class Hammerdin(IChar):
             ((142,  92), Roi.TRAV_FULL)
         ]
         for tup in roi_tups:
-            game_state = StateMonitor(rules, self._api, unique_id=-1, many=True, boundary=tup[1])
-            if len(game_state._targets) > 0:
-                self._pather.traverse_walking(tup[0], self, time_out=3)
-                self._cast_hammers((self._cast_duration - 0.01) * 4)
-                self._kill_mobs_walking(game_state, time_out=15)
-            game_state.stop()
+            self._pather.traverse_walking(tup[0], self, time_out=4)
+            self._cast_hammers((self._cast_duration - 0.01) * 4)
+            self._kill_mobs_walking2(rules, time_out=10)
+            self.post_attack()
             for _ in range(2):
                 self.move(self._screen.convert_world_to_monitor((153, 94), self._api.data["player_pos_area"], True), force_move=True)
         return True
-    
-    def _kill_mobs_walking(self, game_state: StateMonitor, time_out = 60) -> bool:
+
+    def _kill_mobs_walking2(self,
+                  prioritize: list[MonsterRule],
+                  ignore: list[MonsterRule] = None,
+                  time_out: float = 40.0,
+                  boundary: Tuple = None,
+                  reposition_pos = None,
+                  reposition_time: float = 7.0
+                ) -> bool:
         start = time.time()
         last_move = start
         elapsed = 0
-        while elapsed < time_out and game_state._dead == 0 and game_state._target is not None:
-            if not game_state._ready:
-                wait(0.1)
-            else:
-                target_pos = game_state._target_pos
-                target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
-                if time.time() - last_move > 7.0:
-                    Logger.debug("Stood in one place too long, repositioning")
-                    self.reposition(target_pos)
-                    last_move = time.time()
-                elif game_state._dist > 6:
-                    move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
-                    move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
-                    if self._do_pre_move:
-                        self.pre_move()
-                    self.move(move_pos_m, force_move=True)
-                    last_move = time.time()
-                num_targets = len(game_state._targets)
-                if num_targets > 0:
-                    Logger.debug(f"    Casting hammers, current target count: {num_targets}")
-                    keyboard.send(self._skill_hotkeys["concentration"])
-                    wait(0.03, 0.05)
-                    self._cast_hammers((self._cast_duration - 0.01) * 3)
-                self.post_attack()
+        monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
+        if len(monsters) == 0: return True
+        Logger.debug(f"Beginning combat against {len(monsters)}...")
+        while elapsed < time_out and len(monsters) > 0:
+            data = self._api.get_data()
+            if data:
+                for monster in monsters:
+                    monster = self._api.find_monster(monster["id"])
+                    if monster:
+                        monster_start = time.time()
+                        if time.time() - last_move > reposition_time and reposition_pos is not None:
+                            Logger.debug("    Stood in one place too long, repositioning")
+                            self._pather.traverse_walking(reposition_pos, self, time_out = 3.0)
+                            last_move = time.time()
+                        else:
+                            while monster and monster["dist"] > 3 and time.time() - monster_start < 5.0:
+                                Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
+                                self._pather.move_to_monster(self, monster)
+                                last_move = time.time()
+                                monster = self._api.find_monster(monster["id"])
+                            if monster and monster["dist"] <= 3:
+                                keyboard.send(self._skill_hotkeys["concentration"])
+                                wait(0.03, 0.05)
+                                self._cast_hammers((self._cast_duration - 0.01) * 3)
+            wait(0.1)
+            monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
             elapsed = time.time() - start
+        self.post_attack()
+        Logger.debug(f"    Finished killing mobs, combat took {elapsed} sec")
         return True
+  
+    # def _kill_mobs_walking(self, game_state: StateMonitor, time_out = 60) -> bool:
+    #     start = time.time()
+    #     last_move = start
+    #     elapsed = 0
+    #     while elapsed < time_out and game_state._dead == 0 and game_state._target is not None:
+    #         if not game_state._ready:
+    #             wait(0.1)
+    #         else:
+    #             target_pos = game_state._target_pos
+    #             target_pos = [target_pos[0]-9.5, target_pos[1]-39.5]
+    #             if time.time() - last_move > 7.0:
+    #                 Logger.debug("Stood in one place too long, repositioning")
+    #                 self.reposition(target_pos)
+    #                 last_move = time.time()
+    #             elif game_state._dist > 6:
+    #                 move_pos_screen = self._old_pather._adjust_abs_range_to_screen([target_pos[0], target_pos[1]])
+    #                 move_pos_m = self._screen.convert_abs_to_monitor(move_pos_screen)
+    #                 if self._do_pre_move:
+    #                     self.pre_move()
+    #                 self.move(move_pos_m, force_move=True)
+    #                 last_move = time.time()
+    #             num_targets = len(game_state._targets)
+    #             if num_targets > 0:
+    #                 Logger.debug(f"    Casting hammers, current target count: {num_targets}")
+    #                 keyboard.send(self._skill_hotkeys["concentration"])
+    #                 wait(0.03, 0.05)
+    #                 self._cast_hammers((self._cast_duration - 0.01) * 3)
+    #             self.post_attack()
+    #         elapsed = time.time() - start
+    #     return True
 
     def _kill_mobs(self, names: list[str] = None, ignore_names: list[str] = None, boundary: list[int] = None, time_out = 60) -> bool:
         start = time.time()
