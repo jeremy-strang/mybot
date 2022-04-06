@@ -57,7 +57,7 @@ class Screen:
     def convert_screen_to_abs(self, screen_coord: Tuple[float, float]) -> Tuple[float, float]:
         return (screen_coord[0] - (self._monitor_roi["width"] // 2), screen_coord[1] - (self._monitor_roi["height"] // 2))
 
-    def convert_world_to_monitor(self, pos_world: Tuple[float, float], player_pos_world: Tuple[float, float], clip_input: bool = False) -> Tuple[float, float]:
+    def convert_area_to_monitor(self, pos_world: Tuple[float, float], player_pos_world: Tuple[float, float], clip_input: bool = False) -> Tuple[float, float]:
         pos_abs = world_to_abs(pos_world, player_pos_world)
         return self.convert_abs_to_monitor(pos_abs, clip_input)
 

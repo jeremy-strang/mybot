@@ -518,13 +518,15 @@ class Hammerdin(IChar):
             ((124, 109), Roi.TRAV_CORNER),
             ((142,  92), Roi.TRAV_FULL)
         ]
-        for tup in roi_tups:
-            self._pather.traverse_walking(tup[0], self, time_out=4)
-            self._cast_hammers((self._cast_duration - 0.01) * 4)
-            self._kill_mobs_walking2(rules, time_out=10)
-            self.post_attack()
-            for _ in range(2):
-                self.move(self._screen.convert_world_to_monitor((153, 94), self._api.data["player_pos_area"], True), force_move=True)
+        for pos_area, roi in roi_tups:
+            monsters = sort_and_filter_monsters(self._api.data, rules, None, roi, ignore_dead=True)
+            if len(monsters) > 0:
+                self._pather.traverse_walking(pos_area, self, time_out=4)
+                self._cast_hammers((self._cast_duration - 0.01) * 4)
+                self._kill_mobs_walking2(rules, time_out=10, boundary=roi)
+                self.post_attack()
+        for _ in range(2):
+            self.move(self._screen.convert_area_to_monitor((153, 94), self._api.data["player_pos_area"], True), force_move=True)
         return True
 
     def _kill_mobs_walking2(self,
@@ -533,7 +535,7 @@ class Hammerdin(IChar):
                   time_out: float = 40.0,
                   boundary: Tuple = None,
                   reposition_pos = None,
-                  reposition_time: float = 7.0
+                  reposition_time: float = 7.0,
                 ) -> bool:
         start = time.time()
         last_move = start
@@ -542,26 +544,24 @@ class Hammerdin(IChar):
         if len(monsters) == 0: return True
         Logger.debug(f"Beginning combat against {len(monsters)}...")
         while elapsed < time_out and len(monsters) > 0:
-            data = self._api.get_data()
-            if data:
-                for monster in monsters:
-                    monster = self._api.find_monster(monster["id"])
-                    if monster:
-                        monster_start = time.time()
-                        if time.time() - last_move > reposition_time and reposition_pos is not None:
-                            Logger.debug("    Stood in one place too long, repositioning")
-                            self._pather.traverse_walking(reposition_pos, self, time_out = 3.0)
+            for monster in monsters:
+                monster = self._api.find_monster(monster["id"])
+                if monster:
+                    monster_start = time.time()
+                    if time.time() - last_move > reposition_time and reposition_pos is not None:
+                        Logger.debug("    Stood in one place too long, repositioning")
+                        self._pather.traverse_walking(reposition_pos, self, time_out = 3.0)
+                        last_move = time.time()
+                    else:
+                        while monster and monster["dist"] > 3 and time.time() - monster_start < 5.0:
+                            Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
+                            self._pather.move_to_monster(self, monster)
                             last_move = time.time()
-                        else:
-                            while monster and monster["dist"] > 3 and time.time() - monster_start < 5.0:
-                                Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
-                                self._pather.move_to_monster(self, monster)
-                                last_move = time.time()
-                                monster = self._api.find_monster(monster["id"])
-                            if monster and monster["dist"] <= 3:
-                                keyboard.send(self._skill_hotkeys["concentration"])
-                                wait(0.03, 0.05)
-                                self._cast_hammers((self._cast_duration - 0.01) * 3)
+                            monster = self._api.find_monster(monster["id"])
+                        if monster and monster["dist"] <= 3:
+                            keyboard.send(self._skill_hotkeys["concentration"])
+                            wait(0.03, 0.05)
+                            self._cast_hammers((self._cast_duration - 0.01) * 3)
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
             elapsed = time.time() - start
