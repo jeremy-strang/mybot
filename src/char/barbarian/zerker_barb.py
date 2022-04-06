@@ -129,7 +129,6 @@ class ZerkerBarb(Barbarian):
 
     def kill_countess(self) -> bool:
         rules = [
-            MonsterRule(names=["DarkStalker"]),
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
         ]
         self._kill_mobs2(rules, time_out=20, do_howl=True)

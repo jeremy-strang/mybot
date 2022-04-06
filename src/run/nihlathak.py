@@ -72,10 +72,13 @@ class Nihlathak:
         is_barb = "_barb" in self._char._char_config["type"]
         if not self._pather.wait_for_location("HallsOfPain"): return False
         
-        self._char.pre_travel(do_pre_buff, force_switch_back=True)
-        
+        self._char.pre_travel(do_pre_buff)
+
         if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True):
-            if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True, jump_distance=8): return False
+            if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True, jump_distance=8):
+                return False
+
+        self._char.post_travel()
 
         self._pather.click_poi("Halls of Vaught", offset=(35, -39.5))
         if not self._pather.wait_for_location("HallsOfVaught"):
@@ -88,7 +91,6 @@ class Nihlathak:
         self._go_to_nihlathak(50)
         if self._check_dangerous_monsters(): return False
         if is_barb: self._char.cast_aoe("howl")
-        self._char.post_travel(skip_weapon_swap=True)
 
         if not self._go_to_nihlathak(15): return False
         if self._check_dangerous_monsters(): return False

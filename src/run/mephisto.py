@@ -52,19 +52,15 @@ class Mephisto:
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         if not self._pather.wait_for_location("DuranceOfHateLevel2"): return False
-        if do_pre_buff:
-            self._char.pre_buff()
+        if not self._pather.wait_for_location("HallsOfPain"): return False
+        
+        self._char.pre_travel(do_pre_buff)
 
-        if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
-            self._char.switch_weapon()
-
-        if not self._pather.traverse("Durance of Hate Level 3", self._char,verify_location=True): return False
+        if not self._pather.traverse("Durance of Hate Level 3", self._char, verify_location=True): return False
         if not self._pather.go_to_area("Durance of Hate Level 3", "DuranceOfHateLevel3"): return False
         if not self._pather.traverse((69, 54), self._char, verify_location=True): return False
 
-        if self._config.char["teleport_weapon_swap"]:
-            self._char.switch_weapon()
-            self._char.verify_active_weapon_tab()
+        self._char.post_travel()
 
         self._char.kill_mephisto()
         picked_up_items = self._pickit.pick_up_items(self._char)

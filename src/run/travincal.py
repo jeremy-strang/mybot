@@ -59,9 +59,7 @@ class Travincal:
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         tele_swap = self._config.char["teleport_weapon_swap"]
-        # Kill Council
-        if not self._template_finder.search_and_wait(["TRAV_0", "TRAV_1", "TRAV_20"], threshold=0.65, time_out=20).valid:
-            return False
+        if not self._pather.wait_for_location("Travincal"): return False
         if do_pre_buff:
             self._char.pre_buff(switch_back=not tele_swap)
 
