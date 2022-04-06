@@ -488,12 +488,12 @@ class Hammerdin(IChar):
                             self._pather.traverse(reposition_pos, self, time_out = 3.0)
                             last_move = time.time()
                         else:
-                            while monster and monster["dist"] > 3.5 and time.time() - monster_start < 5.0:
+                            while monster and monster["dist"] > 3 and time.time() - monster_start < 5.0:
                                 Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
                                 self._pather.move_to_monster(self, monster)
                                 last_move = time.time()
                                 monster = self._api.find_monster(monster["id"])
-                            if monster and monster["dist"] <= 3.5:
+                            if monster and monster["dist"] <= 3:
                                 keyboard.send(self._skill_hotkeys["concentration"])
                                 wait(0.04, 0.06)
                                 if not self.tele_stomp_monster("blessed_hammer", 3.0, monster, max_distance=5):
