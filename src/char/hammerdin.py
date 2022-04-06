@@ -466,7 +466,7 @@ class Hammerdin(IChar):
                   prioritize: list[MonsterRule],
                   ignore: list[MonsterRule] = None,
                   time_out: float = 40.0,
-                  boundary: Tuple[int, int, int, int] = None,
+                  boundary: Tuple = None,
                   reposition_pos = None,
                   reposition_time: float = 7.0
                 ) -> bool:
