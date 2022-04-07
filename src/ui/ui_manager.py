@@ -392,7 +392,7 @@ class UiManager():
         if inv_pos is not None and self._api.data:
             mem_items = []
             for item in self._api.find_items_by_position(inv_pos, "inventory_items"):
-                if (item) and get_pickit_priority(item) > 0:
+                if (item) and get_pickit_priority(item) > 0 and not "Potion" in item["name"]:
                     Logger.info(f"    Keeping item '{item['name']}' (ID: {item['id']}) based on memory data")
                     mem_items.append(Item(center, item["name"], 1))
             if len(mem_items) > 0:

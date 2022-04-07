@@ -180,20 +180,20 @@ class Pather:
                 self.traverse(item["position_area"], char, dest_distance=4, time_out=time_out / 2)
             else:
                 self.walk_to_item(item["id"], 3)
+            item = self._api.find_item(item["id"])
 
         while item and time.time() - start < time_out:
             self.move_mouse_to_item(item)
             wait(0.03, 0.05)
-            item = self._api.find_item(item['id'])
+            item = self._api.find_item(item["id"])
             if item:
-                if item["is_hovered"]:
-                    Logger.debug(f"    Clicking item {item['name']} (ID: {item['id']}), confirmed that it was hovered")
+                confirmed = item["is_hovered"]
                 mouse.click(button="left")
                 wait(0.6)
-                if self._api.find_item(item['id'], "inventory_items"):
-                    Logger.debug(f"    Verified item {item['name']} (ID: {item['id']}) and confirmed that it is picked up")
+                if confirmed:
+                    Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it was hovered")
                     return True
-                item = self._api.find_item(item['id'])
+                item = self._api.find_item(item["id"])
         
         # If we failed to pick it up, try to teleport to it
         if item and char.capabilities.can_teleport_natively:

@@ -212,6 +212,9 @@ namespace MapAssist.MyBot
                             return new { key = key.ToString(), value };
                         }).ToList();
 
+                        var belt_health_pots = 0;
+                        var belt_mana_pots = 0;
+                        var belt_rejuv_pots = 0;
                         dynamic belt0 = null;
                         dynamic belt1 = null;
                         dynamic belt2 = null;
@@ -220,6 +223,19 @@ namespace MapAssist.MyBot
                         {
                             if (item != null)
                             {
+                                if (item.ItemBaseName.Contains("Heal"))
+                                {
+                                    belt_health_pots++;
+                                }
+                                else if (item.ItemBaseName.Contains("Mana"))
+                                {
+                                    belt_mana_pots++;
+                                }
+                                else if (item.ItemBaseName.Contains("Rejuv"))
+                                {
+                                    belt_rejuv_pots++;
+                                }
+
                                 if (item.Position.X == 0) {
                                     belt0 = new
                                     {
@@ -255,9 +271,6 @@ namespace MapAssist.MyBot
                         }
                         var flattened_belt = new List<dynamic>() { belt0, belt1, belt2, belt3 };
 
-                        var belt_health_pots = 0;
-                        var belt_mana_pots = 0;
-                        var belt_rejuv_pots = 0;
                         if (_gameData.BeltItems != null)
                         {
                             foreach (var item in _gameData.BeltItems)

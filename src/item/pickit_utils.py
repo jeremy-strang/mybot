@@ -105,7 +105,7 @@ UNIQUE_ITEMS = {
     ItemBase.OrnatePlate: 0,
     ItemBase.WireFleece: 0,
     ItemBase.KrakenShell: 0,
-    ItemBase.BalrogSkin: 0,
+    ItemBase.BalrogSkin: 1,
     ItemBase.SacredArmor: 1,
     ItemBase.Cuirass: 0,
     ItemBase.TemplarCoat: 1,
@@ -152,8 +152,8 @@ UNIQUE_ITEMS = {
     ItemBase.BoneVisage: 1,
     ItemBase.SpiredHelm: 1,
     ItemBase.DemonHead: 1,
-    ItemBase.Corona: 1,
-    ItemBase.Diadem: 1,
+    ItemBase.Corona: 2,
+    ItemBase.Diadem: 2,
     ItemBase.Shako: 1,
     ItemBase.Tiara: 1,
     ItemBase.Casque: 0,
@@ -167,12 +167,8 @@ UNIQUE_ITEMS = {
     ItemBase.FuryVisor: 1,
     ItemBase.BloodSpirit: 0,
     ItemBase.TotemicMask: 0,
-    ItemBase.EarthSpirit: 0,
+    ItemBase.EarthSpirit: 1,
     ItemBase.SkySpirit: 1,
-    ItemBase.Amulet: 1,
-    ItemBase.Ring: 1,
-    ItemBase.Jewel: 1,
-    ItemBase.GrandCharm: 1,
     ItemBase.SuccubusSkull: 1,
     ItemBase.BloodlordSkull: 1,
     ItemBase.HierophantTrophy: 1,
@@ -282,7 +278,7 @@ MAGIC_ITEMS = {
 }
 
 RARE_ITEMS = {
-    ItemBase.Jewel: 1,
+    ItemBase.Jewel: 0,
 }
 
 SUPERIOR_ITEMS = {

@@ -70,9 +70,10 @@ class Pit:
         self._char.post_travel()
 
         picked_up_items = 0
-        pit_lvl2 = self._pather.get_entity_coords_from_str("Pit Level 2", "points_of_interest", False)
+        self._ui_manager.disable_no_pickup()
+        pickit_func = lambda: self._pickit.pick_up_items(self._char, skip_nopickup=True)
 
-        pickit_func = lambda: self._pickit.pick_up_items(self._char)
+        pit_lvl2 = self._pather.get_entity_coords_from_str("Pit Level 2", "points_of_interest", False)
         picked_up_items += self._char.clear_zone(pit_lvl2, pickit_func)
 
         if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
@@ -87,5 +88,7 @@ class Pit:
 
         self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
         self._pather.activate_poi(coords, "PitLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False) 
-        picked_up_items = self._pickit.pick_up_items(self._char)  
+        picked_up_items = self._pickit.pick_up_items(self._char)
+
+        self._ui_manager.enable_no_pickup()
         return (Location.A1_PIT_END, picked_up_items)

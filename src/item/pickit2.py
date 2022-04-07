@@ -90,10 +90,21 @@ class Pickit2:
             last_id = item["id"]
             Logger.info(f"    Picking up {item['name']} (ID: {item['id']}), quality: {item['quality']}...")
             is_potion = "Potion" in item["name"]
+            click_time_out = 6
+            if is_potion:
+                click_time_out = 2
+            elif get_pickit_priority(item) > 1:
+                click_time_out = 15
             if self._pather.click_item(item, self._char):
-                picked_up_items.append(item)
                 if is_potion:
-                    self._belt_manager.picked_up_pot(item["name"])
+                    if "Rejuv"in item["name"]:
+                        self._belt_manager.picked_up_pot("rejuv")
+                    if "Heal"in item["name"]:
+                        self._belt_manager.picked_up_pot("health")
+                    if "Mana"in item["name"]:
+                        self._belt_manager.picked_up_pot("mana")
+                else:
+                    picked_up_items.append(item)
             item = self._next_item(potion_needs, skipped_ids)
 
         if disabled_nopickup:
