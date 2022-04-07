@@ -27,6 +27,21 @@ namespace MapAssist.Helpers
 {
     public static class GameMemory
     {
+        private static readonly HashSet<Area> _towns = new HashSet<Area>() {
+            Area.RogueEncampment,
+            Area.LutGholein,
+            Area.KurastDocks,
+            Area.ThePandemoniumFortress,
+            Area.Harrogath
+        };
+
+        private static readonly HashSet<Item> _junkItems = new HashSet<Item>()
+        {
+            Item.Gold,
+            Item.Arrows,
+            Item.Bolts,
+        };
+
         private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
         private static Dictionary<int, uint> _lastMapSeeds = new Dictionary<int, uint>();
         private static Dictionary<int, bool> _playerMapChanged = new Dictionary<int, bool>();
@@ -196,29 +211,6 @@ namespace MapAssist.Helpers
                 var monsterList = rawMonsterUnits.Where(x => x.UnitType == UnitType.Monster && x.IsMonster).ToArray();
                 var mercList = rawMonsterUnits.Where(x => x.UnitType == UnitType.Monster && x.IsMerc).ToArray();
 
-                //var necroSkel = 0;
-                //var necroGol = 0;
-                //var necroMage = 0;
-                /*
-                foreach (var obj in rawMonsterUnits)
-                {
-                    if (obj.TxtFileNo == 363)
-                    {
-                        necroSkel += 1;
-                    }
-                    if (obj.TxtFileNo == 364)
-                    {
-                        necroMage += 1;
-                    }
-                    if (obj.TxtFileNo == 289)
-                    {
-                        necroGol += 1;
-                    }
-
-                    //Console.WriteLine(obj.TxtFileNo);
-                }
-                */
-
                 // Objects
                 var rawObjectUnits = GetUnits<UnitObject>(UnitType.Object, true);
                 foreach (var obj in rawObjectUnits)
@@ -231,13 +223,16 @@ namespace MapAssist.Helpers
                 var rawItemUnits = new List<UnitItem>();
                 foreach (var item in GetUnits<UnitItem>(UnitType.Item, true).Where(x => x.UnitId < uint.MaxValue).ToArray())
                 {
-                    if (Items.ItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId)) continue;
+                    if (!_towns.Contains(levelId) && item.ItemModeMapped != ItemModeMapped.Ground) continue;
+                    if (_junkItems.Contains(item.Item)) continue;
 
-                    if (_playerMapChanged[_currentProcessId] && item.IsAnyPlayerHolding && item.Item != Item.HoradricCube && !Items.ItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId))
-                    {
-                        Items.ItemUnitIdsToSkip[_currentProcessId].Add(item.UnitId);
-                        continue;
-                    }
+                    //if (Items.ItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId)) continue;
+
+                    //if (_playerMapChanged[_currentProcessId] && item.IsAnyPlayerHolding && item.Item != Item.HoradricCube && !Items.ItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId))
+                    //{
+                    //    Items.ItemUnitIdsToSkip[_currentProcessId].Add(item.UnitId);
+                    //    continue;
+                    //}
 
                     if (item.IsPlayerOwned && item.IsIdentified && !Items.InventoryItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId))
                     {
@@ -273,10 +268,10 @@ namespace MapAssist.Helpers
                         }
                     }
 
-                    if (item.IsValidItem && ((item.IsDropped && !item.IsIdentified) || (item.IsIdentified && item.IsInStore) || enableInventoryFilterCheck))
-                    {
-                        Items.LogItem(item, _currentProcessId);
-                    }
+                    //if (item.IsValidItem && ((item.IsDropped && !item.IsIdentified) || (item.IsIdentified && item.IsInStore) || enableInventoryFilterCheck))
+                    //{
+                    Items.LogItem(item, _currentProcessId);
+                    //}
 
                     if (item.Item == Item.HoradricCube)
                     {

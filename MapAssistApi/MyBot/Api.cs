@@ -45,6 +45,14 @@ namespace MapAssist.MyBot
         private double _mercChicken = 0.0;
         private bool _disposed;
         private IBotConfig _config;
+        private HashSet<string> _townNames = new HashSet<string>()
+        {
+            "RogueEncampment",
+            "LutGholein",
+            "KurastDocks",
+            "ThePandemoniumFortress",
+            "Harrogath",
+        };
         private HashSet<Stat> _usefulStats = new HashSet<Stat>() {
             Stat.Strength,
             Stat.Energy,
@@ -105,12 +113,7 @@ namespace MapAssist.MyBot
 
         private bool IsInTown(string currentArea)
         {
-            if (currentArea == "RogueEncampment") return true;
-            if (currentArea == "LutGholein") return true;
-            if (currentArea == "KurastDocks") return true;
-            if (currentArea == "ThePandemoniumFortress") return true;
-            if (currentArea == "Harrogath") return true;
-            return false;
+            return _townNames.Contains(currentArea);
         }
 
         private List<StatKeyValuePair> GetItemStats(UnitItem item)
@@ -136,18 +139,24 @@ namespace MapAssist.MyBot
 
         private dynamic CleanItem(UnitItem item)
         {
-            var set_name = Items.GetSetName(item);
-            if (set_name == "Set") set_name = "";
-            var unique_name = Items.GetUniqueName(item);
-            if (unique_name == "Unique") unique_name = "";
-            
+            var unique_name = "";
+            var set_name = "";
+            if (item.ItemData.ItemQuality == ItemQuality.UNIQUE)
+            {
+                unique_name = Items.GetUniqueName(item);
+            }
+            else if (item.ItemData.ItemQuality == ItemQuality.SET)
+            {
+                set_name = Items.GetSetName(item);
+            }
+
             return new
             {
                 position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
                 id = item.UnitId,
                 flags = item.ItemData.ItemFlags,
                 flags_str = item.ItemData.ItemFlags.ToString(),
-                quality = item.ItemData.ItemQuality,
+                quality = item.ItemData.ItemQuality.ToString(),
                 name = Items.GetItemName(item),
                 hash_string = item.HashString ?? "",
                 base_name = item.ItemBaseName,
@@ -197,18 +206,48 @@ namespace MapAssist.MyBot
                             return new { key = key.ToString(), value };
                         }).ToList();
 
-                        var flattened_belt = new List<dynamic>();
+                        dynamic belt0 = null;
+                        dynamic belt1 = null;
+                        dynamic belt2 = null;
+                        dynamic belt3 = null;
                         foreach (var item in playerUnit.BeltItems.SelectMany(x => x).ToList())
                         {
                             if (item != null)
                             {
-                                flattened_belt.Add(new
+                                if (item.Position.X == 0) {
+                                    belt0 = new
+                                    {
+                                        name = "" + item.ItemBaseName,
+                                        hash_string = "" + item.HashString,
+                                    };
+                                }
+                                else if (item.Position.X == 1)
                                 {
-                                    name = "" + item.ItemBaseName,
-                                    hash_string = "" + item.HashString,
-                                });
+                                    belt1 = new
+                                    {
+                                        name = "" + item.ItemBaseName,
+                                        hash_string = "" + item.HashString,
+                                    };
+                                }
+                                else if (item.Position.X == 2)
+                                {
+                                    belt2 = new
+                                    {
+                                        name = "" + item.ItemBaseName,
+                                        hash_string = "" + item.HashString,
+                                    };
+                                }
+                                else if (item.Position.X == 3)
+                                {
+                                    belt3 = new
+                                    {
+                                        name = "" + item.ItemBaseName,
+                                        hash_string = "" + item.HashString,
+                                    };
+                                }
                             }
                         }
+                        var flattened_belt = new List<dynamic>() { belt0, belt1, belt2, belt3 };
 
                         var belt_health_pots = 0;
                         var belt_mana_pots = 0;
@@ -354,7 +393,7 @@ namespace MapAssist.MyBot
                             vendor_items,
                             equipped_items,
                             merc_items,
-                            items_logged = new List<dynamic>(),
+                            logged_items = new List<dynamic>(),
                             points_of_interest = new List<dynamic>(),
                             corpses,
                             player_corpse,
@@ -469,26 +508,26 @@ namespace MapAssist.MyBot
                             }
                         }
 
-                        foreach (ItemLogEntry item in _gameData.ItemLog)
-                        {
-                            msg.items_logged.Add(new
-                            {
-                                text = item.Text,
-                                hash = item.ItemHashString,
-                                position = new int[2] { (int)item.UnitItem.Position.X, (int)item.UnitItem.Position.Y },
-                                id = item.UnitItem.UnitId,
-                                flags = item.UnitItem.ItemData.ItemFlags.ToString(),
-                                quality = item.UnitItem.ItemData.ItemQuality.ToString(),
-                                name = Items.GetItemName(item.UnitItem),
-                                base_name = item.UnitItem.ItemBaseName,
-                                is_hovered = item.UnitItem.IsHovered,
-                                item_mode = item.UnitItem.ItemMode.ToString(),
-                                item_mode_mapped = item.UnitItem.ItemModeMapped.ToString(),
-                                stats = GetItemStats(item.UnitItem),
-                                is_identified = item.UnitItem.IsIdentified,
-                                inventory_page = item.UnitItem.ItemData.InvPage.ToString(),
-                            });
-                        }
+                        //foreach (ItemLogEntry item in _gameData.ItemLog)
+                        //{
+                        //    msg.logged_items.Add(new
+                        //    {
+                        //        text = item.Text,
+                        //        hash = item.ItemHashString,
+                        //        position = new int[2] { (int)item.UnitItem.Position.X, (int)item.UnitItem.Position.Y },
+                        //        id = item.UnitItem.UnitId,
+                        //        flags = item.UnitItem.ItemData.ItemFlags.ToString(),
+                        //        quality = item.UnitItem.ItemData.ItemQuality.ToString(),
+                        //        name = Items.GetItemName(item.UnitItem),
+                        //        base_name = item.UnitItem.ItemBaseName,
+                        //        is_hovered = item.UnitItem.IsHovered,
+                        //        item_mode = item.UnitItem.ItemMode.ToString(),
+                        //        item_mode_mapped = item.UnitItem.ItemModeMapped.ToString(),
+                        //        stats = GetItemStats(item.UnitItem),
+                        //        is_identified = item.UnitItem.IsIdentified,
+                        //        inventory_page = item.UnitItem.ItemData.InvPage.ToString(),
+                        //    });
+                        //}
 
                         return JsonConvert.SerializeObject(msg, formatting);
                     }

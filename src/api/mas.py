@@ -91,7 +91,7 @@ class MAS(Thread):
             "vendor_items": [],
             "equipped_items": [],
             "merc_items": [],
-            "items_logged": [],
+            "logged_items": [],
             "static_npcs": [],
             "map": None,
             "player_pos_world": None,
@@ -244,13 +244,13 @@ class MAS(Thread):
                 item["dist"] = math.dist(_data["player_pos_world"], item["position"])
             _data[item_list] = data[item_list]
 
-        for item in data["items_logged"]:
+        for item in data["logged_items"]:
             item_world_x = int(item["position"][0])
             item_world_y = int(item["position"][1])
             item["position"] = np.array([item_world_x, item_world_y])
             item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
             item["position_area"] = np.array([item_world_x - area_origin_x, item_world_y - area_origin_y])
             item["dist"] = math.dist(_data["player_pos_world"], item["position"])
-        _data["items_logged"] = data["items_logged"]
+        _data["logged_items"] = data["logged_items"]
 
         return _data

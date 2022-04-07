@@ -12,6 +12,7 @@ RUNES = [
     "Mal Rune",
     "Um Rune",
     "Pul Rune",
+    "Lem Rune"
 ]
 
 EXACT_NAMES = [
