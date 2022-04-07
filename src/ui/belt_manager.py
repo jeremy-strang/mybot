@@ -28,7 +28,7 @@ class BeltManager:
             "misc_super_healing_potion": "health",
             "misc_greater_healing_potion": "health",
             "misc_super_mana_potion": "mana",
-            "misc_greater_mana_potion": "mana"
+            "misc_greater_mana_potion": "mana",
         }
 
     def get_pot_needs(self):

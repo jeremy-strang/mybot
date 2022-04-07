@@ -98,11 +98,11 @@ class Pickit2:
             if self._pather.click_item(item, self._char):
                 if is_potion:
                     if "Rejuv"in item["name"]:
-                        self._belt_manager.picked_up_pot("rejuv")
+                        self._belt_manager.picked_up_pot("misc_super_mana_potion")
                     if "Heal"in item["name"]:
-                        self._belt_manager.picked_up_pot("health")
+                        self._belt_manager.picked_up_pot("misc_super_healing_potion")
                     if "Mana"in item["name"]:
-                        self._belt_manager.picked_up_pot("mana")
+                        self._belt_manager.picked_up_pot("misc_rejuvenation_potion")
                 else:
                     picked_up_items.append(item)
             item = self._next_item(potion_needs, skipped_ids)
