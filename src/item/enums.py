@@ -81,7 +81,7 @@ class BodyLoc:
     RightHandOnSwitch = "SWRARM" # Right-hand on switch
     LeftHandOnSwitch = "SWLARM" # Left-hand on switch
 
-class Item:
+class ItemBase:
     HandAxe = "HandAxe"
     Axe = "Axe"
     DoubleAxe = "DoubleAxe"
