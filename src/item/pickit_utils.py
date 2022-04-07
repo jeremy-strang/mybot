@@ -5,8 +5,8 @@ POTIONS = {
     ItemBase.RejuvenationPotion: 1,
     ItemBase.SuperHealingPotion: 1,
     ItemBase.SuperManaPotion: 1,
-    ItemBase.GreaterHealingPotion: 1,
-    ItemBase.GreaterManaPotion: 1,
+    ItemBase.GreaterHealingPotion: 0,
+    ItemBase.GreaterManaPotion: 0,
 }
 
 BASIC_ITEMS = {
@@ -38,14 +38,12 @@ BASIC_ITEMS = {
     ItemBase.LumRune: 0,
     ItemBase.KoRune: 0,
     ItemBase.FalRune: 0,
-
     ItemBase.LemRune: 1,
     ItemBase.PulRune: 1,
     ItemBase.UmRune: 1,
     ItemBase.MalRune: 1,
     ItemBase.IstRune: 1,
     ItemBase.GulRune: 1,
-
     ItemBase.VexRune: 2,
     ItemBase.OhmRune: 2,
     ItemBase.LoRune: 2,
@@ -69,8 +67,8 @@ BASIC_ITEMS = {
     ItemBase.FlawedRuby: 0,
     ItemBase.FlawedDiamond: 0,
 
-    ItemBase.Amethyst: 1,
-    ItemBase.Topaz: 1,
+    ItemBase.Amethyst: 0,
+    ItemBase.Topaz: 0,
     ItemBase.Sapphire: 0,
     ItemBase.Emerald: 0,
     ItemBase.Ruby: 0,
