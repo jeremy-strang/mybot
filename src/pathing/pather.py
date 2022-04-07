@@ -1,5 +1,6 @@
 from ast import Tuple
 import cv2
+from pytest import skip
 from utils.coordinates import world_to_abs
 import numpy as np
 import pyastar2d
@@ -170,13 +171,13 @@ class Pather:
         if monster:
             self.move_mouse_to_abs_pos(monster["position_abs"], monster["dist"])
     
-    def click_item(self, item: dict, char, time_out: float = 10.0):
+    def click_item(self, item: dict, char, time_out: float = 6.0, skip_traverse=False):
         start = time.time()
-        if item["dist"] > 3.0:
-            if not self._api.data["in_town"] and char.capabilities.can_teleport_natively:
-                self.traverse(item["position_area"], char, dest_distance=5)
+        if item and item["dist"] > 5.0 and not skip_traverse:
+            if item["dist"] > 30 and char.capabilities.can_teleport_natively:
+                self.traverse(item["position_area"], char, dest_distance=4, time_out=time_out / 2)
             else:
-                self.traverse_walking(item["position_area"], char, end_dist=5)
+                self.walk_to_item(item["id"], 3)
 
         while item and time.time() - start < time_out:
             self.move_mouse_to_item(item)
@@ -191,6 +192,16 @@ class Pather:
                     Logger.debug(f"    Verified item {item['name']} and confirmed that it is picked up")
                     return True
                 item = self._api.find_item(item['id'])
+        
+        # If we failed to pick it up, try to teleport to it
+        if item and char.capabilities.can_teleport_natively:
+            self.move_mouse_to_abs_pos(item["position_abs"], item["dist"])
+            char.pre_move()
+            mouse.click(button="right")
+            wait(char._cast_duration)
+            item = self._api.find_item(item['id'])
+            if item:
+                return self.click_item(item, char, 2.0, False)
         return False
 
     def move_to_monster(self, char, monster: dict) -> bool:
@@ -522,6 +533,13 @@ class Pather:
 
     def walk_to_monster(self, monster_id: int, time_out=10.0, step_size=4):
         dest = self._api.find_monster(monster_id)
+        if dest:
+            self.walk_to_position(dest["position_area"], time_out, step_size)
+            return True
+        return False
+
+    def walk_to_item(self, item_id: int, time_out=10.0, step_size=4):
+        dest = self._api.find_item(item_id)
         if dest:
             self.walk_to_position(dest["position_area"], time_out, step_size)
             return True
@@ -876,8 +894,7 @@ class Pather:
                         data = self._api.get_data()
                         hard_exit += 1
                         # seems like the data isnt loading in time here, just try again
-                        Logger.warning(
-                            f"Couldnt find endpoint: {end} trying one more time...")
+                        Logger.warning(f"Couldnt find endpoint: {end} trying one more time...")
                         char._cast_duration = tmp_duration
                         continue
                     Logger.warning(f"Couldnt find endpoint: {end}")
@@ -915,7 +932,6 @@ class Pather:
                 self._api._astar_current_path = decimation
 
                 for i in range(len(route_list)):
-                    # this is our new route node
                     node = np.array(route_list[i])
                     node_pos_w = [node[1], node[0]]
                     data = self._api.get_data()
@@ -933,7 +949,6 @@ class Pather:
                     char.move((node_pos_m[0], node_pos_m[1]), force_move=force)
 
                     if i > len(route_list)-4:
-                        # slow down on the last few jumps for accuracy, there might be a better way but ???
                         time.sleep(.4)
                 data = self._api.get_data()
                 player_pos = data['player_pos_area'] + data['player_offset']
@@ -943,7 +958,6 @@ class Pather:
                     char._cast_duration = tmp_duration
                     return True
                 elif not verify_location:
-                    Logger.debug(f"Traverse completed without verification ({round(recalc_dist, 2)} from destination)")
                     char._cast_duration = tmp_duration
                     return True
                 else:

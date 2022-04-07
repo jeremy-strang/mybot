@@ -347,7 +347,7 @@ class IChar:
     def hold_move(self, pos_monitor: Tuple[float, float], force_tp: bool = False, force_move: bool = False):
         mouse.move(*pos_monitor, delay_factor = [.02,.04])
 
-    def move(self, pos_monitor: Tuple[float, float], force_tp: bool = False, force_move: bool = False):
+    def move(self, pos_monitor: Tuple[float, float], force_tp: bool = False, force_move: bool = True):
         factor = self._config.advanced_options["pathing_delay_factor"]
         if self._skill_hotkeys["teleport"] and (force_tp or(self._ui_manager.is_right_skill_selected(["TELE_ACTIVE"]) and self._ui_manager.is_right_skill_active())):
             mouse.move(pos_monitor[0], pos_monitor[1], randomize=2, delay_factor=[factor*0.1, factor*0.14])
