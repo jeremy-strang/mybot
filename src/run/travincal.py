@@ -1,3 +1,5 @@
+import time
+import keyboard
 from pytest import skip
 from api.mapassist import MapAssistApi
 from char import IChar
@@ -127,5 +129,11 @@ class Travincal:
             self._pather.walk_to_position((141, 113), time_out=3)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=False)
             wait(0.1, 0.15)
+
+        self._ui_manager.enable_no_pickup()
+        keyboard.send(self._config.char["show_items"])
+        time.sleep(0.7) # sleep needed here to give d2r time to display items on screen on keypress
+        #Creating a screenshot of the current loot
+        self._pickit.take_loot_screenshot()
         # self._obs_recorder.stop_recording_if_enabled()
         return (Location.A3_TRAV_CENTER_STAIRS, picked_up_items)

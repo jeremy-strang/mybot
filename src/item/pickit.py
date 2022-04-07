@@ -37,6 +37,13 @@ class PickIt:
         self._pather = pather
         self._pickit2 = Pickit2(screen, ui_manager, belt_manager, char, pather, api)
 
+    def take_loot_screenshot(self):
+        #Creating a screenshot of the current loot
+        if self._config.general["loot_screenshots"]:
+            img = self._screen.grab()
+            cv2.imwrite("./loot_screenshots/info_debug_drop_" + time.strftime("%Y%m%d_%H%M%S") + ".png", img)
+            Logger.debug("Took a screenshot of current loot")
+
     def pick_up_items(self, char: IChar, is_at_trav: bool = False, time_out: float = 22, skip_nopickup: bool = False) -> bool:
         """
         Pick up all items with specified char
@@ -57,10 +64,7 @@ class PickIt:
         keyboard.send(self._config.char["show_items"])
         time.sleep(0.7) # sleep needed here to give d2r time to display items on screen on keypress
         #Creating a screenshot of the current loot
-        if self._config.general["loot_screenshots"]:
-            img = self._screen.grab()
-            cv2.imwrite("./loot_screenshots/info_debug_drop_" + time.strftime("%Y%m%d_%H%M%S") + ".png", img)
-            Logger.debug("Took a screenshot of current loot")
+        self.take_loot_screenshot()
         time_out = False
         skipped_items = []
         curr_item_to_pick: Item = None

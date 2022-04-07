@@ -111,7 +111,7 @@ UNIQUE_ITEMS = {
     ItemBase.TemplarCoat: 1,
     ItemBase.DuskShroud: 1,
     ItemBase.MeshArmor: 0,
-    ItemBase.SerpentskinArmor: 0,
+    ItemBase.SerpentskinArmor: 1,
     ItemBase.RussetArmor: 0,
     ItemBase.EmbossedPlate: 0,
     ItemBase.Sash: 0,
@@ -273,7 +273,7 @@ SET_ITEMS = {
 }
 
 MAGIC_ITEMS = {
-    ItemBase.GrandCharm: 1,
+    ItemBase.GrandCharm: 0,
     ItemBase.LargeCharm: 0,
     ItemBase.SmallCharm: 1,
     ItemBase.Jewel: 0,

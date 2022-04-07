@@ -174,7 +174,9 @@ class Pather:
     def click_item(self, item: dict, char, time_out: float = 6.0, skip_traverse=False):
         start = time.time()
         if item and item["dist"] > 5.0 and not skip_traverse:
+            Logger.debug(f"    Item {item['name']} (ID: {item['id']}) is {round(item['dist'], 1)}yds away, moving toward it...")
             if item["dist"] > 30 and char.capabilities.can_teleport_natively:
+                Logger.debug(f"        Item {item['name']} (ID: {item['id']}) is far away, traversing...")
                 self.traverse(item["position_area"], char, dest_distance=4, time_out=time_out / 2)
             else:
                 self.walk_to_item(item["id"], 3)
@@ -185,11 +187,11 @@ class Pather:
             item = self._api.find_item(item['id'])
             if item:
                 if item["is_hovered"]:
-                    Logger.debug(f"    Clicking item {item['name']}, confirmed that it was hovered")
+                    Logger.debug(f"    Clicking item {item['name']} (ID: {item['id']}), confirmed that it was hovered")
                 mouse.click(button="left")
                 wait(0.6)
                 if self._api.find_item(item['id'], "inventory_items"):
-                    Logger.debug(f"    Verified item {item['name']} and confirmed that it is picked up")
+                    Logger.debug(f"    Verified item {item['name']} (ID: {item['id']}) and confirmed that it is picked up")
                     return True
                 item = self._api.find_item(item['id'])
         
