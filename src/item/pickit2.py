@@ -3,6 +3,8 @@ import time
 import keyboard
 import cv2
 from operator import itemgetter
+
+from pytest import skip
 from api.mapassist import MapAssistApi
 from pathing import Pather
 
@@ -34,7 +36,7 @@ class Pickit2:
         self._last_closest_item: Item = None
         self._api = api
     
-    def _next_item(self, potion_needs: dict = None) -> dict:
+    def _next_item(self, potion_needs: dict = None, skip_ids: set = None) -> dict:
         data = self._api.data
         items_found = []
         if data is not None:
@@ -44,6 +46,8 @@ class Pickit2:
                     items_found.append(item)
             items_found = sorted(items_found, key = lambda item: item["dist"])
             items_found = sorted(items_found, key = lambda item: get_pickit_priority(item), reverse=True)
+            if skip_ids is not None and len(skip_ids) > 0:
+                items_found = list(filter(lambda x: x["id"] not in skip, items_found))
             if len(items_found) > 0:
                 print("\nMemory pickit order:")
                 for item in items_found:
@@ -57,45 +61,47 @@ class Pickit2:
         disabled_nopickup = False
         did_time_out = False
         picked_up_items = []
-        skipped_items = []
+        skipped_ids = set()
         self._belt_manager.update_pot_needs()
         potion_needs = self._belt_manager.get_pot_needs()
         item = self._next_item(potion_needs)
+        last_id = item["id"] if item else 0
 
         if item and not skip_nopickup:
             Logger.info(f"\n{'*'*80}\nMemory pickit found items, disabling /nopickup...")
             self._ui_manager.disable_no_pickup()
             disabled_nopickup = True
-
         while item and not did_time_out:
             elapsed = time.time() - start
             if elapsed >= time_out:
                 did_time_out = True
                 Logger.warning(f"Timed out during memory pickit after {elapsed}/{time_out} sec, skipping it this time...")
                 break
-            
-            Logger.info(f"    Picking up {item['name']}, quality: {item['quality']}...")
+
+            if item["id"] == last_id:
+                attempts += 1
+                if attempts >= 4:
+                    if item and not is_potion:
+                        skipped_ids.add(item["id"])
+                    attempts = 0
+                    item = self._next_item(potion_needs, skipped_ids)
+                    continue
+
+            last_id = item["id"]
+            Logger.info(f"    Picking up {item['name']} (ID: {item['id']}), quality: {item['quality']}...")
             is_potion = "Potion" in item["name"]
             if self._pather.click_item(item, self._char):
                 picked_up_items.append(item)
                 if is_potion:
                     self._belt_manager.picked_up_pot(item["name"])
-                item = self._next_item()
-            else:
-                attempts += 1
-                if attempts >= 4:
-                    skip = item
-                    item = self._next_item()
-                    if item and not is_potion:
-                        skipped_items.append(skip)
-                    attempts = 0
+            item = self._next_item(potion_needs, skipped_ids)
 
         if disabled_nopickup:
             Logger.info(f"    Re-enabling /nopickup...")
             self._ui_manager.enable_no_pickup()
             Logger.info(f"    Done picking up {len(picked_up_items)} items\n{'*'*80}")
 
-        return (picked_up_items, skipped_items)
+        return (picked_up_items, list(skipped_ids))
         #     # Check if we need to pick up certain pots more pots
         #     need_pots = self._belt_manager.get_pot_needs()
         #     if need_pots["mana"] <= 0:
