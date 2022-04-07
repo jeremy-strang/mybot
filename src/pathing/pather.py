@@ -376,7 +376,7 @@ class Pather:
                     if collection == "objects":
                         while (obj["mode"] == 0):
 
-                            stash_menu = data['menus']['Stash']
+                            stash_menu = data["stash_open"]
                             if stash_menu:
                                 Logger.debug('Stash menu opened!')
                                 return True
