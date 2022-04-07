@@ -37,16 +37,21 @@ class PickIt:
         self._pather = pather
         self._pickit2 = Pickit2(screen, ui_manager, belt_manager, char, pather, api)
 
-    def pick_up_items(self, char: IChar, is_at_trav: bool = False) -> bool:
+    def pick_up_items(self, char: IChar, is_at_trav: bool = False, time_out: float = 22, skip_nopickup: bool = False) -> bool:
         """
         Pick up all items with specified char
         :param char: The character used to pick up the item
         :param is_at_trav: Dirty hack to reduce gold pickup only to trav area, should be removed once we can determine the amount of gold reliably
         :return: Bool if any items were picked up or not. (Does not account for picking up scrolls and pots)
         """
-        found_items = self._pickit2.pick_up_items()
+        found_items, skipped_items = self._pickit2.pick_up_items(time_out, skip_nopickup)
 
-        Logger.debug("Starting pixel pickit...")
+        if len(skipped_items) == 0:
+            Logger.debug(f"Found {len(found_items)} items during memory pickit, skipping pixel pickit")
+            return len(found_items) > 0
+
+        Logger.debug(f"Failed on {skipped_items} items during memory pickit, falling back pixel pickit...")
+
         start = prev_cast_start = time.time()
         found_nothing = 0
         keyboard.send(self._config.char["show_items"])
@@ -58,7 +63,7 @@ class PickIt:
             Logger.debug("Took a screenshot of current loot")
         time_out = False
         picked_up_items = []
-        skip_items = []
+        skipped_items = []
         curr_item_to_pick: Item = None
         same_item_timer = None
         did_force_move = False
@@ -125,7 +130,7 @@ class PickIt:
                     elif time.time() - same_item_timer > 3:
                         # backlist this item type for this pickit round
                         Logger.warning(f"Could not pick up: {closest_item.name}. Continue with other items")
-                        skip_items.append(closest_item.name)
+                        skipped_items.append(closest_item.name)
                 curr_item_to_pick = closest_item
 
                 # To avoid endless teleport or telekinesis loop

@@ -1,6 +1,24 @@
 from item.enums import ItemBase, ItemQuality, ItemMode, InventoryPage, BodyLoc, StashType, ItemFlag
 
+POTIONS = {
+    ItemBase.FullRejuvenationPotion: 1,
+    ItemBase.RejuvenationPotion: 1,
+    ItemBase.SuperHealingPotion: 1,
+    ItemBase.SuperManaPotion: 1,
+    ItemBase.GreaterHealingPotion: 1,
+    ItemBase.GreaterManaPotion: 1,
+}
+
 BASIC_ITEMS = {
+    ItemBase.KeyOfTerror: 1,
+    ItemBase.KeyOfHate: 1,
+    ItemBase.KeyOfDestruction: 1,
+    
+    ItemBase.TwistedEssenceOfSuffering: 1,
+    ItemBase.ChargedEssenceOfHatred: 1,
+    ItemBase.BurningEssenceOfTerror: 1,
+    ItemBase.FesteringEssenceOfDestruction: 1,
+
     ItemBase.ElRune: 0,
     ItemBase.EldRune: 0,
     ItemBase.TirRune: 0,
@@ -189,7 +207,7 @@ UNIQUE_ITEMS = {
     ItemBase.BoneKnife: 0,
     ItemBase.Dagger: 0,
     ItemBase.ThunderMaul: 0,
-    ItemBase.LegendaryHammer: 1,
+    ItemBase.LegendaryMallet: 1,
     ItemBase.Tulwar: 0,
     ItemBase.PhaseBlade: 0,
     ItemBase.ElderStaff: 0,
@@ -376,7 +394,7 @@ NORMAL_ETH_ITEMS = {
     (ItemBase.ColossusSword, 0): 0,
 }
 
-def get_pickit_priority(item: dict):
+def get_pickit_priority(item: dict, potion_needs: dict = None):
     result = 0
     if item and type(item) is dict:
         base_item = item["base_item"]
@@ -410,5 +428,11 @@ def get_pickit_priority(item: dict):
             result = SUPERIOR_ETH_ITEMS[socket_key]
         elif is_eth and quality == ItemQuality.Normal and socket_key in NORMAL_ETH_ITEMS:
             result = NORMAL_ETH_ITEMS[socket_key]
-
+        elif potion_needs is not None:
+            if "Rejuv" in base_item and potion_needs["rejuv"] > 0 and base_item in POTIONS:
+                result = POTIONS[base_item] > 0 and "Rejuv" in base_item
+            if "Heal" in base_item and potion_needs["health"] > 0 and base_item in POTIONS:
+                result = POTIONS[base_item] > 0 and "Heal" in base_item
+            if "Mana" in base_item and potion_needs["mana"] > 0 and base_item in POTIONS:
+                result = POTIONS[base_item] > 0 and "Mana" in base_item
     return result

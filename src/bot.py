@@ -483,7 +483,7 @@ class Bot:
             self._ui_manager.set__gold_full(False)
         
         # Run /nopickup command to avoid picking up stuff on accident
-        if not self._ran_no_pickup and not self._game_stats._nopickup_active:
+        if not self._ran_no_pickup and not self._game_stats._nopickup_active or self._pick_corpse or self._game_stats._did_chicken_last_run:
             self._ran_no_pickup = True
             if self._ui_manager.enable_no_pickup():
                 self._game_stats._nopickup_active = True

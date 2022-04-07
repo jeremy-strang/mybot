@@ -182,14 +182,16 @@ class Pather:
             self.move_mouse_to_item(item)
             wait(0.03, 0.05)
             item = self._api.find_item(item['id'])
-            if item and item["is_hovered"]:
-                Logger.debug(f"    Clicked item {item['name']} and confirmed that it was hovered")
-            mouse.click(button="left")
-            wait(0.6)
-            if self._api.find_item(item['id'], "inventory_items"):
-                Logger.debug(f"    Verified item {item['name']} and confirmed that it is picked up")
-                return True
-            item = self._api.find_item(item['id'])
+            if item:
+                if item["is_hovered"]:
+                    Logger.debug(f"    Clicking item {item['name']}, confirmed that it was hovered")
+                mouse.click(button="left")
+                wait(0.6)
+                if self._api.find_item(item['id'], "inventory_items"):
+                    Logger.debug(f"    Verified item {item['name']} and confirmed that it is picked up")
+                    return True
+                item = self._api.find_item(item['id'])
+        return False
 
     def move_to_monster(self, char, monster: dict) -> bool:
         if self._should_abort_pathing(): return False

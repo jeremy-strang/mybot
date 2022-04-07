@@ -362,13 +362,13 @@ namespace MapAssist.MyBot
                             {
                                 items.Add(CleanItem(item));
                             }
+                            else if (item.ItemModeMapped == ItemModeMapped.Inventory)
+                            {
+                                inventory_items.Add(CleanItem(item));
+                            }
                             else if (in_town) // Only populate this data in town for performance
                             {
-                                if (item.ItemModeMapped == ItemModeMapped.Inventory)
-                                {
-                                    inventory_items.Add(CleanItem(item));
-                                }
-                                else if (item.ItemModeMapped == ItemModeMapped.Stash)
+                                if (item.ItemModeMapped == ItemModeMapped.Stash)
                                 {
                                     stash_items.Add(CleanItem(item));
                                 }

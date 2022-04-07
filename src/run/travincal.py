@@ -1,3 +1,4 @@
+from pytest import skip
 from api.mapassist import MapAssistApi
 from char import IChar
 from config import Config
@@ -77,6 +78,7 @@ class Travincal:
             self._char.switch_weapon()
             self._char.verify_active_weapon_tab()
 
+        skip_nopickup = False
         self._obs_recorder.start_recording_if_enabled()
         self._api.start_timer()
         if self._char._char_config['type'] == 'hammerdin':
@@ -86,7 +88,8 @@ class Travincal:
             # First kill council
             self._char.kill_council()
             # Loot once before hork to get anything that might get covered up after hork
-            picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True)
+            skip_nopickup = self._ui_manager.disable_no_pickup()
+            picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=skip_nopickup)
             wait(0.1, 0.2)
             self._avoid_durance()
             # Hork hork hork
@@ -105,22 +108,24 @@ class Travincal:
         self._api.get_metrics()
 
         # Check for loot once wherever we ended up after combat
-        picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True)
+        picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=skip_nopickup)
         wait(0.1, 0.15)
         self._avoid_durance()
+        if not skip_nopickup:
+            skip_nopickup = self._ui_manager.disable_no_pickup()
 
         # If we can teleport we want to move back inside and also check loot there
         if self._char.capabilities.can_teleport_natively or self._char.capabilities.can_teleport_with_charges:
             self._pather.traverse((156, 113), self._char, time_out=4.0)
-            picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
+            picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=False)
             self._avoid_durance()
             self._pather.traverse((154, 111), self._char, time_out=4.0)
         else: # Else we need to make sure we loot both inside and outside the council room
             self._pather.walk_to_position((157, 104), time_out=3)
-            picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
+            picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=skip_nopickup)
             wait(0.1, 0.15)
             self._pather.walk_to_position((141, 113), time_out=3)
-            picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True)
+            picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=False)
             wait(0.1, 0.15)
         # self._obs_recorder.stop_recording_if_enabled()
         return (Location.A3_TRAV_CENTER_STAIRS, picked_up_items)
