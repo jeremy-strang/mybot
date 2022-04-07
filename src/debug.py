@@ -118,7 +118,9 @@ if __name__ == "__main__":
                 #     print("F")
                 # pather.click_poi("Halls of Vaught")
 
-                pickit2.pick_up_items()
+                belt_manager.update_pot_needs()
+
+                # pickit2.pick_up_items()
                 # bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
                 # ui_manager.stash_all_items(4, item_finder, False)
                 # ui_manager.throw_out_junk(item_finder)

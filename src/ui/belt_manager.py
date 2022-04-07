@@ -90,20 +90,6 @@ class BeltManager:
             keyboard.send(self._config.char[key])
         self.update_pot_needs()
         return True
-        # img = self._screen.grab()
-        # for i in range(4):
-        #     potion_img = self._cut_potion_img(img, i, 0)
-        #     if self._potion_type(potion_img) == potion_type:
-        #         key = f"potion{i+1}"
-        #         if merc:
-        #             Logger.debug(f"Give {potion_type} potion in slot {i+1} to merc. HP: {(stats[0]*100):.1f}%")
-        #             keyboard.send(f"left shift + {self._config.char[key]}")
-        #         else:
-        #             Logger.debug(f"Drink {potion_type} potion in slot {i+1}. HP: {(stats[0]*100):.1f}%, Mana: {(stats[1]*100):.1f}%")
-        #             keyboard.send(self._config.char[key])
-        #         self.update_pot_needs()
-        #         return True
-        # return False
     
     def _get_potion_key(self, potion_type) -> str:
         data = self._api.get_data()
@@ -114,11 +100,6 @@ class BeltManager:
                     for i in range(min(len(belt), 4)):
                         if len(belt) > i and type(belt[i]) is dict and "name" in belt[i] and potion_type[:4].lower() in belt[i]["name"].lower():
                             return f"potion{i+1}"
-        # img = self._screen.grab()
-        # for i in range(4):
-        #     potion_img = self._cut_potion_img(img, i, 0)
-        #     if self._potion_type(potion_img) == potion_type:
-        #         return f"potion{i+1}"
         return False
 
     def picked_up_pot(self, item_name: str):

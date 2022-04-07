@@ -270,17 +270,7 @@ namespace MapAssist.MyBot
                             }
                         }
                         var flattened_belt = new List<dynamic>() { belt0, belt1, belt2, belt3 };
-
-                        if (_gameData.BeltItems != null)
-                        {
-                            foreach (var item in _gameData.BeltItems)
-                            {
-                                if ((item.ItemBaseName ?? "").Contains("Healing Potion")) belt_health_pots++;
-                                else if ((item.ItemBaseName ?? "").Contains("Mana Potion")) belt_mana_pots++;
-                                else if ((item.ItemBaseName ?? "").Contains("Rejuvenation Potion")) belt_rejuv_pots++;
-                            }
-                        }
-
+                        
                         var merc = _gameData.Mercs.Where(a => a.IsPlayerOwned).FirstOrDefault();
                         var merc_health_pct = 1.0;
                         dynamic player_merc = null;
