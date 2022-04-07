@@ -102,7 +102,6 @@ class MAS(Thread):
             "right_skill": None,
             "left_skill": None,
             "item_on_cursor": False,
-            "menus": None,
             "player_health": 0.0,
             "player_mana": 0.0,
             "player_health_pct": 1.0,
@@ -112,9 +111,8 @@ class MAS(Thread):
             "player_corpse": None,
         }
 
-        _data["menus"] = data["menus"]
-        
         # if self.in_game != data["in_game"]: print(f"in_game changed from {self.in_game} to {data['in_game']}")
+        # if self.in_town != data["in_town"]: print(f"in_town changed from {self.in_town} to {data['in_town']}")
         # if self.should_chicken != data["should_chicken"]: print(f"should_chicken changed from {self.should_chicken} to {data['should_chicken']}")
         # if self.inventory_open != data["inventory_open"]: print(f"inventory_open changed from {self.inventory_open} to {data['inventory_open']}")
         # if self.character_open != data["character_open"]: print(f"character_open changed from {self.character_open} to {data['character_open']}")
@@ -132,9 +130,9 @@ class MAS(Thread):
         # if self.cube_open != data["cube_open"]: print(f"cube_open changed from {self.cube_open} to {data['cube_open']}")
         # if self.potion_belt_open != data["potion_belt_open"]: print(f"potion_belt_open changed from {self.potion_belt_open} to {data['potion_belt_open']}")
         # if self.mercenary_inventory_open != data["mercenary_inventory_open"]: print(f"mercenary_inventory_open changed from {self.mercenary_inventory_open} to {data['mercenary_inventory_open']}")
-        
+
         self.in_game = _data["in_game"] = data["in_game"]
-        self.in_game = _data["in_town"] = data["in_town"]
+        self.in_town = _data["in_town"] = data["in_town"]
         self.should_chicken = _data["should_chicken"] = data["should_chicken"]
         self.inventory_open = _data["inventory_open"] = data["inventory_open"]
         self.character_open = _data["character_open"] = data["character_open"]
