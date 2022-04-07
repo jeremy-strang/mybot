@@ -150,17 +150,21 @@ namespace MapAssist.MyBot
                 set_name = Items.GetSetName(item);
             }
 
+            var num_sockets = 0;
+            if (item.ItemMode == ItemMode.SOCKETED && item.Stats != null)
+            {
+                item.Stats.TryGetValue(Stat.NumSockets, out num_sockets);
+            }
+
             return new
             {
                 position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
                 id = item.UnitId,
-                flags = item.ItemData.ItemFlags,
-                flags_str = item.ItemData.ItemFlags.ToString(),
-                item.ItemFlagStrings,
+                flags = item.ItemData.ItemFlags.ToString(),
                 quality = item.ItemData.ItemQuality.ToString(),
                 name = Items.GetItemName(item),
-                hash_string = item.HashString ?? "",
-                base_name = item.ItemBaseName,
+                hash_str = item.HashString ?? "",
+                base_name = item.ItemBaseName ?? "",
                 is_hovered = item.IsHovered,
                 item_mode = item.ItemMode.ToString(),
                 item_mode_mapped = item.ItemModeMapped.ToString(),
@@ -168,9 +172,10 @@ namespace MapAssist.MyBot
                 is_identified = item.IsIdentified,
                 inventory_page = item.ItemData.InvPage.ToString(),
                 tier = Items.GetItemTier(item),
+                base_item = item.Item.ToString(),
+                num_sockets,
                 set_name,
                 unique_name,
-                //item,
             };
         }
 

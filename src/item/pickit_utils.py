@@ -21,14 +21,16 @@ EXACT_NAMES = [
     "Amethyst",
 ]
 
-
+UNIQUES = [
+    ()
+]
 
 def get_pickit_priority(item: dict):
     result = 0
     if item and type(item) is dict:
         name = "" + str(item["name"])
-        if name == "ItemNotFound" and item["hash_string"]:
-            name = item["hash_string"][0:item["hash_string"].find("/")]
+        if name == "ItemNotFound" and item["hash_str"]:
+            name = item["hash_str"][0:item["hash_str"].find("/")]
         for rune in RUNES:
             if name == rune or name.lower().replace(" ", "").startswith(rune.lower().replace(" ", "")):
                 result = 2
