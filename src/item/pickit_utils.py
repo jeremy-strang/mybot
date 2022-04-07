@@ -60,7 +60,7 @@ BASIC_ITEMS = {
     ItemBase.ChippedRuby: 0,
     ItemBase.ChippedDiamond: 0,
 
-    ItemBase.FlawedAmethyst: 0,
+    ItemBase.FlawedAmethyst: 1,
     ItemBase.FlawedTopaz: 0,
     ItemBase.FlawedSapphire: 0,
     ItemBase.FlawedEmerald: 0,

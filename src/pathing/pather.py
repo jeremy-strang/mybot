@@ -170,10 +170,22 @@ class Pather:
     def move_mouse_to_monster(self, monster):
         if monster:
             self.move_mouse_to_abs_pos(monster["position_abs"], monster["dist"])
-    
-    def click_item(self, item: dict, char, time_out: float = 6.0, skip_traverse=False):
+
+    def teleport_to_item(self, item, char):
+        # If we failed to pick it up, try to teleport to it
+        if item and char.capabilities.can_teleport_natively:
+            self.move_mouse_to_abs_pos(item["position_abs"], item["dist"])
+            char.pre_move()
+            mouse.click(button="right")
+            wait(char._cast_duration)
+            item = self._api.find_item(item['id'])
+
+    def click_item(self, item: dict, char, time_out: float = 6.0, do_traverse=True, do_teleport=False):
         start = time.time()
-        if item and item["dist"] > 5.0 and not skip_traverse:
+        if item and do_teleport:
+            item = self.teleport_to_item(item, char)
+
+        if item and item["dist"] > 5.0 and do_traverse:
             Logger.debug(f"    Item {item['name']} (ID: {item['id']}) is {round(item['dist'], 1)}yds away, moving toward it...")
             if item["dist"] > 30 and char.capabilities.can_teleport_natively:
                 Logger.debug(f"        Item {item['name']} (ID: {item['id']}) is far away, traversing...")
@@ -194,16 +206,8 @@ class Pather:
                     Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it was hovered")
                     return True
                 item = self._api.find_item(item["id"])
-        
-        # If we failed to pick it up, try to teleport to it
-        if item and char.capabilities.can_teleport_natively:
-            self.move_mouse_to_abs_pos(item["position_abs"], item["dist"])
-            char.pre_move()
-            mouse.click(button="right")
-            wait(char._cast_duration)
-            item = self._api.find_item(item['id'])
-            if item:
-                return self.click_item(item, char, 2.0, False)
+        if item:
+            return self.click_item(item, char, 3.0, do_traverse=False, do_teleport=True)
         return False
 
     def move_to_monster(self, char, monster: dict) -> bool:
