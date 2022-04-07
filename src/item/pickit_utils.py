@@ -29,8 +29,7 @@ def get_pickit_priority(item: dict):
         if name == "ItemNotFound" and item["hash_string"]:
             name = item["hash_string"][0:item["hash_string"].find("/")]
         for rune in RUNES:
-            rune_full = rune + " Rune"
-            if name == rune_full or name.lower().replace(" ", "").startswith(rune_full.lower().replace(" ", "")):
+            if name == rune or name.lower().replace(" ", "").startswith(rune.lower().replace(" ", "")):
                 result = 2
                 break
         for n in EXACT_NAMES:

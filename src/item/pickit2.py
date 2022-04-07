@@ -75,11 +75,12 @@ class Pickit2:
             self._ui_manager.disable_no_pickup()
             disabled_nopickup = True
 
+        print(start)
         while item and not did_time_out:
             elapsed = time.time() - start
             if elapsed >= time_out:
                 did_time_out = True
-                Logger.warning("Timed out during memory pickit, skipping it this time...")
+                Logger.warning(f"Timed out during memory pickit after {elapsed}/{time_out} sec, skipping it this time...")
                 break
             
             Logger.info(f"    Picking up {item['name']}, quality: {item['quality']}...")
