@@ -107,8 +107,11 @@ class BeltManager:
         :param item_name: Name of the item as it is in the pickit
         """
         self.update_pot_needs()
-        if item_name in self._item_pot_map:
-            self._pot_needs[self._item_pot_map[item_name]] = max(0, self._pot_needs[self._item_pot_map[item_name]] - 1)
+        if item_name not in self._pot_needs:
+            if item_name in self._item_pot_map:
+                item_name = self._item_pot_map[item_name]
+        if item_name in self._pot_needs:
+            self._pot_needs[item_name] = max(0, self._pot_needs[item_name] - 1)
         else:
             Logger.warning(f"BeltManager does not know about item: {item_name}")
 
