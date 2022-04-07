@@ -136,12 +136,18 @@ namespace MapAssist.MyBot
 
         private dynamic CleanItem(UnitItem item)
         {
+            var set_name = Items.GetSetName(item);
+            if (set_name == "Set") set_name = "";
+            var unique_name = Items.GetUniqueName(item);
+            if (unique_name == "Unique") unique_name = "";
+            
             return new
             {
                 position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
                 id = item.UnitId,
-                flags = item.ItemData.ItemFlags.ToString(),
-                quality = item.ItemData.ItemQuality.ToString(),
+                flags = item.ItemData.ItemFlags,
+                flags_str = item.ItemData.ItemFlags.ToString(),
+                quality = item.ItemData.ItemQuality,
                 name = Items.GetItemName(item),
                 hash_string = item.HashString ?? "",
                 base_name = item.ItemBaseName,
@@ -151,6 +157,9 @@ namespace MapAssist.MyBot
                 stats = GetItemStats(item),
                 is_identified = item.IsIdentified,
                 inventory_page = item.ItemData.InvPage.ToString(),
+                tier = Items.GetItemTier(item),
+                set_name,
+                unique_name,
                 //item,
             };
         }
@@ -460,7 +469,6 @@ namespace MapAssist.MyBot
                             }
                         }
 
-                        //ItemLog = Items.ItemLog[_currentProcessId].ToArray(),
                         foreach (ItemLogEntry item in _gameData.ItemLog)
                         {
                             msg.items_logged.Add(new

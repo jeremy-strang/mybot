@@ -2,6 +2,7 @@
 using MapAssist.Settings;
 using MapAssist.Structs;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace MapAssist.Types
@@ -100,5 +101,21 @@ namespace MapAssist.Types
         }
         
         public override string HashString => Item + "/" + Position.X + "/" + Position.Y;
+
+        public List<string> ItemFlagStrings
+        {
+            get
+            {
+                var result = new List<string>();
+                foreach (ItemFlags flag in Enum.GetValues(typeof(ItemFlags)))
+                {
+                    if ((ItemData.ItemFlags & flag) == flag)
+                    {
+                        result.Add(flag.ToString());
+                    }
+                }
+                return result;
+            }
+        }
     }
 }
