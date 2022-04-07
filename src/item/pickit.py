@@ -44,11 +44,11 @@ class PickIt:
         :param is_at_trav: Dirty hack to reduce gold pickup only to trav area, should be removed once we can determine the amount of gold reliably
         :return: Bool if any items were picked up or not. (Does not account for picking up scrolls and pots)
         """
-        found_items, skipped_items = self._pickit2.pick_up_items(time_out, skip_nopickup)
-
+        picked_up_items, skipped_items = self._pickit2.pick_up_items(time_out, skip_nopickup)
+        found_items = len(picked_up_items) > 0
         if len(skipped_items) == 0:
-            Logger.debug(f"Found {len(found_items)} items during memory pickit, skipping pixel pickit")
-            return len(found_items) > 0
+            Logger.debug(f"Found {len(picked_up_items)} items during memory pickit, skipping pixel pickit")
+            return found_items
 
         Logger.debug(f"Failed on {skipped_items} items during memory pickit, falling back pixel pickit...")
 
@@ -62,7 +62,6 @@ class PickIt:
             cv2.imwrite("./loot_screenshots/info_debug_drop_" + time.strftime("%Y%m%d_%H%M%S") + ".png", img)
             Logger.debug("Took a screenshot of current loot")
         time_out = False
-        picked_up_items = []
         skipped_items = []
         curr_item_to_pick: Item = None
         same_item_timer = None
