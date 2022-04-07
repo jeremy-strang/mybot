@@ -380,21 +380,22 @@ class UiManager():
                 return True
         return False
 
-    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None) -> bool:
+    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None) -> list[Item]:
         """
         Check if an item should be kept, the item should be hovered and in own inventory when function is called
         :param item_finder: ItemFinder to check if item is in pickit
         :param img: Image in which the item is searched (item details should be visible)
         :param do_logging: Bool value to turn on/off logging for items that are found and should be kept
-        :return: Bool if item should be kept
+        :return: list[Item] list of items for some reason
         """
-
         if inv_pos is not None and self._api.data:
             mem_items = []
             for item in self._api.find_items_by_position(inv_pos, "inventory_items"):
-                if (item) and get_pickit_priority(item) > 0 and not "Potion" in item["name"]:
-                    Logger.info(f"    Keeping item '{item['name']}' (ID: {item['id']}) based on memory data")
-                    mem_items.append(Item(center, item["name"], 1))
+                if item:
+                    pickit_prio = get_pickit_priority(item)
+                    if pickit_prio > 0 and not "Potion" in item["name"]:
+                        Logger.info(f"    Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
+                        mem_items.append(Item(center, item["name"], 1, pickit_type=pickit_prio))
             if len(mem_items) > 0:
                 return [mem_items[0]]
 
@@ -404,6 +405,7 @@ class UiManager():
         original_list = item_finder.search(img)
         filtered_list = []
         for x in original_list:
+            x.pickit_type = self._config.items[x.name].pickit_type
             if ("potion" in x.name) or (self._config.items[x.name].pickit_type == 0): continue
             include_props = self._config.items[x.name].include
             exclude_props = self._config.items[x.name].exclude
@@ -584,14 +586,12 @@ class UiManager():
                 hovered_item = self._screen.grab()
                 found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=center_m)
                 Logger.debug(f"    Keeping item found at position {column}, {row}...")
-                if len(found_items) > 0:
-                    keyboard.send('ctrl', do_release=False)
-                    wait(0.2, 0.25)
-                    mouse.press(button="left")
-                    wait(0.2, 0.25)
-                    mouse.release(button="left")
-                    wait(0.2, 0.25)
-                    keyboard.send('ctrl', do_press=False)
+                if len(found_items) > 0 and self._api.data and self._api.data["stash_open"]:
+                    keyboard.send("ctrl", do_release=False)
+                    wait(0.04, 0.06)
+                    mouse.click(button="left")
+                    wait(0.04, 0.06)
+                    keyboard.release("ctrl")
                     # To avoid logging multiple times the same item when stash tab is full
                     # check the _keep_item again. In case stash is full we will still find the same item
                     wait(0.3)
@@ -600,7 +600,7 @@ class UiManager():
                         Logger.debug("Wanted to stash item, but its still in inventory. Assumes full stash. Move to next.")
                         break
                     else:
-                        send_msg = found_items[0].name in self._config.items and self._config.items[found_items[0].name].pickit_type == 2
+                        send_msg = found_items[0].pickit_type == 2 or (found_items[0].name in self._config.items and self._config.items[found_items[0].name].pickit_type == 2)
                         self._game_stats.log_item_keep(found_items[0].name, send_msg, hovered_item)
                 else:
                     # make sure there is actually an item

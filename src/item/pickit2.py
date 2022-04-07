@@ -6,6 +6,7 @@ from operator import itemgetter
 
 from pytest import skip
 from api.mapassist import MapAssistApi
+from item.enums import ItemMode
 from pathing import Pather
 
 from utils.custom_mouse import mouse
@@ -42,16 +43,16 @@ class Pickit2:
         if data is not None:
             for item in data["items"]:
                 item_priority = get_pickit_priority(item, potion_needs)
-                if item["item_mode"] == "ONGROUND" and item_priority > 0:
+                if item["item_mode"] == ItemMode.OnGround and item_priority > 0:
                     items_found.append(item)
             items_found = sorted(items_found, key = lambda item: item["dist"])
             items_found = sorted(items_found, key = lambda item: get_pickit_priority(item), reverse=True)
             if skip_ids is not None and len(skip_ids) > 0:
                 items_found = list(filter(lambda x: x["id"] not in skip, items_found))
             if len(items_found) > 0:
-                print("\nMemory pickit order:")
+                Logger.debug("Memory pickit order:")
                 for item in items_found:
-                    print(f"    {item['name']}, dist: {round(item['dist'], 1)}, quality: {item['quality']}, base: {item['base_item']}")
+                    Logger.debug(f"    {item['name']}, dist: {round(item['dist'], 1)}, quality: {item['quality']}, base: {item['base_item']}, position: {item['position']}")
         return items_found[0] if len(items_found) > 0 else None
 
     def pick_up_items(self, time_out: float = 22, skip_nopickup: bool = False) -> bool:

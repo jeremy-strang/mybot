@@ -24,6 +24,7 @@ class Item:
     score: float = -1.0
     dist: float = -1.0
     roi: list[int] = None
+    pickit_type: int = 0
     def __getitem__(self, key):
         return super().__getattribute__(key)
 
