@@ -22,6 +22,7 @@ EXACT_NAMES = [
 ]
 
 
+
 def get_pickit_priority(item: dict):
     result = 0
     if item and type(item) is dict:

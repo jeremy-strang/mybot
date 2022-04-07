@@ -53,7 +53,7 @@ namespace MapAssist.MyBot
             "ThePandemoniumFortress",
             "Harrogath",
         };
-        private HashSet<Stat> _usefulStats = new HashSet<Stat>() {
+        private HashSet<Stat> _relevantPlayerStats = new HashSet<Stat>() {
             Stat.Strength,
             Stat.Energy,
             Stat.Dexterity,
@@ -156,6 +156,7 @@ namespace MapAssist.MyBot
                 id = item.UnitId,
                 flags = item.ItemData.ItemFlags,
                 flags_str = item.ItemData.ItemFlags.ToString(),
+                item.ItemFlagStrings,
                 quality = item.ItemData.ItemQuality.ToString(),
                 name = Items.GetItemName(item),
                 hash_string = item.HashString ?? "",
@@ -194,7 +195,7 @@ namespace MapAssist.MyBot
                         var player_level = stats.ContainsKey(Stat.Level) ? stats[Stat.Level] : int.MaxValue;
                         var player_experience = stats.ContainsKey(Stat.Experience) ? stats[Stat.Experience] : int.MaxValue;
                         var player_gold = stats.ContainsKey(Stat.Gold) ? stats[Stat.Gold] : int.MaxValue;
-                        var player_stats = stats.Where(item => _usefulStats.Contains(item.Key)).Select(item =>
+                        var player_stats = stats.Where(item => _relevantPlayerStats.Contains(item.Key)).Select(item =>
                         {
                             Stat key = item.Key;
                             var value = item.Value;
@@ -344,6 +345,7 @@ namespace MapAssist.MyBot
                         var vendor_items = new List<dynamic>();
                         var equipped_items = new List<dynamic>();
                         var merc_items = new List<dynamic>();
+                        var logged_items = new List<dynamic>();
                         foreach (UnitItem item in _gameData.AllItems) //.Where(x => x.ItemModeMapped == ItemModeMapped.Ground))
                         {
                             if (item.ItemMode == ItemMode.ONCURSOR)
@@ -354,9 +356,9 @@ namespace MapAssist.MyBot
                             if (item.ItemModeMapped == ItemModeMapped.Ground)
                             {
                                 items.Add(CleanItem(item));
-                            } else if (in_town)
+                            }
+                            else if (in_town) // Only populate this data in town for performance
                             {
-
                                 if (item.ItemModeMapped == ItemModeMapped.Inventory)
                                 {
                                     inventory_items.Add(CleanItem(item));
@@ -379,34 +381,109 @@ namespace MapAssist.MyBot
                                 }
                             }
                         }
+
+                        var static_npcs = new List<dynamic>();
+                        foreach (var m in _areaData.NPCs)
+                        {
+                            static_npcs.Add(new
+                            {
+                                name = m.Key.ToString(),
+                                position = m.Value,
+                            });
+                        }
+
+                        var monsters = new List<dynamic>();
+                        foreach (UnitMonster m in _gameData.Monsters)
+                        {
+                            if (m.UnitType == UnitType.Monster)
+                            {
+                                monsters.Add(new
+                                {
+                                    id = m.UnitId,
+                                    boss_id = m.MonsterData.BossLineID,
+                                    npc = m.Npc,
+                                    position = m.Position,
+                                    immunities = m.Immunities != null ? m.Immunities.Select(a => a.ToString()).ToList() : new List<string>(),
+                                    unit_type = m.UnitType.ToString(),
+                                    type = m.MonsterData.MonsterType.ToString(),
+                                    name = ((Npc)m.TxtFileNo).ToString(),
+                                    mode = m.Struct.Mode,
+                                    is_targetable_corpse = m.IsTargetableCorpse,
+                                    number = m.TxtFileNo,
+                                    heath_percentage = m.HealthPercentage,
+                                    corpse = m.IsCorpse,
+                                    state_strings = m.StateStrings,
+                                    is_hovered = m.IsHovered,
+                                });
+                            }
+                        }
+
+                        var points_of_interest = new List<dynamic>();
+                        foreach (PointOfInterest p in _pointsOfInterest)
+                        {
+                            //Console.WriteLine(p.Label);
+                            points_of_interest.Add(new
+                            {
+                                position = p.Position,
+                                type = p.Type,
+                                label = p.Label,
+                            });
+                        }
+
+                        var objects = new List<dynamic>();
+                        foreach (UnitObject o in _gameData.Objects)
+                        {
+                            if (o.UnitType == UnitType.Object)
+                            {
+                                objects.Add(new
+                                {
+                                    position = o.Position,
+                                    id = o.UnitId,
+                                    selectable = o.ObjectData.InteractType != 0x00,
+                                    name = ((GameObject)o.TxtFileNo).ToString(),
+                                    mode = o.Struct.Mode,
+                                    is_hovered = o.IsHovered,
+                                });
+                            }
+                        }
+
+                        //foreach (ItemLogEntry item in _gameData.ItemLog)
+                        //{
+                        //    msg.logged_items.Add(new
+                        //    {
+                        //        text = item.Text,
+                        //        hash = item.ItemHashString,
+                        //        position = new int[2] { (int)item.UnitItem.Position.X, (int)item.UnitItem.Position.Y },
+                        //        id = item.UnitItem.UnitId,
+                        //        flags = item.UnitItem.ItemData.ItemFlags.ToString(),
+                        //        quality = item.UnitItem.ItemData.ItemQuality.ToString(),
+                        //        name = Items.GetItemName(item.UnitItem),
+                        //        base_name = item.UnitItem.ItemBaseName,
+                        //        is_hovered = item.UnitItem.IsHovered,
+                        //        item_mode = item.UnitItem.ItemMode.ToString(),
+                        //        item_mode_mapped = item.UnitItem.ItemModeMapped.ToString(),
+                        //        stats = GetItemStats(item.UnitItem),
+                        //        is_identified = item.UnitItem.IsIdentified,
+                        //        inventory_page = item.UnitItem.ItemData.InvPage.ToString(),
+                        //    });
+                        //}
+
                         var msg = new
                         {
                             map_changed = map_changed || forceMap,
                             success = true,
+                            in_game,
+                            in_town,
                             should_chicken,
-                            monsters = new List<dynamic>(),
-                            objects = new List<dynamic>(),
-                            items,
-                            inventory_items,
-                            stash_items,
-                            cube_items,
-                            vendor_items,
-                            equipped_items,
-                            merc_items,
-                            logged_items = new List<dynamic>(),
-                            points_of_interest = new List<dynamic>(),
                             corpses,
                             player_corpse,
                             player_pos_world = _gameData.PlayerPosition,
                             area_origin = _areaData.Origin,
-                            collision_grid = map_changed || forceMap ? _areaData.CollisionGrid : null,
                             current_area,
                             used_skill = _gameData.PlayerUnit.Skills.UsedSkillId.ToString(),
                             left_skill = _gameData.PlayerUnit.Skills.LeftSkillId.ToString(),
                             right_skill = _gameData.PlayerUnit.Skills.RightSkillId.ToString(),
                             menus = _gameData.MenuOpen,
-                            in_game,
-                            in_town,
                             inventory_open = _gameData.MenuOpen.Inventory,
                             character_open = _gameData.MenuOpen.Character,
                             skill_select_open = _gameData.MenuOpen.SkillSelect,
@@ -440,94 +517,25 @@ namespace MapAssist.MyBot
                             player_id = playerUnit.UnitId,
                             player_merc,
                             merc_health_pct,
-                            static_npcs = new List<dynamic>(),
                             belt_health_pots, // number of health pots in player's belt
                             belt_mana_pots, // number of mana pots in player's belt
                             belt_rejuv_pots, // number of rejuv pots in player's belt
-                            flattened_belt,
                             item_on_cursor,
+                            items,
+                            inventory_items,
+                            stash_items,
+                            cube_items,
+                            vendor_items,
+                            equipped_items,
+                            merc_items,
+                            logged_items,
+                            flattened_belt,
+                            collision_grid = map_changed || forceMap ? _areaData.CollisionGrid : null,
+                            static_npcs,
+                            objects,
+                            monsters,
+                            points_of_interest,
                         };
-                        foreach (var m in _areaData.NPCs)
-                        {
-                            msg.static_npcs.Add(new
-                            {
-                                name = m.Key.ToString(),
-                                position = m.Value,
-                            });
-                        }
-
-                        foreach (UnitMonster m in _gameData.Monsters)
-                        {
-                            if (m.UnitType == UnitType.Monster)
-                            {
-                                msg.monsters.Add(new
-                                {
-                                    id = m.UnitId,
-                                    boss_id = m.MonsterData.BossLineID,
-                                    npc = m.Npc,
-                                    position = m.Position,
-                                    immunities = m.Immunities != null ? m.Immunities.Select(a => a.ToString()).ToList() : new List<string>(),
-                                    unit_type = m.UnitType.ToString(),
-                                    type = m.MonsterData.MonsterType.ToString(),
-                                    name = ((Npc)m.TxtFileNo).ToString(),
-                                    mode = m.Struct.Mode,
-                                    is_targetable_corpse = m.IsTargetableCorpse,
-                                    number = m.TxtFileNo,
-                                    heath_percentage = m.HealthPercentage,
-                                    corpse = m.IsCorpse,
-                                    state_strings = m.StateStrings,
-                                    is_hovered = m.IsHovered,
-                                });
-                            }
-                        }
-
-                        foreach (PointOfInterest p in _pointsOfInterest)
-                        {
-                            //Console.WriteLine(p.Label);
-                            msg.points_of_interest.Add(new
-                            {
-                                position = p.Position,
-                                type = p.Type,
-                                label = p.Label,
-                            });
-                        }
-
-                        foreach (UnitObject o in _gameData.Objects)
-                        {
-                            if (o.UnitType == UnitType.Object)
-                            {
-                                msg.objects.Add(new
-                                {
-                                    position = o.Position,
-                                    id = o.UnitId,
-                                    selectable = o.ObjectData.InteractType != 0x00,
-                                    name = ((GameObject)o.TxtFileNo).ToString(),
-                                    mode = o.Struct.Mode,
-                                    is_hovered = o.IsHovered,
-                                });
-                            }
-                        }
-
-                        //foreach (ItemLogEntry item in _gameData.ItemLog)
-                        //{
-                        //    msg.logged_items.Add(new
-                        //    {
-                        //        text = item.Text,
-                        //        hash = item.ItemHashString,
-                        //        position = new int[2] { (int)item.UnitItem.Position.X, (int)item.UnitItem.Position.Y },
-                        //        id = item.UnitItem.UnitId,
-                        //        flags = item.UnitItem.ItemData.ItemFlags.ToString(),
-                        //        quality = item.UnitItem.ItemData.ItemQuality.ToString(),
-                        //        name = Items.GetItemName(item.UnitItem),
-                        //        base_name = item.UnitItem.ItemBaseName,
-                        //        is_hovered = item.UnitItem.IsHovered,
-                        //        item_mode = item.UnitItem.ItemMode.ToString(),
-                        //        item_mode_mapped = item.UnitItem.ItemModeMapped.ToString(),
-                        //        stats = GetItemStats(item.UnitItem),
-                        //        is_identified = item.UnitItem.IsIdentified,
-                        //        inventory_page = item.UnitItem.ItemData.InvPage.ToString(),
-                        //    });
-                        //}
 
                         return JsonConvert.SerializeObject(msg, formatting);
                     }
