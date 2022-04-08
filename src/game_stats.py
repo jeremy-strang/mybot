@@ -46,7 +46,8 @@ class GameStats:
 
     def log_item_keep(self, item_name: str, send_message: bool, img: np.ndarray):
         Logger.debug(f"Stashed and logged: {item_name}, send message: {send_message}")
-        filtered_items = ["_potion", "misc_gold", "_amethyst", "_ruby", "misc_chipped_diamond", "misc_flawed_diamond", "misc_diamond", "misc_flawless_diamond", "_topaz", "_emerald", "_sapphire", "misc_chipped_skull", "misc_flawed_skull", "misc_skull", "misc_flawless_skull"]
+        filtered_items = ["Potion", "Gold", "Chipped Diamond", "Flawed Diamond", "Diamond", "Flawless Diamond", "Chipped Skull", "Flawed Skull", "Skull", "Flawless Skull", "_potion", "misc_gold", "_amethyst", "_ruby", "misc_chipped_diamond", "misc_flawed_diamond", "misc_diamond", "misc_flawless_diamond", "_topaz", "_emerald", "_sapphire", "misc_chipped_skull", "misc_flawed_skull", "misc_skull", "misc_flawless_skull"]
+        
         if self._location is not None and not any(substring in item_name for substring in filtered_items):
             self._location_stats[self._location]["items"].append(item_name)
             self._location_stats["totals"]["items"] += 1

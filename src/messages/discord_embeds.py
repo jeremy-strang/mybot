@@ -20,18 +20,18 @@ class DiscordEmbeds(GenericApi):
             Logger.warning(f"Your custom_message_hook URL {self._config.general['custom_message_hook']} is invalid, Discord updates will not be sent")
 
     def send_item(self, item: str, image:  np.ndarray, location: str):
-        imgName = item.replace('_', '-')
-
+        d = datetime.datetime.now(datetime.timezone.utc)
+        ts = d.strftime("%Y-%m-%d-%H%M%S")
+        imgName = f"{item.replace(' ', '-')}-{ts}"
         _, w, _ = image.shape
         image = image[:, (w//2):,:]
-        cv2.imwrite(f"./loot_screenshots/{item}.png", image)
-        file = self._add_file(f"./loot_screenshots/{item}.png", f"{imgName}.png")
+        cv2.imwrite(f"./loot_screenshots/{imgName}.png", image)
+        file = self._add_file(f"./loot_screenshots/{imgName}.png", f"{imgName}.png")
         e = discord.Embed(
             title="Item Stashed!",
-            description=f"{item} at {location}",
-            color=self._get_Item_Color( item),
+            description=f"{item}",
+            color=self._get_Item_Color(item),
         )
-        e.set_thumbnail(url=f"{self._psnURL}41L6bd712.png")
         e.set_image(url=f"attachment://{imgName}.png")
         self._send_embed(e, file)
 
