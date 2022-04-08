@@ -111,7 +111,7 @@ if __name__ == "__main__":
             try:
                 data = api.get_data()
                 # travincal.battle(False)
-                pather.teleport_to_position((142, 103), char)
+                # pather.teleport_to_position((142, 103), char)
 
                 # if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):
                 #     print("F")
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
+                ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
                 # ui_manager.throw_out_junk(item_finder)
                 # item = pickit2._next_item()
                 # pather.move_mouse_to_item(item)

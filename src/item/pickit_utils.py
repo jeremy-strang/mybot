@@ -49,7 +49,7 @@ def get_pickit_priority(item: dict, potion_needs: dict = None):
             result = 0
             item_obj = PickitItem(item)
             for rule in IDENTIFIED_ITEMS[item_type]:
-                prio = 1 if rule(item_obj) else 0
+                prio = 2 if rule(item_obj) else 0
                 if prio > result:
                     result = prio
                 if prio > 1:
