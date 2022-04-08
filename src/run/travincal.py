@@ -90,8 +90,6 @@ class Travincal:
             # First kill council
             self._char.kill_council()
             # Loot once before hork to get anything that might get covered up after hork
-            skip_nopickup = self._ui_manager.disable_no_pickup()
-            picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=skip_nopickup)
             wait(0.1, 0.2)
             self._avoid_durance()
             # Hork hork hork
@@ -109,12 +107,13 @@ class Travincal:
             raise ValueError("Unsupport character")
         self._api.get_metrics()
 
+        if not skip_nopickup:
+            skip_nopickup = self._ui_manager.disable_no_pickup()
+    
         # Check for loot once wherever we ended up after combat
         picked_up_items = self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=skip_nopickup)
         wait(0.1, 0.15)
         self._avoid_durance()
-        if not skip_nopickup:
-            skip_nopickup = self._ui_manager.disable_no_pickup()
 
         # If we can teleport we want to move back inside and also check loot there
         if self._char.capabilities.can_teleport_natively or self._char.capabilities.can_teleport_with_charges:
