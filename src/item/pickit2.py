@@ -80,12 +80,13 @@ class Pickit2:
                 Logger.warning(f"Timed out during memory pickit after {elapsed}/{time_out} sec, skipping it this time...")
                 break
 
+            is_potion = "Potion" in item["name"]
             if item["id"] == last_id:
                 attempts += 1
                 Logger.debug(f"Attempted to pick up the same item {attempts} times so far")
                 if attempts >= 3:
                     skipped_ids.add(item["id"])
-                    if "Potion" not in item["name"]:
+                    if not is_potion:
                         skipped_items.append(item)
                     attempts = 0
                     item = self._next_item(potion_needs, skipped_ids)
@@ -93,7 +94,6 @@ class Pickit2:
 
             last_id = item["id"]
             Logger.info(f"    Picking up {item['name']} (ID: {item['id']}), quality: {item['quality']}...")
-            is_potion = "Potion" in item["name"]
             click_time_out = 6
             if is_potion:
                 click_time_out = 2
