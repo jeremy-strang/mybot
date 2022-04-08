@@ -106,11 +106,12 @@ class Barbarian(IChar):
         skip_ids = set()
         last_pos = None
         last_monster_id = 0
+        attempts = 0
         while m is not None and time.time() - start < time_out:
             data = self._api.get_data()
             distance = math.dist(data["player_pos_area"], m["position"] - data["area_origin"])
             m_id = m["id"]
-            if distance > 3:
+            if distance > 3 or attempts > 0:
                 move_pos_m = self._screen.convert_player_target_world_to_monitor(m["position"], data["player_pos_world"])
                 self.pre_move()
                 self.move(move_pos_m, force_tp=True, force_move=True)
@@ -120,6 +121,14 @@ class Barbarian(IChar):
                 distance = math.dist(data["player_pos_area"], m["position"] - data["area_origin"])
                 # If we're in the same spot and targeting the same monster after moving, skip it
                 if m_id == last_monster_id:
+                    attempts += 1
+                    Logger.debug(f"Attempted to hork the same monster {attempts} times so far")
+                else:
+                    attempts = 0
+                    if attempts >= 3:
+                        Logger.debug(f"We already tried monster {m_id} 3 or more times, skipping it")
+                        skip_ids.add(m_id)
+                        attempts = 0
                     if last_pos is not None and points_equal(last_pos, data["player_pos_world"], 2):
                         Logger.debug(f"Failed to move into hork range of monster {m_id}, skipping it")
                         skip_ids.add(m_id)
