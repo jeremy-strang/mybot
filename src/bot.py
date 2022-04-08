@@ -333,7 +333,11 @@ class Bot:
 
         # Figure out how many pots need to be picked up
         self._belt_manager.update_pot_needs()
-        buy_pots = self._belt_manager.should_buy_pots()
+        tp_tome, num_tps = self._ui_manager.get_tome_of("Town Portal")
+        id_tome, num_ids = self._ui_manager.get_tome_of("Identify")
+        buy_tps = tp_tome is not None and num_tps < 3
+        buy_ids = id_tome is not None and num_ids < 5
+        buy_pots = self._belt_manager.should_buy_pots() or buy_tps or buy_ids
         should_heal = health_pct < 0.7 or mana_pct < 0.2
         should_res_merc = not merc_alive and self._config.char["use_merc"]
 
