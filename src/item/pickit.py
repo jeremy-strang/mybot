@@ -57,7 +57,7 @@ class PickIt:
             Logger.debug(f"Found {len(picked_up_items)} items during memory pickit, skipping pixel pickit")
             return found_items
 
-        Logger.debug(f"Failed on {skipped_items} items during memory pickit, falling back pixel pickit...")
+        Logger.debug(f"Failed on {len(skipped_items)} items during memory pickit, falling back pixel pickit...")
 
         start = prev_cast_start = time.time()
         found_nothing = 0

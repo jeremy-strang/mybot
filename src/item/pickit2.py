@@ -48,7 +48,7 @@ class Pickit2:
             items_found = sorted(items_found, key = lambda item: item["dist"])
             items_found = sorted(items_found, key = lambda item: get_pickit_priority(item), reverse=True)
             if skip_ids is not None and len(skip_ids) > 0:
-                items_found = list(filter(lambda x: x["id"] not in skip, items_found))
+                items_found = list(filter(lambda x: x["id"] not in skip_ids, items_found))
             if len(items_found) > 0:
                 Logger.debug("Memory pickit order:")
                 for item in items_found:
@@ -62,11 +62,12 @@ class Pickit2:
         disabled_nopickup = False
         did_time_out = False
         picked_up_items = []
+        skipped_items = []
         skipped_ids = set()
         self._belt_manager.update_pot_needs()
         potion_needs = self._belt_manager.get_pot_needs()
         item = self._next_item(potion_needs)
-        last_id = item["id"] if item else 0
+        last_id = 0
 
         if item and not skip_nopickup:
             Logger.info(f"\n{'*'*80}\nMemory pickit found items, disabling /nopickup...")
@@ -81,9 +82,11 @@ class Pickit2:
 
             if item["id"] == last_id:
                 attempts += 1
-                if attempts >= 4:
-                    if item and not is_potion:
-                        skipped_ids.add(item["id"])
+                Logger.debug(f"Attempted to pick up the same item {attempts} times so far")
+                if attempts >= 3:
+                    skipped_ids.add(item["id"])
+                    if "Potion" not in item["name"]:
+                        skipped_items.append(item)
                     attempts = 0
                     item = self._next_item(potion_needs, skipped_ids)
                     continue
@@ -113,4 +116,4 @@ class Pickit2:
             self._ui_manager.enable_no_pickup()
             Logger.info(f"    Done picking up {len(picked_up_items)} items\n{'*'*80}")
 
-        return (picked_up_items, list(skipped_ids))
+        return (picked_up_items, skipped_items)
