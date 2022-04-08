@@ -19,6 +19,7 @@
 
 using GameOverlay;
 using MapAssist.Helpers;
+using MapAssist.Structs;
 using MapAssist.Types;
 using Newtonsoft.Json;
 using NLog;
@@ -116,7 +117,7 @@ namespace MapAssist.MyBot
             return _townNames.Contains(currentArea);
         }
 
-        private List<StatKeyValuePair> GetItemStats(UnitItem item)
+        private List<StatKeyValuePair> GetItemStats(UnitItem item, PlayerClass playerClass)
         {
             List<StatKeyValuePair> istats = null;
             if (item != null && item.Stats != null)
@@ -129,7 +130,7 @@ namespace MapAssist.MyBot
                     {
                         value = value >> 8;
                     }
-
+                    
                     return new StatKeyValuePair { key = key.ToString(), value = value };
                 }).ToList();
             }
@@ -137,7 +138,7 @@ namespace MapAssist.MyBot
             return istats;
         }
 
-        private dynamic CleanItem(UnitItem item)
+        private dynamic CleanItem(UnitItem item, PlayerClass playerClass)
         {
             var unique_name = "";
             var set_name = "";
@@ -168,11 +169,11 @@ namespace MapAssist.MyBot
                 is_hovered = item.IsHovered,
                 item_mode = item.ItemMode.ToString(),
                 item_mode_mapped = item.ItemModeMapped.ToString(),
-                stats = GetItemStats(item),
+                stats = GetItemStats(item, playerClass),
                 is_identified = item.IsIdentified,
                 inventory_page = item.ItemData.InvPage.ToString(),
                 tier = Items.GetItemTier(item),
-                base_item = item.Item.ToString(),
+                type = item.Item.ToString(),
                 num_sockets,
                 set_name,
                 unique_name,
@@ -200,6 +201,7 @@ namespace MapAssist.MyBot
                         var player_level = stats.ContainsKey(Stat.Level) ? stats[Stat.Level] : int.MaxValue;
                         var player_experience = stats.ContainsKey(Stat.Experience) ? stats[Stat.Experience] : int.MaxValue;
                         var player_gold = stats.ContainsKey(Stat.Gold) ? stats[Stat.Gold] : int.MaxValue;
+
                         var player_stats = stats.Where(item => _relevantPlayerStats.Contains(item.Key)).Select(item =>
                         {
                             Stat key = item.Key;
@@ -363,29 +365,29 @@ namespace MapAssist.MyBot
 
                             if (item.ItemModeMapped == ItemModeMapped.Ground)
                             {
-                                items.Add(CleanItem(item));
+                                items.Add(CleanItem(item, playerUnit.Struct.playerClass));
                             }
                             else if (item.ItemModeMapped == ItemModeMapped.Inventory)
                             {
-                                inventory_items.Add(CleanItem(item));
+                                inventory_items.Add(CleanItem(item, playerUnit.Struct.playerClass));
                             }
                             else if (in_town) // Only populate this data in town for performance
                             {
                                 if (item.ItemModeMapped == ItemModeMapped.Stash)
                                 {
-                                    stash_items.Add(CleanItem(item));
+                                    stash_items.Add(CleanItem(item, playerUnit.Struct.playerClass));
                                 }
                                 else if (item.ItemModeMapped == ItemModeMapped.Vendor)
                                 {
-                                    vendor_items.Add(CleanItem(item));
+                                    vendor_items.Add(CleanItem(item, playerUnit.Struct.playerClass));
                                 }
                                 else if (item.ItemModeMapped == ItemModeMapped.Cube)
                                 {
-                                    cube_items.Add(CleanItem(item));
+                                    cube_items.Add(CleanItem(item, playerUnit.Struct.playerClass));
                                 }
                                 else if (item.ItemModeMapped == ItemModeMapped.Mercenary)
                                 {
-                                    merc_items.Add(CleanItem(item));
+                                    merc_items.Add(CleanItem(item, playerUnit.Struct.playerClass));
                                 }
                             }
                         }

@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
+                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, wFalse)
                 # ui_manager.throw_out_junk(item_finder)
                 # item = pickit2._next_item()
                 # pather.move_mouse_to_item(item)
@@ -135,7 +135,7 @@ if __name__ == "__main__":
                 # pot_needs = belt_manager.update_pot_needs()
                 # pot_needs = belt_manager.get_pot_needs()
                 # print(f"Potion needs: {pot_needs}")
-                # bot._town_manager.buy_pots(Location.A3_ORMUS, pot_needs["health"], pot_needs["mana"])
+                # bot._town_manager.buy_pots(Location.A3_ORwMUS, pot_needs["health"], pot_needs["mana"])
 
                 # bank = None
                 # for obj in data["objects"]:w

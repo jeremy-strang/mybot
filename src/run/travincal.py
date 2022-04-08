@@ -121,7 +121,6 @@ class Travincal:
             self._pather.traverse((156, 113), self._char, time_out=4.0)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=False)
             self._avoid_durance()
-            self._pather.traverse((154, 111), self._char, time_out=4.0)
         else: # Else we need to make sure we loot both inside and outside the council room
             self._pather.walk_to_position((157, 104), time_out=3)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=skip_nopickup)
@@ -129,11 +128,12 @@ class Travincal:
             self._pather.walk_to_position((141, 113), time_out=3)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=False)
             wait(0.1, 0.15)
-
         self._ui_manager.enable_no_pickup()
-        keyboard.send(self._config.char["show_items"])
-        time.sleep(0.7) # sleep needed here to give d2r time to display items on screen on keypress
-        #Creating a screenshot of the current loot
-        self._pickit.take_loot_screenshot()
+
+        if self._config.general["loot_screenshots"]:
+            keyboard.send(self._config.char["show_items"])
+            time.sleep(0.7)
+            self._pickit.take_loot_screenshot()
+
         # self._obs_recorder.stop_recording_if_enabled()
         return (Location.A3_TRAV_CENTER_STAIRS, picked_up_items)

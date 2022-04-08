@@ -6,14 +6,14 @@ from operator import itemgetter
 
 from pytest import skip
 from api.mapassist import MapAssistApi
-from item.enums import ItemMode
+from item.types import ItemMode
 from pathing import Pather
 
 from utils.custom_mouse import mouse
 from config import Config
 from logger import Logger
 from screen import Screen
-from item import ItemFinder, Item
+from item import Item
 from ui import UiManager, belt_manager
 from ui import BeltManager
 from char import IChar
@@ -52,7 +52,7 @@ class Pickit2:
             if len(items_found) > 0:
                 Logger.debug("Memory pickit order:")
                 for item in items_found:
-                    Logger.debug(f"    {item['name']}, dist: {round(item['dist'], 1)}, quality: {item['quality']}, base: {item['base_item']}, position: {item['position']}")
+                    Logger.debug(f"    {item['name']}, dist: {round(item['dist'], 1)}, quality: {item['quality']}, base: {item['type']}, position: {item['position']}")
         return items_found[0] if len(items_found) > 0 else None
 
     def pick_up_items(self, time_out: float = 22, skip_nopickup: bool = False) -> bool:
