@@ -667,6 +667,9 @@ class UiManager():
                         break
                     else:
                         send_msg = found_items[0].pickit_type == 2 or (found_items[0].name in self._config.items and self._config.items[found_items[0].name].pickit_type == 2)
+                        item = self._api.find_item(item["id"])
+                        if item:
+                            send_msg = send_msg or item["is_identified"]
                         self._game_stats.log_item_keep(found_items[0].name, send_msg, hovered_item)
                 else:
                     # make sure there is actually an item
