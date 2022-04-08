@@ -3,15 +3,13 @@ from item.types import ItemType, ItemQuality, ItemMode, InventoryPage, BodyLoc, 
 
 # If you have an item listed here and it is identified, these rules will be applied to it.
 # If any of the rules in the list match the item, the highest priority among them will be used.
-# The rules should be tuples with a number and a function like this: (numer, function)
+# The rules should be functions that take in an item and return a boolean. 
 #
 # Example rule:
 #     ItemType.GrandCharm: [
-#       (1, lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 10))
+#         lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 10)
 #     ]
 #
-# The number 1 above is the priority to give the item if the check passes. The item will get priority 1
-# if the item is a Grand Charm with 10 or more max damage and 10 or more max life.
 IDENTIFIED_ITEMS = {
     ItemType.GrandCharm: [
         lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 20),
@@ -35,6 +33,20 @@ IDENTIFIED_ITEMS = {
         lambda item: item.check(Stat.MaxLife, ">=", 20), # 20 Life
         lambda item: item.check(Stat.MaxLife, ">=", 18) and item.check(Stat.MaxMana, ">=", 17), # 18+ life/17 mana SC
         lambda item: item.check(Stat.MaxLife, ">=", 15) and item.check(Stat.MaxDamage, ">=", 3), # 15+ life/3max SC
+    ],
+    ItemType.Ring: [
+        # Unique Rings
+        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.MaxMana, ">=", 20), # SoJ
+        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LifeSteal, ">=", 3), # BK Ring
+        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AbsorbLightningPercent, ">=", 15), # Wisp Projector
+        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.Dexterity, ">=", 20) and item.check(Stat.AttackRating, ">=", 250), # Raven Frost
+        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.MagicDamageReduction, ">=", 15), # Dwarf Star
+        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.MagicFind, ">=", 30) and item.check(Stat.AttackRating, ">=", 75), # Nagel
+    ],
+    ItemType.Amulet: [
+        # Unique Amulets
+        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AllSkills, ">=", 2) and item.check(Stat.AllResist, ">=", 20), # Mara's Kaleidoscope
+        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LightningResist, ">=", 25), # Highlord's Wrath
     ],
 }
 

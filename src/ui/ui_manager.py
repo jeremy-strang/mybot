@@ -648,9 +648,10 @@ class UiManager():
                 column, row = item_pos
                 slot_pos = self.get_slot_pos(self._config, *item_pos)
                 x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
+                found_items = self._keep_item(item_finder, None, inv_pos=(column, row), center=center_m)
                 mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
+                wait(0.4, 0.5)
                 hovered_item = self._screen.grab()
-                found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=center_m)
                 if len(found_items) > 0 and self._api.data and self._api.data["stash_open"]:
                     Logger.debug(f"    Keeping item found at position {column}, {row}...")
                     keyboard.send("ctrl", do_release=False)
