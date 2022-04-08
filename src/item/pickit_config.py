@@ -1,6 +1,17 @@
 
 from item.types import ItemType, ItemQuality, ItemMode, InventoryPage, BodyLoc, StashType, ItemFlag, Stat
 
+# If you have an item listed here and it is identified, these rules will be applied to it.
+# If any of the rules in the list match the item, the highest priority among them will be used.
+# The rules should be tuples with a number and a function like this: (numer, function)
+#
+# Example rule:
+#     ItemType.GrandCharm: [
+#       (1, lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 10))
+#     ]
+#
+# The number 1 above is the priority to give the item if the check passes. The item will get priority 1
+# if the item is a Grand Charm with 10 or more max damage and 10 or more max life.
 IDENTIFY_ITEMS = {
     ItemType.GrandCharm: [
         (1, lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 10)),
