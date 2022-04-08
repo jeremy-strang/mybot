@@ -14,13 +14,27 @@ from item.types import ItemType, ItemQuality, ItemMode, InventoryPage, BodyLoc, 
 # if the item is a Grand Charm with 10 or more max damage and 10 or more max life.
 IDENTIFIED_ITEMS = {
     ItemType.GrandCharm: [
-        lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 10),
+        lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 20),
         lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.PaladinCombatSkills),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.SorceressCold),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.SorceressFire),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.SorceressLightning),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.AmazonJavelinAndSpear) and item.check(Stat.MaxLife, ">=", 20),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.NecromancerPoisonAndBone) and item.check(Stat.MaxLife, ">=", 20),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.NecromancerSummoning) and item.check(Stat.MaxLife, ">=", 30),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.BarbarianWarcries) and item.check(Stat.MaxLife, ">=", 30),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.BarbarianWarcries) and item.check(Stat.GoldFind, ">=", 20),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.DruidElemental) and item.check(Stat.MaxLife, ">=", 20),
+        lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.AssassinTraps) and item.check(Stat.MaxLife, ">=", 20),
     ],
     ItemType.SmallCharm: [
         lambda item: item.check(Stat.MaxLife, ">=", 20) and (item.check(Stat.FireResist, ">=", 10) or item.check(Stat.LightningResist, ">=", 10)),
         lambda item: item.check(Stat.MagicFind, ">=", 7) and (item.check(Stat.MaxDamage, ">=", 3) or item.check(Stat.FasterHitRecovery, ">=", 10)),
-        lambda item: item.check(Stat.FireResist, ">=", 5) and item.check(Stat.LightningResist, ">=", 5),
+        lambda item: item.check(Stat.AllResist, ">=", 5), # 5@
+        lambda item: item.check(Stat.MagicFind, ">=", 7), # 7 MF
+        lambda item: item.check(Stat.MaxLife, ">=", 20), # 20 Life
+        lambda item: item.check(Stat.MaxLife, ">=", 18) and item.check(Stat.MaxMana, ">=", 17), # 18+ life/17 mana SC
+        lambda item: item.check(Stat.MaxLife, ">=", 15) and item.check(Stat.MaxDamage, ">=", 3), # 15+ life/3max SC
     ],
 }
 
