@@ -44,7 +44,6 @@ from utils.custom_mouse import mouse
 from utils.misc import wait
 from obs import ObsRecorder
 from monsters import sort_and_filter_monsters
-pp = pprint.PrettyPrinter(depth=6)
 
 if __name__ == "__main__":
     from utils.coordinates import world_to_abs
@@ -112,7 +111,7 @@ if __name__ == "__main__":
             try:
                 data = api.get_data()
                 # travincal.battle(False)
-                # pather.walk_to_poi("Kurast Docks")
+                pather.teleport_to_position((142, 103), char)
 
                 # if not pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=2, time_out=5, offset=[7, -5]):
                 #     print("F")
@@ -124,7 +123,7 @@ if __name__ == "__main__":
 
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
+                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
                 # ui_manager.throw_out_junk(item_finder)
                 # item = pickit2._next_item()
                 # pather.move_mouse_to_item(item)
@@ -177,6 +176,7 @@ if __name__ == "__main__":
         keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file())
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
+        keyboard.add_hotkey("=", lambda: start_overlay(bot, game_stats))
         print("Ready!\n\n" + ("-" * 80))
         keyboard.wait()
 

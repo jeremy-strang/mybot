@@ -171,6 +171,17 @@ class Pather:
         if monster:
             self.move_mouse_to_abs_pos(monster["position_abs"], monster["dist"])
 
+    def teleport_to_position(self, position: tuple[float, float], char):
+        if self._api.data:
+            data = self._api.data
+            pos_world = position + data["area_origin"]
+            dist = math.dist(pos_world, data['player_pos_world'])
+            pos_abs = world_to_abs(pos_world, data['player_pos_world'])
+            self.move_mouse_to_abs_pos(pos_abs, dist)
+            char.pre_move()
+            mouse.click(button="right")
+            wait(char._cast_duration)
+
     def teleport_to_item(self, item, char):
         # If we failed to pick it up, try to teleport to it
         if item and char.capabilities.can_teleport_natively:

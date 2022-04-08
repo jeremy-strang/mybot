@@ -130,6 +130,7 @@ class Travincal:
         self._ui_manager.enable_no_pickup()
 
         if self._config.general["loot_screenshots"]:
+            self._pather.teleport_to_position((142, 110), self._char)
             keyboard.send(self._config.char["show_items"])
             time.sleep(0.7)
             self._pickit.take_loot_screenshot()
