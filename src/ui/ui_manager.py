@@ -448,7 +448,7 @@ class UiManager():
                     pickit_prio = get_pickit_priority(item)
                     if pickit_prio > 0 and not "Potion" in item["name"]:
                         keep = True
-                        if not item["is_identified"] and item["type"] in IDENTIFIED_ITEMS:
+                        if not item["is_identified"] and (item["type"], item["quality"]) in IDENTIFIED_ITEMS:
                             item = self._identify_inventory_item(item)
                             # Recalc priority after identifying
                             pickit_prio = get_pickit_priority(item)

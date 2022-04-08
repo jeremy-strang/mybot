@@ -46,6 +46,7 @@ def get_pickit_priority(item: dict, potion_needs: dict = None):
 
         # Check if it's an item we want to identify
         type_quality = (item_type, quality)
+        print(type_quality)
         if type_quality in IDENTIFIED_ITEMS:
             # If it's identified, evaluate the rules for it and see if any of them pass
             if item["is_identified"]:
@@ -57,7 +58,11 @@ def get_pickit_priority(item: dict, potion_needs: dict = None):
                         result = prio
                     if prio > 1:
                         break
+                print(f"{type_quality} is identified, result: {0}")
             # Otherwise keep it for now, we will ID it later
             else:
+                print(f"{type_quality} is not identified")
                 result = 1
+        else:
+            print(f"{type_quality} not in IDENTIFIED_ITEMS")
     return result
