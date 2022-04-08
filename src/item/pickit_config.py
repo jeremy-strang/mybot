@@ -24,9 +24,9 @@ IDENTIFY_ITEMS = {
 
 POTIONS = {
     ItemType.FullRejuvenationPotion: 1,
-    ItemType.RejuvenationPotion: 0,
-    ItemType.SuperHealingPotion: 0,
-    ItemType.SuperManaPotion: 0,
+    ItemType.RejuvenationPotion: 1,
+    ItemType.SuperHealingPotion: 1,
+    ItemType.SuperManaPotion: 1,
     ItemType.GreaterHealingPotion: 0,
     ItemType.GreaterManaPotion: 0,
 }
