@@ -10,7 +10,7 @@ def get_pickit_priority(item: dict, potion_needs: dict = None):
         num_sockets = item["num_sockets"]
         socket_key = (item_type, num_sockets)
         is_eth = ItemFlag.Ethereal in item["flags"]
-        
+
         # Runes, gems
         if item_type in BASIC_ITEMS:
             result = BASIC_ITEMS[item_type]
@@ -43,12 +43,13 @@ def get_pickit_priority(item: dict, potion_needs: dict = None):
                 result = POTIONS[item_type] > 0 and "Heal" in item_type
             if "Mana" in item_type and potion_needs["mana"] > 0 and item_type in POTIONS:
                 result = POTIONS[item_type] > 0 and "Mana" in item_type
-        
-        if item_type in IDENTIFY_ITEMS and item["is_identified"]:
+
+        # Identified items
+        if item_type in IDENTIFIED_ITEMS and item["is_identified"]:
             result = 0
             item_obj = PickitItem(item)
-            for rule_prio, rule in IDENTIFY_ITEMS[item_type]:
-                prio = rule_prio if rule(item_obj) else 0
+            for rule in IDENTIFIED_ITEMS[item_type]:
+                prio = 1 if rule(item_obj) else 0
                 if prio > result:
                     result = prio
                 if prio > 1:

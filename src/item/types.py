@@ -1103,3 +1103,26 @@ class Stat:
     QuestItemDifficulty = "QuestItemDifficulty"
     PassiveMagicMastery = "PassiveMagicMastery"
     PassiveMagicPierce = "PassiveMagicPierce"
+
+class SkillTree:
+    AmazonBowAndCrossbow = 0
+    AmazonPassiveAndMagic = 1
+    AmazonJavelinAndSpear = 2
+    SorceressFire = 8
+    SorceressLightning = 9
+    SorceressCold = 10
+    NecromancerCurses = 16
+    NecromancerPoisonAndBone = 17
+    NecromancerSummoning = 18
+    PaladinCombatSkills = 24
+    PaladinOffensiveAuras = 25
+    PaladinDefensiveAuras = 26
+    BarbarianCombatSkills = 32
+    BarbarianMasteries = 33
+    BarbarianWarcries = 34
+    DruidSummoning = 40
+    DruidShapeShifting = 41
+    DruidElemental = 42
+    AssassinTraps = 48
+    AssassinShadowDisciplines = 49
+    AssassinMartialArts = 50

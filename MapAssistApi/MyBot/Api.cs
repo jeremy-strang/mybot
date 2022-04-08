@@ -126,6 +126,10 @@ namespace MapAssist.MyBot
                 {
                     Stat key = it.Key;
                     var value = it.Value;
+                    if (key == Stat.AddSkillTab)
+                    {
+                        value = (int)Items.GetItemStatAddSkillTreeSkills(item, SkillTree.Any).Item1;
+                    }
                     if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
                     {
                         value = value >> 8;

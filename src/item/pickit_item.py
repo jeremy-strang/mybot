@@ -32,6 +32,7 @@ class PickitItem:
         if item["stats"]:
             for entry in item["stats"]:
                 self.stats[entry["key"]] = entry["value"]
+        print(self.stats)
 
     def check(self, stat: Stat, operator: str, value):
         print(f"Checking item {self.name}: {stat} {operator} {value}:")
@@ -42,6 +43,7 @@ class PickitItem:
             if val is None:
                 result = False
             elif operator == "==":
+                print(f"    value: {val}, type: {type(val)}, value: {value}, type: {type(value)}")
                 result = val == value
             elif operator == "!=":
                 result = val != value
@@ -53,7 +55,7 @@ class PickitItem:
                 result = val <= value
             elif operator == "<":
                 result = val < value
-            print(f"    {stat} {operator} {val}: {result}")
+            print(f"    {value} {operator} {val}: {result}")
         else:
             print(f"    {stat} was not in self.stats: {self.stats}")
         return result
