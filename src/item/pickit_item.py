@@ -30,8 +30,21 @@ class PickitItem:
         self._raw_stats = item["stats"]
         self.stats = {}
         if item["stats"]:
+            fr = 0
+            cr = 0
+            lr = 0
+            pr = 0
             for entry in item["stats"]:
-                self.stats[entry["key"]] = entry["value"]
+                key = entry["key"]
+                val = entry["value"]
+                self.stats[key] = val
+                if key == Stat.FireResist: fr = val
+                elif key == Stat.ColdResist: cr = val
+                elif key == Stat.LightningResist: lr = val
+                elif key == Stat.PoisonResist: pr = val
+            # Compute all res stat
+            if fr > 0 and cr > 0 and lr > 0 and pr > 0:
+                self.stats[Stat.AllResist] = min(fr, cr, lr, pr)
         print(self.stats)
 
     def check(self, stat: Stat, operator: str, value):

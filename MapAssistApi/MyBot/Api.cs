@@ -125,17 +125,55 @@ namespace MapAssist.MyBot
                 istats = item.Stats.Select(it =>
                 {
                     Stat key = it.Key;
+                    string keyStr = key.ToString();
                     var value = it.Value;
                     if (key == Stat.AddSkillTab)
                     {
                         value = (int)Items.GetItemStatAddSkillTreeSkills(item, SkillTree.Any).Item1;
                     }
-                    if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
+                    else if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
                     {
                         value = value >> 8;
                     }
-                    
-                    return new StatKeyValuePair { key = key.ToString(), value = value };
+                    else if (key == Stat.AddClassSkills)
+                    {
+                        var tup = Items.GetItemStatAddClassSkills(item, PlayerClass.Any);
+                        switch (tup.Item1)
+                        {
+                            case PlayerClass.Druid:
+                                keyStr = "AddDruidSkills";
+                                value = tup.Item2;
+                                break;
+                            case PlayerClass.Barbarian:
+                                keyStr = "AddBarbarianSkills";
+                                value = tup.Item2;
+                                break;
+                            case PlayerClass.Amazon:
+                                keyStr = "AddAmazonSkills";
+                                value = tup.Item2;
+                                break;
+                            case PlayerClass.Paladin:
+                                keyStr = "AddPaladinSkills";
+                                value = tup.Item2;
+                                break;
+                            case PlayerClass.Sorceress:
+                                keyStr = "AddSorceressSkills";
+                                value = tup.Item2;
+                                break;
+                            case PlayerClass.Assassin:
+                                keyStr = "AddAssassinSkills";
+                                value = tup.Item2;
+                                break;
+                            case PlayerClass.Necromancer:
+                                keyStr = "AddNecromancerSkills";
+                                value = tup.Item2;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    return new StatKeyValuePair { key = keyStr, value = value };
                 }).ToList();
             }
 
@@ -393,6 +431,10 @@ namespace MapAssist.MyBot
                                 {
                                     merc_items.Add(CleanItem(item, playerUnit.Struct.playerClass));
                                 }
+                                else if (item.ItemModeMapped == ItemModeMapped.Player)
+                                {
+                                    equipped_items.Add(CleanItem(item, playerUnit.Struct.playerClass));
+                                }
                             }
                         }
 
@@ -460,27 +502,6 @@ namespace MapAssist.MyBot
                                 });
                             }
                         }
-
-                        //foreach (ItemLogEntry item in _gameData.ItemLog)
-                        //{
-                        //    msg.logged_items.Add(new
-                        //    {
-                        //        text = item.Text,
-                        //        hash = item.ItemHashString,
-                        //        position = new int[2] { (int)item.UnitItem.Position.X, (int)item.UnitItem.Position.Y },
-                        //        id = item.UnitItem.UnitId,
-                        //        flags = item.UnitItem.ItemData.ItemFlags.ToString(),
-                        //        quality = item.UnitItem.ItemData.ItemQuality.ToString(),
-                        //        name = Items.GetItemName(item.UnitItem),
-                        //        base_name = item.UnitItem.ItemBaseName,
-                        //        is_hovered = item.UnitItem.IsHovered,
-                        //        item_mode = item.UnitItem.ItemMode.ToString(),
-                        //        item_mode_mapped = item.UnitItem.ItemModeMapped.ToString(),
-                        //        stats = GetItemStats(item.UnitItem),
-                        //        is_identified = item.UnitItem.IsIdentified,
-                        //        inventory_page = item.UnitItem.ItemData.InvPage.ToString(),
-                        //    });
-                        //}
 
                         var msg = new
                         {

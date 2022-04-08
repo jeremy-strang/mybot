@@ -1103,6 +1103,15 @@ class Stat:
     QuestItemDifficulty = "QuestItemDifficulty"
     PassiveMagicMastery = "PassiveMagicMastery"
     PassiveMagicPierce = "PassiveMagicPierce"
+    # NOTE: Below stats are not in the raw game data, this is something computed in PickitItem or in the API
+    AllResist = "AllResist" 
+    AddDruidSkills = "AddDruidSkills"
+    AddBarbarianSkills = "AddBarbarianSkills"
+    AddAmazonSkills = "AddAmazonSkills"
+    AddPaladinSkills = "AddPaladinSkills"
+    AddSorceressSkills = "AddSorceressSkills"
+    AddAssassinSkills = "AddAssassinSkills"
+    AddNecromancerSkills = "AddNecromancerSkills"
 
 class SkillTree:
     AmazonBowAndCrossbow = 0
