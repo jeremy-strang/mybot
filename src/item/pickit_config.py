@@ -11,7 +11,7 @@ from item.types import ItemType, ItemQuality, ItemMode, InventoryPage, BodyLoc, 
 #     ]
 #
 IDENTIFIED_ITEMS = {
-    ItemType.GrandCharm: [
+    (ItemType.GrandCharm, ItemQuality.Magic): [
         lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 20),
         lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.PaladinCombatSkills),
         lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.SorceressCold),
@@ -25,7 +25,7 @@ IDENTIFIED_ITEMS = {
         lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.DruidElemental) and item.check(Stat.MaxLife, ">=", 20),
         lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.AssassinTraps) and item.check(Stat.MaxLife, ">=", 20),
     ],
-    ItemType.SmallCharm: [
+    (ItemType.SmallCharm, ItemQuality.Magic): [
         lambda item: item.check(Stat.MaxLife, ">=", 20) and (item.check(Stat.FireResist, ">=", 10) or item.check(Stat.LightningResist, ">=", 10)),
         lambda item: item.check(Stat.MagicFind, ">=", 7) and (item.check(Stat.MaxDamage, ">=", 3) or item.check(Stat.FasterHitRecovery, ">=", 10)),
         lambda item: item.check(Stat.AllResist, ">=", 5), # 5@
@@ -34,19 +34,19 @@ IDENTIFIED_ITEMS = {
         lambda item: item.check(Stat.MaxLife, ">=", 18) and item.check(Stat.MaxMana, ">=", 17), # 18+ life/17 mana SC
         lambda item: item.check(Stat.MaxLife, ">=", 15) and item.check(Stat.MaxDamage, ">=", 3), # 15+ life/3max SC
     ],
-    ItemType.Ring: [
+    (ItemType.Ring, ItemQuality.Unique): [
         # Unique Rings
-        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.MaxMana, ">=", 20), # SoJ
-        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LifeSteal, ">=", 3), # BK Ring
-        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AbsorbLightningPercent, ">=", 15), # Wisp Projector
-        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.Dexterity, ">=", 20) and item.check(Stat.AttackRating, ">=", 250), # Raven Frost
-        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.MagicDamageReduction, ">=", 15), # Dwarf Star
-        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.MagicFind, ">=", 30) and item.check(Stat.AttackRating, ">=", 75), # Nagel
+        lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.MaxMana, ">=", 20), # SoJ
+        lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LifeSteal, ">=", 3), # BK Ring
+        lambda item: item.check(Stat.AbsorbLightningPercent, ">=", 15), # Wisp Projector
+        lambda item: item.check(Stat.Dexterity, ">=", 20) and item.check(Stat.AttackRating, ">=", 250), # Raven Frost
+        lambda item: item.check(Stat.MagicDamageReduction, ">=", 15), # Dwarf Star
+        lambda item: item.check(Stat.MagicFind, ">=", 30) and item.check(Stat.AttackRating, ">=", 75), # Nagel
     ],
-    ItemType.Amulet: [
+    (ItemType.Amulet, ItemQuality.Unique): [
         # Unique Amulets
-        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AllSkills, ">=", 2) and item.check(Stat.AllResist, ">=", 20), # Mara's Kaleidoscope
-        lambda item: item.quality == ItemQuality.Unique and item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LightningResist, ">=", 25), # Highlord's Wrath
+        lambda item: item.check(Stat.AllSkills, ">=", 2) and item.check(Stat.AllResist, ">=", 20), # Mara's Kaleidoscope
+        lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LightningResist, ">=", 25), # Highlord's Wrath
     ],
 }
 

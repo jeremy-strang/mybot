@@ -45,12 +45,13 @@ def get_pickit_priority(item: dict, potion_needs: dict = None):
                 result = POTIONS[item_type] > 0 and "Mana" in item_type
 
         # Check if it's an item we want to identify
-        if item_type in IDENTIFIED_ITEMS:
+        type_quality = (item_type, quality)
+        if type_quality in IDENTIFIED_ITEMS:
             # If it's identified, evaluate the rules for it and see if any of them pass
             if item["is_identified"]:
                 result = 0
                 item_obj = PickitItem(item)
-                for rule in IDENTIFIED_ITEMS[item_type]:
+                for rule in IDENTIFIED_ITEMS[type_quality]:
                     prio = 2 if rule(item_obj) else 0
                     if prio > result:
                         result = prio
