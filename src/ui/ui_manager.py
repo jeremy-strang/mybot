@@ -405,7 +405,6 @@ class UiManager():
                 return True
         return False
 
-
     def _move_mouse_to_inventory_item(self, item):
         if item:
             item_pos = (item["position"][0], item["position"][1])
@@ -896,20 +895,39 @@ class UiManager():
             return False
         return True
 
-    def get_tome_of(self, name: str, non_empty=True):
+    def get_tome_of(self, name: str):
         tomes = self._api.find_items_by_name(f"Tome of {name}")
         if tomes is not None and len(tomes) > 0:
             for tome in tomes:
                 if tome and "stats" in tome:
                     for pair in tome["stats"]:
-                        if pair["key"] == Stat.Quantity and (pair["value"] > 0 or not non_empty):
+                        if pair["key"] == Stat.Quantity:
                             return (tome, pair["value"])
         return (None, 0)
 
+    def fill_tome_of(self, name: str) -> bool:
+        # Ghetto mixed pixel/memory implementation because I am lazy
+        tome, quantity = self.get_tome_of(name)
+        if tome is not None and quantity < 15:
+            scrolls = self._api.find_items_by_name(f"Scroll of {name}", "vendor_items")
+            if scrolls and len(scrolls) > 0:
+                scroll_search = self._template_finder.search_and_wait(f"SCROLL_OF_{name.upper().replace(' ', '_')}", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
+                if scroll_search.valid:
+                    mouse.move(*scroll_search.center, randomize=3, delay_factor=[0.7, 1])
+                    keyboard.send(hotkey="shift", do_release=False)
+                    wait(0.04, 0.06)
+                    mouse.click(button="right")
+                    wait(0.04, 0.06)
+                    keyboard.release(hotkey="shift")
+                    wait(0.9, 1.1)
+                return True
+        return False
+
     def has_tps(self) -> bool:
-        tome, quantity = self.get_tome_of("Town Portal", False)
+        tome, quantity = self.get_tome_of("Town Portal")
         if tome and quantity > 0:
-            Logger.debug(f"Detected ID scroll quantity from items in memory: quantity: {quantity}, position: {tome['position']}")
+            Logger.debug(f"Detected TP scroll quantity from items in memory, quantity: {quantity}, position: {tome['position']}")
+            return True
         elif self._config.char["tp"]:
             keyboard.send(self._config.char["tp"])
             template_match = self._template_finder.search_and_wait(
@@ -919,7 +937,7 @@ class UiManager():
                 threshold=0.79,
                 time_out=4)
             if not template_match.valid:
-                Logger.warning("You are out of tps")
+                Logger.warning("You are out of TP scrolls")
                 if self._config.general["info_screenshots"]:
                     cv2.imwrite("./info_screenshots/debug_out_of_tps_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
             return template_match.valid
@@ -1057,7 +1075,7 @@ class UiManager():
         if h_pot.valid is False:  # If not available in shop, try to shop next best potion.
             h_pot = self._template_finder.search_and_wait("GREATER_HEALING_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
         if h_pot.valid:
-            mouse.move(*h_pot.center, randomize=8, delay_factor=[1.0, 1.5])
+            mouse.move(*h_pot.center, randomize=3, delay_factor=[1.0, 1.5])
             for _ in range(healing_pots):
                 mouse.click(button="right")
                 wait(0.9, 1.1)
@@ -1066,10 +1084,15 @@ class UiManager():
         if m_pot.valid is False:  # If not available in shop, try to shop next best potion.
             m_pot = self._template_finder.search_and_wait("GREATER_MANA_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
         if m_pot.valid:
-            mouse.move(*m_pot.center, randomize=8, delay_factor=[1.0, 1.5])
+            mouse.move(*m_pot.center, randomize=3, delay_factor=[1.0, 1.5])
             for _ in range(mana_pots):
                 mouse.click(button="right")
                 wait(0.9, 1.1)
+        
+        self.fill_tome_of("Identify")
+        self.fill_tome_of("Town Portal")
+        
+
 
 
 # Testing: Move to whatever ui to test and run
