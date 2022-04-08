@@ -181,15 +181,23 @@ class MapAssistApi:
         return None
 
     def find_items_by_name(self, name: str, list_name: str = "inventory_items") -> dict:
-        results = []
+        results = None
         if self.data and list_name in self.data and type(self.data[list_name]) is list:
+            results = []
             for item in self.data[list_name]:
                 if item["name"] == name:
                     results.append(item)
         return results
     
     def find_items_by_roi(self, roi, list_name: str = "inventory_items") -> list:
-        results = []
+        results = None
+        if self.data and list_name in self.data and type(self.data[list_name]) is list:
+            results = []
+            for item in self.data[list_name]:
+                x = item["position"][0]
+                y = item["position"][1]
+                if x >= roi[0] and x < roi[2] and y >= roi[1] and y < roi[3]:
+                    results.append(item)
         return results
 
     def find_items_by_position(self, pos: tuple[int, int], list_name: str = "inventory_items", max_x: int = 10, max_y = 4) -> list:

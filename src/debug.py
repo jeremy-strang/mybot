@@ -120,12 +120,11 @@ if __name__ == "__main__":
 
                 # belt_manager.update_pot_needs()
 
-                ui_manager.has_tps()
                 # pickit2.pick_up_items()
 
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, wFalse)
+                ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
                 # ui_manager.throw_out_junk(item_finder)
                 # item = pickit2._next_item()
                 # pather.move_mouse_to_item(item)
