@@ -23,8 +23,7 @@ class A1(IAct):
     def can_trade_and_repair(self) -> bool: return True
 
     def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._old_pather.traverse_nodes((curr_loc, Location.A1_KASHYA_CAIN), self._char, force_move=True):
-            return False
+        if not self._pather.traverse_walking("Kashya", self._char, obj=False, threshold=10, static_npc=True): return False
         if self._npc_manager.open_npc_menu(Npc.KASHYA):
             self._npc_manager.press_npc_btn(Npc.KASHYA, "resurrect")
             return Location.A1_KASHYA_CAIN
