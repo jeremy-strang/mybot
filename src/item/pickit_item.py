@@ -1,11 +1,7 @@
 from item.types import ItemType, ItemQuality, ItemMode, InventoryPage, BodyLoc, StashType, ItemFlag, Stat
 
-import pprint
-pp = pprint.PrettyPrinter(depth=6)
-
 class PickitItem:
     def __init__(self, item: dict):
-        pp.pprint(item)
         self._raw_item = item
         self.id = item["id"]
         self.type = item["type"]
@@ -45,10 +41,8 @@ class PickitItem:
             # Compute all res stat
             if fr > 0 and cr > 0 and lr > 0 and pr > 0:
                 self.stats[Stat.AllResist] = min(fr, cr, lr, pr)
-        print(self.stats)
 
     def check(self, stat: Stat, operator: str, value):
-        print(f"Checking item {self.name}: {stat} {operator} {value}:")
         result = False
         if stat in self.stats:
             val = self.stats[stat]
@@ -56,7 +50,6 @@ class PickitItem:
             if val is None:
                 result = False
             elif operator == "==":
-                print(f"    value: {val}, type: {type(val)}, value: {value}, type: {type(value)}")
                 result = val == value
             elif operator == "!=":
                 result = val != value
@@ -68,7 +61,4 @@ class PickitItem:
                 result = val <= value
             elif operator == "<":
                 result = val < value
-            print(f"    {value} {operator} {val}: {result}")
-        else:
-            print(f"    {stat} was not in self.stats: {self.stats}")
         return result

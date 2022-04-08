@@ -20,6 +20,7 @@ IDENTIFIED_ITEMS = {
     ItemType.SmallCharm: [
         lambda item: item.check(Stat.MaxLife, ">=", 20) and (item.check(Stat.FireResist, ">=", 10) or item.check(Stat.LightningResist, ">=", 10)),
         lambda item: item.check(Stat.MagicFind, ">=", 7) and (item.check(Stat.MaxDamage, ">=", 3) or item.check(Stat.FasterHitRecovery, ">=", 10)),
+        lambda item: item.check(Stat.FireResist, ">=", 5) and item.check(Stat.LightningResist, ">=", 5),
     ],
 }
 

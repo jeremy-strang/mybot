@@ -7,6 +7,7 @@ import os
 import numpy as np
 from api.mapassist import MapAssistApi
 from item.item_finder import Item
+from item.pickit_config import IDENTIFIED_ITEMS
 from item.types import Stat
 import obs
 from obs import obs_recorder
@@ -404,6 +405,35 @@ class UiManager():
                 return True
         return False
 
+
+    def _move_mouse_to_inventory_item(self, item):
+        if item:
+            item_pos = (item["position"][0], item["position"][1])
+            column, row = item_pos
+            slot_pos = self.get_slot_pos(self._config, *item_pos)
+            x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
+            mouse.move(x_m, y_m, randomize=10, delay_factor=[0.5, 0.7])
+
+    def _identify_inventory_item(self, item) -> bool:
+        if item and not item["is_identified"]:
+            tome, quantity = self.get_tome_of("Identify")
+            if tome and quantity > 0:
+                self._move_mouse_to_inventory_item(tome)
+                wait(0.1, 0.2)
+                mouse.click(button="right")
+                wait(0.5)
+                self._move_mouse_to_inventory_item(item)
+                wait(0.1, 0.2)
+                mouse.click(button="left")
+                wait(0.5)
+                item = self._api.find_item(item["id"], "inventory_items")
+                if item and item["is_identified"]:
+                    Logger.debug(f"Successfully identified item {item['name']} at position {item['position']}!")
+                    return item
+                else:
+                    Logger.debug(f"Failed to identify item {item['name']} at position {item['position']}")
+        return item
+
     def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None) -> list[Item]:
         """
         Check if an item should be kept, the item should be hovered and in own inventory when function is called
@@ -418,11 +448,18 @@ class UiManager():
                 if item:
                     pickit_prio = get_pickit_priority(item)
                     if pickit_prio > 0 and not "Potion" in item["name"]:
-                        Logger.info(f"    Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
-                        mem_items.append(Item(center, item["name"], 1, pickit_type=pickit_prio))
+                        keep = True
+                        if not item["is_identified"] and item["type"] in IDENTIFIED_ITEMS:
+                            item = self._identify_inventory_item(item)
+                            # Recalc priority after identifying
+                            pickit_prio = get_pickit_priority(item)
+                            keep = pickit_prio > 0
+                        if keep:
+                            Logger.info(f"    Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
+                            mem_items.append(Item(center, item["name"], 1, pickit_type=pickit_prio))
             if len(mem_items) > 0:
                 return [mem_items[0]]
-
+        return []
         if img is None:
             hovered_item = self._screen.grab()
         wait(0.2, 0.3)
@@ -599,6 +636,8 @@ class UiManager():
         else:
             self.transfer_shared_to_private_gold(self._gambling_round)
         # stash stuff
+        x, y = self._screen.convert_abs_to_monitor((0, 0))
+        mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
         self._move_to_stash_tab(self._curr_stash["items"])
         center_m = self._screen.convert_abs_to_monitor((0, 0))
         items = self._api.find_items_by_roi([0, 0, num_loot_columns, 4])
@@ -608,29 +647,50 @@ class UiManager():
                 item_pos = (item["position"][0], item["position"][1])
                 column, row = item_pos
                 slot_pos = self.get_slot_pos(self._config, *item_pos)
-                print(f"    slot_pos: {slot_pos}, item_pos: {item_pos}")
                 x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
                 mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
-                hovered_item = None
+                hovered_item = self._screen.grab()
                 found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=center_m)
-                Logger.debug(f"    Keeping item found at position {column}, {row}...")
                 if len(found_items) > 0 and self._api.data and self._api.data["stash_open"]:
-                    hovered_item = self._screen.grab()
+                    Logger.debug(f"    Keeping item found at position {column}, {row}...")
                     keyboard.send("ctrl", do_release=False)
-                    wait(0.04, 0.06)
+                    wait(0.1, 0.2)
                     mouse.click(button="left")
-                    wait(0.04, 0.06)
+                    wait(0.1, 0.2)
                     keyboard.release("ctrl")
                     # To avoid logging multiple times the same item when stash tab is full
                     # check the _keep_item again. In case stash is full we will still find the same item
-                    wait(0.3)
+                    wait(0.5)
                     did_stash_test_img = self._screen.grab()
                     if len(self._keep_item(item_finder, did_stash_test_img, False)) > 0:
-                        Logger.debug("Wanted to stash item, but its still in inventory. Assumes full stash. Move to next.")
+                        Logger.debug("    Wanted to stash item, but its still in inventory. Assumes full stash. Move to next.")
                         break
                     else:
                         send_msg = found_items[0].pickit_type == 2 or (found_items[0].name in self._config.items and self._config.items[found_items[0].name].pickit_type == 2)
                         self._game_stats.log_item_keep(found_items[0].name, send_msg, hovered_item)
+                else:
+                    # make sure there is actually an item
+                    time.sleep(0.3)
+                    curr_pos = mouse.get_position()
+                    # move mouse away from inventory, for some reason it was sometimes included in the grabed img
+                    x, y = self._screen.convert_abs_to_monitor((0, 0))
+                    mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
+                    item_check_img = self._screen.grab()
+                    mouse.move(*curr_pos, randomize=2)
+                    wait(0.4, 0.6)
+                    slot_pos, slot_img = self.get_slot_pos_and_img(self._config, item_check_img, column, row)
+                    if self._slot_has_item(slot_img):
+                        if self._config.general["info_screenshots"]:
+                            cv2.imwrite("./info_screenshots/info_discard_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", hovered_item)
+                        mouse.press(button="left")
+                        wait(0.2, 0.4)
+                        mouse.release(button="left")
+                        mouse.move(*center_m, randomize=20)
+                        wait(0.2, 0.3)
+                        mouse.press(button="left")
+                        wait(0.2, 0.3)
+                        mouse.release(button="left")
+                        wait(0.5, 0.5)
         else:
             Logger.warning(f"    Could not detect inventory items using memory, falling back to pixel search")
             positions = itertools.product(range(num_loot_columns), range(4))
