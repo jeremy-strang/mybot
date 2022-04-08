@@ -293,7 +293,7 @@ SET_ITEMS = {
 }
 
 MAGIC_ITEMS = {
-    ItemType.GrandCharm: 0,
+    ItemType.GrandCharm: 1,
     ItemType.LargeCharm: 0,
     ItemType.SmallCharm: 1,
     ItemType.Jewel: 0,
