@@ -125,7 +125,7 @@ namespace MapAssist.MyBot
                 istats = item.Stats.Select(it =>
                 {
                     Stat key = it.Key;
-                    string keyStr = key.ToString();
+                    var keyStr = key.ToString();
                     var value = it.Value;
                     if (key == Stat.AddSkillTab)
                     {

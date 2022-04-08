@@ -180,15 +180,27 @@ class MapAssistApi:
                     return item
         return None
 
-    def find_items_by_position(self, pos: tuple[int, int], list_name: str = "inventory_items", max_x: int = 10, max_y = 4) -> dict:
-        result = []
+    def find_items_by_name(self, name: str, list_name: str = "inventory_items") -> dict:
+        results = []
+        if self.data and list_name in self.data and type(self.data[list_name]) is list:
+            for item in self.data[list_name]:
+                if item["name"] == name:
+                    results.append(item)
+        return results
+    
+    def find_items_by_roi(self, roi, list_name: str = "inventory_items") -> list:
+        results = []
+        return results
+
+    def find_items_by_position(self, pos: tuple[int, int], list_name: str = "inventory_items", max_x: int = 10, max_y = 4) -> list:
+        results = []
         if self.data and list_name in self.data and type(self.data[list_name]) is list:
             for i, item in enumerate(self.data[list_name]):
                 item_x = item["position"][0]
                 item_y = item["position"][1]
                 if item_x == pos[0] and item_y == pos[1] and item_x < max_x and item_y < max_y:
-                    result.append(item)
-        return result
+                    results.append(item)
+        return results
 
     def find_object(self, object: str):
         if self.data:

@@ -7,6 +7,7 @@ import os
 import numpy as np
 from api.mapassist import MapAssistApi
 from item.item_finder import Item
+from item.types import Stat
 import obs
 from obs import obs_recorder
 
@@ -775,11 +776,21 @@ class UiManager():
             return False
         return True
 
+    def get_tome_of(self, name: str, non_empty=True):
+        tomes = self._api.find_items_by_name(f"Tome of {name}")
+        if tomes is not None and len(tomes) > 0:
+            for tome in tomes:
+                if tome and "stats" in tome:
+                    for pair in tome["stats"]:
+                        if pair["key"] == Stat.Quantity and (pair["value"] > 0 or not non_empty):
+                            return (tome, pair["value"])
+        return (None, 0)
+
     def has_tps(self) -> bool:
-        """
-        :return: Returns True if mybot has town portals available. False otherwise
-        """
-        if self._config.char["tp"]:
+        tome, quantity = self.get_tome_of("Town Portal", False)
+        if tome and quantity > 0:
+            Logger.debug(f"Detected ID scroll quantity from items in memory: quantity: {quantity}, position: {tome['position']}")
+        elif self._config.char["tp"]:
             keyboard.send(self._config.char["tp"])
             template_match = self._template_finder.search_and_wait(
                 ["TP_ACTIVE", "TP_INACTIVE"],

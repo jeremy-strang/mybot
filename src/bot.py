@@ -201,7 +201,7 @@ class Bot:
     #     from transitions.extensions import GraphMachine
     #     self.machine = GraphMachine(model=self, states=self._states, initial="initialization", transitions=self._transitions, queued=True)
     #     self.machine.get_graph().draw('my_state_diagram.png', prog='dot')
-        
+
     def get_belt_manager(self) -> BeltManager:
         return self._belt_manager
 

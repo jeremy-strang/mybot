@@ -120,7 +120,8 @@ if __name__ == "__main__":
 
                 # belt_manager.update_pot_needs()
 
-                pickit2.pick_up_items()
+                ui_manager.has_tps()
+                # pickit2.pick_up_items()
 
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
