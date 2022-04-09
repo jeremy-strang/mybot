@@ -4,7 +4,7 @@ from config import Config
 from logger import Logger
 from pathing import OldPather, Location
 from typing import Union
-from item.pickit import PickIt
+from item.pixel_pickit import PixelPickit
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
 from ui import UiManager
@@ -21,7 +21,7 @@ class Pindleskin:
         town_manager: TownManager,
         ui_manager: UiManager,
         char: IChar,
-        pickit: PickIt,
+        pickit: PixelPickit,
         api: MapAssistApi,
         pather: Pather,
         obs_recorder: ObsRecorder,

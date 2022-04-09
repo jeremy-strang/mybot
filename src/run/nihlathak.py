@@ -4,7 +4,7 @@ from config import Config
 from logger import Logger
 from pathing import Location, OldPather
 from typing import Union
-from item.pickit import PickIt
+from item.pixel_pickit import PixelPickit
 from pathing import Pather
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
@@ -25,7 +25,7 @@ class Nihlathak:
         town_manager: TownManager,
         ui_manager: UiManager,
         char: IChar,
-        pickit: PickIt,
+        pickit: PixelPickit,
         api: MapAssistApi,
         pather: Pather,
         obs_recorder: ObsRecorder,

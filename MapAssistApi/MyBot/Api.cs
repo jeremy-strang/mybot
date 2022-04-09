@@ -194,10 +194,7 @@ namespace MapAssist.MyBot
             }
 
             var sockets = 0;
-            if (item.ItemMode == ItemMode.SOCKETED && item.Stats != null)
-            {
-                item.Stats.TryGetValue(Stat.NumSockets, out sockets);
-            }
+            item.Stats.TryGetValue(Stat.NumSockets, out sockets);
 
             return new
             {

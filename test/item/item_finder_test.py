@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import cv2
 from logger import Logger
-from item.item_finder import ItemFinder, Item
+from item.item_finder import ItemFinder, PixelItem
 from config import Config, ItemProps
 
 

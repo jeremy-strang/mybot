@@ -1,7 +1,47 @@
-class PickitType:
+from enum import Enum
+from functools import total_ordering
+
+@total_ordering
+class Action(Enum):
     DontKeep = 0
     Keep = 1
     KeepAndNotify = 2
+    
+    def __eq__(self, other):
+        if self.__class__ is other.__class__: return self.value == other.value
+        elif type(other) is int or type(other) is float: return self.value == int(other)
+        return NotImplemented
+
+    def __lt__(self, other):
+        if self.__class__ is other.__class__: return self.value < other.value
+        elif type(other) is int or type(other) is float: return self.value < other
+        return NotImplemented
+    
+    def __le__(self, other):
+        if self.__class__ is other.__class__: return self.value <= other.value
+        elif type(other) is int or type(other) is float: return self.value <= other
+        return NotImplemented
+    
+    def __gt__(self, other):
+        if self.__class__ is other.__class__: return self.value > other.value
+        elif type(other) is int or type(other) is float: return self.value > other
+        return NotImplemented
+    
+    def __ge__(self, other):
+        if self.__class__ is other.__class__: return self.value >= other.value
+        elif type(other) is int or type(other) is float: return self.value >= other
+        return NotImplemented
+    
+    def __int__(self):
+        return self.value
+    
+    def __str__(self):
+        return self.name
+
+class EthOption:
+    Any = 0
+    EthOnly = 1
+    NonEthOnly = 2
 
 class InventoryPage:
     Inventory = "INVENTORY"
@@ -20,7 +60,8 @@ class StashType:
     Shared3 = "Shared3"
     Belt = "Belt"
 
-class ItemQuality:
+@total_ordering
+class Quality(Enum):
     Inferior = 1
     Normal = 2
     Superior = 3
@@ -30,6 +71,40 @@ class ItemQuality:
     Unique = 7
     Craft = 8
     Tempered = 9
+    
+    def __eq__(self, other):
+        if self.__class__ is other.__class__: return self.value == other.value
+        elif type(other) is int or type(other) is float: return self.value == int(other)
+        return NotImplemented
+    
+    def __hash__(self):
+        return self.value
+    
+    def __int__(self):
+        return self.value
+    
+    def __str__(self):
+        return self.name
+
+    def __lt__(self, other):
+        if self.__class__ is other.__class__: return self.value < other.value
+        elif type(other) is int or type(other) is float: return self.value < other
+        return NotImplemented
+    
+    def __le__(self, other):
+        if self.__class__ is other.__class__: return self.value <= other.value
+        elif type(other) is int or type(other) is float: return self.value <= other
+        return NotImplemented
+    
+    def __gt__(self, other):
+        if self.__class__ is other.__class__: return self.value > other.value
+        elif type(other) is int or type(other) is float: return self.value > other
+        return NotImplemented
+    
+    def __ge__(self, other):
+        if self.__class__ is other.__class__: return self.value >= other.value
+        elif type(other) is int or type(other) is float: return self.value >= other
+        return NotImplemented
 
 class ItemMode:
     Stored = "STORED" # Item is in storage (inventory, cube, stash?)
@@ -40,7 +115,7 @@ class ItemMode:
     Dropping = "DROPPING" # Item is being dropped
     Socketed = "SOCKETED" # Item is socketed in another item
 
-class ItemFlag:
+class Flag:
     NewItem = "IFLAG_NEWITEM"
     Target = "IFLAG_TARGET"
     Targeting = "IFLAG_TARGETING"
@@ -85,7 +160,30 @@ class BodyLoc:
     RightHandOnSwitch = "SWRARM" # Right-hand on switch
     LeftHandOnSwitch = "SWLARM" # Left-hand on switch
 
-class ItemType:
+class SkillTree:
+    AmazonBowAndCrossbow = 0
+    AmazonPassiveAndMagic = 1
+    AmazonJavelinAndSpear = 2
+    SorceressFire = 8
+    SorceressLightning = 9
+    SorceressCold = 10
+    NecromancerCurses = 16
+    NecromancerPoisonAndBone = 17
+    NecromancerSummoning = 18
+    PaladinCombatSkills = 24
+    PaladinOffensiveAuras = 25
+    PaladinDefensiveAuras = 26
+    BarbarianCombatSkills = 32
+    BarbarianMasteries = 33
+    BarbarianWarcries = 34
+    DruidSummoning = 40
+    DruidShapeShifting = 41
+    DruidElemental = 42
+    AssassinTraps = 48
+    AssassinShadowDisciplines = 49
+    AssassinMartialArts = 50
+
+class Item:
     HandAxe = "HandAxe"
     Axe = "Axe"
     DoubleAxe = "DoubleAxe"
@@ -1116,26 +1214,3 @@ class Stat:
     AddSorceressSkills = "AddSorceressSkills"
     AddAssassinSkills = "AddAssassinSkills"
     AddNecromancerSkills = "AddNecromancerSkills"
-
-class SkillTree:
-    AmazonBowAndCrossbow = 0
-    AmazonPassiveAndMagic = 1
-    AmazonJavelinAndSpear = 2
-    SorceressFire = 8
-    SorceressLightning = 9
-    SorceressCold = 10
-    NecromancerCurses = 16
-    NecromancerPoisonAndBone = 17
-    NecromancerSummoning = 18
-    PaladinCombatSkills = 24
-    PaladinOffensiveAuras = 25
-    PaladinDefensiveAuras = 26
-    BarbarianCombatSkills = 32
-    BarbarianMasteries = 33
-    BarbarianWarcries = 34
-    DruidSummoning = 40
-    DruidShapeShifting = 41
-    DruidElemental = 42
-    AssassinTraps = 48
-    AssassinShadowDisciplines = 49
-    AssassinMartialArts = 50

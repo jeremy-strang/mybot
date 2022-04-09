@@ -6,9 +6,9 @@ import itertools
 import os
 import numpy as np
 from api.mapassist import MapAssistApi
-from item.item_finder import Item
+from item.item_finder import PixelItem
 from item.pickit_item import PickitItem
-from item.types import Stat
+from item.pickit_types import Stat
 import obs
 from obs import obs_recorder
 
@@ -29,7 +29,7 @@ from api import MapAssistApi
 import random 
 import string
 
-from item.pickit_utils import get_pickit_priority
+from item.pickit_utils import get_pickit_action
 
 class UiManager():
     """Everything that is clicking on some static 2D UI or is checking anything in regard to it should be placed here."""
@@ -433,7 +433,7 @@ class UiManager():
                     Logger.debug(f"Failed to identify item {item['name']} at position {item['position']}")
         return item
 
-    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None) -> list[Item]:
+    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None) -> list[PixelItem]:
         """
         Check if an item should be kept, the item should be hovered and in own inventory when function is called
         :param item_finder: ItemFinder to check if item is in pickit
@@ -445,21 +445,21 @@ class UiManager():
             mem_items = []
             for item in self._api.find_items_by_position(inv_pos, "inventory_items"):
                 if item:
-                    pickit_prio = get_pickit_priority(item, self._config.pickit_config)
+                    pickit_prio = get_pickit_action(item, self._config.pickit_config)
                     pickit_item = PickitItem(item)
                     if pickit_prio > 0 and not "Potion" in item["name"]:
                         keep = True
                         if not item["is_identified"] and (item["type"], item["quality"]) in self._config.pickit_config.IdentifiedItems:
                             item = self._identify_inventory_item(item)
                             # Recalc priority after identifying
-                            pickit_prio = get_pickit_priority(item, self._config.pickit_config)
+                            pickit_prio = get_pickit_action(item, self._config.pickit_config)
                             pickit_item = PickitItem(item)
                             keep = pickit_prio > 0
                             if not keep:
                                 self._game_stats.log_item_discard(pickit_item.get_summary(), False)
                         if keep:
                             Logger.info(f"    Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
-                            mem_items.append(Item(center=center, name=pickit_item.name, pickit_type=pickit_prio, description=pickit_item.get_summary()))
+                            mem_items.append(PixelItem(center=center, name=pickit_item.name, pickit_type=pickit_prio, description=pickit_item.get_summary()))
             if len(mem_items) > 0:
                 return [mem_items[0]]
         return []

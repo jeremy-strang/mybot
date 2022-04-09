@@ -19,7 +19,7 @@ from screen import Screen
 from template_finder import TemplateFinder
 from char import IChar
 from item import ItemFinder
-from item.pickit import PickIt
+from item.pixel_pickit import PixelPickit
 from ui import UiManager, char_selector
 from ui import BeltManager
 from ui import CharSelector
@@ -100,7 +100,7 @@ class Bot:
         else:
             Logger.error(f'{self._config.char["type"]} is not supported! Closing down bot.')
             os._exit(1)
-        self._pickit = PickIt(self._screen, self._item_finder, self._ui_manager, self._belt_manager, self._api, self._char, self._pather)
+        self._pickit = PixelPickit(self._screen, self._item_finder, self._ui_manager, self._belt_manager, self._api, self._char, self._pather)
 
         # Create Town Manager
         npc_manager = NpcManager(screen, self._template_finder)

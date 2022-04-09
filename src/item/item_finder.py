@@ -18,7 +18,7 @@ class Template:
     blacklist: bool = False
 
 @dataclass
-class Item:
+class PixelItem:
     center: Tuple[float, float] = None # (x, y) in screen coordinates
     name: str = None
     score: float = -1.0
@@ -73,7 +73,7 @@ class ItemFinder:
                         template.blacklist = True
                     self._templates[item_name] = template
 
-    def search(self, inp_img: np.ndarray) -> list[Item]:
+    def search(self, inp_img: np.ndarray) -> list[PixelItem]:
         img = inp_img[:,:,:]
         start = time.time()
         item_text_clusters = self._item_cropper.crop(img, 7)
@@ -115,7 +115,7 @@ class ItemFinder:
                                     hist_result = cv2.compareHist(template.hist, hist, cv2.HISTCMP_CORREL)
                                     same_type = hist_result > 0.65 and hist_result is not np.inf
                                     if same_type:
-                                        item = Item()
+                                        item = PixelItem()
                                         item.center = (int(max_loc[0] + x + int(template.data.shape[1] * 0.5)), int(max_loc[1] + y + int(template.data.shape[0] * 0.5)))
                                         item.name = key
                                         item.score = max_val

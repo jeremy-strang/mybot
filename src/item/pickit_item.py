@@ -1,5 +1,5 @@
 from typing import Any
-from item.types import ItemType, ItemQuality, ItemMode, InventoryPage, BodyLoc, SkillTree, StashType, ItemFlag, Stat
+from item.pickit_types import Item, Quality, ItemMode, InventoryPage, BodyLoc, SkillTree, StashType, Flag, Stat
 
 class PickitItem:
     def __init__(self, item: dict):
@@ -20,12 +20,12 @@ class PickitItem:
         self.position = self.stats["position"] = item["position"]
         self.quality = self.stats["quality"] = item["quality"]
         self.tier = self.stats["tier"] = item["tier"]
-        self.unique_name = self.stats["unique_name"] = item["unique_name"] if self.quality == ItemQuality.Unique else ""
-        self.set_name = self.stats["set_name"] = item["set_name"] if self.quality == ItemQuality.Set else ""
+        self.unique_name = self.stats["unique_name"] = item["unique_name"] if self.quality == Quality.Unique else ""
+        self.set_name = self.stats["set_name"] = item["set_name"] if self.quality == Quality.Set else ""
         self._raw_flags = self.stats["_raw_flags"] = item["flags"]
         self.flags = self.stats["flags"] = ", ".split(self._raw_flags) if self._raw_flags and self._raw_flags != "0" else []
         self._raw_stats = self.stats["_raw_stats"] = item["stats"]
-        self.is_ethereal = self.stats["is_ethereal"] = ItemFlag.Ethereal in item["flags"]
+        self.is_ethereal = self.stats["is_ethereal"] = Flag.Ethereal in item["flags"]
         if item["stats"]:
             fr = 0
             cr = 0
@@ -44,7 +44,7 @@ class PickitItem:
                 self.stats[Stat.AllResist] = min(fr, cr, lr, pr)
 
             # Determine unique amulet/ring name
-            if self.quality == ItemQuality.Unique and self.type == ItemType.Ring:
+            if self.quality == Quality.Unique and self.type == Item.Ring:
                 if self.check(Stat.AllSkills, ">=", 1) and self.check(Stat.MaxMana, ">=", 20):
                     self.unique_name = "Stone of Jordan"
                 elif self.check(Stat.AllSkills, ">=", 1) and self.check(Stat.LifeSteal, ">=", 3):
@@ -58,7 +58,7 @@ class PickitItem:
                 elif self.check(Stat.MagicFind, ">=", 15) and self.check(Stat.AttackRating, ">=", 50):
                     self.unique_name = "Nagelring"
                 self.name = self.unique_name + " Ring"
-            elif self.quality == ItemQuality.Unique and self.type == ItemType.Amulet:
+            elif self.quality == Quality.Unique and self.type == Item.Amulet:
                 if self.check(Stat.AllSkills, ">=", 2) and self.check(Stat.AllResist, ">=", 20):
                     self.unique_name = "Mara's Kaleidoscope"
                 elif self.check(Stat.AllSkills, ">=", 2) and self.check(Stat.LightningResist, ">=", 25):

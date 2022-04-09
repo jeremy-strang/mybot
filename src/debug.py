@@ -1,13 +1,12 @@
 import json
 import math
-import pprint
 import time
 import traceback
 from tracemalloc import stop
 from char.hammerdin import Hammerdin
 import game_controller
-from item.pickit import PickIt
-from item.pickit2 import Pickit2
+from item.pixel_pickit import PixelPickit
+from item.pickit import Pickit
 import keyboard
 import os
 import sys
@@ -44,6 +43,9 @@ from utils.custom_mouse import mouse
 from utils.misc import wait
 from obs import ObsRecorder
 from monsters import sort_and_filter_monsters
+
+import pprint
+pp = pprint.PrettyPrinter(depth=6)
 
 if __name__ == "__main__":
     from utils.coordinates import world_to_abs
@@ -85,8 +87,8 @@ if __name__ == "__main__":
         belt_manager = BeltManager(screen, template_finder, api)
 
         char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        pickit = PickIt(screen, item_finder, ui_manager, belt_manager, api, char, pather)
-        pickit2 = Pickit2(screen, ui_manager, belt_manager, char, pather, api)
+        pickit = PixelPickit(screen, item_finder, ui_manager, belt_manager, api, char, pather)
+        pickit2 = Pickit(screen, ui_manager, belt_manager, char, pather, api)
         # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities(force=True)
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
@@ -119,11 +121,11 @@ if __name__ == "__main__":
 
                 # belt_manager.update_pot_needs()
 
-                # pickit2.pick_up_items()
+                pickit.pick_up_items(char)
 
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
+                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
 
                 # ui_manager.fill_tome_of("Town Portal")
                 # ui_manager.throw_out_junk(item_finder)
