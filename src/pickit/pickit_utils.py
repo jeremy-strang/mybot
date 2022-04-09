@@ -5,7 +5,6 @@ from pickit.pickit_config import *
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
 
-
 def _parse_pickit_action(opt: Union[Action, tuple[Action, Options], bool], item: dict = None) -> Action:
     result: Action = Action.DontKeep
     if type(opt) is tuple:
