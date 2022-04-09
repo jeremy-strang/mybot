@@ -6,9 +6,9 @@ import itertools
 import os
 import numpy as np
 from api.mapassist import MapAssistApi
-from item.item_finder import PixelItem
-from item.pickit_item import PickitItem
-from item.pickit_types import Stat
+from pickit.item_finder import PixelItem
+from pickit.pickit_item import PickitItem
+from pickit.types import Stat
 import obs
 from obs import obs_recorder
 
@@ -18,7 +18,7 @@ from utils.misc import wait, cut_roi, color_filter
 from logger import Logger
 from config import Config, ItemProps
 from screen import Screen
-from item import ItemFinder
+from pickit import ItemFinder
 from template_finder import TemplateFinder
 
 from messages import Messenger
@@ -29,7 +29,7 @@ from api import MapAssistApi
 import random 
 import string
 
-from item.pickit_utils import get_pickit_action
+from pickit.pickit_utils import get_pickit_action
 
 class UiManager():
     """Everything that is clicking on some static 2D UI or is checking anything in regard to it should be placed here."""

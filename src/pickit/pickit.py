@@ -6,18 +6,18 @@ from operator import itemgetter
 
 from pytest import skip
 from api.mapassist import MapAssistApi
-from item.pickit_types import ItemMode
+from pickit.types import ItemMode
 from pathing import Pather
 
 from utils.custom_mouse import mouse
 from config import Config
 from logger import Logger
 from screen import Screen
-from item import PixelItem
+from pickit import PixelItem
 from ui import UiManager, belt_manager
 from ui import BeltManager
 from char import IChar
-from item.pickit_utils import get_pickit_action
+from pickit.pickit_utils import get_pickit_action
 
 class Pickit:
     def __init__(self,
@@ -43,7 +43,7 @@ class Pickit:
         if data is not None:
             for item in data["items"]:
                 item_priority = get_pickit_action(item, self._config.pickit_config, potion_needs)
-                if item["item_mode"] == ItemMode.OnGround and item_priority > 0:
+                if item["mode"] == ItemMode.OnGround and item_priority > 0:
                     items_found.append(item)
             items_found = sorted(items_found, key = lambda item: item["dist"])
             items_found = sorted(items_found, key = lambda item: get_pickit_action(item, self._config.pickit_config), reverse=True)

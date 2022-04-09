@@ -1,7 +1,7 @@
 import time
 from typing import Union
 from api.mapassist import MapAssistApi
-from item import ItemFinder
+from pickit import ItemFinder
 from obs.obs_recorder import ObsRecorder
 from template_finder import TemplateFinder
 from config import Config

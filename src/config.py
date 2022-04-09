@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from logger import Logger
 from git import Repo
 import ast
-from item.pickit_config import PickitConfig, pickit_config
+from pickit.pickit_config import PickitConfig, pickit_config
 
 config_lock = threading.Lock()
 

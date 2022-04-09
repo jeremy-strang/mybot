@@ -7,7 +7,7 @@ from config import Config
 from logger import Logger
 from pathing import Location, OldPather
 from typing import Union
-from item.pixel_pickit import PixelPickit
+from pickit.pixel_pickit import PixelPickit
 from pathing import Pather
 import state_monitor
 from template_finder import TemplateFinder

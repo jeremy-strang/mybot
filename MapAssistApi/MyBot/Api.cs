@@ -199,26 +199,37 @@ namespace MapAssist.MyBot
                 item.Stats.TryGetValue(Stat.NumSockets, out sockets);
             }
 
+            var defense = 0;
+            if (item.Stats != null)
+            {
+                item.Stats.TryGetValue(Stat.Defense, out defense);
+            }
+
+            var flags = item.ItemData.ItemFlags.ToString();
+            var is_ethereal = flags.Contains("IFLAG_ETHEREAL");
+
             return new
             {
                 position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
                 id = item.UnitId,
-                flags = item.ItemData.ItemFlags.ToString(),
                 quality = item.ItemData.ItemQuality,
                 name = Items.GetItemName(item),
-                hash_str = item.HashString ?? "",
-                base_name = item.ItemBaseName ?? "",
+                //hash_str = item.HashString ?? "",
+                //base_name = item.ItemBaseName ?? "",
                 is_hovered = item.IsHovered,
-                item_mode = item.ItemMode.ToString(),
-                item_mode_mapped = item.ItemModeMapped.ToString(),
+                mode = item.ItemMode.ToString(),
+                mode_mapped = item.ItemModeMapped.ToString(),
                 stats = GetItemStats(item, playerClass),
-                is_identified = item.IsIdentified,
                 inventory_page = item.ItemData.InvPage.ToString(),
                 tier = Items.GetItemTier(item),
                 type = item.Item.ToString(),
+                flags,
                 sockets,
+                defense,
                 set_name,
                 unique_name,
+                is_ethereal,
+                is_identified = item.IsIdentified,
             };
         }
 

@@ -6,7 +6,7 @@ import numpy as np
 from utils import mttkinter
 from utils.misc import color_filter, kill_thread
 from screen import Screen
-from item import ItemFinder
+from pickit import ItemFinder
 from config import Config
 import tkinter as tk
 from template_finder import TemplateFinder

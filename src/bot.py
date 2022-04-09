@@ -18,8 +18,8 @@ from config import Config
 from screen import Screen
 from template_finder import TemplateFinder
 from char import IChar
-from item import ItemFinder
-from item.pixel_pickit import PixelPickit
+from pickit import ItemFinder
+from pickit.pixel_pickit import PixelPickit
 from ui import UiManager, char_selector
 from ui import BeltManager
 from ui import CharSelector

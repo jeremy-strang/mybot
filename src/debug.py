@@ -5,8 +5,8 @@ import traceback
 from tracemalloc import stop
 from char.hammerdin import Hammerdin
 import game_controller
-from item.pixel_pickit import PixelPickit
-from item.pickit import Pickit
+from pickit.pixel_pickit import PixelPickit
+from pickit.pickit import Pickit
 import keyboard
 import os
 import sys
@@ -32,7 +32,7 @@ from state_monitor import StateMonitor
 from template_finder import TemplateFinder
 from town import TownManager, town_manager
 from ui import UiManager, BeltManager
-from item import ItemFinder
+from pickit import ItemFinder
 from game_stats import GameStats
 from char.barbarian.zerker_barb import ZerkerBarb
 

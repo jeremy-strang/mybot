@@ -6,6 +6,15 @@ class Action(Enum):
     DontKeep = 0
     Keep = 1
     KeepAndNotify = 2
+
+    def _missing_(value):
+        if type(value) is int:
+            if value < 0: return Action.DontKeep
+            elif value > 2: return Action.KeepAndNotify
+        elif type(value) is str:
+            if value == "Keep" or value =="1": return Action.Keep
+            if value == "KeepAndNotify" or value == "2": return Action.KeepAndNotify
+        return Action.DontKeep
     
     def __eq__(self, other):
         if self.__class__ is other.__class__: return self.value == other.value
@@ -43,9 +52,9 @@ class EthOption:
     EthOnly = 1
     NonEthOnly = 2
 
-class ActionOptions:
-    def __init(self, eth_option: EthOption = EthOption.Any, min_defense: int = None, max_quantity: int = None):
-        self.eth_option = eth_option
+class Options:
+    def __init__(self, eth: EthOption = EthOption.Any, min_defense: int = None, max_quantity: int = None):
+        self.eth = eth
         self.min_defense = min_defense
         self.max_quantity = max_quantity
 

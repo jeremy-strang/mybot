@@ -4,7 +4,7 @@ from config import Config
 from logger import Logger
 from pathing import Location, OldPather
 from typing import Union
-from item.pixel_pickit import PixelPickit
+from pickit.pixel_pickit import PixelPickit
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
 from ui import UiManager

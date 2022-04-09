@@ -1,5 +1,5 @@
 from typing import Any
-from item.pickit_types import Item, Quality, ItemMode, InventoryPage, BodyLoc, SkillTree, StashType, Flag, Stat
+from pickit.types import Item, Quality, ItemMode, InventoryPage, BodyLoc, SkillTree, StashType, Flag, Stat
 
 class PickitItem:
     def __init__(self, item: dict):
@@ -8,14 +8,13 @@ class PickitItem:
         self.id = self.stats["id"] = item["id"]
         self.type = self.stats["type"] = item["type"]
         self.name = self.stats["name"] = item["name"]
-        self.base_name = self.stats["base_name"] = item["base_name"]
-        self.hash_str = self.stats["hash_str"] = item["hash_str"]
+        # self.base_name = self.stats["base_name"] = item["base_name"]
+        # self.hash_str = self.stats["hash_str"] = item["hash_str"]
         self.inventory_page = self.stats["inventory_page"] = item["inventory_page"]
         self.is_hovered = self.stats["is_hovered"] = item["is_hovered"]
         self.is_identified = self.stats["is_identified"] = item["is_identified"]
-        self.item_mode = self.stats["item_mode"] = item["item_mode"]
-        self.item_mode_mapped = self.stats["item_mode_mapped"] = item["item_mode_mapped"]
-        self.name = self.stats["name"] = item["name"]
+        self.mode = self.stats["mode"] = item["mode"]
+        self.mode_mapped = self.stats["mode_mapped"] = item["mode_mapped"]
         self.sockets = self.stats["sockets"] = item["sockets"]
         self.position = self.stats["position"] = item["position"]
         self.quality = self.stats["quality"] = item["quality"]

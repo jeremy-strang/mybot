@@ -6,7 +6,7 @@ import os
 import cv2
 import numpy as np
 
-from item.item_cropper import ItemCropper
+from pickit.item_cropper import ItemCropper
 import time
 
 if __name__ == "__main__":

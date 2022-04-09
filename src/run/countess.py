@@ -3,7 +3,7 @@ from config import Config
 from logger import Logger
 from pathing import Location, OldPather
 from typing import Union
-from item.pixel_pickit import PixelPickit
+from pickit.pixel_pickit import PixelPickit
 from api import MapAssistApi
 from pathing import Pather
 from town.town_manager import TownManager

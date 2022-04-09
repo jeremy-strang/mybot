@@ -5,10 +5,10 @@ import time
 import os
 from dataclasses import dataclass
 import math
-from item.pickit_item import PickitItem
+from pickit.pickit_item import PickitItem
 
 from utils.misc import color_filter, cut_roi
-from item import ItemCropper
+from pickit import ItemCropper
 
 
 @dataclass

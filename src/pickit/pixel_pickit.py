@@ -3,14 +3,14 @@ import keyboard
 import cv2
 from operator import itemgetter
 from api.mapassist import MapAssistApi
-from item.pickit import Pickit
+from pickit.pickit import Pickit
 from pathing import Pather
 
 from utils.custom_mouse import mouse
 from config import Config
 from logger import Logger
 from screen import Screen
-from item import ItemFinder, PixelItem
+from pickit import ItemFinder, PixelItem
 from ui import UiManager
 from ui import BeltManager
 from char import IChar

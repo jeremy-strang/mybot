@@ -6,7 +6,7 @@ from config import Config
 from .inventory_collection import InventoryCollection
 from .stash import Stash
 from .gem_picking import SimpleGemPicking
-from item.item_finder import ItemFinder
+from pickit.item_finder import ItemFinder
 from screen import Screen
 from ui.ui_manager import UiManager
 from utils.custom_mouse import mouse
