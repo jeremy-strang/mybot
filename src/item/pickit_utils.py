@@ -31,7 +31,7 @@ def get_pickit_priority(item: dict, config: PickitConfig, potion_needs: dict = N
                 result = config.ConsumableItems[item_type] >= PickitType.Keep and "Mana" in item_type
 
         # Unique, set, magic, rare (to remain unidentified)
-        elif quality == ItemQuality.Unique and type_quality in config.MagicItems:
+        elif type_quality in config.MagicItems:
             result = config.MagicItems[type_quality]
 
         # Check if it's an item we want to identify
