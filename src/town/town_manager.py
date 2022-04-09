@@ -215,7 +215,7 @@ class TownManager:
         Logger.debug(f"Location is {curr_act}")
         if self._acts[curr_act].can_stash():
             self._ui_manager.throw_out_junk(self._item_finder)
-            should_stash = self._ui_manager.should_stash(self._config.char["num_loot_columns"])
+            should_stash = self._ui_manager.should_stash()
             if not should_stash: return curr_loc
             new_loc = self._acts[curr_act].open_stash(curr_loc)
             if not new_loc: return False
