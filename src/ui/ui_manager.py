@@ -456,7 +456,7 @@ class UiManager():
                             pickit_item = PickitItem(item)
                             keep = pickit_prio > 0
                             if not keep:
-                                self._messenger.send_message(f"{self._config.general['player_summary']}: Discarded an item that didn't meet requirements: {pickit_item.get_summary()}")
+                                self._game_stats.log_item_discard(pickit_item.get_summary(), False)
                         if keep:
                             Logger.info(f"    Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
                             mem_items.append(Item(center=center, name=pickit_item.name, pickit_type=pickit_prio, description=pickit_item.get_summary()))

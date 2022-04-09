@@ -70,8 +70,14 @@ class PickitItem:
                 self.name = self.unique_name + " Amulet"
     
     def get_summary(self) -> str:
-        result = f"{self.name} ({self.quality} {self.type}), stats: "
-        result += ", ".join(map(lambda key: f"{key}: {self.stats[key]}", self.stats.keys()))
+        result = f"{self.name}"
+        if type(self._raw_stats) is dict:
+            stat_list = []
+            for entry in self._raw_stats:
+                key = entry["key"]
+                val = entry["value"]
+                stat_list.append(f"{key}: {val}")
+            result += f" ({", ".join(stat_list)})"
         return result
 
     def check(self, stat: Stat, operator: str, value):
