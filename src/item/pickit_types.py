@@ -43,6 +43,12 @@ class EthOption:
     EthOnly = 1
     NonEthOnly = 2
 
+class ActionOptions:
+    def __init(self, eth_option: EthOption = EthOption.Any, min_defense: int = None, max_quantity: int = None):
+        self.eth_option = eth_option
+        self.min_defense = min_defense
+        self.max_quantity = max_quantity
+
 class InventoryPage:
     Inventory = "INVENTORY"
     Equip = "EQUIP"
