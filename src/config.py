@@ -1,13 +1,11 @@
-import configparser
-import threading
-import numpy as np
-import os
-import re
+import os, sys, threading, ast, configparser, numpy as np
 from dataclasses import dataclass
 from logger import Logger
 from git import Repo
-import ast
-from pickit.pickit_config import PickitConfig, pickit_config
+# from pickit.pickit_config import PickitConfig, pickit_config
+
+sys.path.insert(0, "./config")
+from pickit_config import PickitConfig, pickit_config
 
 config_lock = threading.Lock()
 
