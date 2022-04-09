@@ -77,7 +77,7 @@ class PickitItem:
                 key = entry["key"]
                 val = entry["value"]
                 stat_list.append(f"{key}: {val}")
-            result += f" ({", ".join(stat_list)})"
+            result += f" ({', '.join(stat_list)})"
         return result
 
     def check(self, stat: Stat, operator: str, value):
