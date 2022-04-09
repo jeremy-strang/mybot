@@ -193,10 +193,10 @@ namespace MapAssist.MyBot
                 set_name = Items.GetSetName(item);
             }
 
-            var num_sockets = 0;
+            var sockets = 0;
             if (item.ItemMode == ItemMode.SOCKETED && item.Stats != null)
             {
-                item.Stats.TryGetValue(Stat.NumSockets, out num_sockets);
+                item.Stats.TryGetValue(Stat.NumSockets, out sockets);
             }
 
             return new
@@ -204,7 +204,7 @@ namespace MapAssist.MyBot
                 position = new int[2] { (int)item.Position.X, (int)item.Position.Y },
                 id = item.UnitId,
                 flags = item.ItemData.ItemFlags.ToString(),
-                quality = item.ItemData.ItemQuality.ToString(),
+                quality = item.ItemData.ItemQuality,
                 name = Items.GetItemName(item),
                 hash_str = item.HashString ?? "",
                 base_name = item.ItemBaseName ?? "",
@@ -216,7 +216,7 @@ namespace MapAssist.MyBot
                 inventory_page = item.ItemData.InvPage.ToString(),
                 tier = Items.GetItemTier(item),
                 type = item.Item.ToString(),
-                num_sockets,
+                sockets,
                 set_name,
                 unique_name,
             };

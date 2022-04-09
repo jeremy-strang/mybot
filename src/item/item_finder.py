@@ -6,7 +6,6 @@ import os
 from dataclasses import dataclass
 import math
 
-from config import Config
 from utils.misc import color_filter, cut_roi
 from item import ItemCropper
 
@@ -29,8 +28,8 @@ class Item:
         return super().__getattribute__(key)
 
 class ItemFinder:
-    def __init__(self):
-        self._item_cropper = ItemCropper()
+    def __init__(self, config):
+        self._item_cropper = ItemCropper(config)
         # color range for each type of item
         # hsv ranges in opencv h: [0-180], s: [0-255], v: [0, 255]
         self._template_color_ranges = {
@@ -42,7 +41,6 @@ class ItemFinder:
             "unique": [np.array([23, 80, 140]), np.array([23, 89, 216])],
             "runes": [np.array([21, 251, 190]), np.array([22, 255, 255])]
         }
-        config = Config()
         self._items_to_pick = config.items
         self._folder_name = "items"
         self._min_score = 0.86
@@ -127,23 +125,3 @@ class ItemFinder:
         # print(f"Item Search: {elapsed}")
         return item_list
 
-
-# Testing: Throw some stuff on the ground see if it is found
-if __name__ == "__main__":
-    from screen import Screen
-    from config import Config
-    config = Config()
-    screen = Screen()
-    item_finder = ItemFinder()
-    while 1:
-        # img = cv2.imread("")
-        img = screen.grab().copy()
-        item_list = item_finder.search(img)
-        for item in item_list:
-            # print(item.name + " " + str(item.score))
-            cv2.circle(img, item.center, 5, (255, 0, 255), thickness=3)
-            cv2.rectangle(img, item.roi[:2], (item.roi[0] + item.roi[2], item.roi[1] + item.roi[3]), (0, 0, 255), 1)
-            # cv2.putText(img, item.name, item.center, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 1, cv2.LINE_AA)
-        # img = cv2.resize(img, None, fx=0.5, fy=0.5)
-        cv2.imshow('test', img)
-        cv2.waitKey(1)

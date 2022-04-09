@@ -7,7 +7,6 @@ import os
 import numpy as np
 from api.mapassist import MapAssistApi
 from item.item_finder import Item
-from item.pickit_config import IDENTIFIED_ITEMS
 from item.types import Stat
 import obs
 from obs import obs_recorder
@@ -445,13 +444,13 @@ class UiManager():
             mem_items = []
             for item in self._api.find_items_by_position(inv_pos, "inventory_items"):
                 if item:
-                    pickit_prio = get_pickit_priority(item)
+                    pickit_prio = get_pickit_priority(item, self._config.pickit_config)
                     if pickit_prio > 0 and not "Potion" in item["name"]:
                         keep = True
-                        if not item["is_identified"] and (item["type"], item["quality"]) in IDENTIFIED_ITEMS:
+                        if not item["is_identified"] and (item["type"], item["quality"]) in self._config.pickit_config.IdentifiedItems:
                             item = self._identify_inventory_item(item)
                             # Recalc priority after identifying
-                            pickit_prio = get_pickit_priority(item)
+                            pickit_prio = get_pickit_priority(item, self._config.pickit_config)
                             keep = pickit_prio > 0
                         if keep:
                             Logger.info(f"    Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")

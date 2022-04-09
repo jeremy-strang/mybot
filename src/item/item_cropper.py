@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import time
 
 from utils.misc import color_filter, erode_to_black
-from config import Config
+# from config import Config
 
 # TODO: With OCR we can then add a "text" field to this class
 @dataclass
@@ -14,8 +14,8 @@ class ItemText:
     data: np.ndarray = None
 
 class ItemCropper:
-    def __init__(self):
-        self._config = Config()
+    def __init__(self, config):
+        self._config = config
 
         self._gaus_filter = (19, 1)
         self._expected_height_range = [round(num) for num in [x / 1.5 for x in [14, 40]]]

@@ -1,3 +1,7 @@
+class PickitType:
+    DontKeep = 0
+    Keep = 1
+    KeepAndNotify = 2
 
 class InventoryPage:
     Inventory = "INVENTORY"
@@ -17,15 +21,15 @@ class StashType:
     Belt = "Belt"
 
 class ItemQuality:
-    Inferior = "INFERIOR" # Inferior
-    Normal = "NORMAL" # Normal
-    Superior = "SUPERIOR" # Superior
-    Magic = "MAGIC" # Magic
-    Set = "SET" # Set
-    Rare = "RARE" # Rare
-    Unique = "UNIQUE" # Unique
-    Craft = "CRAFT" # Crafted
-    Tempered = "TEMPERED" # Tempered
+    Inferior = 1
+    Normal = 2
+    Superior = 3
+    Magic = 4
+    Set = 5
+    Rare = 6
+    Unique = 7
+    Craft = 8
+    Tempered = 9
 
 class ItemMode:
     Stored = "STORED" # Item is in storage (inventory, cube, stash?)

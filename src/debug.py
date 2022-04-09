@@ -80,7 +80,7 @@ if __name__ == "__main__":
         template_finder = TemplateFinder(screen)
         old_pather = OldPather(screen, template_finder)
         pather = Pather(screen, api)
-        item_finder = ItemFinder()
+        item_finder = ItemFinder(config)
         ui_manager = UiManager(screen, template_finder, obs_recorder, api, game_stats)
         belt_manager = BeltManager(screen, template_finder, api)
 
@@ -124,6 +124,7 @@ if __name__ == "__main__":
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
                 ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
+
                 # ui_manager.fill_tome_of("Town Portal")
                 # ui_manager.throw_out_junk(item_finder)
                 # item = pickit2._next_item()

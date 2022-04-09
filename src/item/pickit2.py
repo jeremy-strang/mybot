@@ -38,15 +38,16 @@ class Pickit2:
         self._api = api
     
     def _next_item(self, potion_needs: dict = None, skip_ids: set = None) -> dict:
+        print("next item....")
         data = self._api.data
         items_found = []
         if data is not None:
             for item in data["items"]:
-                item_priority = get_pickit_priority(item, potion_needs)
+                item_priority = get_pickit_priority(item, self._config.pickit_config, potion_needs)
                 if item["item_mode"] == ItemMode.OnGround and item_priority > 0:
                     items_found.append(item)
             items_found = sorted(items_found, key = lambda item: item["dist"])
-            items_found = sorted(items_found, key = lambda item: get_pickit_priority(item), reverse=True)
+            items_found = sorted(items_found, key = lambda item: get_pickit_priority(item, self._config.pickit_config), reverse=True)
             if skip_ids is not None and len(skip_ids) > 0:
                 items_found = list(filter(lambda x: x["id"] not in skip_ids, items_found))
             if len(items_found) > 0:
@@ -97,7 +98,7 @@ class Pickit2:
             click_time_out = 6
             if is_potion:
                 click_time_out = 2
-            elif get_pickit_priority(item) > 1:
+            elif get_pickit_priority(item, self._config.pickit_config) > 1:
                 click_time_out = 15
             if self._pather.click_item(item, self._char):
                 if is_potion:

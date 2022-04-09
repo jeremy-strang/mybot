@@ -65,7 +65,7 @@ class Bot:
         self._messenger = Messenger()
         self._config = Config()
         self._template_finder = template_finder
-        self._item_finder = ItemFinder()
+        self._item_finder = ItemFinder(self._config)
         self._obs_recorder = obs_recorder
         self._api = mapi
         self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._api, self._game_stats)
