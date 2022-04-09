@@ -390,3 +390,5 @@ class PickitConfig:
                 lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LightningResist, ">=", 25), # Highlord's Wrath
             ],
         }
+
+pickit_config = PickitConfig()

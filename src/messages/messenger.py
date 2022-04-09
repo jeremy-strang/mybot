@@ -15,7 +15,7 @@ class Messenger:
             self._message_api = DiscordEmbeds()
         else:
             self._message_api = None
-
+    
     def send_item(self, item: str, image:  np.ndarray, location: str):
         self._message_api.send_item(item, image, location)
 

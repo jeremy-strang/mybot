@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from logger import Logger
 from git import Repo
 import ast
-from item.pickit_config import PickitConfig
+from item.pickit_config import PickitConfig, pickit_config
 
 config_lock = threading.Lock()
 
@@ -60,7 +60,7 @@ class Config:
     active_branch = ""
     latest_commit_sha = ""
     custom_files = []
-    pickit_config: PickitConfig = PickitConfig()
+    pickit_config: PickitConfig = pickit_config
 
     def __init__(self):
         with config_lock:

@@ -18,6 +18,11 @@ class DiscordEmbeds(GenericApi):
             self._webhook = Webhook.from_url(self._config.general['custom_message_hook'], adapter=RequestsWebhookAdapter(), )
         except InvalidArgument:
             Logger.warning(f"Your custom_message_hook URL {self._config.general['custom_message_hook']} is invalid, Discord updates will not be sent")
+    
+    def send_discarded_item(self, item_description: str):
+        player_summary = self._config.general['player_summary']
+        msg = f"{player_summary}: Discarded an item that didn't meet requirements: {item_description}"
+        self.send_message(msg)
 
     def send_item(self, item: str, image:  np.ndarray, location: str):
         d = datetime.datetime.now(datetime.timezone.utc)
@@ -67,11 +72,11 @@ class DiscordEmbeds(GenericApi):
         e.set_thumbnail(url=f"{self._psnURL}6L341955.png")
         self._send_embed(e)
 
-    def send_message(self, msg: str):
+    def send_message(self, msg: str, no_thumbnail=False):
         player_summary = self._config.general['player_summary']
         msg = f"{player_summary} {msg}" if player_summary is not None else msg
         e = discord.Embed(title=self._config.general['name'], description=f"```{msg}```", color=Color.dark_teal())
-        if not self._config.general['discord_status_condensed']:
+        if not no_thumbnail and not self._config.general['discord_status_condensed']:
             e.set_thumbnail(url=f"{self._psnURL}36L4a4994.png")
         self._send_embed(e)
 
