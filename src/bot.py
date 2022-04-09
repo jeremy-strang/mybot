@@ -433,7 +433,7 @@ class Bot:
             self._check_gold_pickup()
             # Logger.info("Maintenance: Running transmutes")
             # self._transmute.run_transmutes(force=False)
-            keyboard.send("esc")
+            # keyboard.send("esc")
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
             self._no_stash_counter = 0

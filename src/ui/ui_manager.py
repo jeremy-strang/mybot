@@ -773,7 +773,10 @@ class UiManager():
                 return self.stash_all_items(num_loot_columns, item_finder)
 
         Logger.debug("Done stashing")
-        wait(0.5, 0.6)
+        wait(0.1)
+        if self._api.data and self._api.data["stash_open"]:
+            keyboard.send("esc")
+        wait(0.4, 0.5)
 
     def throw_out_junk(self, item_finder: ItemFinder):
         Logger.info("Throwing out junk")
