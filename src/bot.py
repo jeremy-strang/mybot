@@ -431,9 +431,9 @@ class Bot:
             if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             self._curr_loc = self._town_manager.stash(self._curr_loc)
             self._check_gold_pickup()
-            Logger.info("Maintenance: Running transmutes")
-            self._transmute.run_transmutes(force=False)
-            keyboard.send("esc")
+            # Logger.info("Maintenance: Running transmutes")
+            # self._transmute.run_transmutes(force=False)
+            # keyboard.send("esc")
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
             self._no_stash_counter = 0
