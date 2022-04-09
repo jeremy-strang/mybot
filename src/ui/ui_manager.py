@@ -638,7 +638,7 @@ class UiManager():
         mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
         self._move_to_stash_tab(self._curr_stash["items"])
         center_m = self._screen.convert_abs_to_monitor((0, 0))
-        items = self._api.find_items_by_roi([0, 0, num_loot_columns, 4])
+        items = self._api.find_looted_items(num_loot_columns)
         if items is not None:
             Logger.debug(f"    Found {len(items)} inventory items in {num_loot_columns} loot columns to check")
             for item in items:
@@ -828,18 +828,19 @@ class UiManager():
                     wait (0.1, 0.15)
         self._gambling_round += 1
 
-    def should_stash(self, num_loot_columns: int):
-        """
-        Check if there are items that need to be stashed in the inventory
-        :param num_loot_columns: Number of columns used for loot from left
-        """
-        wait(0.2, 0.3)
-        keyboard.send(self._config.char["inventory_screen"])
-        wait(0.7, 1.0)
-        should_stash = self._inventory_has_items(self._screen.grab(), num_loot_columns)
-        keyboard.send(self._config.char["inventory_screen"])
-        wait(0.4, 0.6)
-        return should_stash
+    def should_stash(self, num_loot_columns: int) -> bool:
+        looted_items = self._api.find_items_by_roi()
+        if looted_items != None and len(looted_items) > 0:
+            looted_items = list(filter(lambda item: item != None and "Potion" not in item["name"]))
+            return len(looted_items) > 0
+        return False
+        # wait(0.2, 0.3)
+        # keyboard.send(self._config.char["inventory_screen"])
+        # wait(0.7, 1.0)
+        # should_stash = self._inventory_has_items(self._screen.grab(), num_loot_columns)
+        # keyboard.send(self._config.char["inventory_screen"])
+        # wait(0.4, 0.6)
+        # return should_stash
 
     def close_vendor_screen(self):
         keyboard.send("esc")
@@ -871,23 +872,23 @@ class UiManager():
         tp_tome = self._template_finder.search_and_wait(["TP_TOME", "TP_TOME_RED"], roi=self._config.ui_roi["right_inventory"], time_out=3, normalize_monitor=True)
         if not tp_tome.valid:
             return False
-        keyboard.send('ctrl', do_release=False)
+        keyboard.send("ctrl", do_release=False)
         mouse.move(*tp_tome.center, randomize=8, delay_factor=[1.0, 1.5])
         wait(0.1, 0.15)
         mouse.press(button="left")
         wait(0.25, 0.35)
         mouse.release(button="left")
         wait(0.5, 0.6)
-        keyboard.send('ctrl', do_press=False)
+        keyboard.send("ctrl", do_press=False)
         tp_tome = self._template_finder.search_and_wait("TP_TOME", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
         if not tp_tome.valid:
             return False
-        keyboard.send('ctrl', do_release=False)
+        keyboard.send("ctrl", do_release=False)
         mouse.move(*tp_tome.center, randomize=8, delay_factor=[1.0, 1.5])
         wait(0.1, 0.15)
         mouse.click(button="right")
         wait(0.1, 0.15)
-        keyboard.send('ctrl', do_press=False)
+        keyboard.send("ctrl", do_press=False)
         # delay to make sure the tome has time to transfer to other inventory before closing window
         tp_tome = self._template_finder.search_and_wait("TP_TOME", roi=self._config.ui_roi["right_inventory"], time_out=3)
         if not tp_tome.valid:
@@ -993,7 +994,7 @@ class UiManager():
                     #check if gold is av
                     if template_match.valid:
                         gold = False
-                        self.close_vendor_screen ()
+                        self.close_vendor_screen()
                         break
                     for column, row in itertools.product(range(self._config.char["num_loot_columns"]), range(4)):
                         img = self._screen.grab()
@@ -1022,7 +1023,7 @@ class UiManager():
         wait(0.03, 0.05)
         keyboard.send('enter')
         wait(0.08, 0.14)
-        keyboard.write('/nopickup', delay=.10)
+        keyboard.write('/nopickup', delay=0.07)
         wait(0.02, 0.04)
         keyboard.send('enter')
         wait(0.17, 0.22)
@@ -1047,8 +1048,8 @@ class UiManager():
         wait(0.03, 0.05)
         keyboard.send('enter')
         wait(0.08, 0.14)
-        keyboard.write('/nopickup', delay=.10)
-        wait(0.02, 0.04)
+        keyboard.write('/nopickup', delay=0.07)
+        wait(0.03, 0.05)
         keyboard.send('enter')
         wait(0.17, 0.22)
         no_pickup = self._template_finder.search_and_wait(["ITEM_PICKUP_ENABLED", "ITEM_PICKUP_DISABLED"], roi=self._config.ui_roi["no_pickup"], best_match=True, time_out=3)

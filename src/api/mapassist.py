@@ -199,6 +199,9 @@ class MapAssistApi:
                 if x >= roi[0] and x < roi[2] and y >= roi[1] and y < roi[3]:
                     results.append(item)
         return results
+    
+    def find_looted_items(self, num_loot_columns: int):
+        return self.find_items_by_roi([0, 0, num_loot_columns, 4])
 
     def find_items_by_position(self, pos: tuple[int, int], list_name: str = "inventory_items", max_x: int = 10, max_y = 4) -> list:
         results = []
