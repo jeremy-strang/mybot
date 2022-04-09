@@ -416,7 +416,7 @@ class Bot:
         if not self._picked_up_items and (self._no_stash_counter > 4 or self._pick_corpse):
             self._no_stash_counter = 0
             if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
-            force_stash = self._ui_manager.should_stash(self._config.char["num_loot_columns"])
+            force_stash = self._ui_manager.should_stash()
         # Stash stuff, either when item was picked up or after X runs without stashing because of unwanted loot in inventory
         if self._picked_up_items or force_stash:
             # Check config/gold and see if we need to enable/disable gold pickup
