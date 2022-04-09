@@ -9,7 +9,6 @@ def get_pickit_priority(item: dict, config: PickitConfig, potion_needs: dict = N
         quality = item["quality"]
         type_quality = (item_type, quality)
 
-        print(f"    item_type: {item_type}, quality: {quality}")
         # Runes, gems
         if item_type in config.BasicItems:
             result = config.BasicItems[item_type]
@@ -38,7 +37,6 @@ def get_pickit_priority(item: dict, config: PickitConfig, potion_needs: dict = N
         # Check if it's an item we want to identify
         if type_quality in config.IdentifiedItems:
             # If it's identified, evaluate the rules for it and see if any of them pass
-            print(f"    type_quality: {type_quality}, id'd: {item['is_identified']}")
             if item["is_identified"]:
                 result = PickitType.DontKeep
                 item_obj = PickitItem(item)
@@ -51,5 +49,4 @@ def get_pickit_priority(item: dict, config: PickitConfig, potion_needs: dict = N
             # Otherwise keep it for now, we will ID it later
             else:
                 result = PickitType.Keep
-    print(f"    result: {result}")
     return result

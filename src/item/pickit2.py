@@ -38,7 +38,6 @@ class Pickit2:
         self._api = api
     
     def _next_item(self, potion_needs: dict = None, skip_ids: set = None) -> dict:
-        print("next item....")
         data = self._api.data
         items_found = []
         if data is not None:
