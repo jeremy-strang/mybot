@@ -15,7 +15,7 @@ class PickitConfig:
         Union[Action, tuple[Action, Options], bool]] = {}
     
     # Magic items (items with one of the magic qualities: unique, set, rare, or magic)
-    MagicItems: dict[
+    UnidentifiedItems: dict[
         (Item, Quality),
         Union[Action, tuple[Action, Options], bool]] = {}
 
@@ -121,14 +121,30 @@ class PickitConfig:
             Item.PerfectDiamond: Action.Keep,
         }
 
-        # Unique, Set, Rare, Magic (won't ID unless defined in IdentifiedItems)
-        self.MagicItems = {
+        # Unidentified unique, set, rare, magic utems (won't ID unless defined in IdentifiedItems)
+        self.UnidentifiedItems = {
+            # Unique charms, jewelry, jewels
             (Item.GrandCharm, Quality.Unique): Action.Keep,
+            (Item.LargeCharm, Quality.Unique): Action.Keep,
             (Item.SmallCharm, Quality.Unique): Action.Keep,
             (Item.Amulet, Quality.Unique): Action.Keep,
             (Item.Ring, Quality.Unique): Action.Keep,
             (Item.Jewel, Quality.Unique): Action.Keep,
+            
+            # Unique jewelry, jewels
+            (Item.Amulet, Quality.Rare): Action.DontKeep,
+            (Item.Ring, Quality.Rare): Action.DontKeep,
+            (Item.Jewel, Quality.Rare): Action.DontKeep,
+            
+            # Magic charms, jewels
+            (Item.GrandCharm, Quality.Magic): Action.Keep,
+            (Item.LargeCharm, Quality.Magic): Action.DontKeep,
+            (Item.SmallCharm, Quality.Magic): Action.Keep,
+            (Item.Amulet, Quality.Magic): Action.DontKeep,
+            (Item.Ring, Quality.Magic): Action.DontKeep,
+            (Item.Jewel, Quality.Magic): Action.DontKeep,
 
+            # Unique armor
             (Item.DemonhideArmor, Quality.Unique): (Action.DontKeep, Options(eth = EthOption.Any)),
             (Item.ChaosArmor, Quality.Unique): (Action.DontKeep, Options(eth = EthOption.Any)),
             (Item.StuddedLeather, Quality.Unique): (Action.DontKeep, Options(eth = EthOption.Any)),
@@ -298,16 +314,6 @@ class PickitConfig:
             (Item.BoneVisage, Quality.Set): Action.DontKeep,
             (Item.ChaosArmor, Quality.Set): Action.DontKeep,
             (Item.ChainGloves, Quality.Set): Action.DontKeep,
-            
-            # Magic Items
-            (Item.GrandCharm, Quality.Magic): Action.Keep,
-            (Item.LargeCharm, Quality.Magic): Action.DontKeep,
-            (Item.SmallCharm, Quality.Magic): Action.Keep,
-            (Item.Jewel, Quality.Magic): Action.DontKeep,
-            (Item.Monarch, Quality.Magic): Action.DontKeep,
-            
-            # Rare Items
-            (Item.Jewel, Quality.Rare): Action.DontKeep,
         }
 
         # If you have an item listed below, these rules will be applied to it. If any

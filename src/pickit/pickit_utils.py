@@ -8,8 +8,6 @@ pp = pprint.PrettyPrinter(depth=6)
 
 def _parse_pickit_action(opt: Union[Action, tuple[Action, Options], bool], item: dict = None) -> Action:
     result: Action = Action.DontKeep
-    print(f"opt: {opt}")
-    print(f"type(opt): {type(opt)}")
     if type(opt) is tuple:
         if len(opt) >= 2:
             action: Action = opt[0]
@@ -38,8 +36,6 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
         item_type = item["type"]
         quality = item["quality"]
         type_quality = (item_type, quality)
-        pp.pprint(item)
-        print(f"(item_type, quality): {type_quality}")
         # Runes, gems
         if item_type in config.BasicItems:
             result = config.BasicItems[item_type]
@@ -48,11 +44,9 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
         elif quality <= Quality.Superior and item_type in config.NormalItems:
             rules = config.NormalItems[item_type]
             item_obj = PickitItem(item)
-            pp.pprint(item)
             for rule in rules:
                 match = rule(item_obj)
                 act = _parse_pickit_action(match)
-                print(f"   item: {item_type}, quality: {item_obj.quality}, match: {match}, name: {item_obj.name} sock: {item_obj.sockets}")
                 if act > result:
                     result = act
                     break
@@ -67,10 +61,8 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
                 result = config.ConsumableItems[item_type] >= Action.Keep and "Mana" in item_type
 
         # Unique, set, magic, rare (to remain unidentified)
-        elif type_quality in config.MagicItems:
-            print(f"Unique")
-            result = _parse_pickit_action(config.MagicItems[type_quality], item)
-            print(f"result: {result}")
+        elif type_quality in config.UnidentifiedItems:
+            result = _parse_pickit_action(config.UnidentifiedItems[type_quality], item)
 
         # Check if it's an item we want to identify
         if type_quality in config.IdentifiedItems:
