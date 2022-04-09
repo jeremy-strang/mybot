@@ -836,7 +836,7 @@ class UiManager():
     def should_stash(self, num_loot_columns: int) -> bool:
         looted_items = self._api.find_looted_items(self._config.char["num_loot_columns"])
         if looted_items != None and len(looted_items) > 0:
-            looted_items = list(filter(lambda item: item != None and "Potion" not in item["name"]))
+            looted_items = list(filter(lambda item: item != None and "Potion" not in item["name"], looted_items))
             return len(looted_items) > 0
         return False
         # wait(0.2, 0.3)
