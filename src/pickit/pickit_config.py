@@ -92,26 +92,26 @@ class PickitConfig:
             Item.ChippedRuby: Action.DontKeep,
             Item.ChippedDiamond: Action.DontKeep,
 
-            Item.FlawedAmethyst: Action.DontKeep,
-            Item.FlawedTopaz: Action.DontKeep,
-            Item.FlawedSapphire: Action.DontKeep,
-            Item.FlawedEmerald: Action.DontKeep,
-            Item.FlawedRuby: Action.DontKeep,
-            Item.FlawedDiamond: Action.DontKeep,
+            # Item.FlawedAmethyst: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawedTopaz: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawedSapphire: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawedEmerald: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawedRuby: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawedDiamond: (Action.Keep, Options(max_quantity=5)),
 
-            Item.Amethyst: Action.DontKeep,
-            Item.Topaz: Action.DontKeep,
-            Item.Sapphire: Action.DontKeep,
-            Item.Emerald: Action.DontKeep,
-            Item.Ruby: Action.DontKeep,
-            Item.Diamond: Action.DontKeep,
+            # Item.Amethyst: (Action.Keep, Options(max_quantity=5)),
+            # Item.Topaz: (Action.Keep, Options(max_quantity=5)),
+            # Item.Sapphire: (Action.Keep, Options(max_quantity=5)),
+            # Item.Emerald: (Action.Keep, Options(max_quantity=5)),
+            # Item.Ruby: (Action.Keep, Options(max_quantity=5)),
+            # Item.Diamond: (Action.Keep, Options(max_quantity=5)),
 
-            Item.FlawlessAmethyst: Action.DontKeep,
-            Item.FlawlessTopaz: Action.DontKeep,
-            Item.FlawlessSapphire: Action.DontKeep,
-            Item.FlawlessEmerald: Action.DontKeep,
-            Item.FlawlessRuby: Action.DontKeep,
-            Item.FlawlessDiamond: Action.DontKeep,
+            # Item.FlawlessAmethyst: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawlessTopaz: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawlessSapphire: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawlessEmerald: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawlessRuby: (Action.Keep, Options(max_quantity=5)),
+            # Item.FlawlessDiamond: (Action.Keep, Options(max_quantity=5)),
 
             Item.PerfectAmethyst: Action.Keep,
             Item.PerfectTopaz: Action.Keep,
@@ -371,6 +371,21 @@ class PickitConfig:
         # the item, the item will be stashed. The rules should be functions that take
         # in a PickitItem and return a boolean.
         self.IdentifiedItems = {
+            # Unique Rings
+            (Item.Ring, Quality.Unique): [
+                lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.MaxMana, ">=", 20), # SoJ
+                lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LifeSteal, ">=", 3), # BK Ring
+                lambda item: item.check(Stat.AbsorbLightningPercent, ">=", 15), # Wisp Projector
+                lambda item: item.check(Stat.Dexterity, ">=", 20) and item.check(Stat.AttackRating, ">=", 250), # Raven Frost
+                lambda item: item.check(Stat.MagicDamageReduction, ">=", 15), # Dwarf Star
+                lambda item: item.check(Stat.MagicFind, ">=", 30) and item.check(Stat.AttackRating, ">=", 75), # Nagel
+            ],
+            # Unique Amulets
+            (Item.Amulet, Quality.Unique): [
+                lambda item: item.check(Stat.AllSkills, ">=", 2) and item.check(Stat.AllResist, ">=", 20), # Mara's Kaleidoscope
+                lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.DeadlyStrikePerLevel, ">=", 1), # Highlord's Wrath
+            ],
+            # Magic Grand Charms
             (Item.GrandCharm, Quality.Magic): [
                 lambda item: item.check(Stat.MaxDamage, ">=", 10) and item.check(Stat.MaxLife, ">=", 20),
                 lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.PaladinCombatSkills),
@@ -385,6 +400,7 @@ class PickitConfig:
                 lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.DruidElemental) and item.check(Stat.MaxLife, ">=", 20),
                 lambda item: item.check(Stat.AddSkillTab, "==", SkillTree.AssassinTraps) and item.check(Stat.MaxLife, ">=", 20),
             ],
+            # Magic Small Charms
             (Item.SmallCharm, Quality.Magic): [
                 lambda item: item.check(Stat.MaxLife, ">=", 20) and (item.check(Stat.FireResist, ">=", 10) or item.check(Stat.LightningResist, ">=", 10)),
                 lambda item: item.check(Stat.MagicFind, ">=", 7) and (item.check(Stat.MaxDamage, ">=", 3) or item.check(Stat.FasterHitRecovery, ">=", 10)),
@@ -393,20 +409,16 @@ class PickitConfig:
                 lambda item: item.check(Stat.MaxLife, ">=", 20), # 20 Life
                 lambda item: item.check(Stat.MaxLife, ">=", 18) and item.check(Stat.MaxMana, ">=", 17), # 18+ life/17 mana SC
                 lambda item: item.check(Stat.MaxLife, ">=", 15) and item.check(Stat.MaxDamage, ">=", 3), # 15+ life/3max SC
+                lambda item: item.check(Stat.FasterHitRecovery, ">=", 5) and item.check(Stat.FireResist, ">=", 11), # 5fhr/11fr SC
+                lambda item: item.check(Stat.FasterHitRecovery, ">=", 5) and item.check(Stat.AllResist, ">=", 3), # 5fhr/3+@ SC
             ],
-            (Item.Ring, Quality.Unique): [
-                # Unique Rings
-                lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.MaxMana, ">=", 20), # SoJ
-                lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LifeSteal, ">=", 3), # BK Ring
-                lambda item: item.check(Stat.AbsorbLightningPercent, ">=", 15), # Wisp Projector
-                lambda item: item.check(Stat.Dexterity, ">=", 20) and item.check(Stat.AttackRating, ">=", 250), # Raven Frost
-                lambda item: item.check(Stat.MagicDamageReduction, ">=", 15), # Dwarf Star
-                lambda item: item.check(Stat.MagicFind, ">=", 30) and item.check(Stat.AttackRating, ">=", 75), # Nagel
-            ],
-            (Item.Amulet, Quality.Unique): [
-                # Unique Amulets
-                lambda item: item.check(Stat.AllSkills, ">=", 2) and item.check(Stat.AllResist, ">=", 20), # Mara's Kaleidoscope
-                lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LightningResist, ">=", 25), # Highlord's Wrath
+            # Magic Jewels
+            (Item.Jewel, Quality.Magic): [
+                lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.AllResist, ">=", 10), # IAS/@ jewel
+                lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.FireResist, ">=", 25), # IAS/FR jewel
+                lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.MaxDamage, ">=", 10), # IAS/max jewel
+                lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.MaxDamagePerent, ">=", 30), # ED/IAS jewel (I think this is the right stat...)
+                lambda item: item.check(Stat.AllResist, ">=", 15), # 15@ jewel
             ],
         }
 
