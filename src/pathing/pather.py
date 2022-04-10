@@ -742,6 +742,9 @@ class Pather:
                 odist = math.dist([target_x, target_y],
                                   [player_x, player_y])
 
+                if odist < 4:
+                    return True
+
                 # make paths
                 if "map" in data:
                     player_pos_area = (int(player_y_area), int(player_x_area))

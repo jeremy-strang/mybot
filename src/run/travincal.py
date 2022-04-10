@@ -138,6 +138,8 @@ class Travincal:
             keyboard.send(self._config.char["show_items"])
             time.sleep(0.7)
             self._pickit.take_loot_screenshot()
+            keyboard.send(self._config.char["show_items"])
+            wait(0.1, 0.15)
 
         # self._obs_recorder.stop_recording_if_enabled()
         return (Location.A3_TRAV_CENTER_STAIRS, picked_up_items)
