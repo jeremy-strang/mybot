@@ -52,8 +52,8 @@ namespace MapAssist.Types
 
                 if (item.IsPlayerOwned && item.IsIdentified)
                 {
-                    InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
-                    ItemUnitIdsToSkip[processId].Add(item.UnitId);
+                    //InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
+                    //ItemUnitIdsToSkip[processId].Add(item.UnitId);
                 }
 
                 ItemUnitIdsSeen[processId].Add(item.UnitId);
