@@ -96,7 +96,7 @@ class UiManager():
         # return avg > 75.0
         data = self._api.data
         if data != None:
-            if data["used_skill"] == data["right_skill"]:
+            if data["used_skill"] != data["right_skill"]:
                 return True
         return False
 

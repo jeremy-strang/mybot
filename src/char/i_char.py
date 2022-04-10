@@ -52,11 +52,13 @@ class IChar:
         self._cast_duration = self._char_config["casting_frames"] * 0.04 + 0.02
         self._stats_with_weapon_tab1 = None
         self._stats_with_weapon_tab2 = None
-        self.can_tp = False
+        self.can_tp = type(self._skill_hotkeys["teleport"]) is str and len(self._skill_hotkeys["teleport"]) > 0
         self.can_tp_with_charges = False
+        Logger.debug(f"self.can_tp: {self.can_tp}")
+        Logger.debug(f"self.can_tp_with_charges: {self.can_tp_with_charges}")
 
     def discover_capabilities(self):
-        can_tp = False
+        can_tp = self.can_tp
         can_tp_with_charges = False
         if self._skill_hotkeys["teleport"]:
             if self.select_tp():
@@ -68,6 +70,8 @@ class IChar:
         self.can_tp = can_tp
         self.can_tp_with_charges = can_tp_with_charges
         self._cast_duration = self.get_cast_frames() * 0.04 + 0.02
+        Logger.debug(f"self.can_tp: {self.can_tp}")
+        Logger.debug(f"self.can_tp_with_charges: {self.can_tp_with_charges}")
 
     def get_fcr(self):
         data = self._api.get_data()
