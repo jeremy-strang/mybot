@@ -69,7 +69,7 @@ class Travincal:
         if self._config.char["teleport_weapon_swap"] and not self._config.char["barb_pre_buff_weapon_swap"]:
             self._char.switch_weapon()
 
-        if self._char.capabilities.can_teleport_natively:
+        if self._char.can_tp:
             if self._char._char_config['type'] == 'necro' and not self._pather.traverse("Durance of Hate Level 1", self._char): return False
             elif not self._pather.traverse((156, 113), self._char, verify_location=False): return False
         else:
@@ -116,7 +116,7 @@ class Travincal:
         self._avoid_durance()
 
         # If we can teleport we want to move back inside and also check loot there
-        if self._char.capabilities.can_teleport_natively or self._char.capabilities.can_teleport_with_charges:
+        if self._char.can_tp or self._char.can_tp_with_charges:
             self._pather.traverse((156, 113), self._char, time_out=4.0)
             picked_up_items |= self._pickit.pick_up_items(self._char, is_at_trav=True, skip_nopickup=False)
             self._avoid_durance()

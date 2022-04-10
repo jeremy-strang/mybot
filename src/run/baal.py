@@ -41,7 +41,7 @@ class Baal:
 
     def approach(self, start_loc: Location) -> Union[bool, Location, bool]:
         Logger.info("Run Baal")
-        if not self._char.capabilities.can_teleport_natively:
+        if not self._char.can_tp:
             raise ValueError("Baal requires teleport")
         if not self._town_manager.open_wp(start_loc):
             return False

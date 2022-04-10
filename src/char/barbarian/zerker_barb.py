@@ -4,7 +4,7 @@ from typing import Tuple
 import keyboard
 from utils.coordinates import world_to_abs
 from utils.custom_mouse import mouse
-from char import IChar, CharacterCapabilities
+from char import IChar
 from char.barbarian.barbarian import Barbarian
 from template_finder import TemplateFinder
 from ui import UiManager

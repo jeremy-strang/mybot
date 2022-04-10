@@ -138,7 +138,7 @@ class PixelPickit:
                 curr_item_to_pick = closest_item
 
                 # To avoid endless teleport or telekinesis loop
-                force_pick_up = char.capabilities.can_teleport_natively and \
+                force_pick_up = char.can_tp and \
                                 self._last_closest_item is not None and \
                                 self._last_closest_item.name == closest_item.name and \
                                 abs(self._last_closest_item.dist - closest_item.dist) < 20
@@ -154,7 +154,7 @@ class PixelPickit:
                         found_items = True
 
                     prev_cast_start = char.pick_up_item((x_m, y_m), item_name=closest_item.name, prev_cast_start=prev_cast_start)
-                    if not char.capabilities.can_teleport_natively:
+                    if not char.can_tp:
                         time.sleep(0.2)
 
                     if self._ui_manager.is_overburdened():
@@ -174,7 +174,7 @@ class PixelPickit:
                 else:
                     char.pre_move()
                     char.move((x_m, y_m), force_move=True)
-                    if not char.capabilities.can_teleport_natively:
+                    if not char.can_tp:
                         time.sleep(0.3)
                     time.sleep(0.2)
                     # save closeset item for next time to check potential endless loops of not reaching it or of telekinsis/teleport

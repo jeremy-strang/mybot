@@ -91,7 +91,7 @@ if __name__ == "__main__":
         pixel_pickit = PixelPickit(screen, item_finder, ui_manager, belt_manager, api, char, pather, game_stats)
         pickit = Pickit(screen, ui_manager, belt_manager, char, pather, api, game_stats)
         # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        char.discover_capabilities(force=True)
+        char.discover_capabilities()
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
         pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
         travincal = Travincal(template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
                 # belt_manager.update_pot_needs()
 
-                # pixel_pickit.pick_up_items(char)
+                pickit.pick_up_items(char)
 
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)

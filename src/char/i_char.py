@@ -6,11 +6,11 @@ import cv2
 import math
 import keyboard
 import numpy as np
-from char.capabilities import CharacterCapabilities
 from monsters.monster_rule import MonsterRule
 import obs
 from pathing import PathFinder, Pather, OldPather
 from monsters import MonsterType
+from char.skill import Skill
 from utils.custom_mouse import mouse
 from utils.misc import rotate_vec, unit_vector, wait, cut_roi, is_in_roi, color_filter
 
@@ -26,8 +26,6 @@ from obs import ObsRecorder
 from monsters import CHAMPS_UNIQUES, get_unlooted_monsters
 
 class IChar:
-    _CrossGameCapabilities: Union[None, CharacterCapabilities] = None
-
     def __init__(self,
                  skill_hotkeys: dict,
                  screen: Screen,
@@ -54,28 +52,21 @@ class IChar:
         self._cast_duration = self._char_config["casting_frames"] * 0.04 + 0.02
         self._stats_with_weapon_tab1 = None
         self._stats_with_weapon_tab2 = None
-        self.capabilities = None
+        self.can_tp = False
+        self.can_tp_with_charges = False
 
-    def _discover_capabilities(self) -> CharacterCapabilities:
+    def discover_capabilities(self):
+        can_tp = False
+        can_tp_with_charges = False
         if self._skill_hotkeys["teleport"]:
             if self.select_tp():
                 if self.skill_is_charged():
-                    return CharacterCapabilities(can_teleport_natively=False, can_teleport_with_charges=True)
+                    can_tp_with_charges = True
                 else:
-                    return CharacterCapabilities(can_teleport_natively=True, can_teleport_with_charges=False)
-            return CharacterCapabilities(can_teleport_natively=False, can_teleport_with_charges=False)
-        else:
-            return CharacterCapabilities(can_teleport_natively=False, can_teleport_with_charges=False)
-
-    def discover_capabilities(self, force = False):
-        if IChar._CrossGameCapabilities is None or force:
-            capabilities = self._discover_capabilities()
-            self.capabilities = capabilities
+                    can_tp = True
+        self.can_tp = can_tp
+        self.can_tp_with_charges = can_tp_with_charges
         self._cast_duration = self.get_cast_frames() * 0.04 + 0.02
-        self.on_capabilities_discovered(self.capabilities)
-
-    def on_capabilities_discovered(self, capabilities: CharacterCapabilities):
-        pass
 
     def get_fcr(self):
         data = self._api.get_data()
@@ -302,10 +293,10 @@ class IChar:
         return self._remap_skill_hotkey(skill_asset, hotkey, self._config.ui_roi["skill_right"], self._config.ui_roi["skill_right_expanded"])
 
     def select_tp(self):
-       if self._skill_hotkeys["teleport"] and not self._ui_manager.is_right_skill_selected(["TELE_ACTIVE", "TELE_INACTIVE"]):
+        if self._skill_hotkeys["teleport"] and not self._ui_manager.is_right_skill_selected(Skill.Teleport):
             keyboard.send(self._skill_hotkeys["teleport"])
-            wait(0.1, 0.2)
-       return self._ui_manager.is_right_skill_selected(["TELE_ACTIVE", "TELE_INACTIVE"])
+            wait(0.1, 0.15)
+        return self._ui_manager.is_right_skill_selected(Skill.Teleport)
 
     def get_skill_charges(self, img: np.ndarray = None):
         if img is None:
@@ -338,10 +329,8 @@ class IChar:
             return None
 
     def pre_move(self):
-        if not self.capabilities:
-            self.discover_capabilities(True)
         # if teleport hotkey is set and if teleport is not already selected
-        if self.capabilities.can_teleport_natively:
+        if self.can_tp:
             self.select_tp()
 
     def hold_move(self, pos_monitor: Tuple[float, float], force_tp: bool = False, force_move: bool = False):
@@ -349,7 +338,7 @@ class IChar:
 
     def move(self, pos_monitor: Tuple[float, float], force_tp: bool = False, force_move: bool = True):
         factor = self._config.advanced_options["pathing_delay_factor"]
-        if self._skill_hotkeys["teleport"] and (force_tp or(self._ui_manager.is_right_skill_selected(["TELE_ACTIVE"]) and self._ui_manager.is_right_skill_active())):
+        if self._skill_hotkeys["teleport"] and (force_tp or(self._ui_manager.is_right_skill_selected(Skill.Teleport) and self._ui_manager.is_right_skill_active())):
             mouse.move(pos_monitor[0], pos_monitor[1], randomize=2, delay_factor=[factor*0.1, factor*0.14])
             wait(0.02, 0.03)
             mouse.click(button="right")

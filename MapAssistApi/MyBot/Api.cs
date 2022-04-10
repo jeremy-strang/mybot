@@ -529,6 +529,7 @@ namespace MapAssist.MyBot
                             used_skill = _gameData.PlayerUnit.Skills.UsedSkillId.ToString(),
                             left_skill = _gameData.PlayerUnit.Skills.LeftSkillId.ToString(),
                             right_skill = _gameData.PlayerUnit.Skills.RightSkillId.ToString(),
+                            skills = _gameData.PlayerUnit.Skills,
                             inventory_open = _gameData.MenuOpen.Inventory,
                             character_open = _gameData.MenuOpen.Character,
                             skill_select_open = _gameData.MenuOpen.SkillSelect,

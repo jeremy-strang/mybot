@@ -184,7 +184,7 @@ class Pather:
 
     def teleport_to_item(self, item, char):
         # If we failed to pick it up, try to teleport to it
-        if item and char.capabilities.can_teleport_natively:
+        if item and char.can_tp:
             self.move_mouse_to_abs_pos(item["position_abs"], item["dist"])
             char.pre_move()
             mouse.click(button="right")
@@ -198,7 +198,7 @@ class Pather:
 
         if item and item["dist"] > 5.0 and do_traverse:
             Logger.debug(f"    Item {item['name']} (ID: {item['id']}) is {round(item['dist'], 1)}yds away, moving toward it...")
-            if item["dist"] > 30 and char.capabilities.can_teleport_natively:
+            if item["dist"] > 30 and char.can_tp:
                 Logger.debug(f"        Item {item['name']} (ID: {item['id']}) is far away, traversing...")
                 self.traverse(item["position_area"], char, dest_distance=4, time_out=time_out / 2)
             else:
@@ -226,7 +226,7 @@ class Pather:
         monster = self._api.find_monster(monster["id"])
         if monster and type(monster) is dict:
             self.move_mouse_to_abs_pos(monster["position_abs"], monster["dist"])
-            if char.capabilities.can_teleport_natively:
+            if char.can_tp:
                 char.pre_move()
                 mouse.click(button="right")
                 wait(char._cast_duration)

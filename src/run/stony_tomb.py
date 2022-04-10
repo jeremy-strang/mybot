@@ -48,7 +48,7 @@ class StonyTomb:
 
     def approach(self, start_loc: Location) -> Union[bool, Location, bool]:
         Logger.info("Run Stony Tomb")
-        if not self._char.capabilities.can_teleport_natively:
+        if not self._char.can_tp:
             raise ValueError("Pit requires teleport")
 
         if "a2_" not in self._api.data["current_area"]:

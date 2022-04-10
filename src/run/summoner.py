@@ -44,7 +44,7 @@ class Summoner:
 
     def approach(self, start_loc: Location) -> Union[bool, Location]:
         Logger.info("Run Summoner")
-        if not self._char.capabilities.can_teleport_natively:
+        if not self._char.can_tp:
             raise ValueError("Summoner requires Teleport")
         if not self._town_manager.open_wp(start_loc):
             return False

@@ -60,7 +60,7 @@ class Pindleskin:
         if do_pre_buff:
             self._char.pre_buff()
         # move to pindle
-        if self._char.capabilities.can_teleport_natively and self._config.char['type'] != 'necro':
+        if self._char.can_tp and self._config.char['type'] != 'necro':
             self._old_pather.traverse_nodes_fixed("pindle_safe_dist", self._char)
         else:
             self._pather.traverse([62,90], self._char,verify_location=True)

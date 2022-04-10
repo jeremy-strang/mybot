@@ -11,6 +11,7 @@ from pickit.pickit_item import PickitItem
 from pickit.types import Action, Stat
 import obs
 from obs import obs_recorder
+from char.skill import Skill
 
 from utils.custom_mouse import mouse
 from utils.misc import wait, cut_roi, color_filter
@@ -80,31 +81,50 @@ class UiManager():
         """
         :return: Bool if skill is red/available or not. Skill must be selected on right skill slot when calling the function.
         """
-        roi = [
-            self._config.ui_pos["skill_right_x"] - (self._config.ui_pos["skill_width"] // 2),
-            self._config.ui_pos["skill_y"] - (self._config.ui_pos["skill_height"] // 2),
-            self._config.ui_pos["skill_width"],
-            self._config.ui_pos["skill_height"]
-        ]
-        img = cut_roi(self._screen.grab(), roi)
-        avg = np.average(img)
-        return avg > 75.0
-
-    def is_right_skill_selected(self, template_list: List[str]) -> bool:
-        """
-        :return: Bool if skill is currently the selected skill on the right skill slot.
-        """
-        for template in template_list:
-            if self._template_finder.search(template, self._screen.grab(), threshold=0.84, roi=self._config.ui_roi["skill_right"]).valid:
+        # for template in skill_list:
+        #     if self._template_finder.search(template, self._screen.grab(), threshold=0.84, roi=self._config.ui_roi["skill_right"]).valid:
+        #         return True
+        # return False
+        # roi = [
+        #     self._config.ui_pos["skill_right_x"] - (self._config.ui_pos["skill_width"] // 2),
+        #     self._config.ui_pos["skill_y"] - (self._config.ui_pos["skill_height"] // 2),
+        #     self._config.ui_pos["skill_width"],
+        #     self._config.ui_pos["skill_height"]
+        # ]
+        # img = cut_roi(self._screen.grab(), roi)
+        # avg = np.average(img)
+        # return avg > 75.0
+        data = self._api.data
+        if data != None:
+            if data["used_skill"] == data["right_skill"]:
                 return True
         return False
 
-    def is_left_skill_selected(self, template_list: List[str]) -> bool:
+    def is_right_skill_selected(self, skill: Skill) -> bool:
+        """
+        :return: Bool if skill is currently the selected skill on the right skill slot.
+        """
+        # for template in skill_list:
+        #     if self._template_finder.search(template, self._screen.grab(), threshold=0.84, roi=self._config.ui_roi["skill_right"]).valid:
+        #         return True
+        # return False
+        data = self._api.data
+        if data != None:
+            if data["right_skill"] == skill:
+                return True
+        return False
+
+    def is_left_skill_selected(self, skill: Skill) -> bool:
         """
         :return: Bool if skill is currently the selected skill on the left skill slot.
         """
-        for template in template_list:
-            if self._template_finder.search(template, self._screen.grab(), threshold=0.84, roi=self._config.ui_roi["skill_left"]).valid:
+        # for template in template_list:
+        #     if self._template_finder.search(template, self._screen.grab(), threshold=0.84, roi=self._config.ui_roi["skill_left"]).valid:
+        #         return True
+        # return False
+        data = self._api.data
+        if data != None:
+            if data["left_skill"] == skill:
                 return True
         return False
 

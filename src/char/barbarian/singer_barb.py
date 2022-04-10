@@ -1,7 +1,8 @@
 import keyboard
+from char.skill import Skill
 from utils.coordinates import world_to_abs
 from utils.custom_mouse import mouse
-from char import IChar, CharacterCapabilities
+from char import IChar
 from char.barbarian.barbarian import Barbarian
 from template_finder import TemplateFinder
 from ui import UiManager
@@ -60,11 +61,7 @@ class SingerBarb(Barbarian):
             mouse.click(button="right")
         wait(0.01, 0.05)
         keyboard.send(self._char_config["stand_still"], do_press=False)
-    
-    def on_capabilities_discovered(self, capabilities: CharacterCapabilities):
-        if capabilities.can_teleport_natively:
-            self._old_pather.offset_node(149, [120, 70])
-            
+
     def _do_hork(self, hork_time: float):
          if self._skill_hotkeys["find_item"]:
             self.switch_weapon()
@@ -96,8 +93,8 @@ class SingerBarb(Barbarian):
         # select teleport if available
         super().pre_move()
         # in case teleport hotkey is not set or teleport can not be used, use leap if set
-        should_cast_leap = self._skill_hotkeys["leap"] and not self._ui_manager.is_left_skill_selected(["LEAP"])
-        can_teleport = self.capabilities.can_teleport_natively and self._ui_manager.is_right_skill_active()
+        should_cast_leap = self._skill_hotkeys["leap"] and not self._ui_manager.is_left_skill_selected(Skill.Leap)
+        can_teleport = self.can_tp and self._ui_manager.is_right_skill_active()
         if  should_cast_leap and not can_teleport:
             keyboard.send(self._skill_hotkeys["leap"])
             wait(0.15, 0.25)
@@ -110,7 +107,7 @@ class SingerBarb(Barbarian):
 
     def kill_pindle(self) -> bool:
         wait(0.1, 0.15)
-        if self.capabilities.can_teleport_natively:
+        if self.can_tp:
             self._old_pather.traverse_nodes_fixed("pindle_end", self)
         else:
             if not self._do_pre_move:
@@ -122,7 +119,7 @@ class SingerBarb(Barbarian):
         return True
 
     def kill_eldritch(self) -> bool:
-        if self.capabilities.can_teleport_natively:
+        if self.can_tp:
             self._old_pather.traverse_nodes_fixed("eldritch_end", self)
         else:
             self._old_pather.traverse_nodes((Location.A5_ELDRITCH_SAFE_DIST, Location.A5_ELDRITCH_END), self, time_out=1.0, do_pre_move=self._do_pre_move)

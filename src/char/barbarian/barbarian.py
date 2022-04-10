@@ -3,7 +3,7 @@ from unittest import skip
 import keyboard
 from utils.coordinates import world_to_abs
 from utils.custom_mouse import mouse
-from char import IChar, CharacterCapabilities
+from char import IChar
 from template_finder import TemplateFinder
 from ui import UiManager
 from pathing import OldPather
@@ -43,10 +43,6 @@ class Barbarian(IChar):
         elif fcr >= 20: frames = 11
         elif fcr >= 9: frames = 12
         return frames
-    
-    def on_capabilities_discovered(self, capabilities: CharacterCapabilities):
-        if capabilities.can_teleport_natively:
-            self._old_pather.offset_node(149, [120, 70])
 
     def cast_howl(self):
         if self._api.data:

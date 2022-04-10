@@ -301,7 +301,7 @@ class Bot:
         mouse.move(*self._screen.convert_screen_to_monitor((600, 360)))
         wait(0.1, 0.15)
         mouse.click(button="left")
-        self._char.discover_capabilities(force=False)
+        self._char.discover_capabilities()
         self._pickit.pick_up_items(self._char)
         wait(0.1, 0.2)
 
@@ -345,14 +345,14 @@ class Bot:
         if self._pick_corpse:
             Logger.debug(f"Maintenance: Picking up corpse")
             is_loading = self._ui_manager.wait_for_loading_finish()
-            self._char.discover_capabilities(force=False)
+            self._char.discover_capabilities()
             self._pick_corpse = False
             time.sleep(1.6)
             DeathManager.pick_up_corpse(self._screen)
             wait(1.2, 1.5)
             self._belt_manager.fill_up_belt_from_inventory(self._config.char["num_loot_columns"])
             wait(0.5)
-            if self._char.capabilities.can_teleport_with_charges and not self._char.select_tp():
+            if self._char.can_tp_with_charges and not self._char.select_tp():
                 keybind = self._char._skill_hotkeys["teleport"]
                 Logger.info(f"Maintenance: Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
@@ -441,14 +441,14 @@ class Bot:
             wait(1.0)
 
         if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
-        self._char.discover_capabilities(force=False)
+        self._char.discover_capabilities()
 
         # Check if we are out of tps or need repairing
         need_repair = self._ui_manager.repair_needed()
         need_routine_repair = False
         if type(self._config.char["runs_per_repair"]) == int and self._config.char["runs_per_repair"] > 0:
             need_routine_repair = self._game_stats._run_counter % self._config.char["runs_per_repair"] == 0
-        need_refill_teleport = not self._char.capabilities.can_teleport_natively and self._char.capabilities.can_teleport_with_charges and (not self._char.select_tp() or self._char.is_low_on_teleport_charges())
+        need_refill_teleport = not self._char.can_tp and self._char.can_tp_with_charges and (not self._char.select_tp() or self._char.is_low_on_teleport_charges())
         
         tome, quantity = self._ui_manager.get_tome_of("Town Portal")
         self._tps_left = quantity
