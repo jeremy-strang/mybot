@@ -60,6 +60,7 @@ class IChar:
         can_tp_with_charges = False
         if self._skill_hotkeys["teleport"]:
             if self.select_tp():
+                wait(0.1)
                 if self.skill_is_charged():
                     can_tp_with_charges = True
                 else:
@@ -253,12 +254,18 @@ class IChar:
         return False
 
     def skill_is_charged(self, img: np.ndarray = None) -> bool:
-        if img is None:
-            img = self._screen.grab()
-        skill_img = cut_roi(img, self._config.ui_roi["skill_right"])
-        charge_mask, _ = color_filter(skill_img, self._config.colors["blue"])
-        if np.sum(charge_mask) > 0:
-            return True
+        # if img is None:
+        #     img = self._screen.grab()
+        # skill_img = cut_roi(img, self._config.ui_roi["skill_right"])
+        # charge_mask, _ = color_filter(skill_img, self._config.colors["blue"])
+        # if np.sum(charge_mask) > 0:
+        #     return True
+        # return False
+        data = self._api.data
+        if data != None:
+            skill_data = data["right_skill_data"]
+            if skill_data != None and "Charges" in skill_data["Charges"] and skill_data["Charges"] > 0:
+                return True
         return False
 
     def is_low_on_teleport_charges(self):

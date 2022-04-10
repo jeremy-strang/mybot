@@ -514,6 +514,24 @@ namespace MapAssist.MyBot
                             }
                         }
 
+                        var usedSkill = _gameData.PlayerUnit.Skills.UsedSkillId;
+                        var leftSkill = _gameData.PlayerUnit.Skills.LeftSkillId;
+                        var rightSkill = _gameData.PlayerUnit.Skills.RightSkillId;
+                        var player_skills = new List<dynamic>();
+                        if (in_town)
+                        {
+                            foreach (var s in _gameData.PlayerUnit.Skills.AllSkills)
+                            {
+                                player_skills.Add(new
+                                {
+                                    skill = s.Skill.ToString(),
+                                    charges = s.Charges,
+                                    hard_points = s.HardPoints,
+                                    quantity = s.Quantity,
+                                });
+                            }
+                        }
+
                         var msg = new
                         {
                             map_changed = map_changed || forceMap,
@@ -526,10 +544,12 @@ namespace MapAssist.MyBot
                             player_pos_world = _gameData.PlayerPosition,
                             area_origin = _areaData.Origin,
                             current_area,
-                            used_skill = _gameData.PlayerUnit.Skills.UsedSkillId.ToString(),
-                            left_skill = _gameData.PlayerUnit.Skills.LeftSkillId.ToString(),
-                            right_skill = _gameData.PlayerUnit.Skills.RightSkillId.ToString(),
-                            skills = _gameData.PlayerUnit.Skills,
+                            used_skill = usedSkill.ToString(),
+                            left_skill = leftSkill.ToString(),
+                            left_skill_data = _gameData.PlayerUnit.Skills.AllSkills.Where(s => s.Skill == leftSkill).FirstOrDefault(),
+                            right_skill = rightSkill.ToString(),
+                            right_skill_data = _gameData.PlayerUnit.Skills.AllSkills.Where(s => s.Skill == rightSkill).FirstOrDefault(),
+                            player_skills,
                             inventory_open = _gameData.MenuOpen.Inventory,
                             character_open = _gameData.MenuOpen.Character,
                             skill_select_open = _gameData.MenuOpen.SkillSelect,
