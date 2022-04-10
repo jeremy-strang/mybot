@@ -134,7 +134,7 @@ class Barbarian(IChar):
                         skip_ids.add(m_id)
             if distance <= 3:
                 target_pos = world_to_abs(m["position"], data["player_pos_world"])
-                self.cast_hork(target_pos, press_len=self._cast_duration * 2 + 0.02)
+                self.cast_hork(target_pos, press_len=self._cast_duration * 2, stand_still=False)
             else:
                 wait(0.10, 0.15)
             last_monster_id = m_id

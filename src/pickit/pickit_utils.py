@@ -13,7 +13,7 @@ def _parse_pickit_action(opt: Union[Action, tuple[Action, Options], bool], item:
             action: Action = opt[0] if type(opt[0]) is Action else Action(opt[0])
             options = opt[1]
             if options.eth != None:
-                is_eth = Flag.Ethereal in item["flags"]
+                is_eth = item != None and not item["is_ethereal"]
                 if options.eth == EthOption.Any:
                     result = action
                 elif options == EthOption.EthOnly and is_eth:
@@ -34,6 +34,7 @@ def _parse_pickit_action(opt: Union[Action, tuple[Action, Options], bool], item:
     return result
 
 def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = None, game_stats: GameStats = None) -> Action:
+    # pp.pprint(item)
     result = Action.DontKeep
     if config is not None and item is not None and type(item) is dict:
         item_type = item["type"]
@@ -41,7 +42,7 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
         type_quality = (item_type, quality)
         # Runes, gems
         if item_type in config.BasicItems:
-            result = config.BasicItems[item_type]
+            result = _parse_pickit_action(config.BasicItems[item_type], item)
             
         # Unique, set, magic, rare (to remain unidentified)
         elif quality <= Quality.Superior and item_type in config.NormalItems:
