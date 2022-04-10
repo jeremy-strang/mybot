@@ -408,7 +408,6 @@ class UiManager():
     def _move_mouse_to_inventory_item(self, item):
         if item:
             item_pos = (item["position"][0], item["position"][1])
-            column, row = item_pos
             slot_pos = self.get_slot_pos(self._config, *item_pos)
             x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
             mouse.move(x_m, y_m, randomize=10, delay_factor=[0.5, 0.7])
@@ -427,13 +426,14 @@ class UiManager():
                 wait(0.5)
                 item = self._api.find_item(item["id"], "inventory_items")
                 if item and item["is_identified"]:
+                    self._move_mouse_to_inventory_item(item)
                     Logger.debug(f"Successfully identified item {item['name']} at position {item['position']}!")
                     return item
                 else:
                     Logger.debug(f"Failed to identify item {item['name']} at position {item['position']}")
         return item
 
-    def _keep_item(self, inv_pos: tuple[int, int] = None, center = None) -> list[PixelItem]:
+    def _keep_item(self, inv_pos: tuple[int, int] = None, center = None) -> list[PickitItem]:
         """
         Check if an item should be kept, the item should be hovered and in own inventory when function is called
         :param inv_pos: tuple[int, int] Position of the item in the inventory
@@ -455,6 +455,8 @@ class UiManager():
                             keep = action >= Action.Keep
                             if not keep:
                                 self._game_stats.log_item_discard(pickit_item.get_summary(), False)
+                                if self._config.general["info_screenshots"]:
+                                    cv2.imwrite("./info_screenshots/discared_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
                         if keep:
                             Logger.info(f"Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
                             mem_items.append(pickit_item)
