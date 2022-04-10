@@ -412,6 +412,22 @@ class UiManager():
             x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
             mouse.move(x_m, y_m, randomize=10, delay_factor=[0.5, 0.7])
 
+    def _move_mouse_to_stash_pos(position: tuple[float, float]):
+        STASH_ROI = ( 683, 150, 339, 343)
+        STASH_SPACING_X = STASH_ROI[2] / 9
+        STASH_SPACING_Y = STASH_ROI[3] / 9
+        x = int(STASH_ROI[0] + STASH_SPACING_X * position[0])
+        y = int(STASH_ROI[1] + STASH_SPACING_Y * position[1])
+        mouse.move(x, y, randomize=2, delay_factor=[0.3, 0.4])
+    
+    def _move_mouse_to_inv_pos(position: tuple[float, float]):
+        INV_ROI = (1515, 407, 340, 111)
+        INV_SPACING_X = INV_ROI[2] / 9
+        INV_SPACING_Y = INV_ROI[3] / 3
+        x = int(INV_ROI[0] + INV_SPACING_X * position[0])
+        y = int(INV_ROI[1] + INV_SPACING_Y * position[1])
+        mouse.move(x, y, randomize=2, delay_factor=[0.3, 0.4])
+
     def _identify_inventory_item(self, item) -> bool:
         if item and not item["is_identified"]:
             tome, quantity = self.get_tome_of("Identify")

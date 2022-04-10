@@ -3,6 +3,7 @@ import math
 import time
 import traceback
 from tracemalloc import stop
+from turtle import pos
 from char.hammerdin import Hammerdin
 import game_controller
 from pickit.pixel_pickit import PixelPickit
@@ -113,6 +114,13 @@ if __name__ == "__main__":
             start = time.time()
             try:
                 data = api.get_data()
+                
+                # items = api.find_items_by_name("Amethyst", "stash_items")
+                # for item in items:
+                #     pp.pprint(item)
+                #     ui_manager._move_mouse_to_stash_pos(item["position"])
+                #     wait(0.5)
+
                 # travincal.battle(False)
                 # pather.teleport_to_position((142, 103), char)
 
@@ -136,10 +144,10 @@ if __name__ == "__main__":
                 # bot._town_manager.open_stash(Location.A4_TOWN_START)
                 # write_data_to_file(data, api._raw_data_str)
                 
-                pot_needs = belt_manager.update_pot_needs()
-                pot_needs = belt_manager.get_pot_needs()
-                print(f"Potion needs: {pot_needs}")
-                bot._town_manager.buy_pots(Location.A3_ORMUS, pot_needs["health"], pot_needs["mana"])
+                # pot_needs = belt_manager.update_pot_needs()
+                # pot_needs = belt_manager.get_pot_needs()
+                # print(f"Potion needs: {pot_needs}")
+                # bot._town_manager.buy_pots(Location.A3_ORMUS, pot_needs["health"], pot_needs["mana"])
 
                 # bank = None
                 # for obj in data["objects"]:w
