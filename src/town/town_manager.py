@@ -93,10 +93,11 @@ class TownManager:
             return TownManager.get_act_from_location(template_match.name)
         return None
 
-    def wait_for_tp(self, curr_loc: Location):
+    def wait_for_tp(self):
         curr_act = self.get_act_from_current_area()
         if curr_act is None:
-            curr_act = TownManager.get_act_from_location(curr_loc)
+            self._ui_manager.wait_for_loading_finish()
+            curr_act = TownManager.get_act_from_current_area()
             if curr_act is None: return False
         return self._acts[curr_act].wait_for_tp()
 

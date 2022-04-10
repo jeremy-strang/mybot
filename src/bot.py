@@ -9,6 +9,7 @@ from copy import copy
 from typing import Union
 from collections import OrderedDict
 from run.stony_tomb import StonyTomb
+from town.i_act import IAct
 from transmute import Transmute
 from utils.custom_mouse import mouse
 from utils.misc import wait
@@ -570,7 +571,7 @@ class Bot:
         success = self._char.tp_town()
         if success:
             self._tps_left -= 1
-            self._curr_loc = self._town_manager.wait_for_tp(self._curr_loc)
+            self._curr_loc = self._town_manager.wait_for_tp()
             if self._curr_loc:
                 return self.trigger_or_stop("maintenance")
         if not self._ui_manager.has_tps():

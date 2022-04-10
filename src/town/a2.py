@@ -63,8 +63,9 @@ class A2(IAct):
         return True
 
     def wait_for_tp(self) -> Union[Location, bool]:
-        template_match = self._template_finder.search_and_wait(["A2_TOWN_21", "A2_TOWN_22", "A2_TOWN_20", "A2_TOWN_19"], time_out=20)
-        if template_match.valid:
-            self._old_pather.traverse_nodes((Location.A2_TP, Location.A2_FARA_STASH), self._char, force_move=True)
-            return Location.A2_FARA_STASH
-        return False
+        # template_match = self._template_finder.search_and_wait(["A2_TOWN_21", "A2_TOWN_22", "A2_TOWN_20", "A2_TOWN_19"], time_out=20)
+        # if template_match.valid:
+        #     self._old_pather.traverse_nodes((Location.A2_TP, Location.A2_FARA_STASH), self._char, force_move=True)
+        #     return Location.A2_FARA_STASH
+        # return False
+        return Location.A2_FARA_STASH
