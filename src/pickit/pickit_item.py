@@ -17,7 +17,7 @@ class PickitItem:
         self.mode_mapped = self.stats["mode_mapped"] = item["mode_mapped"]
         self.sockets = self.stats["sockets"] = item["sockets"]
         self.position = self.stats["position"] = item["position"]
-        self.quality = self.stats["quality"] = item["quality"]
+        self.quality = self.stats["quality"] = Quality(item["quality"])
         self.tier = self.stats["tier"] = item["tier"]
         self.unique_name = self.stats["unique_name"] = item["unique_name"] if self.quality == Quality.Unique else ""
         self.set_name = self.stats["set_name"] = item["set_name"] if self.quality == Quality.Set else ""
@@ -25,7 +25,7 @@ class PickitItem:
         self.flags = self.stats["flags"] = ", ".split(self._raw_flags) if self._raw_flags and self._raw_flags != "0" else []
         self._raw_stats = self.stats["_raw_stats"] = item["stats"]
         self.is_ethereal = self.stats["is_ethereal"] = Flag.Ethereal in item["flags"]
-        self.action = action
+        self.action = Action(action)
 
         if item["stats"]:
             fr = 0

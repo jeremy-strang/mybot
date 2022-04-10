@@ -383,7 +383,7 @@ class PickitConfig:
             # Unique Amulets
             (Item.Amulet, Quality.Unique): [
                 lambda item: item.check(Stat.AllSkills, ">=", 2) and item.check(Stat.AllResist, ">=", 20), # Mara's Kaleidoscope
-                lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.LightningResist, ">=", 25), # Highlord's Wrath
+                lambda item: item.check(Stat.AllSkills, ">=", 1) and item.check(Stat.DeadlyStrikePerLevel, ">=", 1), # Highlord's Wrath
             ],
             # Magic Grand Charms
             (Item.GrandCharm, Quality.Magic): [
