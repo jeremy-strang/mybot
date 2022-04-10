@@ -291,6 +291,7 @@ class UiManager():
         :return: Bool if action was successful
         """
         Logger.debug("Wait for Play button")
+        start = time.time()
         while 1:
             img = self._screen.grab()
             found_btn_off = self._template_finder.search(["PLAY_BTN", "PLAY_BTN_GRAY"], img, roi=self._config.ui_roi["offline_btn"], threshold=0.8, best_match=True, normalize_monitor=True)
@@ -298,13 +299,15 @@ class UiManager():
             found_btn = found_btn_off if found_btn_off.valid else found_btn_on
             if found_btn.name == "PLAY_BTN":
                 Logger.debug(f"Found Play Btn")
-                mouse.move(*found_btn.center, randomize=[35, 7], delay_factor=[1.0, 1.8])
+                mouse.move(*found_btn.center, randomize=[35, 7], delay_factor=[0.2, 0.3])
                 wait(0.1, 0.15)
                 mouse.click(button="left")
                 break
-            wait(2.0, 3.0)
+            wait_time = 1.5 if time.time() - start > 20 else 0.2
+            wait(wait_time, wait_time + 0.2)
 
         difficulty=self._config.general["difficulty"].upper()
+        difficulty_key="r" if difficulty == "normal" else "n" if difficulty == "nightmare" else "h"
         while 1:
             template_match = self._template_finder.search_and_wait(["LOADING", f"{difficulty}_BTN"], time_out=8, roi=self._config.ui_roi["difficulty_select"], threshold=0.9, normalize_monitor=True)
             if not template_match.valid:
@@ -313,9 +316,10 @@ class UiManager():
             if template_match.name == "LOADING":
                 Logger.debug(f"Found {template_match.name} screen")
                 return True
-            mouse.move(*template_match.center, randomize=[50, 9], delay_factor=[1.0, 1.8])
-            wait(0.15, 0.2)
-            mouse.click(button="left")
+            keyboard.send(difficulty_key)
+            # mouse.move(*template_match.center, randomize=[50, 9], delay_factor=[1.0, 1.8])
+            # wait(0.15, 0.2)
+            # mouse.click(button="left")
             break
 
         # check for server issue
