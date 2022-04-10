@@ -13,12 +13,6 @@ import time
 from logger import Logger
 from event import events
 
-def sleep(duration, get_now=time.perf_counter):
-    now = get_now()
-    end = now + duration
-    while now < end:
-        now = get_now()
-
 class MapAssistApi:
     def __init__(self, custom_files=[]):
         self.data = None
@@ -220,3 +214,24 @@ class MapAssistApi:
                 if name.lower().startswith(object.lower()):
                     return o
         return None
+    
+    def wait_for_menu(self, menu: str, time_out=3.0):
+        key = f"{menu}_open"
+        start = time.time()
+        is_open = lambda data: data != None and key in data and data[key]
+        while not (is_open(self.data)) and time.time() - start < time_out:
+            time.sleep(0.1)
+        return is_open(self.data)
+
+    def wait_for_hover(self, target: dict, list_name: str, time_out=1.0):
+        while target and not target["is_hovered"]:
+            time.sleep(0.05)
+            if list_name == "objects":
+                target = self.find_object(target["name"])
+            elif list_name == "points_of_interest":
+                target = self.find_poi(target["label"])
+            elif list_name == "monsters":
+                target = self.find_monster(target["name"])
+            elif "_items" in list_name:
+                target = self.find_item(target["id"], list_name)
+        return target != None and target["is_hovered"]

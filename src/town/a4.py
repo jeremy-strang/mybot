@@ -38,11 +38,14 @@ class A4(IAct):
         return False
 
     def open_wp(self, curr_loc: Location) -> bool:
-        if not self._old_pather.traverse_nodes((curr_loc, Location.A4_WP), self._char): return False
-        wait(0.5, 0.7)
-        found_wp_func = lambda: self._template_finder.search("WAYPOINT_MENU", self._screen.grab()).valid
-        # decreased threshold because we sometimes walk "over" it during pathing
-        return self._char.select_by_template(["A4_WP", "A4_WP_2"], found_wp_func, threshold=0.62, telekinesis=False)
+        if not self._pather.walk_to_poi("The Pandemonium Fortress"):    
+            wp = self._api.find_object("PandamoniumFortressWaypoint")
+            if wp:
+                self._char.reposition(self._screen.convert_abs_to_monitor(wp["position_abs"], clip_input=True))
+                self._pather.walk_to_poi("The Pandemonium Fortress")        
+        if not self._pather.click_object("PandamoniumFortressWaypoint"):
+            self._pather.click_object("PandamoniumFortressWaypoint")
+        return self._api.wait_for_menu("waypoint")
 
     def wait_for_tp(self) -> Union[Location, bool]:
         success = self._template_finder.search_and_wait(["A4_TOWN_4", "A4_TOWN_5", "A4_TOWN_6"], time_out=20).valid

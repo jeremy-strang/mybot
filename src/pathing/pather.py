@@ -1,6 +1,7 @@
 from ast import Tuple
 import cv2
 from pytest import skip
+from char.skill import Skill
 from utils.coordinates import world_to_abs
 import numpy as np
 import pyastar2d
@@ -118,17 +119,22 @@ class Pather:
 
         return area_pos
 
-    def click_poi(self, poi_label: str, offset=None):
+    def click_poi(self, poi_label: str, offset=None, time_out=2.0):
+        start = time.time()
         data = self._api.data
+        is_hovered = False
         if data and not self._should_abort_pathing():
-            next_lvl = self._api.find_poi(poi_label)
-            self.move_mouse_to_abs_pos(
-                world_to_abs(next_lvl["position"], data["player_pos_world"]),
-                math.dist(data["player_pos_area"], next_lvl["position"] - data["area_origin"]),
-                offset)
-            wait(0.1, 0.15)
+            poi = self._api.find_poi(poi_label)
+            is_hovered = poi and poi["is_hovered"]
+            while poi and not is_hovered and time.time() - start < time_out:
+                self.move_mouse_to_abs_pos(
+                    world_to_abs(poi["position"], data["player_pos_world"]),
+                    math.dist(data["player_pos_area"], poi["position"] - data["area_origin"]),
+                    offset)
+                is_hovered = self._api.wait_for_hover(poi, "points_of_interest")
             mouse.click(button="left")
             wait(0.5)
+        return is_hovered
 
     def click_object(self, name: str, offset=None):
         data = self._api.data
@@ -136,18 +142,15 @@ class Pather:
             object = self._api.find_object(name)
             if not object:
                 return False
-            self.move_mouse_to_abs_pos(
-                world_to_abs(object["position"], data["player_pos_world"]),
-                math.dist(data["player_pos_area"], object["position"] - data["area_origin"]),
-                offset)
+            self.move_mouse_to_object(object, offset)
             wait(0.1, 0.15)
             mouse.click(button="left")
             wait(0.5)
         return True
 
     def move_mouse_to_abs_pos(self, position_abs, dist, offset=None):
-        offset_x = offset[0] if offset is not None else 0
-        offset_y = offset[1] if offset is not None else 0
+        offset_x = offset[0] if offset != None else 0
+        offset_y = offset[1] if offset != None else 0
         x = np.clip(position_abs[0], -638, 638)
         y = np.clip(position_abs[1], -350, 225)
         pos_m = self._screen.convert_abs_to_monitor([x, y])
@@ -167,9 +170,19 @@ class Pather:
                 return True
         return False
 
-    def move_mouse_to_monster(self, monster):
+    def move_mouse_to_monster(self, monster, offset=None, confirm_hover=False):
         if monster:
             self.move_mouse_to_abs_pos(monster["position_abs"], monster["dist"])
+            if confirm_hover:
+                return self._api.wait_for_hover(monster)
+        return True
+
+    def move_mouse_to_object(self, target: dict, offset=None, confirm_hover=False):
+        if type(target) is dict and "position_abs" in target and "dist" in target:
+            self.move_mouse_to_abs_pos(target["position_abs"], target["dist"], offset)
+            if confirm_hover:
+                return self._api.wait_for_hover(target)
+        return True
 
     def teleport_to_position(self, position: tuple[float, float], char):
         if self._api.data:
@@ -252,7 +265,7 @@ class Pather:
             data = self._api.data
         while time.time() - start < 20 and not self._should_abort_pathing():
             data = self._api.data
-            if data and "map" in data and data["map"] is not None:
+            if data and "map" in data:
                 if is_wp:
                     wp_menu = data["waypoint_open"]
                     if wp_menu and is_wp:
@@ -303,13 +316,13 @@ class Pather:
                         pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
                     else:
                         pos_monitor = None
-                if pos_monitor is not None:
+                if pos_monitor != None:
                     if is_wp and wp_menu:
                         return True
                     if is_wp and not wp_menu:
                         pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1] - 39.5]
                         
-                        if data is not None and data["should_chicken"]:
+                        if data != None and data["should_chicken"]:
                             Logger.warning(f"    Aborting activate_waypoint() because chicken life threshold was reached")
                             return False
 
@@ -329,7 +342,7 @@ class Pather:
                             return True
 
                     if not is_wp:
-                        if data is not None and data["should_chicken"]:
+                        if data != None and data["should_chicken"]:
                             Logger.warning(f"    Aborting activate_waypoint() because chicken life threshold was reached")
                             return False
 
@@ -400,7 +413,7 @@ class Pather:
                             pos_monitor)
                     else:
                         pos_monitor = None
-                if pos_monitor is not None:
+                if pos_monitor != None:
                     if collection == "objects":
                         while (obj["mode"] == 0):
 
@@ -414,14 +427,14 @@ class Pather:
                             ap = obj["position"] - data["area_origin"]
                             pos_monitor = world_to_abs(ap, player_p)
                             pos_monitor = self._screen.convert_abs_to_monitor(pos_monitor)
-                            if char is not None:
+                            if char != None:
                                 if collection == "objects":
                                     self.traverse(poi, char, obj=True)
                                 else:
                                     self.traverse(poi, char)
                             pos_monitor = [pos_monitor[0] - 9.5, pos_monitor[1]-39.5]
 
-                            if data is not None and data["should_chicken"]:
+                            if data != None and data["should_chicken"]:
                                 Logger.warning(f"    Aborting activate_poi() because chicken life threshold was reached")
                                 return False
 
@@ -504,15 +517,15 @@ class Pather:
                     else:
                         pos_monitor = None
 
-                if pos_monitor is not None:
+                if pos_monitor != None:
                     random.seed()
                     pos_monitor = (pos_monitor[0] + random.randint(-randomize, +randomize),
                                    pos_monitor[1] + random.randint(-randomize, +randomize))
                     pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
-                    if offset is not None:
+                    if offset != None:
                         pos_monitor = [pos_monitor[0] + offset[0], pos_monitor[1] + offset[1]]
 
-                    if data is not None and data["should_chicken"]:
+                    if data != None and data["should_chicken"]:
                         Logger.warning(f"    Aborting go_to_area() because chicken life threshold was reached")
                         return False
 
@@ -528,12 +541,12 @@ class Pather:
 
                     num_clicks += 1
                     wait(0.5, 0.6)
-                    if num_clicks == 10 and char is not None:
+                    if num_clicks == 10 and char != None:
                         char.pre_move()
                         char.move(pos_monitor, force_tp=True)
                     if num_clicks == 12:
                         randomize += 2
-                    if num_clicks == 15 and char is not None:
+                    if num_clicks == 15 and char != None:
                         char.reposition(pos_abs)
                     if num_clicks == 17:
                         randomize += 3
@@ -572,10 +585,13 @@ class Pather:
         return False
 
     def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=10):
+        Logger.debug(f"Walking to POI {poi_label}")
         dest = self._api.find_poi(poi_label)
         if dest:
             self.walk_to_position(dest["position_area"], time_out, step_size)
             return True
+        else:
+            Logger.error(f"    POI {poi_label} not found")
         return False
 
     def walk_to_position(self, dest_area, time_out=10.0, step_size=10):
@@ -603,13 +619,15 @@ class Pather:
 
     def walk_route(self, route, time_out=10.0, step_size=10, threshold=8):
         Logger.debug(f"Walking along route of length {len(route)} and step size {step_size}...")
-        if route is not None:
+        data = self._api.data
+        if route != None and len(route) > 0 and data != None:
+            distance = math.dist(route[-1], data["player_pos_area"])
             self._api._current_path = route
             mem_retries = 0
             num_repeats = 0 
             current = self._get_next_node(route, step_size)
             start = time.time()
-            while current is not None and time.time() - start < time_out and not self._should_abort_pathing():
+            while current != None and time.time() - start < time_out and not self._should_abort_pathing():
                 data = self._api.data
                 if not data:
                     mem_retries += 1
@@ -631,7 +649,8 @@ class Pather:
                     num_repeats = 0
                 else:
                     num_repeats += 1
-        return True
+            return 
+        return False
 
     def traverse_walking(self,
                          end: Union[str, tuple[int, int]],
@@ -656,7 +675,7 @@ class Pather:
 
         while (time.time() - start < time_out or not sucess) and not self._should_abort_pathing():
             data = self._api.get_data()
-            if data and "map" in data and data["map"] is not None:
+            if data != None and "map" in data:
                 if type(end) is str and obj is False:
                     if static_npc == True:
                         for p in data["static_npcs"]:
@@ -701,7 +720,7 @@ class Pather:
                                   [player_x, player_y])
 
                 # make paths
-                if data['map'] is not None:
+                if "map" in data:
                     player_pos_area = (int(player_y_area), int(player_x_area))
                     dest_pos_area = (int(y), int(x))
                     # path_data = make_path_astar(player_local, dest, data["map"])
@@ -868,20 +887,20 @@ class Pather:
                 wait(0.1)
                 continue
             
-            if "map" in data and data["map"] is not None:
+            if "map" in data:
                 player_pos_area = data["player_pos_area"]
-                if data["used_skill"] == "Teleport":
+                if data["used_skill"] == Skill.Teleport:
                     time.sleep(0.01)
                     continue
 
                 # Some fail save checking for when we get stuck
-                if last_pos is not None and np.array_equal(player_pos_area, last_pos):
+                if last_pos != None and np.array_equal(player_pos_area, last_pos):
                     repeated_pos_count += 1
-                    if repeated_pos_count == 2 and last_node_pos_abs is not None:
+                    if repeated_pos_count == 2 and last_node_pos_abs != None:
                         char.reposition(last_node_pos_abs)
-                    if repeated_pos_count == 4 and last_node_pos_abs is not None:
+                    if repeated_pos_count == 4 and last_node_pos_abs != None:
                         char.reposition(last_node_pos_abs)
-                    if repeated_pos_count == 6 and last_node_pos_abs is not None:
+                    if repeated_pos_count == 6 and last_node_pos_abs != None:
                         char.reposition(last_node_pos_abs)
                     if repeated_pos_count == 8:
                         Logger.debug("Increasing end point reached range")
@@ -1001,7 +1020,7 @@ class Pather:
         start = time.time()
         while time.time() - start < 20:
             data = self._api.get_data()
-            if data is not None and data["current_area"] == name:
+            if data != None and data["current_area"] == name:
                 return True
             time.sleep(0.1)
         return False
@@ -1010,7 +1029,7 @@ class Pather:
         start = time.time()
         while time.time() - start < time_out:
             data = self._api.data
-            if data is not None:
+            if data != None:
                 if data["in_town"]:
                     return True
             time.sleep(0.1)

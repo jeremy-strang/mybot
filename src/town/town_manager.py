@@ -109,9 +109,6 @@ class TownManager:
 
     def go_to_act(self, act_idx: int, curr_loc: Location) -> Union[Location, bool]:
         curr_act = self.get_act_from_current_area()
-        if curr_act is None:
-            curr_act = TownManager.get_act_from_location(curr_loc)
-            if curr_act is None: return False
         # check if we already are in the desired act
         if act_idx == 1: act = Location.A1_TOWN_START
         elif act_idx == 2: act = Location.A2_TOWN_START
@@ -157,14 +154,8 @@ class TownManager:
         return curr_loc
 
     def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
-        curr_act = self.get_act_from_current_area()
-        if curr_act is None:
-            Logger.debug(f"Unable to detect the current act in memory, falling back to pixels")
-            curr_act = TownManager.get_act_from_location(curr_loc)
-            if curr_act is None:
-                Logger.debug(f"Failed to resurrect merc, unable to detect the current act")
-                return False
         # check if we can resurrect in current act
+        curr_act = self.get_act_from_current_area()
         if self._acts[curr_act].can_resurrect():
             return self._acts[curr_act].resurrect(curr_loc)
         new_loc = self.go_to_act(4, curr_loc)

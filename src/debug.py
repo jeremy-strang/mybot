@@ -130,8 +130,10 @@ if __name__ == "__main__":
 
                 # belt_manager.update_pot_needs()
 
-                pickit.pick_up_items(char)
+                # pickit.pick_up_items(char)
 
+                # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
+                pather.click_poi("The Pandemonium Fortress")
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
                 # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
