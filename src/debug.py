@@ -129,7 +129,7 @@ if __name__ == "__main__":
             try:
                 data = api.get_data()
 
-                shenk.battle(False, True, game_stats)
+                # shenk.battle(False, True, game_stats)
                 # pindleskin.approach(Location.A5_TOWN_START)
                 
                 # items = api.find_items_by_name("Amethyst", "stash_items")
@@ -148,6 +148,8 @@ if __name__ == "__main__":
                 # belt_manager.update_pot_needs()
 
                 # pickit.pick_up_items()
+                # char.tp_town()
+                pather.click_object("TownPortal")
 
                 # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
     
