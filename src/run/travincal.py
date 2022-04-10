@@ -9,7 +9,7 @@ from pathing import Location, OldPather
 from typing import Union
 from pickit.pixel_pickit import PixelPickit
 from pathing import Pather
-import state_monitor
+from screen import Screen
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
 from ui import UiManager
@@ -22,6 +22,7 @@ class Travincal:
 
     def __init__(
         self,
+        screen: Screen,
         template_finder: TemplateFinder,
         old_pather: OldPather,
         town_manager: TownManager,
@@ -33,12 +34,15 @@ class Travincal:
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
+        self._screen = screen
         self._template_finder = template_finder
         self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
+        self._picked_up_items = False
+        self.used_tps = 0
         self._api = api
         self._pather = pather
         self._obs_recorder = obs_recorder

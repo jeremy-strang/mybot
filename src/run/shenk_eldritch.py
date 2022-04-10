@@ -5,6 +5,7 @@ from logger import Logger
 from pathing import Location, OldPather
 from typing import Union
 from pickit.pixel_pickit import PixelPickit
+from screen import Screen
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
 from ui import UiManager
@@ -16,6 +17,7 @@ from obs import ObsRecorder
 class ShenkEldritch:
     def __init__(
         self,
+        screen: Screen,
         template_finder: TemplateFinder,
         old_pather: OldPather,
         town_manager: TownManager,
@@ -27,12 +29,15 @@ class ShenkEldritch:
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
+        self._screen = screen
         self._template_finder = template_finder
         self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
+        self._picked_up_items = False
+        self.used_tps = 0
         self._api = api
         self._pather = pather
         self._obs_recorder = obs_recorder
@@ -40,38 +45,31 @@ class ShenkEldritch:
     def approach(self, start_loc: Location) -> Union[bool, Location, bool]:
         Logger.info("Run Eldritch")
         # Go to Frigid Highlands
-        if not self._town_manager.open_wp(start_loc):
-            return False
+        if not self._town_manager.open_wp(start_loc): return False
         wait(0.4)
         if self._ui_manager.use_wp(5, 1):
             return Location.A5_ELDRITCH_START
         return False
 
     def battle(self, do_shenk: bool, do_pre_buff: bool, game_stats) -> Union[bool, tuple[Location, bool]]:
-        # Eldritch
-        game_stats.update_location("Eld" if self._config.general['discord_status_condensed'] else "Eldritch")
-        if not self._template_finder.search_and_wait(["ELDRITCH_0", "ELDRITCH_START"], threshold=0.65, time_out=20).valid:
-            return False
+        if not self._pather.wait_for_location("FrigidHighlands"): return False
         if do_pre_buff:
             self._char.pre_buff()
+
+        # Move to Eldritch
         if self._char.can_tp:
-            self._old_pather.traverse_nodes_fixed("eldritch_safe_dist", self._char)
+            self._pather.traverse((235, 729), self._char)
         else:
-            if not self._old_pather.traverse_nodes((Location.A5_ELDRITCH_START, Location.A5_ELDRITCH_SAFE_DIST), self._char, force_move=True):
-                return False
+            self._pather.walk_to_position((235, 729))
+        
         if self._char._char_config['type'] == 'necro':
             game_state = StateMonitor(['MinionExp'], self._api,super_unique=True)
-            result = self._char.kill_eldrich_mem(game_state)
-            if result:
-                Logger.info("Eldrich died...")
+            self._char.kill_eldrich_mem(game_state)
             game_state.stop()
-
         else:
             self._char.kill_eldritch()
-
-        
+        wait(0.1)
         loc = Location.A5_ELDRITCH_END
-        wait(0.05, 0.1)
         picked_up_items = self._pickit.pick_up_items(self._char)
 
         # Shenk
@@ -79,25 +77,23 @@ class ShenkEldritch:
             Logger.info("Run Shenk")
             game_stats.update_location("Shk" if self._config.general['discord_status_condensed'] else "Shenk")
             self._curr_loc = Location.A5_SHENK_START
-            # No force move, otherwise we might get stuck at stairs!
+
+            if not self._pather.traverse("Bloody Foothills", self._char, verify_location=False): return False
+            if not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False): return False
 
             if self._char._char_config['type'] == 'necro':
-                if not self._pather.traverse("Bloody Foothills", self._char,verify_location=False): return False
-                if not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False): return False
-                wait(.1,.2)
-                if not self._pather.traverse([95,121], self._char): return False
+                wait(0.1, 0.2)
+                if not self._pather.traverse([95, 121], self._char): return False
                 game_state = StateMonitor(['OverSeer'], self._api,super_unique=True)
                 result = self._char.kill_shenk_mem(game_state)
-                if result:
-                    Logger.info("sHENK died...")
                 game_state.stop()
             else:
-                if not self._old_pather.traverse_nodes((Location.A5_SHENK_START, Location.A5_SHENK_SAFE_DIST), self._char,force_move=False):
-                    return False
+                if not self._char.can_tp or not self._pather.traverse((80, 117), self._char):
+                    self._pather.walk_to_position((80, 117), time_out=7)
                 self._char.kill_shenk()
 
             loc = Location.A5_SHENK_END
-            wait(.1, .3) # sometimes merc needs some more time to kill shenk...
+            wait(0.1)
             picked_up_items |= self._pickit.pick_up_items(self._char)
 
         return (loc, picked_up_items)

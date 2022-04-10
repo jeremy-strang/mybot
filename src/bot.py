@@ -139,17 +139,16 @@ class Bot:
         Logger.info(f"Doing runs: {self._do_runs_reset.keys()}")
         if self._config.general["randomize_runs"]:
             self.shuffle_runs()
-        self._pindleskin = Pindleskin(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._shenk = ShenkEldritch(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)       
+
+        self._pindleskin = Pindleskin(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._shenk = ShenkEldritch(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._nihlathak = Nihlathak(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._summoner = Summoner(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        # mem-reading
-        self._travincal = Travincal(self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._baal = Baal(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._mephisto = Mephisto(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        #INCLUDED TEMPLATE FOR NOWA, runs with light sorc now
-        self._andariel = Andariel(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
-        self._countess = Countess(self._screen, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._travincal = Travincal(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._baal = Baal(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._mephisto = Mephisto(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._andariel = Andariel(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
+        self._countess = Countess(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._diablo = Diablo(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._pit = Pit(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)
         self._stony_tomb = StonyTomb(self._screen, self._template_finder, self._old_pather, self._town_manager, self._ui_manager, self._char, self._pickit, self._api, self._pather, self._obs_recorder)

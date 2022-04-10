@@ -82,7 +82,7 @@ class Overlay:
         dpg.add_texture_registry(label="txt_con", tag="_txt",show=False)
         dpg.add_static_texture(self._mini_map_w,self._mini_map_h, self._texture_data,parent="_txt", tag="texture_tag")
 
-        with dpg.window(label="stats",width=700,height=700,pos=(980, 0), tag="main", no_resize=True,no_scrollbar=False,no_title_bar=True,no_move=True,no_collapse=True):
+        with dpg.window(label="stats",width=700,height=700,pos=(720, 0), tag="main", no_resize=True,no_scrollbar=False,no_title_bar=True,no_move=True,no_collapse=True):
             #dpg.draw_circle((250,250),500,color=(55,55,55,255),fill=[55,55,55],parent="main")
 
             with dpg.draw_node(tag="root_scale"):

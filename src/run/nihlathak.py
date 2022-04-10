@@ -38,6 +38,8 @@ class Nihlathak:
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
+        self._picked_up_items = False
+        self.used_tps = 0
         self._api = api
         self._pather = pather
         self._obs_recorder = obs_recorder

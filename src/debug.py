@@ -15,6 +15,13 @@ from monsters.monster_rule import MonsterRule
 from npc_manager import Npc
 from obs import obs_recorder
 from pathing import PathFinder
+from run.baal import Baal
+from run.diablo import Diablo
+from run.mephisto import Mephisto
+from run.nihlathak import Nihlathak
+from run.pindleskin import Pindleskin
+from run.shenk_eldritch import ShenkEldritch
+from run.stony_tomb import StonyTomb
 from run.summoner import Summoner
 from run.andariel import Andariel
 from run.pit import Pit
@@ -93,12 +100,19 @@ if __name__ == "__main__":
         # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities()
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
-        pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
-        travincal = Travincal(template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
-        countess = Countess(template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
-        andariel = Andariel(screen, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
-        summoner = Summoner(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
-
+        pindleskin = bot._pindleskin # Pindleskin(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        shenk = bot._shenk # ShenkEldritch(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        nihlathak = bot._nihlathak # Nihlathak(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        summoner = bot._summoner # Summoner(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        travincal = bot._travincal # Travincal(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        baal = bot._baal # Baal(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        mephisto = bot._mephisto # Mephisto(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        andariel = bot._andariel # Andariel(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        countess = bot._countess # Countess(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        diablo = bot._diablo # Diablo(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        pit = bot._pit # Pit(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        stony_tomb = bot._stony_tomb # StonyTomb(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        
         data = None
         print(("-" * 80) + "\n\nStarting API...")
         while data is None:
@@ -110,10 +124,13 @@ if __name__ == "__main__":
 
         def do_stuff():
             print("Doing stuff...")
-            wait(0.5)
+            wait(1.0)
             start = time.time()
             try:
                 data = api.get_data()
+
+                # pindleskin.approach(Location.A5_TOWN_START)
+                
                 # items = api.find_items_by_name("Amethyst", "stash_items")
                 # for item in items:
                 #     pp.pprint(item)
@@ -129,7 +146,7 @@ if __name__ == "__main__":
 
                 # belt_manager.update_pot_needs()
 
-                pickit.pick_up_items()
+                # pickit.pick_up_items()
 
                 # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
     

@@ -30,13 +30,14 @@ class Summoner:
         obs_recorder: ObsRecorder,
     ):
         self._config = Config()
+        self._screen = screen
         self._template_finder = template_finder
         self._old_pather = old_pather
         self._town_manager = town_manager
         self._ui_manager = ui_manager
         self._char = char
         self._pickit = pickit
-        self._chest = Chest(screen, self._char, self._template_finder, 'arcane')
+        self._picked_up_items = False
         self.used_tps = 0
         self._api = api
         self._pather = pather

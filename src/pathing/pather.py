@@ -147,8 +147,10 @@ class Pather:
                 self.move_mouse_to_abs_pos(
                     world_to_abs(object["position"], data["player_pos_world"]),
                     math.dist(data["player_pos_area"], object["position"] - data["area_origin"]),
-                    offset)
+                    offset=offset)
                 is_hovered = self._api.wait_for_hover(object, "objects")
+                object = self._api.find_object(object["name"])
+            Logger.debug(f"    Clicking object, confirmed hover: {is_hovered}")
             mouse.click(button="left")
             wait(0.5)
         return is_hovered
@@ -605,7 +607,7 @@ class Pather:
         Logger.error(f"    No object found named {obj_name}")
         return False
 
-    def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=10):
+    def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=4):
         Logger.debug(f"Walking to POI {poi_label}")
         dest = self._api.find_poi(poi_label)
         if dest:
@@ -615,9 +617,9 @@ class Pather:
             Logger.error(f"    POI {poi_label} not found")
         return False
 
-    def walk_to_position(self, dest_area, time_out=10.0, step_size=10):
+    def walk_to_position(self, dest_area, time_out=15.0, step_size=4, threshold=10) -> bool:
         route = self.make_route_to_position(dest_area)
-        self.walk_route(route, time_out, step_size)
+        return self.walk_route(route, time_out, step_size)
 
     def make_route_to_position(self, dest_area):
         route = None
@@ -630,47 +632,47 @@ class Pather:
             self._api._current_path = route
         return route
 
-    def _get_next_node(self, nodes, step_size=10):
-        node = None
-        popped = 0
-        while popped < step_size and len(nodes) > 0:
+    def _get_next_node(self, nodes, step_size=4, threshold=10) -> tuple[tuple[float, float], float]:
+        if self._api.data and len(nodes) > 0:
+            popped = 0
             node = nodes.pop(0)
-            popped += 1
-        return node
+            dist =  math.dist(node, self._api.data["player_pos_area"])
+            while popped < step_size and len(nodes) > 0 and dist <= threshold:
+                node = nodes.pop(0)
+                dist = cityblock(node, self._api.data["player_pos_area"]) # math.dist(node, self._api.data["player_pos_area"])
+                popped += 1
+            return (node, dist)
+        return (None, 0)
 
-    def walk_route(self, route, time_out=10.0, step_size=10, threshold=8):
+    def walk_route(self, route, time_out=15.0, step_size=4, threshold=10, final=3.0) -> bool:
         Logger.debug(f"Walking along route of length {len(route)} and step size {step_size}...")
         data = self._api.data
+        steps = []
+        end = route[-1]
         if route != None and len(route) > 0 and data != None:
-            distance = math.dist(route[-1], data["player_pos_area"])
             self._api._current_path = route
-            mem_retries = 0
-            num_repeats = 0 
-            current = self._get_next_node(route, step_size)
+            prev = data["player_pos_area"]
+            next, distance = self._get_next_node(route, step_size)
             start = time.time()
-            while current != None and time.time() - start < time_out and not self._should_abort_pathing():
+            while next != None and time.time() - start < time_out and not self._should_abort_pathing():
                 data = self._api.data
                 if not data:
-                    mem_retries += 1
-                    if mem_retries > 4:
-                        Logger.error(f"    Failed to walk route, could not read data")
-                        return False
-                    wait(0.2)
+                    time.sleep(0.2)
                     continue
-
-                move_pos_abs = world_to_abs(current, data['player_pos_area'] + data['player_offset'])
-                move_pos_m = self._screen.convert_abs_to_monitor([move_pos_abs[0], move_pos_abs[1]])
+                avg = ((next[0] + prev[0]) / 2, (next[1] + prev[1]) / 2) if len(steps) > 0 else next
+                move_pos_abs = world_to_abs(avg, data['player_pos_area'] + data['player_offset'])
+                move_pos_m = self._screen.convert_abs_to_monitor([move_pos_abs[0], move_pos_abs[1]], clip_input=True)
                 mouse.move(*move_pos_m)
-                keyboard.send(self._config.char["force_move"])
-                wait(0.2)
-                data = self._api.get_data()
-                distance = math.dist(current, data["player_pos_area"])
-                if distance < threshold or num_repeats > 4:
-                    current = self._get_next_node(route, step_size)
-                    num_repeats = 0
-                else:
-                    num_repeats += 1
-            return 
+                keyboard.send(self._config.char["force_move"], do_release=False)
+                steps.append(prev)
+                prev = next
+                next, distance = self._get_next_node(route, step_size)
+                time.sleep(0.1)
+            keyboard.release(self._config.char["force_move"])
+            Logger.debug(f"    Done walking route, ended {distance} from {end}")
+            self._api._current_path = steps
+            time.sleep(0.2)
+            return True
         return False
 
     def traverse_walking(self,
@@ -801,8 +803,7 @@ class Pather:
                     # distance threshold to target
                     if end < end_dist:
                         sucess = True
-                        keyboard.send(
-                            char._char_config["force_move"], do_press=False)
+                        keyboard.send(char._char_config["force_move"], do_press=False)
                         Logger.info('Walked to destination')
                         return True
                         # break
@@ -1039,16 +1040,16 @@ class Pather:
                 return r
         return None
 
-    def wait_for_location(self, name) -> bool:
+    def wait_for_location(self, name, time_out: float = 10.0) -> bool:
         start = time.time()
-        while time.time() - start < 20:
+        while time.time() - start < time_out:
             data = self._api.get_data()
             if data != None and data["current_area"] == name:
                 return True
             time.sleep(0.1)
         return False
 
-    def wait_for_town(self, time_out: float = 7.0) -> bool:
+    def wait_for_town(self, time_out: float = 10.0) -> bool:
         start = time.time()
         while time.time() - start < time_out:
             data = self._api.data

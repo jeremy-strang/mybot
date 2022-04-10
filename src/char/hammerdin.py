@@ -112,45 +112,21 @@ class Hammerdin(IChar):
         self.move(pos_m, force_move=True)
         self._cast_hammers(atk_len)
 
-    def kill_pindle(self) -> bool:
-        wait(0.1, 0.15)
+    def _kill_superunique(self) -> bool:
+        rules = [MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE])]
         if self.can_tp:
-            self._old_pather.traverse_nodes_fixed("pindle_end", self)
+            return self._kill_mobs(rules)
         else:
-            if not self._do_pre_move:
-                keyboard.send(self._skill_hotkeys["concentration"])
-                wait(0.05, 0.15)
-            self._old_pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
-        self._cast_hammers(self._char_config["atk_len_pindle"])
-        wait(0.1, 0.15)
-        self._cast_hammers(1.6, "redemption")
-        return True
+            return self._kill_mobs_walking(rules)
+
+    def kill_pindle(self) -> bool:
+        return self._kill_superunique()
 
     def kill_eldritch(self) -> bool:
-        if self.can_tp:
-            # Custom eld position for teleport that brings us closer to eld
-            self._old_pather.traverse_nodes_fixed([(675, 30)], self)
-        else:
-            if not self._do_pre_move:
-                keyboard.send(self._skill_hotkeys["concentration"])
-                wait(0.05, 0.15)
-            self._old_pather.traverse_nodes((Location.A5_ELDRITCH_SAFE_DIST, Location.A5_ELDRITCH_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
-        wait(0.05, 0.1)
-        self._cast_hammers(self._char_config["atk_len_eldritch"])
-        wait(0.1, 0.15)
-        self._cast_hammers(1.6, "redemption")
-        return True
+        return self._kill_superunique()
 
     def kill_shenk(self):
-        if not self._do_pre_move:
-            keyboard.send(self._skill_hotkeys["concentration"])
-            wait(0.05, 0.15)
-        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
-        wait(0.05, 0.1)
-        self._cast_hammers(self._char_config["atk_len_shenk"])
-        wait(0.1, 0.15)
-        self._cast_hammers(1.6, "redemption")
-        return True
+        return self._kill_superunique()
 
     def kill_council(self) -> bool:
         if not self._do_pre_move:
@@ -164,7 +140,7 @@ class Hammerdin(IChar):
         else:
             self._kill_council_walking()
         keyboard.send(self._skill_hotkeys["concentration"])
-        wait(0.05, 0.10)
+        wait(0.05, 0.08)
         return True
 
     # Chaos Sanctuary, Seal Bosses (a = Vizier, b = De Seis, c = Infector) & Diablo
@@ -483,7 +459,7 @@ class Hammerdin(IChar):
         elapsed = 0
         monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
         if len(monsters) == 0: return True
-        Logger.debug(f"Beginning combat against {len(monsters)}...")
+        Logger.debug(f"Beginning combat against {len(monsters)} monsters...")
         while elapsed < time_out and len(monsters) > 0:
             data = self._api.get_data()
             if data:

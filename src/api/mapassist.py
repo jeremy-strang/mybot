@@ -223,9 +223,9 @@ class MapAssistApi:
             time.sleep(0.1)
         return is_open(self.data)
 
-    def wait_for_hover(self, target: dict, list_name: str, time_out=1.0):
+    def wait_for_hover(self, target: dict, list_name: str, time_out=0.3):
         while target and not target["is_hovered"]:
-            time.sleep(0.05)
+            time.sleep(0.04)
             if list_name == "objects":
                 target = self.find_object(target["name"])
             elif list_name == "points_of_interest":
