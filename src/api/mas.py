@@ -109,6 +109,7 @@ class MAS(Thread):
             "player_id": 0,
             "player_merc": None,
             "player_corpse": None,
+            "hovered_unit": None,
         }
 
         # if self.in_game != data["in_game"]: print(f"in_game changed from {self.in_game} to {data['in_game']}")
@@ -165,6 +166,9 @@ class MAS(Thread):
         _data["player_merc"] = data["player_merc"]
         _data["player_corpse"] = data["player_corpse"]
         _data["item_on_cursor"] = data["item_on_cursor"]
+        _data["hovered_unit"] = None
+        if data["player_corpse"] and data["hovered_unit"]:
+            _data["hovered_unit"] = data["player_corpse"]
 
         _data["map_changed"] = data["map_changed"]
         if data["map_changed"]:
@@ -213,6 +217,8 @@ class MAS(Thread):
             monster["position_abs"] = np.array(world_to_abs(monster["position"], self._player_pos_world))
             monster["position_area"] = np.array([monster_world_x - area_origin_x, monster_world_y - area_origin_y])
             monster["dist"] = math.dist(_data["player_pos_area"], monster["position_area"])
+            if monster["is_hovered"]:
+                _data["hovered_unit"] = monster
             _data["monsters"].append(monster)
 
         for poi in data["points_of_interest"]:
@@ -230,6 +236,8 @@ class MAS(Thread):
             obj["position_abs"] = np.array(world_to_abs(obj["position"], self._player_pos_world))
             obj["position_area"] = np.array([obj_world_x - area_origin_x, obj_world_y - area_origin_y])
             obj["dist"] = math.dist(_data["player_pos_world"], obj["position"])
+            if obj["is_hovered"]:
+                _data["hovered_unit"] = obj
             _data["objects"].append(obj)
 
         for item_list in ["items", "inventory_items", "stash_items", "cube_items", "vendor_items", "equipped_items", "merc_items"]:
@@ -240,15 +248,17 @@ class MAS(Thread):
                 item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
                 item["position_area"] = np.array([item_world_x - area_origin_x, item_world_y - area_origin_y])
                 item["dist"] = math.dist(_data["player_pos_world"], item["position"])
+                if item["is_hovered"]:
+                    _data["hovered_unit"] = item
             _data[item_list] = data[item_list]
 
-        for item in data["logged_items"]:
-            item_world_x = int(item["position"][0])
-            item_world_y = int(item["position"][1])
-            item["position"] = np.array([item_world_x, item_world_y])
-            item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
-            item["position_area"] = np.array([item_world_x - area_origin_x, item_world_y - area_origin_y])
-            item["dist"] = math.dist(_data["player_pos_world"], item["position"])
-        _data["logged_items"] = data["logged_items"]
+        # for item in data["logged_items"]:
+        #     item_world_x = int(item["position"][0])
+        #     item_world_y = int(item["position"][1])
+        #     item["position"] = np.array([item_world_x, item_world_y])
+        #     item["position_abs"] = np.array(world_to_abs(item["position"], self._player_pos_world))
+        #     item["position_area"] = np.array([item_world_x - area_origin_x, item_world_y - area_origin_y])
+        #     item["dist"] = math.dist(_data["player_pos_world"], item["position"])
+        # _data["logged_items"] = data["logged_items"]
 
         return _data

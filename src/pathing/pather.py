@@ -239,10 +239,17 @@ class Pather:
             item = self._api.find_item(item["id"])
             if item:
                 confirmed = item["is_hovered"]
-                mouse.click(button="left")
-                wait(0.6)
                 if confirmed:
-                    Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it was hovered")
+                    mouse.click(button="left")
+                elif self._api.data["hovered_unit"]:
+                    keyboard.send(self._config.char["force_move"])
+                wait(0.5)
+                if confirmed:
+                    inv_item = self._api.find_item(item["id"], "inventory_items")
+                    if inv_item:
+                        Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it is now in inventory")
+                    else:
+                        Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it was hovered")
                     return True
                 item = self._api.find_item(item["id"])
         if item:
