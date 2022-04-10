@@ -129,6 +129,7 @@ if __name__ == "__main__":
             try:
                 data = api.get_data()
 
+                shenk.battle(False, True, game_stats)
                 # pindleskin.approach(Location.A5_TOWN_START)
                 
                 # items = api.find_items_by_name("Amethyst", "stash_items")

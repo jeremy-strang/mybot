@@ -87,7 +87,7 @@ class ZerkerBarb(Barbarian):
         return True
 
     def _kill_superunique(self, name: str = None) -> bool:
-        rules = [MonsterRule(names=[name])]
+        rules = [MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE])]
         if type(name) is str:
             rules.append(MonsterRule(names=[name]))
         self._kill_mobs(rules, time_out=20, do_howl=True)

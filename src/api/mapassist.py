@@ -140,7 +140,8 @@ class MapAssistApi:
             if name and not exact:
                 name = name.lower().replace(" ", "")
             for m in data["monsters"]:
-                if m["id"] == name:
+                m_name = m["name"].lower().replace(" ", "") if m["name"] and not exact else m["name"]
+                if m_name == name:
                     return m
         return None
 

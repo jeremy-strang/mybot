@@ -1,3 +1,5 @@
+import math
+import time
 from api.mapassist import MapAssistApi
 from char import IChar
 from config import Config
@@ -56,11 +58,17 @@ class ShenkEldritch:
         if do_pre_buff:
             self._char.pre_buff()
 
+        start = time.time()
+        eld = None
+        while not eld and time.time() - start < 5.0:
+            wait(0.05)
+            eld = self._api.find_monster_by_name("MinionExp")
+        
         # Move to Eldritch
         if self._char.can_tp:
-            self._pather.traverse((235, 729), self._char)
+            self._pather.traverse(eld["position_area"], self._char)
         else:
-            self._pather.walk_to_position((235, 729))
+            self._pather.walk_to_position(eld["position_area"])
         
         if self._char._char_config['type'] == 'necro':
             game_state = StateMonitor(['MinionExp'], self._api,super_unique=True)
