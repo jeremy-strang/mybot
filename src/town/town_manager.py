@@ -159,8 +159,11 @@ class TownManager:
     def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
         curr_act = self.get_act_from_current_area()
         if curr_act is None:
+            Logger.debug(f"Unable to detect the current act in memory, falling back to pixels")
             curr_act = TownManager.get_act_from_location(curr_loc)
-            if curr_act is None: return False
+            if curr_act is None:
+                Logger.debug(f"Failed to resurrect merc, unable to detect the current act")
+                return False
         # check if we can resurrect in current act
         if self._acts[curr_act].can_resurrect():
             return self._acts[curr_act].resurrect(curr_loc)

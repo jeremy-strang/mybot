@@ -25,8 +25,13 @@ class A4(IAct):
     def can_trade_and_repair(self) -> bool: return True
 
     def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._old_pather.traverse_nodes((curr_loc, Location.A4_TYRAEL_STASH), self._char, force_move=True):
-            return False
+        # if not self._old_pather.traverse_nodes((curr_loc, Location.A4_TYRAEL_STASH), self._char, force_move=True):
+        #     return False
+        # if self._npc_manager.open_npc_menu(Npc.TYRAEL):
+        #     self._npc_manager.press_npc_btn(Npc.TYRAEL, "resurrect")
+        #     return Location.A4_TYRAEL_STASH
+        # return False
+        if not self._pather.traverse_walking("Tyrael",self._char, obj=False,threshold=10,static_npc=True): return False
         if self._npc_manager.open_npc_menu(Npc.TYRAEL):
             self._npc_manager.press_npc_btn(Npc.TYRAEL, "resurrect")
             return Location.A4_TYRAEL_STASH
