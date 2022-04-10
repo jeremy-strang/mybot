@@ -119,7 +119,7 @@ class Pather:
 
         return area_pos
 
-    def click_poi(self, poi_label: str, offset=None, time_out=2.0):
+    def click_poi(self, poi_label: str, offset=None, time_out=2.5):
         start = time.time()
         data = self._api.data
         is_hovered = False
@@ -136,17 +136,32 @@ class Pather:
             wait(0.5)
         return is_hovered
 
-    def click_object(self, name: str, offset=None):
+    def click_object(self, name: str, offset=None, time_out=2.5):
+        start = time.time()
         data = self._api.data
+        is_hovered = False
         if data and not self._should_abort_pathing():
             object = self._api.find_object(name)
-            if not object:
-                return False
-            self.move_mouse_to_object(object, offset)
-            wait(0.1, 0.15)
+            is_hovered = object and object["is_hovered"]
+            while object and not is_hovered and time.time() - start < time_out:
+                self.move_mouse_to_abs_pos(
+                    world_to_abs(object["position"], data["player_pos_world"]),
+                    math.dist(data["player_pos_area"], object["position"] - data["area_origin"]),
+                    offset)
+                is_hovered = self._api.wait_for_hover(object, "objects")
             mouse.click(button="left")
             wait(0.5)
-        return True
+        return is_hovered
+        # data = self._api.data
+        # if data and not self._should_abort_pathing():
+        #     object = self._api.find_object(name)
+        #     if not object:
+        #         wait(0.1, 0.2)
+        #     self.move_mouse_to_object(object, offset)
+        #     wait(0.1, 0.15)
+        #     mouse.click(button="left")
+        #     wait(0.5)
+        # return True
 
     def move_mouse_to_abs_pos(self, position_abs, dist, offset=None):
         offset_x = offset[0] if offset != None else 0

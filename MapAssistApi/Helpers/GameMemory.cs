@@ -223,7 +223,7 @@ namespace MapAssist.Helpers
                 var rawItemUnits = new List<UnitItem>();
                 foreach (var item in GetUnits<UnitItem>(UnitType.Item, true).Where(x => x.UnitId < uint.MaxValue).ToArray())
                 {
-                    if (!_towns.Contains(levelId) && item.ItemModeMapped != ItemModeMapped.Ground) continue;
+                    if (!_towns.Contains(levelId) && item.ItemModeMapped != ItemModeMapped.Ground && item.ItemModeMapped != ItemModeMapped.Inventory) continue;
                     if (_junkItems.Contains(item.Item)) continue;
 
                     //if (Items.ItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId)) continue;

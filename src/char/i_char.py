@@ -393,6 +393,7 @@ class IChar:
         if not self._ui_manager.has_tps():
             Logger.debug("No TPs")
             return False
+        keyboard.send(self._config.char["tp"])
         wait(0.1, 0.15)
         mouse.click(button="right")
         wait(self._cast_duration)
@@ -400,7 +401,7 @@ class IChar:
 
     def tp_town(self):
         if not self.open_tp(): return False
-        wait(1, 1.4) # takes quite a while for tp to be visible
+        wait(1.1, 1.4) # takes quite a while for tp to be visible
         self._pather.click_object("TownPortal")
         if self._pather.wait_for_town(4): return True
 
