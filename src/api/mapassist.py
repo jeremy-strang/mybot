@@ -241,7 +241,7 @@ class MapAssistApi:
         start = time.time()
         stats_loaded = False
         if item:
-            stats_loaded = "stats" in item and item["stats"] != None
+            stats_loaded = "stats" in item and item["stats"] != None and len(item["stats"]) > 0
             item_id = item["id"]
             while not stats_loaded and time.time() - start < time_out:
                 time.sleep(0.1)
@@ -255,7 +255,7 @@ class MapAssistApi:
                         item = self.find_item(item_id, "equipped_items")
                     if not item:
                         item = self.find_item(item_id, "items")
-                stats_loaded = item and "stats" in item and item["stats"] != None
+                stats_loaded = item and "stats" in item and item["stats"] != None and len(item["stats"]) > 0
             Logger.debug(f"Waited {round(time.time() - start, 2)}sec to load {len(item['stats']) if stats_loaded else 0} stats from {str(item['quality'])} {item['name']} with id {item_id}")
         else:
             Logger.warning("Failed to wait for item stats to load, the given item was None")
