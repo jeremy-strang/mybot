@@ -8,7 +8,7 @@ import numpy as np
 from api.mapassist import MapAssistApi
 from pickit.item_finder import PixelItem
 from pickit.pickit_item import PickitItem
-from pickit.types import Stat
+from pickit.types import Action, Stat
 import obs
 from obs import obs_recorder
 
@@ -433,131 +433,34 @@ class UiManager():
                     Logger.debug(f"Failed to identify item {item['name']} at position {item['position']}")
         return item
 
-    def _keep_item(self, item_finder: ItemFinder, img: np.ndarray, do_logging: bool = True, inv_pos: tuple[int, int] = None, center = None) -> list[PixelItem]:
+    def _keep_item(self, inv_pos: tuple[int, int] = None, center = None) -> list[PixelItem]:
         """
         Check if an item should be kept, the item should be hovered and in own inventory when function is called
-        :param item_finder: ItemFinder to check if item is in pickit
-        :param img: Image in which the item is searched (item details should be visible)
-        :param do_logging: Bool value to turn on/off logging for items that are found and should be kept
-        :return: list[Item] list of items for some reason
+        :param inv_pos: tuple[int, int] Position of the item in the inventory
+        :return: list[PickitItem] list of items for some reason
         """
-        if inv_pos is not None and self._api.data:
+        if inv_pos != None and self._api.data:
             mem_items = []
             for item in self._api.find_items_by_position(inv_pos, "inventory_items"):
                 if item:
-                    pickit_prio = get_pickit_action(item, self._config.pickit_config)
-                    pickit_item = PickitItem(item)
-                    if pickit_prio > 0 and not "Potion" in item["name"]:
+                    action = get_pickit_action(item, self._config.pickit_config)
+                    if action >= Action.Keep and not "Potion" in item["name"]:
+                        pickit_item = PickitItem(item, action)
                         keep = True
                         if not item["is_identified"] and (item["type"], item["quality"]) in self._config.pickit_config.IdentifiedItems:
                             item = self._identify_inventory_item(item)
-                            # Recalc priority after identifying
-                            pickit_prio = get_pickit_action(item, self._config.pickit_config)
-                            pickit_item = PickitItem(item)
-                            keep = pickit_prio > 0
+                            # Recalc action after identifying
+                            action = get_pickit_action(item, self._config.pickit_config)
+                            pickit_item = PickitItem(item, action)
+                            keep = action >= Action.Keep
                             if not keep:
                                 self._game_stats.log_item_discard(pickit_item.get_summary(), False)
                         if keep:
-                            Logger.info(f"    Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
-                            mem_items.append(PixelItem(center=center, name=pickit_item.name, pickit_type=pickit_prio, description=pickit_item.get_summary()))
+                            Logger.info(f"Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
+                            mem_items.append(pickit_item)
             if len(mem_items) > 0:
                 return [mem_items[0]]
         return []
-        if img is None:
-            hovered_item = self._screen.grab()
-        wait(0.2, 0.3)
-        _, w, _ = img.shape
-        img = img[:, (w//2):,:]
-        original_list = item_finder.search(img)
-        filtered_list = []
-        for x in original_list:
-            x.pickit_type = self._config.items[x.name].pickit_type
-            if ("potion" in x.name) or (self._config.items[x.name].pickit_type == 0): continue
-            include_props = self._config.items[x.name].include
-            exclude_props = self._config.items[x.name].exclude
-            #Disable include params for uniq, rare, magical if ident is disabled in params.ini
-            #if (not self._config.char["id_items"]) and ("uniq" in x.name or "magic" in x.name or "rare" in x.name or "set" in x.name):
-            if (not self._config.char["id_items"]) and any(item_type in x.name for item_type in ["uniq", "magic", "rare", "set"]):
-                include_props = False
-                exclude_props = False
-            if not (include_props or exclude_props):
-                if do_logging:
-                    Logger.debug(f"{x.name}: Stashing")
-                filtered_list.append(x)
-                continue
-            include = True
-            include_logic_type = self._config.items[x.name].include_type
-            if include_props:
-                include = False
-                found_props=[]
-                for prop in include_props:
-                    if len(prop)>1:
-                        found_subprops=[]
-                        for subprop in prop:
-                            try:
-                                template_match = self._template_finder.search(subprop, img, threshold=0.95)
-                            except:
-                                Logger.error(f"{x.name}: can't find template file for required {prop}, ignore just in case")
-                                template_match = lambda: None; template_match.valid = True
-                            if template_match.valid:
-                                if include_logic_type == "OR":
-                                    found_subprops.append(True)
-                                else:
-                                    found_props.append (True)
-                                    break
-                            else:
-                                found_subprops.append(False)
-                                break
-                        if (len(found_subprops) > 0 and all(found_subprops)):
-                            include = True
-                            break
-                    else:
-                        try:
-                            template_match = self._template_finder.search(prop, img, threshold=0.95)
-                        except:
-                            Logger.error(f"{x.name}: can't find template file for required {prop}, ignore just in case")
-                            template_match = lambda: None; template_match.valid = True
-                        if template_match.valid:
-                            if include_logic_type == "AND":
-                                found_props.append(True)
-                            else:
-                                include = True
-                                break
-                        else:
-                            found_props.append(False)
-                if include_logic_type == "AND" and len(found_props) > 0 and all(found_props):
-                    include = True
-            if not include:
-                if do_logging:
-                    Logger.debug(f"{x.name}: Discarding. Required {include_logic_type}({include_props})={include}")
-                continue
-            exclude = False
-            exclude_logic_type = self._config.items[x.name].exclude_type
-            if exclude_props:
-                found_props=[]
-                for prop in exclude_props:
-                    try:
-                        template_match = self._template_finder.search(prop, img, threshold=0.97)
-                    except:
-                        Logger.error(f"{x.name}: can't find template file for exclusion {prop}, ignore just in case")
-                        template_match = lambda: None; template_match.valid = False
-                    if template_match.valid:
-                        if exclude_logic_type == "AND":
-                            found_props.append(True)
-                        else:
-                            exclude = True
-                            break
-                    else:
-                        found_props.append(False)
-                if exclude_logic_type == "AND" and len(exclude_props) > 0 and all(found_props):
-                    exclude = True
-                    break
-            if include and not exclude:
-                if do_logging:
-                    Logger.debug(f"{x.name}: Stashing. Required {include_logic_type}({include_props})={include}, exclude {exclude_logic_type}({exclude_props})={exclude}")
-                filtered_list.append(x)
-
-        return filtered_list
 
     def _move_to_stash_tab(self, stash_idx: int):
         """Move to a specifc tab in the stash
@@ -644,111 +547,57 @@ class UiManager():
         self._move_to_stash_tab(self._curr_stash["items"])
         center_m = self._screen.convert_abs_to_monitor((0, 0))
         items = self._api.find_looted_items(num_loot_columns)
-        if items is not None:
+        if items != None:
             Logger.debug(f"    Found {len(items)} inventory items in {num_loot_columns} loot columns to check")
             for item in items:
                 item_pos = (item["position"][0], item["position"][1])
                 column, row = item_pos
                 slot_pos = self.get_slot_pos(self._config, *item_pos)
                 x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
-                found_items = self._keep_item(item_finder, None, inv_pos=(column, row), center=center_m)
+                found_items = self._keep_item(inv_pos=(column, row), center=center_m)
                 mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
                 wait(0.4, 0.5)
                 hovered_item = self._screen.grab()
                 if len(found_items) > 0 and self._api.data and self._api.data["stash_open"]:
                     Logger.debug(f"    Keeping item found at position {column}, {row}...")
                     keyboard.send("ctrl", do_release=False)
-                    wait(0.1, 0.2)
+                    wait(0.05, 0.08)
                     mouse.click(button="left")
-                    wait(0.1, 0.2)
+                    wait(0.05, 0.08)
                     keyboard.release("ctrl")
+                    wait(0.5)
                     # To avoid logging multiple times the same item when stash tab is full
                     # check the _keep_item again. In case stash is full we will still find the same item
-                    wait(0.5)
-                    did_stash_test_img = self._screen.grab()
-                    if len(self._keep_item(item_finder, did_stash_test_img, False)) > 0:
-                        Logger.debug("    Wanted to stash item, but its still in inventory. Assumes full stash. Move to next.")
+                    if len(self._keep_item(item_pos, center_m)) > 0:
+                        Logger.debug("    Wanted to stash a item, but its still in inventory. Assumes full stash. Move to next.")
                         break
                     else:
-                        send_msg = found_items[0].pickit_type == 2 or (found_items[0].name in self._config.items and self._config.items[found_items[0].name].pickit_type == 2)
+                        send_msg = found_items[0].action == 2
                         self._game_stats.log_item_keep(found_items[0].name, send_msg, hovered_item)
-                else:
-                    # make sure there is actually an item
-                    time.sleep(0.3)
-                    curr_pos = mouse.get_position()
-                    # move mouse away from inventory, for some reason it was sometimes included in the grabed img
-                    x, y = self._screen.convert_abs_to_monitor((0, 0))
-                    mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
-                    item_check_img = self._screen.grab()
-                    mouse.move(*curr_pos, randomize=2)
-                    wait(0.4, 0.6)
-                    slot_pos, slot_img = self.get_slot_pos_and_img(self._config, item_check_img, column, row)
-                    if self._slot_has_item(slot_img):
-                        if self._config.general["info_screenshots"]:
-                            cv2.imwrite("./info_screenshots/info_discard_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", hovered_item)
-                        mouse.press(button="left")
-                        wait(0.2, 0.4)
-                        mouse.release(button="left")
-                        mouse.move(*center_m, randomize=20)
-                        wait(0.2, 0.3)
-                        mouse.press(button="left")
-                        wait(0.2, 0.3)
-                        mouse.release(button="left")
-                        wait(0.5, 0.5)
-        else:
-            Logger.warning(f"    Could not detect inventory items using memory, falling back to pixel search")
-            positions = itertools.product(range(num_loot_columns), range(4))
-            for column, row in positions:
-                img = self._screen.grab()
-                slot_pos, slot_img = self.get_slot_pos_and_img(self._config, img, column, row)
-                if self._slot_has_item(slot_img):
-                    x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
-                    mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
-                    # check item again and discard it or stash it
-                    wait(1.2, 1.4)
-                    hovered_item = self._screen.grab()
-                    found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=center_m)
-                    Logger.debug(f"    Keeping item found at position {column}, {row}...")
-                    if len(found_items) > 0 and self._api.data and self._api.data["stash_open"]:
-                        keyboard.send("ctrl", do_release=False)
-                        wait(0.04, 0.06)
-                        mouse.click(button="left")
-                        wait(0.04, 0.06)
-                        keyboard.release("ctrl")
-                        # To avoid logging multiple times the same item when stash tab is full
-                        # check the _keep_item again. In case stash is full we will still find the same item
-                        wait(0.3)
-                        did_stash_test_img = self._screen.grab()
-                        if len(self._keep_item(item_finder, did_stash_test_img, False)) > 0:
-                            Logger.debug("Wanted to stash item, but its still in inventory. Assumes full stash. Move to next.")
-                            break
-                        else:
-                            send_msg = found_items[0].pickit_type == 2 or (found_items[0].name in self._config.items and self._config.items[found_items[0].name].pickit_type == 2)
-                            self._game_stats.log_item_keep(found_items[0].name, send_msg, hovered_item)
-                    else:
-                        # make sure there is actually an item
-                        time.sleep(0.3)
-                        curr_pos = mouse.get_position()
-                        # move mouse away from inventory, for some reason it was sometimes included in the grabed img
-                        x, y = self._screen.convert_abs_to_monitor((0, 0))
-                        mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
-                        item_check_img = self._screen.grab()
-                        mouse.move(*curr_pos, randomize=2)
-                        wait(0.4, 0.6)
-                        slot_pos, slot_img = self.get_slot_pos_and_img(self._config, item_check_img, column, row)
-                        if self._slot_has_item(slot_img):
-                            if self._config.general["info_screenshots"]:
-                                cv2.imwrite("./info_screenshots/info_discard_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", hovered_item)
-                            mouse.press(button="left")
-                            wait(0.2, 0.4)
-                            mouse.release(button="left")
-                            mouse.move(*center_m, randomize=20)
-                            wait(0.2, 0.3)
-                            mouse.press(button="left")
-                            wait(0.2, 0.3)
-                            mouse.release(button="left")
-                            wait(0.5, 0.5)
-        
+                # else:
+                #     # make sure there is actually an item
+                #     time.sleep(0.3)
+                #     curr_pos = mouse.get_position()
+                #     # move mouse away from inventory, for some reason it was sometimes included in the grabed img
+                #     x, y = self._screen.convert_abs_to_monitor((0, 0))
+                #     mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
+                #     item_check_img = self._screen.grab()
+                #     mouse.move(*curr_pos, randomize=2)
+                #     wait(0.4, 0.6)
+                #     slot_pos, slot_img = self.get_slot_pos_and_img(self._config, item_check_img, column, row)
+                #     if self._slot_has_item(slot_img):
+                #         if self._config.general["info_screenshots"]:
+                #             cv2.imwrite("./info_screenshots/info_discard_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", hovered_item)
+                #         mouse.press(button="left")
+                #         wait(0.2, 0.4)
+                #         mouse.release(button="left")
+                #         mouse.move(*center_m, randomize=20)
+                #         wait(0.2, 0.3)
+                #         mouse.press(button="left")
+                #         wait(0.2, 0.3)
+                #         mouse.release(button="left")
+                #         wait(0.5, 0.5)
+
         Logger.debug("Check if stash is full")
         time.sleep(0.6)
         # move mouse away from inventory, for some reason it was sometimes included in the grabed img
@@ -778,35 +627,76 @@ class UiManager():
             keyboard.send("esc")
         wait(0.4, 0.5)
 
-    def throw_out_junk(self, item_finder: ItemFinder):
-        Logger.info("Throwing out junk")
-        wait(0.2, 0.3)
-        keyboard.send(self._config.char["inventory_screen"])
-        wait(0.5, 0.6)
-        num_loot_columns = self._config.char["num_loot_columns"]
-        for column, row in itertools.product(range(num_loot_columns), range(4)):
-            img = self._screen.grab()
-            slot_pos, slot_img = self.get_slot_pos_and_img(self._config, img, column, row)
-            if self._slot_has_item(slot_img):
-                x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
-                mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
-                # Sheck item again and discard it or stash it
-                wait(0.4, 0.6)
-                hovered_item = self._screen.grab()
-                found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=(x_m, y_m))
-                if len(found_items) == 0:
-                    keyboard.release(self._config.char["show_items"])
-                    wait(0.1, 0.2)
-                    keyboard.release(self._config.char["stand_still"])
-                    wait(0.1, 0.2)
-                    keyboard.send("ctrl", do_release=False)
-                    wait(0.1, 0.2)
-                    mouse.click(button="left")
-                    wait(0.1, 0.2)
-                    keyboard.release("ctrl")
-                    wait(0.3)
-        keyboard.send(self._config.char["inventory_screen"])
-        wait(0.3, 0.4)
+    def throw_out_junk(self, keep_open: bool = False):
+        if self._api.data != None:
+            wait(0.05, 0.08)
+            num_loot_columns = self._config.char["num_loot_columns"]
+            items = self._api.find_looted_items(num_loot_columns)
+            if items != None:
+                Logger.debug(f"    Found {len(items)} inventory items in {num_loot_columns} loot columns to check")
+                inv_open = self._api.data["inventory_open"]
+                vendor_open = self._api.data["npc_shop_open"]
+                if not inv_open:
+                    keyboard.send(self._config.char["inventory_screen"])
+                    wait(0.5, 0.6)
+                    inv_open = self._api.data != None and self._api.data["inventory_open"]
+                    vendor_open = self._api.data != None and self._api.data["npc_shop_open"]
+                if inv_open:
+                    msg = "Selling" if vendor_open else "Throwing out"
+                    Logger.info(f"{msg} junk...")
+                    center_m = self._screen.convert_abs_to_monitor((0, 0))
+                    for item in items:
+                        item_pos = (item["position"][0], item["position"][1])
+                        column, row = item_pos
+                        slot_pos = self.get_slot_pos(self._config, *item_pos)
+                        x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
+                        found_items = self._keep_item(inv_pos=(column, row), center=center_m)
+                        mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
+                        wait(0.4, 0.5)
+                        inv_open = self._api.data != None and self._api.data["inventory_open"]
+                        vendor_open = self._api.data != None and self._api.data["npc_shop_open"]
+                        if len(found_items) == 0 and inv_open:
+                            Logger.debug(f"   {msg} item '{item['name']}' found at position {column}, {row}...")
+                            keyboard.send("ctrl", do_release=False)
+                            wait(0.05, 0.08)
+                            mouse.click(button="left")
+                            wait(0.05, 0.08)
+                            keyboard.release("ctrl")
+                            wait(0.5)
+                    
+                    inv_open = self._api.data != None and self._api.data["inventory_open"]
+                    vendor_open = self._api.data != None and self._api.data["npc_shop_open"]
+                    if not keep_open and (inv_open or vendor_open):
+                        keyboard.send("esc")
+                        wait(0.3, 0.4)
+        # Logger.info("Throwing out junk")
+        # wait(0.2, 0.3)
+        # keyboard.send(self._config.char["inventory_screen"])
+        # wait(0.5, 0.6)
+        # num_loot_columns = self._config.char["num_loot_columns"]
+        # for column, row in itertools.product(range(num_loot_columns), range(4)):
+        #     img = self._screen.grab()
+        #     slot_pos, slot_img = self.get_slot_pos_and_img(self._config, img, column, row)
+        #     if self._slot_has_item(slot_img):
+        #         x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
+        #         mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
+        #         # Sheck item again and discard it or stash it
+        #         wait(0.4, 0.6)
+        #         hovered_item = self._screen.grab()
+        #         found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=(x_m, y_m))
+        #         if len(found_items) == 0:
+        #             keyboard.release(self._config.char["show_items"])
+        #             wait(0.1, 0.2)
+        #             keyboard.release(self._config.char["stand_still"])
+        #             wait(0.1, 0.2)
+        #             keyboard.send("ctrl", do_release=False)
+        #             wait(0.1, 0.2)
+        #             mouse.click(button="left")
+        #             wait(0.1, 0.2)
+        #             keyboard.release("ctrl")
+        #             wait(0.3)
+        # keyboard.send(self._config.char["inventory_screen"])
+        # wait(0.3, 0.4)
 
     def transfer_shared_to_private_gold(self, count: int):
         for x in range (3):
@@ -865,6 +755,7 @@ class UiManager():
         repair_btn = self._template_finder.search_and_wait("REPAIR_BTN", roi=self._config.ui_roi["repair_btn"], time_out=4, normalize_monitor=True)
         if not repair_btn.valid:
             return False
+        self.throw_out_junk(keep_open=True)
         mouse.move(*repair_btn.center, randomize=12, delay_factor=[1.0, 1.5])
         wait(0.1, 0.15)
         mouse.click(button="left")
@@ -1079,6 +970,7 @@ class UiManager():
         :param healing_pots: Number of healing pots to buy
         :param mana_pots: Number of mana pots to buy
         """
+        self.throw_out_junk(keep_open=True)
         h_pot = self._template_finder.search_and_wait("SUPER_HEALING_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
         if h_pot.valid is False:  # If not available in shop, try to shop next best potion.
             h_pot = self._template_finder.search_and_wait("GREATER_HEALING_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
@@ -1100,22 +992,3 @@ class UiManager():
         self.fill_tome_of("Identify")
         self.fill_tome_of("Town Portal")
         
-
-
-
-# Testing: Move to whatever ui to test and run
-if __name__ == "__main__":
-    import keyboard
-    keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
-    print("Go to D2R window and press f11 to start game")
-    keyboard.wait("f11")
-    print("Start")
-    from config import Config
-    config = Config()
-    obs_recorder = ObsRecorder(config)
-    game_stats = GameStats()
-    screen = Screen()
-    template_finder = TemplateFinder(screen)
-    item_finder = ItemFinder()
-    ui_manager = UiManager(screen, template_finder, obs_recorder, game_stats)
-    ui_manager.gamble (item_finder)

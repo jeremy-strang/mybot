@@ -160,7 +160,7 @@ class PixelPickit:
                     if self._ui_manager.is_overburdened():
                         found_items = True
                         Logger.warning("Inventory full, skipping pickit!")
-                        self._ui_manager.throw_out_junk(self._item_finder)
+                        self._ui_manager.throw_out_junk()
                         # throw out junk and check again
                     if self._ui_manager.is_overburdened():
                         found_items = True
