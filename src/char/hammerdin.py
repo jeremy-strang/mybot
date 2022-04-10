@@ -585,7 +585,8 @@ class Hammerdin(IChar):
                             if monster and monster["dist"] <= 3:
                                 keyboard.send(self._skill_hotkeys["concentration"])
                                 wait(0.04, 0.06)
-                                if self.tele_stomp_monster("blessed_hammer", 3.0, monster, max_distance=5):
+                                nearby = len(list(filter(lambda m: m["dist"] < 15, self._api.data["monsters"])))
+                                if self.tele_stomp_monster("blessed_hammer", self._cast_duration * 8, monster, max_distance=5, stop_when_dead=nearby < 5):
                                     picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
                                 wait(0.1)
                                 last_move = time.time()

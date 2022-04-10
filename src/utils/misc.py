@@ -217,7 +217,7 @@ def pad_str_sides(text, pad_char, length=80):
 def closest_node(node, nodes):
     return nodes[cdist([node], nodes).argmin()]
 
-def cluster_nodes(nodes, max_cluster_ct = None):
+def cluster_nodes(nodes, max_cluster_ct = None, min_cluster_ct = None):
     features = np.array([[0, 0]])
     clusters = np.array([[0, 0]])
     x = 0
@@ -230,9 +230,11 @@ def cluster_nodes(nodes, max_cluster_ct = None):
         x = 0
         y += 1
     features[0, 0:-1, ...] = features[0, 1:, ...]
-    cluster_count = int(features.size / 4800)
+    cluster_count = int(features.size / 6000)
     if max_cluster_ct is not None:
         cluster_count = min(max_cluster_ct, cluster_count)
+    if min_cluster_ct is not None:
+        cluster_count = max(min_cluster_ct, cluster_count)
     while features.size > 2048:
         features = np.delete(features, list(range(0, features.shape[0], 2)), axis=0)
     clusters_k, distortion = kmeans(features.astype(float), cluster_count,iter=5)

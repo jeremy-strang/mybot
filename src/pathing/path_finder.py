@@ -110,3 +110,5 @@ class PathFinder:
         elapsed = time.time() - start
         print(f"Done solving TSP in {round(elapsed, 2)} seconds, distance: {round(distance, 2)}")
         return path[:-1] if end_given else path
+    
+    

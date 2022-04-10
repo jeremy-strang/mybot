@@ -874,7 +874,7 @@ class Pather:
                  verify_location=False,
                  time_out=20.0,
                  dest_distance=15,
-                 jump_distance=15,
+                 jump_distance=17,
                 ):
         """
         Traverse to another location
@@ -999,7 +999,7 @@ class Pather:
 
                     char.move((node_pos_m[0], node_pos_m[1]), force_move=force)
 
-                    if i > len(route_list)-4:
+                    if i > len(route_list) - 3 and verify_location:
                         Logger.debug("    Getting close to destination, slowing down...")
                         time.sleep(.4)
                 data = self._api.get_data()

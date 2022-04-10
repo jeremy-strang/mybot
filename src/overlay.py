@@ -1,3 +1,5 @@
+from re import T
+import time
 from obs import obs_recorder
 from pathing.path_finder import cluster_nodes
 import win32gui
@@ -24,8 +26,8 @@ class Overlay:
         self._api = self._bot._api
         self._current_area = None
 
-        self._mini_map_h =100
-        self._mini_map_w =100
+        self._mini_map_h =700
+        self._mini_map_w =700
         
         self._draw_path=None
         self._astar_path = None
@@ -80,7 +82,7 @@ class Overlay:
         dpg.add_texture_registry(label="txt_con", tag="_txt",show=False)
         dpg.add_static_texture(self._mini_map_w,self._mini_map_h, self._texture_data,parent="_txt", tag="texture_tag")
 
-        with dpg.window(label="stats",width=300,height=300,pos=(980,0), tag="main",no_resize=True,no_scrollbar=True,no_title_bar=True,no_move=True,no_collapse=True):
+        with dpg.window(label="stats",width=700,height=700,pos=(980, 0), tag="main", no_resize=True,no_scrollbar=False,no_title_bar=True,no_move=True,no_collapse=True):
             #dpg.draw_circle((250,250),500,color=(55,55,55,255),fill=[55,55,55],parent="main")
 
             with dpg.draw_node(tag="root_scale"):
@@ -96,7 +98,7 @@ class Overlay:
                 dpg.draw_text((0, 0), '0', color=(255, 55, 75, 255),size=14,parent="no_scale")
 
 
-        with dpg.window(label="static entities",width=300,height=300,pos=(980,300), tag="entities_main",no_resize=True,no_scrollbar=False,no_title_bar=False,no_move=True,no_collapse=False):
+        with dpg.window(label="static entities",width=700,height=700,pos=(980,700), tag="entities_main", no_resize=True,no_scrollbar=False,no_title_bar=False,no_move=True,no_collapse=False):
             with dpg.table(header_row=False,tag="entity_table"):
                 dpg.add_table_column()
                 for i in range(0, 2):
@@ -105,7 +107,7 @@ class Overlay:
                             dpg.add_text(f"Row{i} Column{j}")
 
 
-        dpg.create_viewport(title='overlay', width=1280, height=720, decorated=False, clear_color=[255,0,255])
+        dpg.create_viewport(title='overlay', width=1480, height=1220, decorated=False, clear_color=[255,0,255])
         dpg.setup_dearpygui()
         dpg.show_viewport()
 
@@ -162,13 +164,13 @@ class Overlay:
                 #print("current area")
                 offset_w = self._mini_map_w
                 offset_h = self._mini_map_h
-                center = 110
+                center = 200
                 px = data['player_pos_area'][0]+data['player_offset'][0]
                 py = data['player_pos_area'][1]+data['player_offset'][1]
 
                 dpg.apply_transform("map_node", dpg.create_translation_matrix([0,0]))
                 dpg.apply_transform("player", dpg.create_translation_matrix([px,py]))
-                dpg.apply_transform("root_node", dpg.create_translation_matrix([-px+center,-py+center]))
+                dpg.apply_transform("root_node", dpg.create_translation_matrix([-px+200,-py+350]))
                 
                 #dpg.apply_transform("root_node", dpg.create_scale_matrix([1.2,1.2]))
 
@@ -266,8 +268,8 @@ class Overlay:
             x0,y0,x1,y1 = win32gui.GetClientRect(d2)
             w = x1-x0
             h = y1-y0
-            tl = ClientToScreen(d2,(x0 + 300,y0))
-            rb = ClientToScreen(d2,(x1 + 300,y1))
+            tl = ClientToScreen(d2,(x0 + 500,y0))
+            rb = ClientToScreen(d2,(x1 + 500,y1))
 
             left_border = tl[0]-xx0
             right_border = xx1-rb[0]
@@ -276,6 +278,7 @@ class Overlay:
 
             win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, xx0+left_border,yy0+top_border, int(w), int(h), win32con.SWP_NOSIZE)
             dpg.render_dearpygui_frame()
+            time.sleep(1)
         dpg.destroy_context()
         Logger.info("Started overlay")
         
@@ -351,4 +354,4 @@ if __name__ == "__main__":
             #for obj in data['static_npcs']:
             #    print(obj)
         print("-----")
-        time.sleep(0.5)
+        time.sleep(3)

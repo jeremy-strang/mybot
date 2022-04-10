@@ -105,7 +105,7 @@ if __name__ == "__main__":
             wait(0.2)
             data = api.get_data()
         
-        # overlay = start_overlay(bot, game_stats)
+        overlay = start_overlay(bot, game_stats)
         # pp.pprint(config.items)
 
         def do_stuff():
@@ -172,10 +172,13 @@ if __name__ == "__main__":
                 pf = PathFinder(api, 25)
                 path = pf.solve_tsp(pit_lvl2, True)
                 api._current_path = []
+                current = pf.player_node
                 for node in path:
-                    print(node)
-                    api._current_path += pf.make_path_astar(start, node, True)
-                    start = node
+                    print(f"    distance from current ({current}) to next node ({node}): {math.dist(current, node)}")
+                    api._current_path += pf.make_path_astar(current, node, True)
+                    current = node
+                    print("Press Enter for next ...")
+                    input()
 
                 # api._current_path = path
                 # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)

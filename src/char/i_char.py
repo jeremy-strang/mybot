@@ -526,11 +526,19 @@ class IChar:
         picked_up_items = 0
         pf = PathFinder(self._api)
         nodes = pf.solve_tsp(destination)
-        
+        Logger.debug(f"Generated a route to traverse the zone consisting of {len(nodes)} nodes")
         for node in nodes:
-            self._pather.traverse(node, self, 0, do_pre_move=True, obj=False, kill=False, time_out=8.0)
-            wait(0.1)
-            picked_up_items += self.kill_uniques(pickit_func, 16.0, looted_uniques)
+            pf.update_map()
+            dist = math.dist(pf.player_node, node)
+            dest = [node]
+            if dist > 40:
+                route = pf.make_path_astar(pf.player_node, node, True)
+                split_size = math.floor(len(route) / 3)
+                dest = [route[split_size], route[split_size * 2], route[-1]]
+            for n in dest:
+                self._pather.traverse(n, self, 0, do_pre_move=True, obj=False, kill=False, time_out=8.0)
+                wait(0.1)
+                picked_up_items += self.kill_uniques(pickit_func, 16.0, looted_uniques)
         self.post_attack()
         Logger.info(f"Killed and looted {picked_up_items} items from {len(looted_uniques)} champion/unique packs")
         return picked_up_items
