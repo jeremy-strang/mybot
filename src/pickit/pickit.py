@@ -6,6 +6,7 @@ from operator import itemgetter
 
 from pytest import skip
 from api.mapassist import MapAssistApi
+from game_stats import GameStats
 from pickit.types import ItemMode
 from pathing import Pather
 
@@ -27,6 +28,7 @@ class Pickit:
                  char: IChar,
                  pather: Pather,
                  api: MapAssistApi,
+                 game_stats: GameStats,
                  ):
         self._screen = screen
         self._ui_manager = ui_manager
@@ -36,17 +38,18 @@ class Pickit:
         self._config = Config()
         self._last_closest_item: PixelItem = None
         self._api = api
+        self._game_stats = game_stats
     
     def _next_item(self, potion_needs: dict = None, skip_ids: set = None) -> dict:
         data = self._api.data
         items_found = []
         if data is not None:
             for item in data["items"]:
-                item_priority = get_pickit_action(item, self._config.pickit_config, potion_needs)
+                item_priority = get_pickit_action(item, self._config.pickit_config, potion_needs=potion_needs, game_stats=self._game_stats)
                 if item["mode"] == ItemMode.OnGround and item_priority > 0:
                     items_found.append(item)
             items_found = sorted(items_found, key = lambda item: item["dist"])
-            items_found = sorted(items_found, key = lambda item: get_pickit_action(item, self._config.pickit_config), reverse=True)
+            items_found = sorted(items_found, key = lambda item: get_pickit_action(item, self._config.pickit_config, game_stats=self._game_stats), reverse=True)
             if skip_ids is not None and len(skip_ids) > 0:
                 items_found = list(filter(lambda x: x["id"] not in skip_ids, items_found))
             if len(items_found) > 0:
@@ -97,7 +100,7 @@ class Pickit:
             click_time_out = 6
             if is_potion:
                 click_time_out = 2
-            elif get_pickit_action(item, self._config.pickit_config) > 1:
+            elif get_pickit_action(item, self._config.pickit_config, game_stats=self._game_stats) > 1:
                 click_time_out = 15
             if self._pather.click_item(item, self._char):
                 if is_potion:

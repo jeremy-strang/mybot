@@ -1,3 +1,4 @@
+from game_stats import GameStats
 from pickit.pickit_item import PickitItem
 from pickit.types import *
 from pickit.pickit_config import *
@@ -5,11 +6,11 @@ from pickit.pickit_config import *
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
 
-def _parse_pickit_action(opt: Union[Action, tuple[Action, Options], bool], item: dict = None) -> Action:
+def _parse_pickit_action(opt: Union[Action, tuple[Action, Options], bool], item: dict = None, game_stats: GameStats = None) -> Action:
     result: Action = Action.DontKeep
     if type(opt) is tuple:
         if len(opt) >= 2:
-            action: Action = opt[0]
+            action: Action = opt[0] if type(opt[0]) is Action else Action(opt[0])
             options = opt[1]
             if options.eth != None:
                 is_eth = Flag.Ethereal in item["flags"]
@@ -19,17 +20,20 @@ def _parse_pickit_action(opt: Union[Action, tuple[Action, Options], bool], item:
                     result = action
                 elif options == EthOption.NonEthOnly and not is_eth:
                     result = action
-            elif options.min_defense != None and item["defense"] >= options.min_defense:
-                result = action
+            if options.min_defense != None and item["defense"] < options.min_defense:
+                result = Action.DontKeep
+            if result != Action.DontKeep and options.max_quantity is not None and game_stats is not None \
+                and item["name"] in game_stats.kept_item_quanties and game_stats.kept_item_quanties[item["name"]] >= options.max_quantity:
+                result = Action.DontKeep
         elif len(opt) == 1:
-            result = opt[0]
+            result = opt[0] if type(opt[0]) is Action else Action(opt[0])
     elif type(opt) is bool:
         return Action.Keep if opt else Action.DontKeep
     else:
-        result = Action(opt)
+        result = opt if type(opt) is Action else Action(opt)
     return result
 
-def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = None) -> Action:
+def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = None, game_stats: GameStats = None) -> Action:
     result = Action.DontKeep
     if config is not None and item is not None and type(item) is dict:
         item_type = item["type"]

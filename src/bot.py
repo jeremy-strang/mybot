@@ -100,7 +100,7 @@ class Bot:
         else:
             Logger.error(f'{self._config.char["type"]} is not supported! Closing down bot.')
             os._exit(1)
-        self._pickit = PixelPickit(self._screen, self._item_finder, self._ui_manager, self._belt_manager, self._api, self._char, self._pather)
+        self._pickit = PixelPickit(self._screen, self._item_finder, self._ui_manager, self._belt_manager, self._api, self._char, self._pather, self._game_stats)
 
         # Create Town Manager
         npc_manager = NpcManager(screen, self._template_finder)

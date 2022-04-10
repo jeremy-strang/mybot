@@ -3,6 +3,7 @@ import keyboard
 import cv2
 from operator import itemgetter
 from api.mapassist import MapAssistApi
+from game_stats import GameStats
 from pickit.pickit import Pickit
 from pathing import Pather
 
@@ -15,7 +16,6 @@ from ui import UiManager
 from ui import BeltManager
 from char import IChar
 
-
 class PixelPickit:
     def __init__(self,
                  screen: Screen,
@@ -24,7 +24,8 @@ class PixelPickit:
                  belt_manager: BeltManager,
                  api: MapAssistApi,
                  char: IChar,
-                 pather: Pather
+                 pather: Pather,
+                 game_stats: GameStats,
                  ):
         self._item_finder = item_finder
         self._screen = screen
@@ -35,7 +36,7 @@ class PixelPickit:
         self._api = api
         self._char = char
         self._pather = pather
-        self._pickit2 = Pickit(screen, ui_manager, belt_manager, char, pather, api)
+        self._pickit2 = Pickit(screen, ui_manager, belt_manager, char, pather, api, game_stats)
 
     def take_loot_screenshot(self):
         #Creating a screenshot of the current loot
@@ -183,29 +184,3 @@ class PixelPickit:
         elapsed = round(time.time() - start, 1)
         Logger.debug(f"Done picking {len(picked_up_items)} up items in {elapsed} seconds")
         return found_items
-
-
-if __name__ == "__main__":
-    import os
-    from config import Config
-    from char.sorceress import LightSorc
-    from char.hammerdin import Hammerdin
-    from ui import UiManager
-    from template_finder import TemplateFinder
-    from pathing import OldPather
-    import keyboard
-    from obs import ObsRecorder
-    keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
-    keyboard.wait("f11")
-    config = Config()
-    obs_recorder = ObsRecorder(config)
-    screen = Screen()
-    t_finder = TemplateFinder(screen)
-    ui_manager = UiManager(screen, t_finder)
-    belt_manager = BeltManager(screen, t_finder)
-    belt_manager._pot_needs = {"rejuv": 0, "health": 2, "mana": 2}
-    old_pather = OldPather(screen, t_finder)
-    item_finder = ItemFinder()
-    char = Hammerdin(config.hammerdin, config.char, t_finder, ui_manager, old_pather)
-    pickit = PixelPickit(screen, item_finder, ui_manager, belt_manager)
-    print(pickit.pick_up_items(char))

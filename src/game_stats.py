@@ -7,6 +7,7 @@ from beautifultable import BeautifulTable
 from logger import Logger
 from config import Config
 from messages import Messenger
+from pickit.types import Item
 from utils.misc import hms
 from version import __version__
 
@@ -15,6 +16,7 @@ class GameStats:
     filtered_items = set(["Potion", "Gold", "Chipped Diamond", "Flawed Diamond", "Diamond", "Flawless Diamond", "Chipped Skull", "Flawed Skull", "Skull", "Flawless Skull", "_potion", "misc_gold", "_amethyst", "_ruby", "misc_chipped_diamond", "misc_flawed_diamond", "misc_diamond", "misc_flawless_diamond", "_topaz", "_emerald", "_sapphire", "misc_chipped_skull", "misc_flawed_skull", "misc_skull", "misc_flawless_skull"])
 
     def __init__(self):
+        self.kept_item_quanties: dict[str, int] = {}
         self._config = Config()
         self._messenger = Messenger()
         self._start_time = time.time()
@@ -35,7 +37,6 @@ class GameStats:
         self._stats_filename = f'stats_{time.strftime("%Y%m%d_%H%M%S")}.log'
         self._nopickup_active = False
         self._did_chicken_last_run = False
-        
 
     def update_location(self, loc: str):
         if self._location != loc:
@@ -54,7 +55,12 @@ class GameStats:
 
     def log_item_keep(self, item_name: str, send_message: bool, img: np.ndarray):
         Logger.info(f"Stashed and logged: {item_name}, send message: {send_message}")
-        
+        if type(item_name) is str:
+            if item_name in self.kept_item_quanties:
+                self.kept_item_quanties[item_name] += 1
+            else:
+                self.kept_item_quanties[item_name] = 1
+
         if self._location is not None and not any(substring in item_name for substring in self.filtered_items):
             self._location_stats[self._location]["items"].append(item_name)
             self._location_stats["totals"]["items"] += 1

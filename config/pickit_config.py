@@ -99,12 +99,12 @@ class PickitConfig:
             Item.FlawedRuby: Action.DontKeep,
             Item.FlawedDiamond: Action.DontKeep,
 
-            Item.Amethyst: Action.DontKeep,
-            Item.Topaz: Action.DontKeep,
-            Item.Sapphire: Action.DontKeep,
-            Item.Emerald: Action.DontKeep,
-            Item.Ruby: Action.DontKeep,
-            Item.Diamond: Action.DontKeep,
+            Item.Amethyst: (Action.Keep, Options(max_quantity=5)),
+            Item.Topaz: (Action.DontKeep, Options(max_quantity=5)),
+            Item.Sapphire: (Action.DontKeep, Options(max_quantity=5)),
+            Item.Emerald: (Action.DontKeep, Options(max_quantity=5)),
+            Item.Ruby: (Action.DontKeep, Options(max_quantity=5)),
+            Item.Diamond: (Action.DontKeep, Options(max_quantity=5)),
 
             Item.FlawlessAmethyst: Action.DontKeep,
             Item.FlawlessTopaz: Action.DontKeep,

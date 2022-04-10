@@ -87,16 +87,16 @@ if __name__ == "__main__":
         belt_manager = BeltManager(screen, template_finder, api)
 
         char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        pickit = PixelPickit(screen, item_finder, ui_manager, belt_manager, api, char, pather)
-        pickit2 = Pickit(screen, ui_manager, belt_manager, char, pather, api)
+        pixel_pickit = PixelPickit(screen, item_finder, ui_manager, belt_manager, api, char, pather, game_stats)
+        pickit = Pickit(screen, ui_manager, belt_manager, char, pather, api, game_stats)
         # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
         char.discover_capabilities(force=True)
         bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
-        pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        travincal = Travincal(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        countess = Countess(template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        andariel = Andariel(screen, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        summoner = Summoner(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        pit = Pit(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
+        travincal = Travincal(template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
+        countess = Countess(template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
+        andariel = Andariel(screen, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
+        summoner = Summoner(screen, template_finder, old_pather, bot._town_manager, ui_manager, char, pixel_pickit, api, pather, obs_recorder)
 
         data = None
         print(("-" * 80) + "\n\nStarting API...")
@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
                 # belt_manager.update_pot_needs()
 
-                pickit.pick_up_items(char)
+                pixel_pickit.pick_up_items(char)
 
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file())
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
-        keyboard.add_hotkey("=", lambda: start_overlay(bot, game_stats))
+        keyboard.add_hotkey("ctrl+=", lambda: start_overlay(bot, game_stats))
         print("Ready!\n\n" + ("-" * 80))
         keyboard.wait()
 

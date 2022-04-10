@@ -87,7 +87,7 @@ class Config:
         return Config.string_to_item_prop(string)
 
     @staticmethod
-    def string_to_item_prop (string: str) -> ItemProps:
+    def string_to_item_prop(string: str) -> ItemProps:
         item_props = ItemProps()
         brk_on = 0
         brk_off = 0
