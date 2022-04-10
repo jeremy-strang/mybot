@@ -239,7 +239,7 @@ class Pather:
             item = self._api.find_item(item["id"])
             if item:
                 confirmed = item["is_hovered"]
-                if confirmed:
+                if confirmed or not self._api.data["hovered_unit"]:
                     mouse.click(button="left")
                 elif self._api.data["hovered_unit"]:
                     keyboard.send(self._config.char["force_move"])
