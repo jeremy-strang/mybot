@@ -44,6 +44,7 @@ class Hammerdin(IChar):
         elif fcr >= 30: frames = 12
         elif fcr >= 18: frames = 13
         elif fcr >= 9: frames = 14
+        Logger.debug(f"FCR recalculated to be FCR: {fcr} ({frames} frames)")
         return frames
 
     def _cast_hammers(self, time_in_s: float, aura: str = "concentration"):
