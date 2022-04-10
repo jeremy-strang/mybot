@@ -304,10 +304,14 @@ class IChar:
         return self._remap_skill_hotkey(skill_asset, hotkey, self._config.ui_roi["skill_right"], self._config.ui_roi["skill_right_expanded"])
 
     def select_tp(self):
-        if self._skill_hotkeys["teleport"] and not self._ui_manager.is_right_skill_selected(Skill.Teleport):
+        if self._skill_hotkeys["teleport"] and not self._ui_manager.is_right_skill_selected(["TELE_ACTIVE", "TELE_INACTIVE"]):
             keyboard.send(self._skill_hotkeys["teleport"])
-            wait(0.1, 0.15)
-        return self._ui_manager.is_right_skill_selected(Skill.Teleport)
+            wait(0.1, 0.2)
+        return self._ui_manager.is_right_skill_selected(["TELE_ACTIVE", "TELE_INACTIVE"])
+        # if self._skill_hotkeys["teleport"] and not self._ui_manager.is_right_skill_selected(Skill.Teleport):
+        #     keyboard.send(self._skill_hotkeys["teleport"])
+        #     wait(0.1, 0.15)
+        # return self._ui_manager.is_right_skill_selected(Skill.Teleport)
 
     def get_skill_charges(self, img: np.ndarray = None):
         if img is None:
