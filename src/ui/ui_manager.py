@@ -608,7 +608,7 @@ class UiManager():
                 slot_pos = self.get_slot_pos(self._config, *item_pos)
                 x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
                 found_items = self._keep_item(inv_pos=(column, row), center=center_m)
-                mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
+                mouse.move(x_m, y_m, randomize=10, delay_factor=[0.3, 0.5])
                 wait(0.4, 0.5)
                 hovered_item = self._screen.grab()
                 if len(found_items) > 0 and self._api.data and self._api.data["stash_open"]:
@@ -627,29 +627,29 @@ class UiManager():
                     else:
                         send_msg = found_items[0].action == 2
                         self._game_stats.log_item_keep(found_items[0].name, send_msg, hovered_item)
-                # else:
-                #     # make sure there is actually an item
-                #     time.sleep(0.3)
-                #     curr_pos = mouse.get_position()
-                #     # move mouse away from inventory, for some reason it was sometimes included in the grabed img
-                #     x, y = self._screen.convert_abs_to_monitor((0, 0))
-                #     mouse.move(x, y, randomize=[40, 200], delay_factor=[1.0, 1.5])
-                #     item_check_img = self._screen.grab()
-                #     mouse.move(*curr_pos, randomize=2)
-                #     wait(0.4, 0.6)
-                #     slot_pos, slot_img = self.get_slot_pos_and_img(self._config, item_check_img, column, row)
-                #     if self._slot_has_item(slot_img):
-                #         if self._config.general["info_screenshots"]:
-                #             cv2.imwrite("./info_screenshots/info_discard_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", hovered_item)
-                #         mouse.press(button="left")
-                #         wait(0.2, 0.4)
-                #         mouse.release(button="left")
-                #         mouse.move(*center_m, randomize=20)
-                #         wait(0.2, 0.3)
-                #         mouse.press(button="left")
-                #         wait(0.2, 0.3)
-                #         mouse.release(button="left")
-                #         wait(0.5, 0.5)
+                else:
+                    # make sure there is actually an item
+                    time.sleep(0.3)
+                    curr_pos = mouse.get_position()
+                    # move mouse away from inventory, for some reason it was sometimes included in the grabed img
+                    x, y = self._screen.convert_abs_to_monitor((0, 0))
+                    mouse.move(x, y, randomize=[40, 200], delay_factor=[0.3, 0.5])
+                    item_check_img = self._screen.grab()
+                    mouse.move(*curr_pos, randomize=2)
+                    wait(0.4, 0.6)
+                    slot_pos, slot_img = self.get_slot_pos_and_img(self._config, item_check_img, column, row)
+                    if self._slot_has_item(slot_img):
+                        if self._config.general["info_screenshots"]:
+                            cv2.imwrite("./info_screenshots/info_discard_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", hovered_item)
+                        mouse.press(button="left")
+                        wait(0.2, 0.4)
+                        mouse.release(button="left")
+                        mouse.move(*center_m, randomize=20)
+                        wait(0.2, 0.3)
+                        mouse.press(button="left")
+                        wait(0.2, 0.3)
+                        mouse.release(button="left")
+                        wait(0.5, 0.5)
 
         Logger.debug("Check if stash is full")
         time.sleep(0.6)
