@@ -248,9 +248,9 @@ class Pather:
                     inv_item = self._api.find_item(item["id"], "inventory_items")
                     if inv_item:
                         Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it is now in inventory")
+                        return True
                     else:
-                        Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it was hovered")
-                    return True
+                        Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it was hovered, but did not find it in inventory")
                 item = self._api.find_item(item["id"])
         if item:
             return self.click_item(item, char, 3.0, do_traverse=False, do_teleport=True)
