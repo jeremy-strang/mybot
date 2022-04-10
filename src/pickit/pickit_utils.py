@@ -1,7 +1,11 @@
+import sys
+from typing import Union
 from game_stats import GameStats
 from pickit.pickit_item import PickitItem
 from pickit.types import *
-from pickit.pickit_config import *
+
+sys.path.insert(0, "./config")
+from pickit_config import PickitConfig, pickit_config
 
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
