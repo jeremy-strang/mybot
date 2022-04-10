@@ -66,7 +66,7 @@ class Basic(IChar):
 
 #this is where we kill bosses
 
-    def kill_pindle(self) -> bool:
+    def kill_pindleskin(self) -> bool:
         wait(0.1, 0.15)
         if self.can_tp:
             self._old_pather.traverse_nodes_fixed("pindle_end", self)

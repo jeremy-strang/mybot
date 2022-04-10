@@ -105,7 +105,7 @@ class SingerBarb(Barbarian):
         self.move(pos_m, force_move=True)
         self._cast_war_cry(atk_len)
 
-    def kill_pindle(self) -> bool:
+    def kill_pindleskin(self) -> bool:
         wait(0.1, 0.15)
         if self.can_tp:
             self._old_pather.traverse_nodes_fixed("pindle_end", self)

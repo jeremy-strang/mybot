@@ -657,7 +657,7 @@ class IChar:
     def kill_uniques(self, pickit: FunctionType, time_out: float=9.0, looted_uniques: set=set()) -> bool:
         raise ValueError("Kill uniques not implemented")
 
-    def kill_pindle(self) -> bool:
+    def kill_pindleskin(self) -> bool:
         raise ValueError("Pindle is not implemented!")
 
     def kill_shenk(self) -> bool:

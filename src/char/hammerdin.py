@@ -122,7 +122,7 @@ class Hammerdin(IChar):
         else:
             return self._kill_mobs_walking(rules)
 
-    def kill_pindle(self) -> bool:
+    def kill_pindleskin(self) -> bool:
         return self._kill_superunique()
 
     def kill_eldritch(self) -> bool:

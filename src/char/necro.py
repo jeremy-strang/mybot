@@ -436,7 +436,7 @@ class Necro(IChar):
         return True
 
 
-    def kill_pindle_mem(self, game_state: StateMonitor) -> bool:
+    def kill_pindleskin_mem(self, game_state: StateMonitor) -> bool:
         #use unique id for now
         self._cast_circle(cast_dir=[-1,1],cast_start_angle=0,cast_end_angle=360,cast_div=32,cast_v_div=2,cast_spell='raise_skeleton',offset=2,delay=1.6)
         

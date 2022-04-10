@@ -76,7 +76,7 @@ class BlizzSorc(Sorceress):
             wait(0.09, 0.12)
             mouse.release(button="right")
 
-    def kill_pindle(self) -> bool:
+    def kill_pindleskin(self) -> bool:
         pindle_pos_abs = self._screen.convert_screen_to_abs(self._config.path["pindle_end"][0])
         cast_pos_abs = [pindle_pos_abs[0] * 0.9, pindle_pos_abs[1] * 0.9]
         for _ in range(int(self._char_config["atk_len_pindle"])):

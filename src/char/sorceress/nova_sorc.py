@@ -56,7 +56,7 @@ class NovaSorc(Sorceress):
         self.move(pos_m, force_move=True)
         self._nova(atk_len)
 
-    def kill_pindle(self) -> bool:
+    def kill_pindleskin(self) -> bool:
         self._old_pather.traverse_nodes_fixed("pindle_end", self)
         self._cast_static(0.6)
         self._nova(self._char_config["atk_len_pindle"])

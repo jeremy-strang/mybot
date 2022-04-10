@@ -167,11 +167,17 @@ class ZerkerBarb(Barbarian):
     def kill_summoner(self) -> bool:
         return self._kill_superunique("Summoner")
 
-    def kill_pindle(self) -> bool:
-        return self._kill_superunique("Pindleskin")
-
     def kill_nihlathak(self) -> bool:
         return self._kill_superunique("Nihlathak")
 
     def kill_countess(self) -> bool:
         return self._kill_superunique("Countess")
+
+    def kill_shenk(self) -> bool:
+        return self._kill_superunique("Shenk")
+
+    def kill_eldritch(self) -> bool:
+        return self._kill_superunique("Eldritch")
+
+    def kill_pindleskinskin(self) -> bool:
+        return self._kill_superunique("Pindleskin")

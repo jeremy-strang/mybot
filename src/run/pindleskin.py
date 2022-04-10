@@ -62,7 +62,7 @@ class Pindleskin:
         # Move to Pindle
         if self._char._char_config['type'] == 'necro':
             game_state = StateMonitor(['DefiledWarrior'], self._api,super_unique=True)
-            self._char.kill_pindle_mem(game_state)
+            self._char.kill_pindleskin_mem(game_state)
             wait(0.1)
             self._pather.traverse((game_state._area_pos[0], game_state._area_pos[1]), self._char)
             game_state.stop()
@@ -71,7 +71,7 @@ class Pindleskin:
                 self._pather.traverse((61, 54), self._char)
             else:
                 self._pather.walk_to_position((61, 54))
-            self._char.kill_pindle()
+            self._char.kill_pindleskin()
         wait(0.1)
 
         picked_up_items = self._pickit.pick_up_items(self._char)
