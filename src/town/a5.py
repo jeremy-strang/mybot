@@ -73,7 +73,8 @@ class A5(IAct):
         return self._pather.activate_waypoint("Harrogath", self._char,entrance_in_wall=False, is_wp = True)
 
     def wait_for_tp(self) -> Union[Location, bool]:
-        success = self._template_finder.search_and_wait(["A5_TOWN_1", "A5_TOWN_0"], time_out=20).valid
-        if success:
-            return Location.A5_TOWN_START
-        return False
+        # success = self._template_finder.search_and_wait(["A5_TOWN_1", "A5_TOWN_0"], time_out=20).valid
+        # if success:
+        #     return Location.A5_TOWN_START
+        # return False
+        return Location.A5_TOWN_START

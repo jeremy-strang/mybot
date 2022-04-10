@@ -48,10 +48,11 @@ class A4(IAct):
         return self._api.wait_for_menu("waypoint")
 
     def wait_for_tp(self) -> Union[Location, bool]:
-        success = self._template_finder.search_and_wait(["A4_TOWN_4", "A4_TOWN_5", "A4_TOWN_6"], time_out=20).valid
-        if success:
-            return Location.A4_TOWN_START
-        return False
+        # success = self._template_finder.search_and_wait(["A4_TOWN_4", "A4_TOWN_5", "A4_TOWN_6"], time_out=20).valid
+        # if success:
+        #     return Location.A4_TOWN_START
+        # return False
+        return Location.A4_TOWN_START
 
     def identify(self, curr_loc: Location) -> Union[Location, bool]:
         if not self._old_pather.traverse_nodes((curr_loc, Location.A4_TYRAEL_STASH), self._char, force_move=True): return False
