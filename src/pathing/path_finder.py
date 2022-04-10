@@ -37,7 +37,7 @@ def make_path_astar(start, end, grid):
     return path
 
 class PathFinder:
-    def __init__(self, api: MapAssistApi, max_cluster_ct=18):
+    def __init__(self, api: MapAssistApi, max_cluster_ct=25):
         self._api = api
         self._data = None
         self._map = None
@@ -65,6 +65,7 @@ class PathFinder:
                 self._weighted_map = np.maximum(blurred_map * .001, float_map) + 1
 
     def make_path_astar(self, start, end, reverse_coords=False):
+        print(f"Making path from {start} to {end} (reverse_coords: {reverse_coords})")
         if reverse_coords:
             start = (start[1], start[0])
             end = (end[1], end[0])

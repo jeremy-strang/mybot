@@ -526,6 +526,7 @@ class IChar:
         picked_up_items = 0
         pf = PathFinder(self._api)
         nodes = pf.solve_tsp(destination)
+        
         for node in nodes:
             self._pather.traverse(node, self, 0, do_pre_move=True, obj=False, kill=False, time_out=8.0)
             wait(0.1)

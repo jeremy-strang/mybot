@@ -114,7 +114,6 @@ if __name__ == "__main__":
             start = time.time()
             try:
                 data = api.get_data()
-                
                 # items = api.find_items_by_name("Amethyst", "stash_items")
                 # for item in items:
                 #     pp.pprint(item)
@@ -133,7 +132,6 @@ if __name__ == "__main__":
                 # pickit.pick_up_items(char)
 
                 # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
-                char.tp_town()
     
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
@@ -170,14 +168,14 @@ if __name__ == "__main__":
                 # pf = PathFinder(api)
                 # start = pf.player_node
 
-                # if akara is not None:
-                #     path = pf.solve_tsp(end=akara["position"] - data["area_origin"])
-                # else:
-                #     path = pf.solve_tsp()
-                # api._current_path = []
-                # for node in path:
-                #     api._current_path += pf.make_path_astar(start, node, True)
-                #     start = node
+                pit_lvl2 = pather.get_entity_coords_from_str("Pit Level 2", "points_of_interest", False)
+                pf = PathFinder(api, 25)
+                path = pf.solve_tsp(pit_lvl2, True)
+                api._current_path = []
+                for node in path:
+                    print(node)
+                    api._current_path += pf.make_path_astar(start, node, True)
+                    start = node
 
                 # api._current_path = path
                 # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
