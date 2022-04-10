@@ -327,7 +327,7 @@ class UiManager():
             wait(wait_time, wait_time + 0.2)
 
         difficulty=self._config.general["difficulty"].upper()
-        difficulty_key="r" if difficulty == "normal" else "n" if difficulty == "nightmare" else "h"
+        difficulty_key="r" if difficulty == "NORMAL" else "n" if difficulty == "NIGHTMARE" else "h"
         while 1:
             template_match = self._template_finder.search_and_wait(["LOADING", f"{difficulty}_BTN"], time_out=8, roi=self._config.ui_roi["difficulty_select"], threshold=0.9, normalize_monitor=True)
             if not template_match.valid:
