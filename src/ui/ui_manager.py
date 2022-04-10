@@ -499,7 +499,7 @@ class UiManager():
                             else:
                                 item = loaded_item
                                 action = get_pickit_action(item, self._config.pickit_config)
-                            pickit_item = PickitItem(loaded_item, action)
+                            pickit_item = PickitItem(item, action)
                             # Recalc action after identifying
                             keep = action >= Action.Keep
                             if not keep:
