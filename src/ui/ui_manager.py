@@ -494,7 +494,7 @@ class UiManager():
                             keep = action >= Action.Keep
                             if not keep:
                                 if self._config.general["info_screenshots"]:
-                                    cv2.imwrite("./info_screenshots/discared_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
+                                    cv2.imwrite("./info_screenshots/discarded_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
                                 self._game_stats.log_item_discard(pickit_item.get_summary(), False)
                         if keep:
                             Logger.info(f"Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
