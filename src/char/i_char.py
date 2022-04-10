@@ -262,7 +262,7 @@ class IChar:
         #     return True
         # return False
         data = self._api.data
-        if data != None:
+        if data != None and "right_skill_data" in data:
             skill_data = data["right_skill_data"]
             if skill_data != None and "Charges" in skill_data["Charges"] and skill_data["Charges"] > 0:
                 return True
