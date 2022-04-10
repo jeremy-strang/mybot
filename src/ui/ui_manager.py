@@ -452,7 +452,7 @@ class UiManager():
         y = int(INV_ROI[1] + INV_SPACING_Y * position[1])
         mouse.move(x, y, randomize=2, delay_factor=[0.3, 0.4])
 
-    def _identify_inventory_item(self, item) -> bool:
+    def _identify_inventory_item(self, item) -> dict:
         if item and not item["is_identified"]:
             tome, quantity = self.get_tome_of("Identify")
             if tome and quantity > 0:
@@ -468,7 +468,6 @@ class UiManager():
                 if item and item["is_identified"]:
                     self._move_mouse_to_inventory_item(item)
                     Logger.debug(f"Successfully identified item {item['name']} at position {item['position']}!")
-                    return item
                 else:
                     Logger.debug(f"Failed to identify item {item['name']} at position {item['position']}")
         return item
@@ -494,9 +493,9 @@ class UiManager():
                             pickit_item = PickitItem(item, action)
                             keep = action >= Action.Keep
                             if not keep:
-                                self._game_stats.log_item_discard(pickit_item.get_summary(), False)
                                 if self._config.general["info_screenshots"]:
                                     cv2.imwrite("./info_screenshots/discared_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
+                                self._game_stats.log_item_discard(pickit_item.get_summary(), False)
                         if keep:
                             Logger.info(f"Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")
                             mem_items.append(pickit_item)
