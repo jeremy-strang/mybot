@@ -61,7 +61,8 @@ class Barbarian(IChar):
                 self.cast_aoe("howl")
 
     def get_next_corpse(self, names: list[str] = None, boundary: list[int] = None, skip_ids = set(), unique_only: bool = False):
-        data = self._api.get_data()
+        result = None
+        data = self._api.data
         if data is None or "monsters" not in data or type(data["monsters"]) is not list: return None
         monsters = sorted(data["monsters"], key = lambda m: (math.dist(data["player_pos_area"], m["position"] - data["area_origin"])))
         for m in monsters:
@@ -75,8 +76,17 @@ class Barbarian(IChar):
                     proceed = proceed or m["name"].startswith(name)
             if proceed and boundary is not None:
                 proceed = is_in_roi(boundary, m["position"] - data["area_origin"])
-            if proceed: return m
-        return None
+            if proceed:
+                result = m
+                break
+        
+        # Find how many monsters are nearby, use this to decide if we wanna hold down the button long enough to double hork or stand still
+        nearby = 0
+        if result != None:
+            for m in monsters:
+                if m["mode"] == 12 and m["is_targetable_corpse"] and math.dist(m["position"], result["position"]) <= 2.5:
+                    nearby += 1
+        return (result, nearby)
 
     def cast_hork(self, abs_screen_pos: tuple[float, float], press_len: float = 0.4, stand_still: bool = True):
         mouse_pos_m = self._screen.convert_abs_to_monitor(abs_screen_pos)
@@ -101,24 +111,24 @@ class Barbarian(IChar):
         Logger.debug("Beginning hork...")
         if self._char_config["barb_pre_hork_weapon_swap"] and not disable_swap:
             self.switch_weapon()
-        m = self.get_next_corpse(names, boundary, unique_only = unique_only)
+        monster, nearby = self.get_next_corpse(names, boundary, unique_only = unique_only)
         start = time.time()
         skip_ids = set()
         last_pos = None
         last_monster_id = 0
         attempts = 0
-        while m is not None and time.time() - start < time_out:
+        while monster is not None and time.time() - start < time_out:
             data = self._api.get_data()
-            distance = math.dist(data["player_pos_area"], m["position"] - data["area_origin"])
-            m_id = m["id"]
+            distance = math.dist(data["player_pos_area"], monster["position"] - data["area_origin"])
+            m_id = monster["id"]
             if distance > 3 or attempts > 0:
-                move_pos_m = self._screen.convert_player_target_world_to_monitor(m["position"], data["player_pos_world"])
+                move_pos_m = self._screen.convert_player_target_world_to_monitor(monster["position"], data["player_pos_world"])
                 self.pre_move()
                 self.move(move_pos_m, force_tp=True, force_move=True)
                 wait(0.1, 0.15)
                 data = self._api.get_data()
                 # Recalculate distance after moving
-                distance = math.dist(data["player_pos_area"], m["position"] - data["area_origin"])
+                distance = math.dist(data["player_pos_area"], monster["position"] - data["area_origin"])
                 # If we're in the same spot and targeting the same monster after moving, skip it
                 if m_id == last_monster_id:
                     attempts += 1
@@ -133,13 +143,15 @@ class Barbarian(IChar):
                         Logger.debug(f"Failed to move into hork range of monster {m_id}, skipping it")
                         skip_ids.add(m_id)
             if distance <= 3:
-                target_pos = world_to_abs(m["position"], data["player_pos_world"])
-                self.cast_hork(target_pos, press_len=self._cast_duration * 2, stand_still=False)
+                target_pos = world_to_abs(monster["position"], data["player_pos_world"])
+                hork_len = self._cast_duration * 2 if nearby > 0 else self._cast_duration
+                stand_still = distance < 2 and nearby == 0
+                self.cast_hork(target_pos, press_len=hork_len, stand_still=stand_still)
             else:
                 wait(0.10, 0.15)
             last_monster_id = m_id
             last_pos = data["player_pos_world"]
-            m = self.get_next_corpse(names, boundary, skip_ids=skip_ids, unique_only=unique_only)
+            monster, nearby = self.get_next_corpse(names, boundary, skip_ids=skip_ids, unique_only=unique_only)
         if self._char_config["barb_pre_hork_weapon_swap"] and not disable_swap:
             wait(0.10, 0.15)
             self.switch_weapon()
