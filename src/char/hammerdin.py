@@ -113,7 +113,10 @@ class Hammerdin(IChar):
         self._cast_hammers(atk_len)
 
     def _kill_superunique(self) -> bool:
-        rules = [MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE])]
+        rules = [
+            MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE]),
+            MonsterRule(monster_types=[MonsterType.UNIQUE, MonsterType.CHAMPION, MonsterType.MINION], max_distance=20),
+        ]
         if self.can_tp:
             return self._kill_mobs(rules)
         else:
