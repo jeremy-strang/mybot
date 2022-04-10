@@ -205,7 +205,6 @@ def round_point(pos: Tuple[int, int], num_decimals = 0) -> Tuple[float, float]:
 def points_equal(pos_a: Tuple[int, int], pos_b: Tuple[int, int], num_decimals = 0) -> bool:
     a = round_point(pos_a, num_decimals)
     b = round_point(pos_b, num_decimals)
-    print(f'Checking points equal: {a} and {b}')
     return a[0] == b[0] and a[1] == b[1]
 
 def pad_str_sides(text, pad_char, length=80):

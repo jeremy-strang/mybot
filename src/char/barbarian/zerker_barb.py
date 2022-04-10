@@ -57,7 +57,7 @@ class ZerkerBarb(Barbarian):
         elapsed = 0
         monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
         if len(monsters) == 0: return True
-        Logger.debug(f"Beginning combat against {len(monsters)}...")
+        Logger.debug(f"Focusing {len(monsters)} mobs...")
         while elapsed < time_out and len(monsters) > 0:
             data = self._api.get_data()
             if data:
@@ -71,7 +71,6 @@ class ZerkerBarb(Barbarian):
                             last_move = time.time()
                         else:
                             while monster and monster["dist"] > 3.0 and time.time() - monster_start < 5.0:
-                                Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
                                 self._pather.move_to_monster(self, monster)
                                 last_move = time.time()
                                 monster = self._api.find_monster(monster["id"])
@@ -94,7 +93,6 @@ class ZerkerBarb(Barbarian):
         return True
     
     def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
-        Logger.debug(f"Beginning combat")
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),

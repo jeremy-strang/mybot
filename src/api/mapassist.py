@@ -28,6 +28,7 @@ class MapAssistApi:
         self.player_name = None
         self.merc_alive = False
         self.merc_health_pct = 0
+        self.current_area = None
 
         self._current_path = []
         self._astar_current_path = []
@@ -87,6 +88,11 @@ class MapAssistApi:
                 self.merc_alive = data["merc_alive"]
                 self.merc_health_pct = data["merc_health_pct"]
                 self.should_chicken = data["should_chicken"]
+
+                if data["current_area"] != self.current_area:
+                    Logger.info(f"Location changed from {self.current_area} to {data['current_area']}")
+                self.current_area = data["current_area"]
+
                 if self._mas.player_summary is not None:
                     self.player_summary = self._mas.player_summary
                     self.player_name = self._mas.player_name

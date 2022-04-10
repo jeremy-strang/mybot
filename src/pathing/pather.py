@@ -362,7 +362,7 @@ class Pather:
                         data = self._api.get_data()
                         wp_menu = data["waypoint_open"]
                         if wp_menu and is_wp:
-                            Logger.info('WP menu open!')
+                            Logger.info("WP menu open!")
                             return True
 
                     if not is_wp:

@@ -53,8 +53,6 @@ class HealthManager:
         self._pausing = True
 
     def update_location(self, loc: Location):
-        if self._last_location != loc:
-            Logger.debug(f"Location changed from {self._last_location} to {loc}")
         if loc is not None and type(loc) == str:
             bosses = ["shenk", "eldritch", "pindle", "nihlathak", "trav", "arc", "diablo", "andy", "meph", "tower", "baal", "pit", "stony"]
             prev_value = self._pausing

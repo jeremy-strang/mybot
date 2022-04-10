@@ -54,8 +54,6 @@ class IChar:
         self._stats_with_weapon_tab2 = None
         self.can_tp = type(self._skill_hotkeys["teleport"]) is str and len(self._skill_hotkeys["teleport"]) > 0
         self.can_tp_with_charges = False
-        Logger.debug(f"self.can_tp: {self.can_tp}")
-        Logger.debug(f"self.can_tp_with_charges: {self.can_tp_with_charges}")
 
     def discover_capabilities(self):
         can_tp = self.can_tp
@@ -70,8 +68,6 @@ class IChar:
         self.can_tp = can_tp
         self.can_tp_with_charges = can_tp_with_charges
         self._cast_duration = self.get_cast_frames() * 0.04 + 0.02
-        Logger.debug(f"self.can_tp: {self.can_tp}")
-        Logger.debug(f"self.can_tp_with_charges: {self.can_tp_with_charges}")
 
     def get_fcr(self):
         data = self._api.get_data()
@@ -497,7 +493,7 @@ class IChar:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
                 mid = monster['id']
-                Logger.debug(f"Attacking monster '{monster['name']}' (ID: {mid}) with {skill_key}, distance: {round(monster['dist'], 2)}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
+                Logger.debug(f"Attacking monster {monster['type']} '{monster['name']}' (ID: {mid}) with {skill_key}, distance: {round(monster['dist'], 2)}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
                 keyboard.send(self._char_config["stand_still"], do_release=False)
                 wait(0.03, 0.04)
                 keyboard.send(self._skill_hotkeys[skill_key])

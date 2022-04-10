@@ -329,7 +329,7 @@ class Bot:
             Logger.info(f"Detected that merc is {'alive' if merc_alive else 'dead'} from memory")
             health_pct = data["player_health_pct"]
             mana_pct = data["player_mana_pct"]
-            Logger.debug(f"Maintenance: Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
+            Logger.debug(f"    Maintenance: Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
 
         # Figure out how many pots need to be picked up
         self._belt_manager.update_pot_needs()
@@ -343,7 +343,7 @@ class Bot:
 
         # Handle picking up corpse in case of death
         if self._pick_corpse:
-            Logger.debug(f"Maintenance: Picking up corpse")
+            Logger.debug(f"    Maintenance: Picking up corpse")
             is_loading = self._ui_manager.wait_for_loading_finish()
             self._char.discover_capabilities()
             self._pick_corpse = False
@@ -354,7 +354,7 @@ class Bot:
             wait(0.5)
             if self._char.can_tp_with_charges and not self._char.select_tp():
                 keybind = self._char._skill_hotkeys["teleport"]
-                Logger.info(f"Maintenance: Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
+                Logger.info(f"    Maintenance: Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
         else:
             dest = None
@@ -385,7 +385,7 @@ class Bot:
                 dest_loc = Location.A5_MALAH if buy_pots or should_heal else Location.A5_STASH
 
             if dest is not None:
-                Logger.info(f"Maintenance: Heading toward {dest}, buy pots: {buy_pots}, need to heal: {should_heal}")
+                Logger.info(f"    Maintenance: Heading toward {dest}, buy pots: {buy_pots}, need to heal: {should_heal}")
                 if dest == "Akara":
                     self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True)
                 else:
@@ -427,7 +427,7 @@ class Bot:
                 if not self._curr_loc:
                     if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                     return self.trigger_or_stop("end_game", failed=True)
-            Logger.info(f"Maintenance: Stashing items, current location: {self._curr_loc}")
+            Logger.info(f"    Maintenance: Stashing items, current location: {self._curr_loc}")
             if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             self._curr_loc = self._town_manager.stash(self._curr_loc)
             self._check_gold_pickup()
@@ -454,7 +454,7 @@ class Bot:
         self._tps_left = quantity
         if self._tps_left < random.randint(3, 5) or need_repair or need_routine_repair or need_refill_teleport:
             if need_repair: Logger.info("Maintenance: Repair needed. Gear is about to break")
-            elif need_routine_repair: Logger.info(f"Maintenance: Routine repair. Run count={self._game_stats._run_counter}, runs_per_repair={self._config.char['runs_per_repair']}")
+            elif need_routine_repair: Logger.info(f"    Maintenance: Routine repair. Run count={self._game_stats._run_counter}, runs_per_repair={self._config.char['runs_per_repair']}")
             elif need_refill_teleport: Logger.info("Maintenance: Teleport charges ran out. Need to repair")
             else: Logger.info("Maintenance: Repairing and buying TPs at next Vendor")
             self._curr_loc = self._town_manager.repair_and_fill_tps(self._curr_loc)

@@ -31,6 +31,7 @@ class MAS(Thread):
         self._custom_files = custom_files
         self.in_game = False
         self.should_chicken = False
+        self.current_area = None
         self.inventory_open = False
         self.character_open = False
         self.skill_select_open = False
@@ -115,6 +116,7 @@ class MAS(Thread):
         # if self.in_game != data["in_game"]: print(f"in_game changed from {self.in_game} to {data['in_game']}")
         # if self.in_town != data["in_town"]: print(f"in_town changed from {self.in_town} to {data['in_town']}")
         # if self.should_chicken != data["should_chicken"]: print(f"should_chicken changed from {self.should_chicken} to {data['should_chicken']}")
+        # if self.current_area != data["current_area"]: Logger.info(f"current_area changed from {self.current_area} to {data['current_area']}")
         # if self.inventory_open != data["inventory_open"]: print(f"inventory_open changed from {self.inventory_open} to {data['inventory_open']}")
         # if self.character_open != data["character_open"]: print(f"character_open changed from {self.character_open} to {data['character_open']}")
         # if self.skill_select_open != data["skill_select_open"]: print(f"skill_select_open changed from {self.skill_select_open} to {data['skill_select_open']}")
@@ -135,6 +137,8 @@ class MAS(Thread):
         self.in_game = _data["in_game"] = data["in_game"]
         self.in_town = _data["in_town"] = data["in_town"]
         self.should_chicken = _data["should_chicken"] = data["should_chicken"]
+        self.current_area = _data["current_area"] = data["current_area"]
+
         self.inventory_open = _data["inventory_open"] = data["inventory_open"]
         self.character_open = _data["character_open"] = data["character_open"]
         self.skill_select_open = _data["skill_select_open"] = data["skill_select_open"]
@@ -155,7 +159,6 @@ class MAS(Thread):
         _data["used_skill"] = data["used_skill"]
         _data["left_skill"] = data["left_skill"]
         _data["right_skill"] = data["right_skill"]
-        _data["current_area"] = data["current_area"]
         _data["belt_health_pots"] = data["belt_health_pots"]
         _data["belt_mana_pots"] = data["belt_mana_pots"]
         _data["belt_rejuv_pots"] = data["belt_rejuv_pots"]
