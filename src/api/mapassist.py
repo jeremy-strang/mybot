@@ -90,6 +90,8 @@ class MapAssistApi:
                 if self._mas.player_summary is not None:
                     self.player_summary = self._mas.player_summary
                     self.player_name = self._mas.player_name
+                    self.player_experience = self._mas.player_experience
+                    self.player_level = self._mas.player_level
 
                 # We only want to change should_chicken if it goes from False to True, once it's triggered we will just leave
 

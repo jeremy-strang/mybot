@@ -10,7 +10,8 @@ from messages import Messenger
 from pickit.types import Item
 from utils.misc import hms
 from version import __version__
-
+from utils.levels import get_level
+import math
 
 class GameStats:
     filtered_items = set(["Potion", "Gold", "Chipped Diamond", "Flawed Diamond", "Diamond", "Flawless Diamond", "Chipped Skull", "Flawed Skull", "Skull", "Flawless Skull", "_potion", "misc_gold", "_amethyst", "_ruby", "misc_chipped_diamond", "misc_flawed_diamond", "misc_diamond", "misc_flawless_diamond", "_topaz", "_emerald", "_sapphire", "misc_chipped_skull", "misc_flawed_skull", "misc_skull", "misc_flawless_skull"])
@@ -37,11 +38,19 @@ class GameStats:
         self._stats_filename = f'stats_{time.strftime("%Y%m%d_%H%M%S")}.log'
         self._nopickup_active = False
         self._did_chicken_last_run = False
+        self._starting_exp = 0
+        self._current_exp = 1
 
     def update_location(self, loc: str):
         if self._location != loc:
             self._location = str(loc)
             self.populate_location_stat()
+
+    def log_exp(self, exp: int):
+        if self._starting_exp == 0:
+            self._starting_exp = exp
+
+        self._current_exp = exp
 
     def populate_location_stat(self):
         if self._location not in self._location_stats:
@@ -157,7 +166,24 @@ class GameStats:
             avg_length = good_games_time / float(good_games_count)
             avg_length_str = hms(avg_length)
 
-        msg = f'\nSession length: {elapsed_time_str}\nGames: {self._game_counter}\nAvg Game Length: {avg_length_str}'
+        msg = f'\nSession length: {elapsed_time_str}'
+        msg += f'\nGames: {self._game_counter}'
+        msg += f'\nAvg Game Length: {avg_length_str}'
+
+        gained_exp = self._current_exp - self._starting_exp
+        if self._config.general["player_level"] and self._config.general["player_level"] < 99 and gained_exp > 0:
+            curr_lvl = get_level(self._config.general["player_level"])
+            exp_gained = self._current_exp - curr_lvl['exp']
+            exp_per_second = gained_exp / good_games_time
+            exp_per_hour = round(exp_per_second * 3600, 1)
+            exp_per_game = round(gained_exp / float(good_games_count), 1)
+            exp_needed = curr_lvl['xp_to_next'] - exp_gained
+            time_to_lvl = exp_needed / exp_per_second
+            games_to_lvl = exp_needed / exp_per_game
+            msg += f'\nXP Per Hour: {exp_per_hour:,}'
+            msg += f'\nXP Per Game: {exp_per_game:,}'
+            msg += f'\nTime Needed To Level: {hms(time_to_lvl)}'
+            msg += f'\nGames Needed To Level: {math.ceil(games_to_lvl):,}'
 
         table = BeautifulTable()
         table.set_style(BeautifulTable.STYLE_BOX_ROUNDED)
