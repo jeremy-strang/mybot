@@ -5,7 +5,9 @@ import cv2
 import itertools
 import os
 import numpy as np
+import pprint
 from api.mapassist import MapAssistApi
+import pickit
 from pickit.item_finder import PixelItem
 from pickit.pickit_item import PickitItem
 from pickit.types import Action, Stat
@@ -31,6 +33,8 @@ import random
 import string
 
 from pickit.pickit_utils import get_pickit_action
+
+pp = pprint.PrettyPrinter(indent=4)
 
 class UiManager():
     """Everything that is clicking on some static 2D UI or is checking anything in regard to it should be placed here."""
@@ -487,14 +491,22 @@ class UiManager():
                         pickit_item = PickitItem(item, action)
                         keep = True
                         if not item["is_identified"] and (item["type"], item["quality"]) in self._config.pickit_config.IdentifiedItems:
-                            item = self._identify_inventory_item(item)
+                            self._identify_inventory_item(item)
+                            loaded_item = self._api.wait_for_item_stats(item, time_out=4)
+                            pickit_item = None
+                            if not loaded_item:
+                                action = Action.Keep
+                            else:
+                                item = loaded_item
+                                action = get_pickit_action(item, self._config.pickit_config)
+                            pickit_item = PickitItem(loaded_item, action)
                             # Recalc action after identifying
-                            action = get_pickit_action(item, self._config.pickit_config)
-                            pickit_item = PickitItem(item, action)
                             keep = action >= Action.Keep
                             if not keep:
-                                if self._config.general["info_screenshots"]:
-                                    cv2.imwrite("./info_screenshots/discarded_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
+                                if self._config.general["loot_screenshots"]:
+                                    cv2.imwrite("./loot_screenshots/discarded_item_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
+                                Logger.debug(f"Discarded item:")
+                                Logger.debug(pprint.pformat(item, indent=4))
                                 self._game_stats.log_item_discard(pickit_item.get_summary(), False)
                         if keep:
                             Logger.info(f"Keeping item '{item['name']}' from memory  (ID: {item['id']}, hovered: {item['is_hovered']}, identified: {item['is_identified']}, position: {item['position']})")

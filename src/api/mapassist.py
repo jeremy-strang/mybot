@@ -236,3 +236,27 @@ class MapAssistApi:
             elif "_items" in list_name:
                 target = self.find_item(target["id"], list_name)
         return target != None and target["is_hovered"]
+
+    def wait_for_item_stats(self, item: dict, time_out: float = 4.0, list_name = None) -> bool:
+        start = time.time()
+        stats_loaded = False
+        if item:
+            stats_loaded = "stats" in item and item["stats"] != None
+            item_id = item["id"]
+            while not stats_loaded and time.time() - start < time_out:
+                time.sleep(0.1)
+                if list_name != None:
+                    item = self.find_item(item_id, list_name)
+                else:
+                    item = self.find_item(item_id, "inventory_items")
+                    if not item:
+                        item = self.find_item(item_id, "stash_items")
+                    if not item:
+                        item = self.find_item(item_id, "equipped_items")
+                    if not item:
+                        item = self.find_item(item_id, "items")
+                stats_loaded = item and "stats" in item and item["stats"] != None
+            Logger.debug(f"Waited {round(time.time() - start, 2)}sec to load {len(item['stats']) if stats_loaded else 0} stats from {str(item['quality'])} {item['name']} with id {item_id}")
+        else:
+            Logger.warning("Failed to wait for item stats to load, the given item was None")
+        return item if stats_loaded else False

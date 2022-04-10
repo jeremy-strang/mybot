@@ -149,13 +149,13 @@ if __name__ == "__main__":
 
                 # pickit.pick_up_items()
                 # char.tp_town()
-                pather.click_object("TownPortal")
+                # pather.click_object("TownPortal")
 
                 # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
     
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
+                ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
 
                 # ui_manager.fill_tome_of("Town Portal")
                 # ui_manager.throw_out_junk(item_finder)
