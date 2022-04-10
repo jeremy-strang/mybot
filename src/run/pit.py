@@ -60,13 +60,13 @@ class Pit:
     def battle(self, do_pre_buff: bool=True) -> Union[bool, tuple[Location, bool]]:
         self._char.pre_travel(do_pre_buff)
         if not self._pather.traverse("Monastery Gate", self._char, dest_distance=12): return False
-        if not self._pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3): return False
+        if not self._pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=self._char): return False
 
         if not self._pather.traverse("Tamoe Highland", self._char, dest_distance=10): return False
-        if not self._pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4): return False
+        if not self._pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=self._char): return False
     
         if not self._pather.traverse("Pit Level 1", self._char, verify_location=True, dest_distance=12): return False
-        if not self._pather.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4): return False
+        if not self._pather.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4, char=self._char): return False
         self._char.post_travel()
 
         picked_up_items = 0

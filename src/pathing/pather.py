@@ -542,8 +542,7 @@ class Pather:
                     num_clicks += 1
                     wait(0.5, 0.6)
                     if num_clicks == 10 and char != None:
-                        char.pre_move()
-                        char.move(pos_monitor, force_tp=True)
+                        char.reposition(pos_abs)
                     if num_clicks == 12:
                         randomize += 2
                     if num_clicks == 15 and char != None:
@@ -872,8 +871,8 @@ class Pather:
         if do_pre_move:
             char.pre_move()
         # reduce casting frame duration since we can check for teleport skill used in memory
-        tmp_duration = char._cast_duration
-        char._cast_duration = max(0.18, char._cast_duration - 0.3)
+        # tmp_duration = char._cast_duration
+        # char._cast_duration = max(0.18, char._cast_duration - 0.3)
         last_pos = None
         last_node_pos_abs = None
         repeated_pos_count = 0
@@ -889,9 +888,9 @@ class Pather:
             
             if "map" in data:
                 player_pos_area = data["player_pos_area"]
-                if data["used_skill"] == Skill.Teleport:
-                    time.sleep(0.01)
-                    continue
+                # if data["used_skill"] == Skill.Teleport:
+                #     time.sleep(0.01)
+                #     continue
 
                 # Some fail save checking for when we get stuck
                 if last_pos != None and np.array_equal(player_pos_area, last_pos):
@@ -907,7 +906,7 @@ class Pather:
                         reached_destination += 5
                     elif repeated_pos_count > 18:
                         Logger.warning("Got stuck during pathing")
-                        char._cast_duration = tmp_duration
+                        # char._cast_duration = tmp_duration
                         return False
                 else:
                     repeated_pos_count = 0
@@ -927,14 +926,14 @@ class Pather:
                     area_pos = end
                 if area_pos is None:
                     if hard_exit < 10:
-                        data = self._api.get_data()
+                        data = self._api.data
                         hard_exit += 1
                         # seems like the data isnt loading in time here, just try again
                         Logger.warning(f"Couldnt find endpoint: {end} trying one more time...")
-                        char._cast_duration = tmp_duration
+                        # char._cast_duration = tmp_duration
                         continue
                     Logger.warning(f"Couldnt find endpoint: {end}")
-                    char._cast_duration = tmp_duration
+                    # char._cast_duration = tmp_duration
                     return False
 
                 # Calc route from player to entrance
@@ -969,6 +968,7 @@ class Pather:
 
                 for i in range(len(route_list)):
                     node = np.array(route_list[i])
+                    
                     node_pos_w = [node[1], node[0]]
                     data = self._api.get_data()
                     player_pos = data['player_pos_area']+data['player_offset']
@@ -979,29 +979,30 @@ class Pather:
                         continue
 
                     if self._should_abort_pathing():
-                        char._cast_duration = tmp_duration
+                        # char._cast_duration = tmp_duration
                         return False
 
                     char.move((node_pos_m[0], node_pos_m[1]), force_move=force)
 
                     if i > len(route_list)-4:
+                        Logger.debug("    Getting close to destination, slowing down...")
                         time.sleep(.4)
                 data = self._api.get_data()
                 player_pos = data['player_pos_area'] + data['player_offset']
                 recalc_dist = math.dist(player_pos, area_pos)
                 if recalc_dist < dest_distance and verify_location:
                     Logger.debug(f"Traverse to {end} completed ({round(recalc_dist, 2)} from destination)")
-                    char._cast_duration = tmp_duration
+                    # char._cast_duration = tmp_duration
                     return True
                 elif not verify_location:
-                    char._cast_duration = tmp_duration
+                    # char._cast_duration = tmp_duration
                     return True
                 else:
                     Logger.warning(f"Ended too early, recalculating pathing..." + str(recalc_dist))
 
             time.sleep(0.02)
             self._api._astar_current_path = None
-            char._cast_duration = tmp_duration
+            # char._cast_duration = tmp_duration
         return False
 
     @staticmethod

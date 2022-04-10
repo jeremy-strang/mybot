@@ -133,7 +133,15 @@ if __name__ == "__main__":
                 # pickit.pick_up_items(char)
 
                 # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
-                pather.click_poi("The Pandemonium Fortress")
+                pather.traverse("Monastery Gate", char, dest_distance=12)
+                pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=char)
+
+                pather.traverse("Tamoe Highland", char, dest_distance=10)
+                pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=char)
+    
+                pather.traverse("Pit Level 1", char, verify_location=True, dest_distance=12)
+                pather.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4, char=char)
+    
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
                 # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
