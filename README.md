@@ -80,6 +80,7 @@ run_shenk=0
 | message_api_type         | Which api to use to send MyBot messages.  Supports "generic_api" (basic discord), or "discord" (discord embeds with images).
 | discord_status_count     | Number of games between discord status messges being sent. Leave empty for no status reports.
 | discord_status_condensed | Toggles condensed view of Discord status messages. 0 Full text, 1 Condensed text.
+| discord_experience_report | If 1, your character experience report will be included in your Discord status messages
 | info_screenshots         | If 1, the bot takes a screenshot with timestamp on every stuck / chicken / timeout / inventory full event. This is 1 by Default, so remember to clean up the folder every once in a while |
 | loot_screenshots         | If 1, the bot takes a screenshot with timestamp everytime he presses show_items button and saves it to loot_screenshots folder. Remember to clear them once in a while... |
 | saved_games_folder       | Optional folder path of Diablo 2 : Ressurrected saved games that will be used to overwrite when running the "auto settings" |

@@ -112,6 +112,7 @@ class MAS(Thread):
             "player_merc": None,
             "player_corpse": None,
             "hovered_unit": None,
+            "hovered_unit_type": None,
         }
 
         # if self.in_game != data["in_game"]: print(f"in_game changed from {self.in_game} to {data['in_game']}")
@@ -135,6 +136,7 @@ class MAS(Thread):
         # if self.potion_belt_open != data["potion_belt_open"]: print(f"potion_belt_open changed from {self.potion_belt_open} to {data['potion_belt_open']}")
         # if self.mercenary_inventory_open != data["mercenary_inventory_open"]: print(f"mercenary_inventory_open changed from {self.mercenary_inventory_open} to {data['mercenary_inventory_open']}")
 
+        game_status_changed = self.in_game != data["in_game"]
         self.in_game = _data["in_game"] = data["in_game"]
         self.in_town = _data["in_town"] = data["in_town"]
         self.should_chicken = _data["should_chicken"] = data["should_chicken"]
@@ -173,6 +175,7 @@ class MAS(Thread):
         _data["hovered_unit"] = None
         if data["player_corpse"] and data["hovered_unit"]:
             _data["hovered_unit"] = data["player_corpse"]
+            _data["hovered_unit_type"] = "player_corpse"
 
         _data["map_changed"] = data["map_changed"]
         _data["map_height"] = data["map_height"]
@@ -182,17 +185,15 @@ class MAS(Thread):
             _data["map"][_data["map"] == 1] = 0
             _data["map"] += 1
         
-        if self.in_game:
+        if self.in_game and game_status_changed:
             self.player_level = data['player_level']
             self.player_experience = data['player_experience']
             self.player_name = data['player_name']
-
-            percent_to_level = ""
-            if self.player_level < 99:
-                curr_lvl = get_level(self.player_level)
-                percent_to_level =  f' | {round((self.player_experience - curr_lvl["exp"]) / curr_lvl["xp_to_next"]*100)}%'
-
-            self.player_summary = f"Level {self.player_level} {data['player_class']}{percent_to_level}"
+            # percent_to_level = ""
+            # if self.player_level < 99:
+            #     curr_lvl = get_level(self.player_level)
+            #     percent_to_level =  f" | {round((curr_lvl['exp'] - self.player_experience) / curr_lvl['xp_to_next'])}%"
+            self.player_summary = f"Level {self.player_level} {data['player_class']}"
 
         player_x_world = int(data["player_pos_world"]["X"])
         player_y_world = int(data["player_pos_world"]["Y"])
@@ -233,6 +234,7 @@ class MAS(Thread):
             monster["dist"] = math.dist(_data["player_pos_area"], monster["position_area"])
             if monster["is_hovered"]:
                 _data["hovered_unit"] = monster
+                _data["hovered_unit_type"] = "monsters"
             _data["monsters"].append(monster)
 
         for poi in data["points_of_interest"]:
@@ -252,6 +254,7 @@ class MAS(Thread):
             obj["dist"] = math.dist(_data["player_pos_world"], obj["position"])
             if obj["is_hovered"]:
                 _data["hovered_unit"] = obj
+                _data["hovered_unit_type"] = "objects"
             _data["objects"].append(obj)
 
         for item_list in ["items", "inventory_items", "stash_items", "cube_items", "vendor_items", "equipped_items", "merc_items"]:
@@ -264,6 +267,7 @@ class MAS(Thread):
                 item["dist"] = math.dist(_data["player_pos_world"], item["position"])
                 if item["is_hovered"]:
                     _data["hovered_unit"] = item
+                    _data["hovered_unit_type"] = item_list
             _data[item_list] = data[item_list]
 
         # for item in data["logged_items"]:

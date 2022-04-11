@@ -453,12 +453,15 @@ class Hammerdin(IChar):
         self._pather.walk_to_position((157, 98), 3.0)
         return True
 
+    def kill_blocking_mobs(self) -> bool:
+        return self._kill_mobs(None, None, 10)
+
     def _kill_mobs(self,
                   prioritize: list[MonsterRule],
                   ignore: list[MonsterRule] = None,
                   time_out: float = 40.0,
-                  boundary: Tuple = None,
-                  reposition_pos = None,
+                  boundary: tuple[float, float, float, float] = None,
+                  reposition_pos: tuple[float, float] = None,
                   reposition_time: float = 7.0
                 ) -> bool:
         start = time.time()

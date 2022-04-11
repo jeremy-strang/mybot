@@ -399,7 +399,9 @@ class IChar:
     def tp_town(self):
         if not self.open_tp(): return False
         wait(1.1, 1.4) # takes quite a while for tp to be visible
-        self._pather.click_object("TownPortal")
+        if not self._pather.click_object("TownPortal"):
+            self.kill_blocking_mobs()
+            self._pather.click_object("TownPortal")
         if self._pather.wait_for_town(4): return True
 
         Logger.warning("Failed to TP to town using memory, falling back to pixels")
@@ -461,6 +463,9 @@ class IChar:
         pass
 
     def post_attack(self):
+        pass
+
+    def kill_blocking_mobs(self):
         pass
     
     def cast_aoe(self, skill_hotkey: str, button="right"):

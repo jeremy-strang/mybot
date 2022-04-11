@@ -231,19 +231,46 @@ class MapAssistApi:
         while not (is_open(self.data)) and time.time() - start < time_out:
             time.sleep(0.1)
         return is_open(self.data)
-
-    def wait_for_hover(self, target: dict, list_name: str, time_out=0.3):
-        while target and not target["is_hovered"]:
+    
+    def wait_for_area(self, area: str, time_out=5.0):
+        start = time.time()
+        area = area.lower().replace(" ", "")
+        area_detected = self.data is not None and self.data["current_area"].lower().replace(" ", "") == area
+        while not area_detected and time.time() - start < time_out:
             time.sleep(0.1)
-            if list_name == "objects":
-                target = self.find_object(target["name"])
-            elif list_name == "points_of_interest":
-                target = self.find_poi(target["label"])
-            elif list_name == "monsters":
-                target = self.find_monster(target["name"])
-            elif "_items" in list_name:
-                target = self.find_item(target["id"], list_name)
-        return target and target["is_hovered"]
+            area_detected = self.data is not None and self.data["current_area"].lower().replace(" ", "") == area
+        return area_detected
+    
+    def get_hovered_unit(self):
+        if self.data:
+            hovered_unit = self.data["hovered_unit"]
+            hovered_unit_type = self.data["hovered_unit_type"]
+            return (hovered_unit, hovered_unit_type)
+        return (None, None)
+
+    def wait_for_hover(self, target: dict, list_name: str, time_out=0.33) -> bool:
+        result = (False, None, None)
+        updated = target
+        if target:
+            start = time.time()
+            
+            while updated and not updated["is_hovered"] and time.time() - start < time_out:
+                time.sleep(0.1)
+                hovered_unit, hovered_unit_type = self.get_hovered_unit()
+                if hovered_unit and hovered_unit["id"] != target["id"]:
+                    Logger.debug(f"Wrong unit is hovered, hovered unit: {hovered_unit['id']}, type: {hovered_unit_type}")
+                    result = (False, hovered_unit, hovered_unit_type)
+                if list_name == "objects":
+                    updated = self.find_object(target["name"])
+                elif list_name == "points_of_interest":
+                    updated = self.find_poi(target["label"])
+                elif list_name == "monsters":
+                    updated = self.find_monster(target["name"])
+                elif "_items" in list_name:
+                    updated = self.find_item(target["id"], list_name)
+        if updated and updated["is_hovered"]:
+            result = (True, updated, list_name)
+        return result
 
     def wait_for_item_stats(self, item: dict, time_out: float = 4.0, list_name = None) -> bool:
         start = time.time()
