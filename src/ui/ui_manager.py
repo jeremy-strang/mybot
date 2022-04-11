@@ -558,40 +558,44 @@ class UiManager():
                 if inventory_no_gold.valid:
                     Logger.debug("Skipping gold stashing")
                 else:
-                    Logger.debug("Stashing gold")
-                    self._move_to_stash_tab(min(3, self._curr_stash["gold"]))
-                    mouse.move(*gold_btn.center, randomize=4)
-                    wait(0.1, 0.15)
-                    mouse.press(button="left")
-                    wait(0.25, 0.35)
-                    mouse.release(button="left")
-                    wait(0.4, 0.6)
-                    keyboard.send("enter") #if stash already full of gold just nothing happens -> gold stays on char -> no popup window
-                    wait(1.0, 1.2)
-                    # move cursor away from button to interfere with screen grab
-                    mouse.move(-120, 0, absolute=False, randomize=15)
-                    inventory_no_gold = self._template_finder.search("INVENTORY_NO_GOLD", self._screen.grab(), roi=self._config.ui_roi["inventory_gold"], threshold=0.83)
-                    if not inventory_no_gold.valid:
-                        Logger.info("Stash tab is full of gold, selecting next stash tab.")
-                        self._curr_stash["gold"] += 1
-                        if self._config.general["info_screenshots"]:
-                            cv2.imwrite("./info_screenshots/info_gold_stash_full_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
-                        if self._curr_stash["gold"] > 3:
-                            #decide if gold pickup should be disabled or gambling is active
-                            if self._config.char["gamble_items"]:
-                                self._gold_full = True
+                    gold_btn = self._template_finder.search_and_wait("INVENTORY_GOLD_BTN", roi=self._config.ui_roi["gold_btn"], time_out=20, normalize_monitor=True)
+                    if not gold_btn.valid:
+                        Logger.error("        Could not determine to be in stash menu. Continue...")
+                    else:
+                        Logger.debug("Stashing gold")
+                        self._move_to_stash_tab(min(3, self._curr_stash["gold"]))
+                        mouse.move(*gold_btn.center, randomize=4)
+                        wait(0.1, 0.15)
+                        mouse.press(button="left")
+                        wait(0.25, 0.35)
+                        mouse.release(button="left")
+                        wait(0.4, 0.6)
+                        keyboard.send("enter") #if stash already full of gold just nothing happens -> gold stays on char -> no popup window
+                        wait(1.0, 1.2)
+                        # move cursor away from button to interfere with screen grab
+                        mouse.move(-120, 0, absolute=False, randomize=15)
+                        inventory_no_gold = self._template_finder.search("INVENTORY_NO_GOLD", self._screen.grab(), roi=self._config.ui_roi["inventory_gold"], threshold=0.83)
+                        if not inventory_no_gold.valid:
+                            Logger.info("Stash tab is full of gold, selecting next stash tab.")
+                            self._curr_stash["gold"] += 1
+                            if self._config.general["info_screenshots"]:
+                                cv2.imwrite("./info_screenshots/info_gold_stash_full_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
+                            if self._curr_stash["gold"] > 3:
+                                #decide if gold pickup should be disabled or gambling is active
+                                if self._config.char["gamble_items"]:
+                                    self._gold_full = True
+                                else:
+                                    # turn off gold pickup
+                                    self._config.turn_off_goldpickup()
+                                    # inform user about it
+                                    msg = "All stash tabs and character are full of gold, turn of gold pickup"
+                                    Logger.info(msg)
+                                    if self._config.general["custom_message_hook"]:
+                                        self._messenger.send_message(msg=f"{self._config.general['name']}: {msg}")
                             else:
-                                # turn off gold pickup
-                                self._config.turn_off_goldpickup()
-                                # inform user about it
-                                msg = "All stash tabs and character are full of gold, turn of gold pickup"
-                                Logger.info(msg)
-                                if self._config.general["custom_message_hook"]:
-                                    self._messenger.send_message(msg=f"{self._config.general['name']}: {msg}")
-                        else:
-                            # move to next stash
-                            wait(0.5, 0.6)
-                            return self.stash_all_items(num_loot_columns, item_finder)
+                                # move to next stash
+                                wait(0.5, 0.6)
+                                return self.stash_all_items(num_loot_columns, item_finder)
         else:
             self.transfer_shared_to_private_gold(self._gambling_round)
         # stash stuff
