@@ -1,7 +1,9 @@
 import math
 import time
+import keyboard
 from api.mapassist import MapAssistApi
 from char import IChar
+from char.skill import Skill
 from config import Config
 from logger import Logger
 from pathing import Location, OldPather
@@ -11,6 +13,7 @@ from screen import Screen
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
 from ui import UiManager
+from utils.custom_mouse import mouse
 from utils.misc import wait
 from state_monitor import StateMonitor
 from pathing import Pather
@@ -60,7 +63,12 @@ class ShenkEldritch:
 
         start = time.time()
         eld = None
-        while not eld and time.time() - start < 5.0:
+        while not eld and time.time() - start < 3.0:
+            wait(0.05)
+            eld = self._api.find_monster_by_name("MinionExp")
+        if not eld:
+            self._pather.wander_towards((-50, -200), iterations=3, time_out=2.5)
+        while not eld and time.time() - start < 3.0:
             wait(0.05)
             eld = self._api.find_monster_by_name("MinionExp")
         
@@ -86,8 +94,12 @@ class ShenkEldritch:
             game_stats.update_location("Shk" if self._config.general['discord_status_condensed'] else "Shenk")
             self._curr_loc = Location.A5_SHENK_START
 
-            if not self._pather.traverse("Bloody Foothills", self._char, verify_location=False): return False
-            if not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False): return False
+            if not self._pather.traverse("Bloody Foothills", self._char, verify_location=False):
+                self._pather.walk_to_poi("Bloody Foothills")
+            if not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False):
+                self._pather.wander_towards((500, 300), "Bloody Foothills")
+                if not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False):
+                    return False
 
             if self._char._char_config['type'] == 'necro':
                 wait(0.1, 0.2)

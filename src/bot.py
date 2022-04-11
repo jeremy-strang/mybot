@@ -326,7 +326,7 @@ class Bot:
                 data = self._api.get_data()
             self._pick_corpse = "player_corpse" in data and data["player_corpse"] is not None and type(data["player_corpse"]) is dict
             merc_alive = "merc_alive" in data and data["merc_alive"]
-            Logger.info(f"Detected that merc is {'alive' if merc_alive else 'dead'} from memory")
+            Logger.info(f"    Maintenance: Detected that merc is {'alive' if merc_alive else 'dead'} from memory")
             health_pct = data["player_health_pct"]
             mana_pct = data["player_mana_pct"]
             Logger.debug(f"    Maintenance: Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
@@ -395,15 +395,15 @@ class Bot:
         if should_heal or buy_pots:
             if buy_pots:
                 if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
-                Logger.info("Maintenance: Buy pots at next possible Vendor")
+                Logger.info("    Maintenance: Buy pots at next possible Vendor")
                 self._belt_manager.update_pot_needs()
                 pot_needs = self._belt_manager.get_pot_needs()
-                Logger.debug(f"Potion needs: {pot_needs}")
+                Logger.debug(f"        Potion needs: {pot_needs}")
                 self._curr_loc = self._town_manager.buy_pots(self._curr_loc, pot_needs["health"], pot_needs["mana"])
                 wait(0.5)
                 self._belt_manager.update_pot_needs()
             else:
-                Logger.info("Maintenance: Healing at next possible Vendor")
+                Logger.info("    Maintenance: Healing at next possible Vendor")
                 if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 self._curr_loc = self._town_manager.heal(self._curr_loc)
             
@@ -421,7 +421,7 @@ class Bot:
         if self._picked_up_items or force_stash:
             # Check config/gold and see if we need to enable/disable gold pickup
             if self._config.char["id_items"]:
-                Logger.info("Maintenance: Identifying items")
+                Logger.info("    Maintenance: Identifying items")
                 if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 self._curr_loc = self._town_manager.identify(self._curr_loc)
                 if not self._curr_loc:
@@ -453,10 +453,10 @@ class Bot:
         tome, quantity = self._ui_manager.get_tome_of("Town Portal")
         self._tps_left = quantity
         if self._tps_left < random.randint(3, 5) or need_repair or need_routine_repair or need_refill_teleport:
-            if need_repair: Logger.info("Maintenance: Repair needed. Gear is about to break")
+            if need_repair: Logger.info("    Maintenance: Repair needed. Gear is about to break")
             elif need_routine_repair: Logger.info(f"    Maintenance: Routine repair. Run count={self._game_stats._run_counter}, runs_per_repair={self._config.char['runs_per_repair']}")
-            elif need_refill_teleport: Logger.info("Maintenance: Teleport charges ran out. Need to repair")
-            else: Logger.info("Maintenance: Repairing and buying TPs at next Vendor")
+            elif need_refill_teleport: Logger.info("    Maintenance: Teleport charges ran out. Need to repair")
+            else: Logger.info("    Maintenance: Repairing and buying TPs at next Vendor")
             self._curr_loc = self._town_manager.repair_and_fill_tps(self._curr_loc)
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
@@ -465,13 +465,13 @@ class Bot:
 
         # Check if merc needs to be revived
         if should_res_merc:
-            Logger.info(f"Detected that merc is dead in memory, confirming via pixels...")
+            Logger.info(f"    Maintenance: Detected that merc is dead in memory, confirming via pixels...")
             if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             merc_alive = self._template_finder.search(["MERC_A2", "MERC_A1", "MERC_A5", "MERC_A3"], self._screen.grab(), threshold=0.9, roi=self._config.ui_roi["merc_icon"]).valid
             should_res_merc = not merc_alive and self._config.char["use_merc"]
-            Logger.info(f"Confirmed via pixels that merc is {'alive' if merc_alive else 'dead'}")
+            Logger.info(f"        Confirmed via pixels that merc is {'alive' if merc_alive else 'dead'}")
         if should_res_merc:
-            Logger.info("Maintenance: Resurrect merc")
+            Logger.info("    Maintenance: Resurrect merc")
             self._game_stats.log_merc_death()
             self._curr_loc = self._town_manager.resurrect(self._curr_loc)
             if not self._curr_loc:
@@ -479,7 +479,7 @@ class Bot:
 
         # Check if gambling is needed
         if self._ui_manager.gambling_needed() and self._config.char["gamble_items"]:
-            Logger.info("Maintenance: Gambling")
+            Logger.info("    Maintenance: Gambling")
             for x in range(4):
                 self._curr_loc = self._town_manager.gamble(self._curr_loc)
                 self._ui_manager.gamble(self._item_finder)
@@ -494,17 +494,17 @@ class Bot:
             self._ran_no_pickup = True
             if self._ui_manager.enable_no_pickup():
                 self._game_stats._nopickup_active = True
-                Logger.info("Activated /nopickup")
+                Logger.info("    Maintenance: Activated /nopickup")
             else:
-                Logger.error("Failed to detect if /nopickup command was applied or not")
+                Logger.error("        Failed to detect if /nopickup command was applied or not")
 
         if self._game_stats._run_counter == 0 or self._game_stats._consecutive_runs_failed > 0 or self._game_stats._game_counter == 0 or self._pick_corpse or self._game_stats._did_chicken_last_run:
-            Logger.info("Verifying weapon slot 1 is active due to chicken/failed/first run")
+            Logger.info("    Maintenance: Verifying weapon slot 1 is active due to chicken/failed/first run")
             self._char.verify_active_weapon_tab()
         self._game_stats._did_chicken_last_run = False
 
         # Start a new run
-        Logger.info("Town maintenance complete, starting runs")
+        Logger.info("    Town maintenance complete, starting runs")
         started_run = False
         for key in self._do_runs:
             if self._do_runs[key]:

@@ -115,7 +115,7 @@ class Hammerdin(IChar):
     def _kill_superunique(self) -> bool:
         rules = [
             MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE]),
-            MonsterRule(monster_types=[MonsterType.UNIQUE, MonsterType.CHAMPION, MonsterType.MINION], max_distance=20),
+            MonsterRule(monster_types=[MonsterType.UNIQUE, MonsterType.CHAMPION, MonsterType.MINION], max_distance=25),
         ]
         if self.can_tp:
             return self._kill_mobs(rules)
@@ -123,7 +123,11 @@ class Hammerdin(IChar):
             return self._kill_mobs_walking(rules)
 
     def kill_pindleskin(self) -> bool:
-        return self._kill_superunique()
+        rules = [MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE])]
+        if self.can_tp:
+            return self._kill_mobs(rules)
+        else:
+            return self._kill_mobs_walking(rules)
 
     def kill_eldritch(self) -> bool:
         return self._kill_superunique()

@@ -365,6 +365,28 @@ class Pather:
             return True
         return False
 
+    def wander_towards(self, abs_pos: tuple[float, float], stop_at_area: str = None, iterations = 5, time_out: float = 7.0):
+        start = time.time()
+        self._api.data["current_area"] if self._api.data else None
+        for _ in range(iterations):
+            pos = self._screen.convert_abs_to_monitor(abs_pos)
+            mouse.move(pos[0], pos[1], randomize=20)
+            wait(0.1, 0.15)
+            if self._char.can_tp:
+                if not self._ui_manager.is_right_skill_selected(Skill.Teleport):
+                    self._char.select_skill("teleport")
+                    wait(0.04, 0.05)
+                mouse.click(button="right")
+                wait(self._char._cast_duration)
+            else:
+                keyboard.send(self._config.char["force_move"], do_release=False)
+            wait(0.1, 0.15)
+            current_area = self._api.data["current_area"] if self._api.data else None
+            if stop_at_area is not None and current_area.replace(" ", "") == stop_at_area.replace(" ", "") or time.time() - start >= time_out:
+                break
+        keyboard.release(self._config.char["force_move"])
+        return current_area
+
     def activate_waypoint(self,
                           obj: Union[tuple[int, int], str],
                           char,
