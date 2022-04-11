@@ -692,7 +692,7 @@ class Bot:
     def on_run_pit(self):
         res = False
         self._do_runs["run_pit"] = False
-        self._game_stats.update_location("pit")
+        self._game_stats.update_location("Pit")
         self._curr_loc = self._pit.approach(self._curr_loc)
         if self._curr_loc:
             res = self._pit.battle(not self._pre_buffed)
@@ -701,7 +701,7 @@ class Bot:
     def on_run_stony_tomb(self):
         res = False
         self._do_runs["run_stony_tomb"] = False
-        self._game_stats.update_location("stony_tomb")
+        self._game_stats.update_location("Stony Tomb")
         self._curr_loc = self._stony_tomb.approach(self._curr_loc)
         if self._curr_loc:
             res = self._stony_tomb.battle(not self._pre_buffed)
