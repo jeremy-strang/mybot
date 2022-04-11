@@ -414,11 +414,11 @@ class PickitConfig:
             Item.WarPike: [lambda item: item.is_ethereal and item.sockets in [0, 6]],
 
             # Non-eth weapons
-            Item.ColossusSword: [lambda item: item.sockets == 5 and item.check(Stat.EnhancedDamage, ">", 0)],
+            Item.ColossusSword: [lambda item: item.sockets == 5 and item.check(Stat.MaxDamagePerent, ">", 0)],
             Item.PhaseBlade: [
                 lambda item: item.sockets == 5,
-                lambda item: item.sockets == 5 and item.check(Stat.EnhancedDamage, ">", 0),
-                lambda item: item.sockets in [0, 5, 6] and item.check(Stat.EnhancedDamage, ">=", 15),
+                lambda item: item.sockets == 5 and item.check(Stat.MaxDamagePerent, ">", 0),
+                lambda item: item.sockets in [0, 5, 6] and item.check(Stat.MaxDamagePerent, ">=", 15),
             ],
         }
 
