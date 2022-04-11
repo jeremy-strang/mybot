@@ -914,18 +914,18 @@ class Pather:
             
             if "map" in data:
                 player_pos_area = data["player_pos_area"]
-                # if data["used_skill"] == Skill.Teleport:
-                #     time.sleep(0.01)
-                #     continue
+                if data["used_skill"] == Skill.Teleport:
+                    time.sleep(0.01)
+                    continue
 
                 # Some fail save checking for when we get stuck
-                if last_pos != None and np.array_equal(player_pos_area, last_pos):
+                if last_pos is not None and np.array_equal(player_pos_area, last_pos):
                     repeated_pos_count += 1
-                    if repeated_pos_count == 2 and last_node_pos_abs != None:
+                    if repeated_pos_count == 2 and last_node_pos_abs is not None:
                         char.reposition(last_node_pos_abs)
-                    if repeated_pos_count == 4 and last_node_pos_abs != None:
+                    if repeated_pos_count == 4 and last_node_pos_abs is not None:
                         char.reposition(last_node_pos_abs)
-                    if repeated_pos_count == 6 and last_node_pos_abs != None:
+                    if repeated_pos_count == 6 and last_node_pos_abs is not None:
                         char.reposition(last_node_pos_abs)
                     if repeated_pos_count == 8:
                         Logger.debug("Increasing end point reached range")
@@ -1046,8 +1046,8 @@ class Pather:
     def wait_for_location(self, name, time_out: float = 10.0) -> bool:
         start = time.time()
         while time.time() - start < time_out:
-            data = self._api.get_data()
-            if data != None and data["current_area"] == name:
+            data = self._api.data
+            if data and data["current_area"] == name:
                 return True
             time.sleep(0.1)
         return False
