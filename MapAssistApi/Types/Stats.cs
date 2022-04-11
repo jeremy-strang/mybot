@@ -431,7 +431,7 @@ namespace MapAssist.Types
         Gold,
         StashGold,
         ArmorPercent,
-        MaxDamagePerent,
+        MaxDamagePercent,
         MinDamagePercent,
         AttackRating,
         ChanceToBlock,

@@ -213,48 +213,10 @@ def pad_str_sides(text, pad_char, length=80):
     right = floor((length - len_text) / 2)
     return f"{pad_char * left} {text} {pad_char * right}"
 
-def closest_node(node, nodes):
-    return nodes[cdist([node], nodes).argmin()]
-
-def cluster_nodes(nodes, max_cluster_ct = None, min_cluster_ct = None):
-    features = np.array([[0, 0]])
-    clusters = np.array([[0, 0]])
-    x = 0
-    y = 0
-    for node in nodes:
-        for key in node:
-            if key:
-                features = np.concatenate((features, [np.array([x,y])]))
-            x += 1
-        x = 0
-        y += 1
-    features[0, 0:-1, ...] = features[0, 1:, ...]
-    cluster_count = int(features.size / 6000)
-    if max_cluster_ct is not None:
-        cluster_count = min(max_cluster_ct, cluster_count)
-    if min_cluster_ct is not None:
-        cluster_count = max(min_cluster_ct, cluster_count)
-    while features.size > 2048:
-        features = np.delete(features, list(range(0, features.shape[0], 2)), axis=0)
-    clusters_k, distortion = kmeans(features.astype(float), cluster_count,iter=5)
-    for c in clusters_k:
-        closest = closest_node(c, features)
-        clusters = np.concatenate((clusters, [closest]))
-    clusters = np.delete(clusters, 0, 0)
-    return clusters
-
-def make_path_bfs(start, end, grid):
-    wall = 0
-    queue = deque([[start]])
-    seen = set([start])
-    width = len(grid)
-    height = len(grid[0])
-    while queue:
-        path = queue.popleft()
-        x, y = path[-1]
-        if (x, y) == end:
-            return path
-        for x2, y2 in ((x+1, y), (x-1, y), (x, y+1), (x, y-1), (x-1, y-1), (x+1, y+1), (x+1, y-1), (x-1, y+1)):
-            if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:
-                queue.append(path + [(x2, y2)])
-                seen.add((x2, y2))
+def point_str(point: tuple[float, float]) -> str:
+    result = "None"
+    if point is not None and len(point) >= 2:
+        x = point[0]
+        y = point[1]
+        result = f"({round(x, 1), round(y, 1)})"
+    return result

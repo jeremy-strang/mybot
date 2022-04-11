@@ -13,7 +13,7 @@ import random
 from api import MapAssistApi
 from screen import Screen
 from config import Config
-from utils.misc import is_in_roi, make_path_bfs, wait
+from utils.misc import is_in_roi, point_str, wait
 from utils.custom_mouse import mouse
 import mouse as _mouse
 from logger import Logger
@@ -24,7 +24,7 @@ from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from utils.misc import unit_vector, clip_abs_point
 from scipy.ndimage.filters import gaussian_filter
-from pathing.path_finder import PathFinder
+from pathing.path_finder import make_path_bfs, PathFinder
 
 class Pather:
     def __init__(self, screen: Screen, api: MapAssistApi):
@@ -178,12 +178,11 @@ class Pather:
         x_m = pos_m[0] + offset_x
         y_m = pos_m[1] + offset_y
         adjusted_pos_m = [x_m - 9.5, y_m - 39.5] if dist < 25 else [x_m, y_m]
-        Logger.debug(f"    Moving mouse to {adjusted_pos_m}")
+        # Logger.debug(f"    Moving mouse to {point_str(adjusted_pos_m)}")
         mouse.move(*adjusted_pos_m, delay_factor=[0.15, 0.25])
 
     def move_mouse_to_item(self, item, time_out=3.0):
         start = time.time()
-        is_hovered = False
         while item and time.time() - start < time_out:
             self.move_mouse_to_abs_pos(item["position_abs"], item["dist"], offset=(5, -9.5))
             wait(0.2)
@@ -218,7 +217,6 @@ class Pather:
             wait(char._cast_duration)
 
     def teleport_to_item(self, item, char):
-        # If we failed to pick it up, try to teleport to it
         if item and char.can_tp:
             self.move_mouse_to_abs_pos(item["position_abs"], item["dist"])
             char.pre_move()
@@ -227,6 +225,8 @@ class Pather:
             item = self._api.find_item(item['id'])
 
     def click_item(self, item: dict, char, time_out: float = 6.0, do_traverse=True, do_teleport=False):
+        if item:
+            Logger.debug(f"        Clicking item {item['name']} located at {point_str(item['position'])}")
         start = time.time()
         if item and do_teleport:
             item = self.teleport_to_item(item, char)
@@ -294,9 +294,10 @@ class Pather:
         return False
 
     def walk_to_object(self, obj_name: str, time_out=10.0, step_size=4):
-        Logger.info(f"Walking to object {obj_name}...")
+        Logger.debug(f"Walking to object {obj_name}...")
         dest = self._api.find_object(obj_name)
         if dest:
+            Logger.debug(f"    Found object {obj_name} at position {point_str(dest['position_area'])}")
             self.walk_to_position(dest["position_area"], time_out, step_size)
             return True
         Logger.error(f"    No object found named {obj_name}")
@@ -306,6 +307,7 @@ class Pather:
         Logger.debug(f"Walking to POI {poi_label}")
         dest = self._api.find_poi(poi_label)
         if dest:
+            Logger.debug(f"    Found POI {poi_label} at position {point_str(dest['position_area'])}")
             self.walk_to_position(dest["position_area"], time_out, step_size)
             return True
         else:
@@ -374,6 +376,7 @@ class Pather:
         return False
 
     def wander_towards(self, abs_pos: tuple[float, float], char = None, stop_at_area: str = None, iterations = 5, time_out: float = 7.0):
+        Logger.debug(f"Wandering towards absolute pos {point_str(abs_pos)}...")
         start = time.time()
         self._api.data["current_area"] if self._api.data else None
         for _ in range(iterations):
