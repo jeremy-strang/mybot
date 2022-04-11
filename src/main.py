@@ -47,10 +47,10 @@ def start_or_stop_graphic_debugger(controllers: Controllers):
         controllers.game.stop()
         controllers.debugger.start()
 
-def save_d2r_data_to_file(controllers: Controllers):
+def save_d2r_data_to_file(controllers: Controllers, pickle: bool = False):
     if controllers.game.is_running:
         try:
-            controllers.game.save_d2r_data_to_file()
+            controllers.game.save_d2r_data_to_file(pickle)
         except BaseException as e:
             print(f"Error saving D2R memory data: {e}")
     else:
@@ -87,6 +87,8 @@ def main():
             os.system("mkdir info_screenshots")
         if not os.path.exists("loot_screenshots") and (config.general["loot_screenshots"] or config.general["message_api_type"] == "discord"):
             os.system("mkdir loot_screenshots")
+        if not os.path.exists("pickles") and config.advanced_options["dump_data_to_pickle_for_debugging"]:
+            os.system("mkdir pickles")
     except BaseException as e:
         print(f"Error creating directories: {e}")
 
@@ -108,11 +110,12 @@ def main():
     print(f"    Stop Bot:                 {config.advanced_options['exit_key']} key")
     print("=" * 80 + "\n")
 
+    dump_pickles = pickle=config.advanced_options["dump_data_to_pickle_for_debugging"]
     keyboard.add_hotkey(config.advanced_options['auto_settings_key'], lambda: adjust_settings())
     keyboard.add_hotkey(config.advanced_options['graphic_debugger_key'], lambda: start_or_stop_graphic_debugger(controllers))
     keyboard.add_hotkey(config.advanced_options['restore_settings_from_backup_key'], lambda: restore_settings_from_backup())
     keyboard.add_hotkey(config.advanced_options['settings_backup_key'], lambda: backup_settings())
-    keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: save_d2r_data_to_file(controllers))
+    keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: save_d2r_data_to_file(controllers, dump_pickles))
     keyboard.add_hotkey(config.advanced_options['resume_key'], lambda: start_or_pause_bot(controllers))
     keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: on_exit(game_controller, [config.char["stand_still"], config.char["force_move"]]))
     keyboard.wait()

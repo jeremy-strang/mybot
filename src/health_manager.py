@@ -1,4 +1,4 @@
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 from template_finder import TemplateFinder
 from ui import UiManager
 from ui import BeltManager
@@ -17,7 +17,7 @@ from obs import ObsRecorder
 
 
 class HealthManager:
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: MapAssistApi):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: D2rMemApi):
         self._config = Config()
         self._obs_recorder = obs_recorder
         self._screen = screen

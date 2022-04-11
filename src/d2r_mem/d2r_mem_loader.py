@@ -19,9 +19,9 @@ from System import String
 from System import Object
 from System.Collections.Generic import Dictionary
 
-class MAS(Thread):
+class D2rMemLoader(Thread):
     def __init__(self, callback, custom_files=[]):
-        super(MAS, self).__init__()
+        super(D2rMemLoader, self).__init__()
         self.daemon = True
         self._pg = None
         self._pg_main = None
@@ -67,11 +67,11 @@ class MAS(Thread):
 
     def _convert_config(self):
         config = Dictionary[String, Dictionary[String, Object]]()
-        MAS._append_file(config, "./config/params.ini")
-        MAS._append_file(config, "./config/pickit.ini")
+        D2rMemLoader._append_file(config, "./config/params.ini")
+        D2rMemLoader._append_file(config, "./config/pickit.ini")
         if self._custom_files is not None and type(self._custom_files) is list:
             for f in self._custom_files:
-                MAS._append_file(config, f)
+                D2rMemLoader._append_file(config, f)
         return config
 
     def run(self):

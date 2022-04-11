@@ -6,14 +6,14 @@ from config import Config
 from npc_manager import NpcManager, Npc
 from pathing import OldPather, Location
 from pathing import Pather
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 from typing import Union
 from template_finder import TemplateFinder
 from utils.misc import wait
 
 
 class A4(IAct):
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, old_pather: OldPather, char: IChar, npc_manager: NpcManager, pather: Pather, api: MapAssistApi):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, old_pather: OldPather, char: IChar, npc_manager: NpcManager, pather: Pather, api: D2rMemApi):
         super().__init__(screen, template_finder, old_pather, char, npc_manager, pather, api)
 
     def get_wp_location(self) -> Location: return Location.A4_WP

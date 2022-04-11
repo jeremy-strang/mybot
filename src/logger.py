@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import warnings
+import pickle
 
 class Logger:
     """Manage logging"""
@@ -81,11 +82,6 @@ class Logger:
         Logger.logger.addHandler(Logger.string_handler)
         Logger.logger.addHandler(Logger.console_handler)
         Logger.logger.addHandler(Logger.file_handler)
-        
-        # redirect stderr & stdout to logger, e.g. print("...")
-        # would have to implement all the std func such as write() flush() etc.
-        # sys.stderr = Logger
-        # sys.stdout = Logger
 
     @staticmethod
     def remove_file_logger(delete_current_log: bool = False):
@@ -98,3 +94,8 @@ class Logger:
                 os.remove(Logger._current_log_file_path)
             except PermissionError:
                 warnings.warn("Could not remove info.log, permission denied")
+
+    @staticmethod
+    def pickle_object(object, file_prefix: str):
+        fname = f""
+        Logger.debug("Dumped data to a pickle file: {}")

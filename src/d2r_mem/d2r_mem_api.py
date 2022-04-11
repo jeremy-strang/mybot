@@ -1,10 +1,10 @@
+import pickle
 import traceback
 import os
 import numpy as np
 
 from npc_manager import Npc
-
-from .mas import MAS
+from .d2r_mem_loader import D2rMemLoader
 import math
 import time
 import threading
@@ -13,7 +13,7 @@ import time
 from logger import Logger
 from event import events
 
-class MapAssistApi:
+class D2rMemApi:
     def __init__(self, custom_files=[]):
         self.data = None
         self.should_chicken = False
@@ -39,7 +39,7 @@ class MapAssistApi:
         self._raw_data_str = "{}"
         self._custom_files = custom_files
         self._map = None
-        self._mas = None
+        self._loader = None
 
     def start_timer(self):
         self._num_updates = 0
@@ -52,14 +52,26 @@ class MapAssistApi:
         Logger.debug(f"Updated data {n} times in {round(elapsed, 2)} sec ({round(n_per_sec, 2)} per sec)")
         return (elapsed, n, n_per_sec)
 
-    def write_data_to_file(self, file_path=None):
+    def write_data_to_file(self, file_path=None, pickle: bool = False):
+        if pickle:
+            self.write_data_to_pickle(file_path)
+        else:
+            if file_path is None:
+                current_area = self.data["current_area"]
+                file_path = f"./stats/mybot_data_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
+            with open(file_path, "w") as f:
+                f.write(json.dumps(json.loads(self._raw_data_str), indent=4, sort_keys=True))
+                f.close()
+            Logger.info(f"Saved D2R memory snapshot to {os.path.normpath(file_path)}")
+
+    def write_data_to_pickle(self, file_path=None):
         if file_path is None:
             current_area = self.data["current_area"]
-            file_path = f"./stats/mybot_data_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
-        with open(file_path, "w") as f:
-            f.write(json.dumps(json.loads(self._raw_data_str), indent=4, sort_keys=True))
+            file_path = f"./pickles/pickle_d2r_mem_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
+        with open(file_path, "wb") as f:
+            pickle.dump(self.data, f)
             f.close()
-        Logger.info(f"Saved D2R memory snapshot to {os.path.normpath(file_path)}")
+        Logger.info(f"Pickled D2R memory snapshot to {os.path.normpath(file_path)}")
 
     def get_data(self):
         return self.data
@@ -69,7 +81,7 @@ class MapAssistApi:
             data_obj = json.loads(data_str)
             self._raw_data_str = data_str
             if data_obj["success"]:
-                data = self._mas.get_data(data_obj)
+                data = self._loader.get_data(data_obj)
                 if data["map"] is not None:
                     self._map = data["map"]
                 elif self._map is not None:
@@ -93,11 +105,11 @@ class MapAssistApi:
                     Logger.info(f"Location changed from {self.current_area} to {data['current_area']} (map height: {data['map_height']}, map width: {data['map_width']})")
                 self.current_area = data["current_area"]
 
-                if self._mas.player_summary is not None:
-                    self.player_summary = self._mas.player_summary
-                    self.player_name = self._mas.player_name
-                    self.player_experience = self._mas.player_experience
-                    self.player_level = self._mas.player_level
+                if self._loader.player_summary is not None:
+                    self.player_summary = self._loader.player_summary
+                    self.player_name = self._loader.player_name
+                    self.player_experience = self._loader.player_experience
+                    self.player_level = self._loader.player_level
 
                 # We only want to change should_chicken if it goes from False to True, once it's triggered we will just leave
 
@@ -116,12 +128,12 @@ class MapAssistApi:
     
     def start(self):
         Logger.info("Starting MAS api")
-        self._mas = MAS(self._on_data, self._custom_files)
-        self._mas.start()
+        self._loader = D2rMemLoader(self._on_data, self._custom_files)
+        self._loader.start()
 
     def stop(self):
         Logger.info("Stopping MAS api")
-        self._mas.cancel()
+        self._loader.cancel()
     
     def confirm_boss_death(self, name: str, exact=False):
         corpse = self.find_monster_by_name(name, exact)

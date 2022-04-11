@@ -1,4 +1,4 @@
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 from char.i_char import IChar
 from config import Config
 from logger import Logger
@@ -26,7 +26,7 @@ class Nihlathak:
         ui_manager: UiManager,
         char: IChar,
         pickit: PixelPickit,
-        api: MapAssistApi,
+        api: D2rMemApi,
         pather: Pather,
         obs_recorder: ObsRecorder,
     ):

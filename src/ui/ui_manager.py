@@ -6,7 +6,7 @@ import os
 import numpy as np
 import pprint
 import keyboard
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 import pickit
 from pickit.item_finder import PixelItem
 from pickit.pickit_item import PickitItem
@@ -27,7 +27,7 @@ from template_finder import TemplateFinder
 from messages import Messenger
 from game_stats import GameStats
 from obs import ObsRecorder
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 
 import random 
 import string
@@ -39,7 +39,7 @@ pp = pprint.PrettyPrinter(indent=4)
 class UiManager():
     """Everything that is clicking on some static 2D UI or is checking anything in regard to it should be placed here."""
 
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: MapAssistApi, game_stats: GameStats = None):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: D2rMemApi, game_stats: GameStats = None):
         self._config = Config()
         self._template_finder = template_finder
         self._messenger = Messenger()

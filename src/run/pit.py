@@ -16,7 +16,7 @@ from utils.misc import wait
 from utils.custom_mouse import mouse
 from screen import Screen
 import math
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 from pathing import Pather
 from obs import ObsRecorder
 
@@ -31,7 +31,7 @@ class Pit:
         ui_manager: UiManager,
         char: IChar,
         pickit: PixelPickit,
-        api: MapAssistApi,
+        api: D2rMemApi,
         pather: Pather,
         obs_recorder: ObsRecorder,
     ):

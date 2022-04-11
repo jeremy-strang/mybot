@@ -3,7 +3,7 @@ from typing import List
 import keyboard
 import itertools
 import cv2
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 
 from utils.misc import cut_roi, wait, color_filter
 from utils.custom_mouse import mouse
@@ -16,7 +16,7 @@ from ui import UiManager
 
 
 class BeltManager:
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, api: MapAssistApi):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, api: D2rMemApi):
         self._config = Config()
         self._screen = screen
         self._template_finder = template_finder

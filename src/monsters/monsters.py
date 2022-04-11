@@ -1,7 +1,7 @@
 import json
 
 from numpy import str0
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 from npc_manager import Npc
 from monsters import MonsterType, MonsterRule
 from utils.misc import is_in_roi
@@ -48,7 +48,7 @@ def sort_and_filter_monsters(data,
             monsters.sort(key=lambda m: score_monster(m, rules), reverse=True)
     return monsters
 
-def get_unlooted_monsters(api: MapAssistApi, rules: list[MonsterRule], looted_monsters: set, boundary=None, max_distance=100) -> list[dict]:
+def get_unlooted_monsters(api: D2rMemApi, rules: list[MonsterRule], looted_monsters: set, boundary=None, max_distance=100) -> list[dict]:
     data = api.data
     if data and "monsters" in data:
         monsters = sort_and_filter_monsters(data, rules, None, boundary)

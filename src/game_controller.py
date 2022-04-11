@@ -19,7 +19,7 @@ from screen import Screen
 from ui.char_selector import CharSelector
 from utils.restart import restart_game, kill_game
 from utils.misc import kill_thread, set_d2r_always_on_top, restore_d2r_window_visibility
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 from obs import ObsRecorder
 
 from item_manager import ItemManager
@@ -200,7 +200,7 @@ class GameController:
 
     def start_api_thread(self):
         # run map assist
-        self.api = MapAssistApi(self.config.custom_files)
+        self.api = D2rMemApi(self.config.custom_files)
         self.api.start()
 
     def start_game_controller_thread(self):
@@ -217,6 +217,6 @@ class GameController:
         kill_game()
         os._exit(error_code)
 
-    def save_d2r_data_to_file(self):
+    def save_d2r_data_to_file(self, pickle: bool = False):
         if self.api is not None:
-            self.api.write_data_to_file()
+            self.api.write_data_to_file(pickle=pickle)

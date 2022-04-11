@@ -390,6 +390,7 @@ class Config:
             'obs_debug_replays_enabled':bool(int(Config._select_val("advanced_options", "obs_debug_replays_enabled"))),
             "obs_cli_path": Config._select_val("advanced_options", "obs_cli_path"),
             "obs_scene_name": Config._select_val("advanced_options", "obs_scene_name"),
+            "dump_data_to_pickle_for_debugging": bool(Config._select_val("advanced_options", "dump_data_to_pickle_for_debugging")),
         }
 
         Config.items = {}

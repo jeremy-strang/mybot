@@ -4,7 +4,7 @@ from logger import Logger
 from pathing import Location, OldPather
 from typing import Union
 from pickit.pixel_pickit import PixelPickit
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 from pathing import Pather
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
@@ -26,7 +26,7 @@ class Baal:
         ui_manager: UiManager,
         char: IChar,
         pickit: PixelPickit,
-        api: MapAssistApi,
+        api: D2rMemApi,
         pather: Pather,
         obs_recorder: ObsRecorder,
     ):

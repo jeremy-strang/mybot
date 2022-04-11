@@ -35,7 +35,7 @@ from config import Config
 from game_stats import GameStats
 from pathing import Location, OldPather
 from pathing import Pather
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 import threading
 from state_monitor import StateMonitor
 from template_finder import TemplateFinder
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         game_stats = GameStats()
         obs_recorder = ObsRecorder(config)
 
-        api = MapAssistApi(config.custom_files)
+        api = D2rMemApi(config.custom_files)
         api_thread = threading.Thread(target=api.start)
         api_thread.daemon = False
         api_thread.start()
@@ -214,11 +214,13 @@ if __name__ == "__main__":
             # stop_debug(game_controller, overlay)
             print("Done doing stuff")
 
+        dump_pickles = pickle=config.advanced_options["dump_data_to_pickle_for_debugging"]
+
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
-        keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file())
+        keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file(pickle=dump_pickles))
         keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
         keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
-        keyboard.add_hotkey("ctrl+=", lambda: start_overlay(bot, game_stats))
+        keyboard.add_hotkey(config.advanced_options["graphic_debugger_key"], lambda: start_overlay(bot, game_stats))
         print("Ready!\n\n" + ("-" * 80))
         keyboard.wait()
 

@@ -2,7 +2,7 @@ import time
 import keyboard
 import cv2
 from operator import itemgetter
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 from game_stats import GameStats
 from pickit.pickit import Pickit
 from pathing import Pather
@@ -22,7 +22,7 @@ class PixelPickit:
                  item_finder: ItemFinder,
                  ui_manager: UiManager,
                  belt_manager: BeltManager,
-                 api: MapAssistApi,
+                 api: D2rMemApi,
                  char: IChar,
                  pather: Pather,
                  game_stats: GameStats,

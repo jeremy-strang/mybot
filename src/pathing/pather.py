@@ -10,7 +10,7 @@ import math
 import time
 from typing import Union
 import random
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 from screen import Screen
 from config import Config
 from utils.misc import is_in_roi, point_str, wait
@@ -27,7 +27,7 @@ from scipy.ndimage.filters import gaussian_filter
 from pathing.path_finder import make_path_bfs, PathFinder
 
 class Pather:
-    def __init__(self, screen: Screen, api: MapAssistApi):
+    def __init__(self, screen: Screen, api: D2rMemApi):
         self._api = api
         self._screen = screen
         self._config = Config()

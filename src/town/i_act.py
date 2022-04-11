@@ -8,7 +8,7 @@ from config import Config
 from npc_manager import NpcManager, Npc
 from pathing import OldPather, Location
 from pathing import Pather
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 from typing import Union
 from template_finder import TemplateFinder
 from utils.misc import wait
@@ -16,7 +16,7 @@ from utils.custom_mouse import mouse
 pp = pprint.PrettyPrinter(depth=6)
 
 class IAct:
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, old_pather: OldPather, char: IChar, npc_manager: NpcManager, pather: Pather, api: MapAssistApi):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, old_pather: OldPather, char: IChar, npc_manager: NpcManager, pather: Pather, api: D2rMemApi):
         self._config = Config()
         self._screen = screen
         self._old_pather = old_pather

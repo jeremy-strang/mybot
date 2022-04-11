@@ -22,7 +22,7 @@ from template_finder import TemplateFinder
 from ui import UiManager
 from ocr import Ocr
 
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 from obs import ObsRecorder
 from monsters import CHAMPS_UNIQUES, get_unlooted_monsters
 
@@ -32,7 +32,7 @@ class IChar:
                  screen: Screen,
                  template_finder: TemplateFinder,
                  ui_manager: UiManager,
-                 api: MapAssistApi,
+                 api: D2rMemApi,
                  obs_recorder: ObsRecorder,
                  old_pather: OldPather,
                  pather: Pather

@@ -6,7 +6,7 @@ import ctypes
 import numpy as np
 import pyastar2d
 from copy import deepcopy
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 from logger import Logger
 from typing import List, Tuple
 from math import ceil, cos, floor, sin, dist
@@ -85,7 +85,7 @@ def make_path_bfs(start, end, grid):
     return path
 
 class PathFinder:
-    def __init__(self, api: MapAssistApi, max_cluster_ct=25):
+    def __init__(self, api: D2rMemApi, max_cluster_ct=25):
         self._api = api
         self._data = None
         self._map = None

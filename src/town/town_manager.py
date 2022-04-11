@@ -1,6 +1,6 @@
 import time
 from typing import Union
-from api.mapassist import MapAssistApi
+from d2r_mem.d2r_mem_api import D2rMemApi
 from pickit import ItemFinder
 from obs.obs_recorder import ObsRecorder
 from template_finder import TemplateFinder
@@ -11,7 +11,7 @@ from transmute import Transmute
 from ui import UiManager
 from town import IAct, A1, A2, A3, A4, A5
 from utils.misc import wait
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 
 TOWN_MARKERS = [
             "A5_TOWN_0", "A5_TOWN_1",
@@ -23,7 +23,7 @@ TOWN_MARKERS = [
 
 class TownManager:
 
-    def __init__(self, template_finder: TemplateFinder, ui_manager: UiManager, item_finder: ItemFinder, api: MapAssistApi, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5):
+    def __init__(self, template_finder: TemplateFinder, ui_manager: UiManager, item_finder: ItemFinder, api: D2rMemApi, a1: A1, a2: A2, a3: A3, a4: A4, a5: A5):
         self._config = Config()
         self._template_finder = template_finder
         self._ui_manager = ui_manager

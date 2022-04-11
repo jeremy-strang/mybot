@@ -1,4 +1,4 @@
-from api import MapAssistApi
+from d2r_mem import D2rMemApi
 from screen import Screen
 from template_finder import TemplateFinder
 from config import Config
@@ -12,7 +12,7 @@ from utils.custom_mouse import mouse
 from obs import ObsRecorder
 
 class GameRecovery:
-    def __init__(self, screen: Screen, death_manager: DeathManager, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: MapAssistApi):
+    def __init__(self, screen: Screen, death_manager: DeathManager, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: D2rMemApi):
         self._config = Config()
         self._screen = screen
         self._death_manager = death_manager
