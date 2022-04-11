@@ -161,6 +161,7 @@ class GameStats:
         elapsed_time_str = hms(elapsed_time)
         avg_length_str = "n/a"
         good_games_count = self._game_counter - self._runs_failed
+        good_games_time = 0
         if good_games_count > 0:
             good_games_time = elapsed_time - self._failed_game_time
             avg_length = good_games_time / float(good_games_count)
