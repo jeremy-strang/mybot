@@ -130,7 +130,7 @@ if __name__ == "__main__":
             try:
                 data = api.get_data()
 
-                # pather.click_object("PandamoniumFortressWaypoint")
+                pather.click_object("TownPortal")
 
                 # print(f"monitor? or abs?: {mouse.get_position()}")
                 # print(f"convert_monitor_to_screen?: {screen.convert_monitor_to_screen(mouse.get_position())}")
@@ -156,7 +156,7 @@ if __name__ == "__main__":
                 # pickit.pick_up_items()
                 # char.tp_town()
 
-                bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
+                # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
     
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)

@@ -112,6 +112,7 @@ class MAS(Thread):
             "player_merc": None,
             "player_corpse": None,
             "hovered_unit": None,
+            "hovered_unit_type": None,
         }
 
         # if self.in_game != data["in_game"]: print(f"in_game changed from {self.in_game} to {data['in_game']}")
@@ -173,6 +174,7 @@ class MAS(Thread):
         _data["hovered_unit"] = None
         if data["player_corpse"] and data["hovered_unit"]:
             _data["hovered_unit"] = data["player_corpse"]
+            _data["hovered_unit_type"] = "player_corpse"
 
         _data["map_changed"] = data["map_changed"]
         _data["map_height"] = data["map_height"]
@@ -233,6 +235,7 @@ class MAS(Thread):
             monster["dist"] = math.dist(_data["player_pos_area"], monster["position_area"])
             if monster["is_hovered"]:
                 _data["hovered_unit"] = monster
+                _data["hovered_unit_type"] = "monsters"
             _data["monsters"].append(monster)
 
         for poi in data["points_of_interest"]:
@@ -252,6 +255,7 @@ class MAS(Thread):
             obj["dist"] = math.dist(_data["player_pos_world"], obj["position"])
             if obj["is_hovered"]:
                 _data["hovered_unit"] = obj
+                _data["hovered_unit_type"] = "objects"
             _data["objects"].append(obj)
 
         for item_list in ["items", "inventory_items", "stash_items", "cube_items", "vendor_items", "equipped_items", "merc_items"]:
@@ -264,6 +268,7 @@ class MAS(Thread):
                 item["dist"] = math.dist(_data["player_pos_world"], item["position"])
                 if item["is_hovered"]:
                     _data["hovered_unit"] = item
+                    _data["hovered_unit_type"] = item_list
             _data[item_list] = data[item_list]
 
         # for item in data["logged_items"]:

@@ -175,12 +175,12 @@ class GameStats:
         if self._config.general["player_level"] and self._config.general["player_level"] < 99 and gained_exp > 0:
             curr_lvl = get_level(self._config.general["player_level"])
             exp_gained = self._current_exp - curr_lvl['exp']
-            exp_per_second = gained_exp / good_games_time
+            exp_per_second = gained_exp / (good_games_time if good_games_time != 0 else 1)
             exp_per_hour = round(exp_per_second * 3600, 1)
-            exp_per_game = round(gained_exp / float(good_games_count), 1)
+            exp_per_game = round(gained_exp / float(good_games_count) if good_games_count != 0 else 1, 1)
             exp_needed = curr_lvl['xp_to_next'] - exp_gained
-            time_to_lvl = exp_needed / exp_per_second
-            games_to_lvl = exp_needed / exp_per_game
+            time_to_lvl = exp_needed / (exp_per_second if exp_per_second != 0 else 1)
+            games_to_lvl = exp_needed / (exp_per_game if exp_per_game != 0 else 1)
             msg += f'\nXP Per Hour: {exp_per_hour:,}'
             msg += f'\nXP Per Game: {exp_per_game:,}'
             msg += f'\nTime Needed To Level: {hms(time_to_lvl)}'

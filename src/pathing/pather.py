@@ -119,45 +119,26 @@ class Pather:
 
         return area_pos
 
-    def click_poi(self, poi_label: str, offset=None, time_out=2.5):
+    def click_poi(self, poi_label: str, offset=None, time_out=1.5, stop_at_area: str = None):
         start = time.time()
         data = self._api.data
-        is_hovered = False
         if data and not self._should_abort_pathing():
             poi = self._api.find_poi(poi_label)
-            is_hovered = poi and poi["is_hovered"]
-            while poi and not is_hovered and time.time() - start < time_out:
+            while poi and time.time() - start < time_out:
                 self.move_mouse_to_abs_pos(
                     world_to_abs(poi["position"], data["player_pos_world"]),
                     math.dist(data["player_pos_area"], poi["position"] - data["area_origin"]),
                     offset)
-                is_hovered = self._api.wait_for_hover(poi, "points_of_interest")
-            mouse.click(button="left")
-            wait(0.5)
-        return is_hovered
+                mouse.click(button="left")
+                if stop_at_area is not None and self._api.wait_for_area(stop_at_area, time_out=2):
+                    return True
+                else:
+                    wait(0.5)
+        if stop_at_area is not None:
+            return self._api.wait_for_area(stop_at_area, time_out=2)
+        return True
 
     def click_object(self, name: str, offset=None, time_out=3):
-        Logger.debug(f"Clicking object '{name}'...")
-        start = time.time()
-        data = self._api.data
-        is_hovered = False
-        if data and not self._should_abort_pathing():
-            wait(0.1, 0.2)
-            object = self._api.find_object(name)
-            is_hovered = object and object["is_hovered"]
-            while object and time.time() - start < time_out:
-                self.move_mouse_to_abs_pos(
-                    world_to_abs(object["position"], data["player_pos_world"]),
-                    math.dist(data["player_pos_world"], object["position"]),
-                    offset=offset)
-                wait(0.1)
-                is_hovered = self._api.wait_for_hover(object, "objects")
-                object = self._api.find_object(object["name"])
-                if is_hovered: break
-            Logger.debug(f"    Clicking object, confirmed hover: {is_hovered}")
-            mouse.click(button="left")
-            wait(0.5)
-        return is_hovered
         # data = self._api.data
         # if data and not self._should_abort_pathing():
         #     object = self._api.find_object(name)
@@ -168,6 +149,64 @@ class Pather:
         #     mouse.click(button="left")
         #     wait(0.5)
         # return True
+        Logger.debug(f"Clicking object '{name}'...")
+        do_adj_y = True
+        do_adj_x = False
+        adj_x = 0
+        adj_y = 0
+        off_x = 0
+        off_y = 0
+        if offset is not None and len(offset) >= 2:
+            off_x = offset[0]
+            off_y = offset[1]
+        start = time.time()
+        data = self._api.data
+        is_hovered = False
+        is_blocked = False
+        if data and not self._should_abort_pathing():
+            wait(0.1, 0.2)
+            object = self._api.find_object(name)
+            is_hovered = object and object["is_hovered"]
+            while object and time.time() - start < time_out:
+                self.move_mouse_to_abs_pos(
+                    world_to_abs(object["position"], data["player_pos_world"]),
+                    math.dist(data["player_pos_world"], object["position"]),
+                    offset=(off_x + adj_x, off_y + adj_y))
+                wait(0.1)
+                is_hovered, hovered_unit, hovered_unit_type = self._api.wait_for_hover(object, "objects")
+                if is_hovered: break
+                elif hovered_unit:
+                    is_blocked = True
+                    Logger.debug(f"    Found a hovered unit that is the wrong type ({hovered_unit_type}), adjusting offset")
+                    if do_adj_y:
+                        if adj_y > -100:
+                            adj_y -= 25
+                        elif adj_y == -100:
+                            adj_y += 125
+                        elif adj_y < 100:
+                            adj_y += 25
+                        elif adj_y == 100:
+                            adj_y = 0
+                            do_adj_x = True
+                            do_adj_y = False
+                    if do_adj_x:
+                        if adj_x > -100:
+                            adj_x -= 25
+                        elif adj_x == -100:
+                            adj_x += 125
+                        elif adj_x < 100:
+                            adj_x += 25
+                        elif adj_x == 100:
+                            adj_x = -25
+                            adj_y = -25
+                            do_adj_x = True
+                            do_adj_y = True
+                object = self._api.find_object(object["name"])
+
+            Logger.debug(f"    Clicking object, confirmed hover: {is_hovered}")
+            mouse.click(button="left")
+            wait(0.5)
+        return is_hovered
 
     def move_mouse_to_abs_pos(self, position_abs, dist, offset=None):
         offset_x = offset[0] if offset != None else 0
