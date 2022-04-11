@@ -65,6 +65,7 @@ class PathFinder:
                 self._weighted_map = np.maximum(blurred_map * .001, float_map) + 1
 
     def make_path_astar(self, start, end, reverse_coords=False):
+        self.update_map()
         if reverse_coords:
             start = (start[1], start[0])
             end = (end[1], end[0])

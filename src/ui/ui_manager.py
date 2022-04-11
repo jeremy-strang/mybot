@@ -1,11 +1,11 @@
 from typing import List
-import keyboard
 import time
 import cv2
 import itertools
 import os
 import numpy as np
 import pprint
+import keyboard
 from api.mapassist import MapAssistApi
 import pickit
 from pickit.item_finder import PixelItem

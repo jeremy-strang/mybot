@@ -125,14 +125,17 @@ if __name__ == "__main__":
 
         def do_stuff():
             print("Doing stuff...")
-            wait(1.0)
-            print(mouse.get_position())
+            wait(.5)
             start = time.time()
             try:
                 data = api.get_data()
 
-                pit.battle(True)
-                
+                # pit.battle(True)
+                pos = screen.convert_abs_to_monitor((-600, 300))
+                mouse.move(pos[0], pos[1])
+                # print(f"monitor? or abs?: {mouse.get_position()}")
+                # print(f"convert_monitor_to_screen?: {screen.convert_monitor_to_screen(mouse.get_position())}")
+                # print(f"abs_to_screen?: {screen.convert_abs_to_screen(mouse.get_position())}")
                 # shenk.battle(False, True, game_stats)
                 # pindleskin.approach(Location.A5_TOWN_START)
                 

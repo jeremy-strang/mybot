@@ -62,7 +62,8 @@ class Pit:
     def _go_to_tamoe_plan_b(self):
         self._api.data["current_area"] if self._api.data else None
         for i in range(6):
-            mouse.move(172, 825, randomize=20)
+            pos = self._screen.convert_abs_to_monitor((-600, 300))
+            mouse.move(pos[0], pos[1], randomize=20)
             wait(0.1, 0.15)
             if self._char.can_tp:
                 if not self._ui_manager.is_right_skill_selected(Skill.Teleport):

@@ -274,6 +274,97 @@ class Pather:
             return False
         return True
 
+    def walk_to_monster(self, monster_id: int, time_out=10.0, step_size=4):
+        dest = self._api.find_monster(monster_id)
+        if dest:
+            self.walk_to_position(dest["position_area"], time_out, step_size)
+            return True
+        return False
+
+    def walk_to_item(self, item_id: int, time_out=10.0, step_size=4):
+        dest = self._api.find_item(item_id)
+        if dest:
+            self.walk_to_position(dest["position_area"], time_out, step_size)
+            return True
+        return False
+
+    def walk_to_object(self, obj_name: str, time_out=10.0, step_size=4):
+        Logger.info(f"Walking to object {obj_name}...")
+        dest = self._api.find_object(obj_name)
+        if dest:
+            self.walk_to_position(dest["position_area"], time_out, step_size)
+            return True
+        Logger.error(f"    No object found named {obj_name}")
+        return False
+
+    def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=4):
+        Logger.debug(f"Walking to POI {poi_label}")
+        dest = self._api.find_poi(poi_label)
+        if dest:
+            self.walk_to_position(dest["position_area"], time_out, step_size)
+            return True
+        else:
+            Logger.error(f"    POI {poi_label} not found")
+        return False
+
+    def walk_to_position(self, dest_area, time_out=15.0, step_size=4, threshold=10) -> bool:
+        route = self.make_route_to_position(dest_area)
+        return self.walk_route(route, time_out, step_size)
+
+    def make_route_to_position(self, dest_area):
+        route = None
+        data = self._api.data
+        if data:
+            pf = PathFinder(self._api)
+            dest_area = (int(dest_area[1]), int(dest_area[0]))
+            player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
+            route = pf.make_path_astar(player_area, dest_area, False)
+            self._api._current_path = route
+        return route
+
+    def _get_next_node(self, nodes, step_size=4, threshold=10) -> tuple[tuple[float, float], float]:
+        if self._api.data and len(nodes) > 0:
+            popped = 0
+            node = nodes.pop(0)
+            dist =  math.dist(node, self._api.data["player_pos_area"])
+            while popped < step_size and len(nodes) > 0 and dist <= threshold:
+                node = nodes.pop(0)
+                dist = cityblock(node, self._api.data["player_pos_area"]) # math.dist(node, self._api.data["player_pos_area"])
+                popped += 1
+            return (node, dist)
+        return (None, 0)
+
+    def walk_route(self, route, time_out=15.0, step_size=4, threshold=10, final=3.0) -> bool:
+        Logger.debug(f"Walking along route of length {len(route)} and step size {step_size}...")
+        data = self._api.data
+        steps = []
+        end = route[-1]
+        if route != None and len(route) > 0 and data != None:
+            self._api._current_path = route
+            prev = data["player_pos_area"]
+            next, distance = self._get_next_node(route, step_size)
+            start = time.time()
+            while next != None and time.time() - start < time_out and not self._should_abort_pathing():
+                data = self._api.data
+                if not data:
+                    time.sleep(0.2)
+                    continue
+                avg = ((next[0] + prev[0]) / 2, (next[1] + prev[1]) / 2) if len(steps) > 0 else next
+                move_pos_abs = world_to_abs(avg, data['player_pos_area'] + data['player_offset'])
+                move_pos_m = self._screen.convert_abs_to_monitor([move_pos_abs[0], move_pos_abs[1]], clip_input=True)
+                mouse.move(*move_pos_m)
+                keyboard.send(self._config.char["force_move"], do_release=False)
+                steps.append(prev)
+                prev = next
+                next, distance = self._get_next_node(route, step_size)
+                time.sleep(0.1)
+            keyboard.release(self._config.char["force_move"])
+            Logger.debug(f"    Done walking route, ended {distance} from {end}")
+            self._api._current_path = steps
+            time.sleep(0.2)
+            return True
+        return False
+
     def activate_waypoint(self,
                           obj: Union[tuple[int, int], str],
                           char,
@@ -541,15 +632,15 @@ class Pather:
                     else:
                         pos_monitor = None
 
-                if pos_monitor != None:
+                if pos_monitor is not None:
                     random.seed()
                     pos_monitor = (pos_monitor[0] + random.randint(-randomize, +randomize),
                                    pos_monitor[1] + random.randint(-randomize, +randomize))
                     pos_monitor = [pos_monitor[0]-9.5, pos_monitor[1]-39.5]
-                    if offset != None:
+                    if offset is not None:
                         pos_monitor = [pos_monitor[0] + offset[0], pos_monitor[1] + offset[1]]
 
-                    if data != None and data["should_chicken"]:
+                    if data is not None and data["should_chicken"]:
                         Logger.warning(f"    Aborting go_to_area() because chicken life threshold was reached")
                         return False
 
@@ -565,11 +656,12 @@ class Pather:
 
                     num_clicks += 1
                     wait(0.5, 0.6)
-                    if num_clicks == 10 and char != None:
-                        char.reposition(pos_abs)
+                    if num_clicks == 10 and char is not None:
+                        char.pre_move()
+                        char.move(pos_monitor, force_tp=True)
                     if num_clicks == 12:
                         randomize += 2
-                    if num_clicks == 15 and char != None:
+                    if num_clicks == 15 and char is not None:
                         char.reposition(pos_abs)
                     if num_clicks == 17:
                         randomize += 3
@@ -582,97 +674,6 @@ class Pather:
                     Logger.debug(f"Done going to area {end_loc} after {time.time() - start} sec")
                     return True
         Logger.debug(f"Failed to confirm arrival at {end_loc}")
-        return False
-
-    def walk_to_monster(self, monster_id: int, time_out=10.0, step_size=4):
-        dest = self._api.find_monster(monster_id)
-        if dest:
-            self.walk_to_position(dest["position_area"], time_out, step_size)
-            return True
-        return False
-
-    def walk_to_item(self, item_id: int, time_out=10.0, step_size=4):
-        dest = self._api.find_item(item_id)
-        if dest:
-            self.walk_to_position(dest["position_area"], time_out, step_size)
-            return True
-        return False
-
-    def walk_to_object(self, obj_name: str, time_out=10.0, step_size=4):
-        Logger.info(f"Walking to object {obj_name}...")
-        dest = self._api.find_object(obj_name)
-        if dest:
-            self.walk_to_position(dest["position_area"], time_out, step_size)
-            return True
-        Logger.error(f"    No object found named {obj_name}")
-        return False
-
-    def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=4):
-        Logger.debug(f"Walking to POI {poi_label}")
-        dest = self._api.find_poi(poi_label)
-        if dest:
-            self.walk_to_position(dest["position_area"], time_out, step_size)
-            return True
-        else:
-            Logger.error(f"    POI {poi_label} not found")
-        return False
-
-    def walk_to_position(self, dest_area, time_out=15.0, step_size=4, threshold=10) -> bool:
-        route = self.make_route_to_position(dest_area)
-        return self.walk_route(route, time_out, step_size)
-
-    def make_route_to_position(self, dest_area):
-        route = None
-        data = self._api.data
-        if data:
-            pf = PathFinder(self._api)
-            dest_area = (int(dest_area[1]), int(dest_area[0]))
-            player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
-            route = pf.make_path_astar(player_area, dest_area, False)
-            self._api._current_path = route
-        return route
-
-    def _get_next_node(self, nodes, step_size=4, threshold=10) -> tuple[tuple[float, float], float]:
-        if self._api.data and len(nodes) > 0:
-            popped = 0
-            node = nodes.pop(0)
-            dist =  math.dist(node, self._api.data["player_pos_area"])
-            while popped < step_size and len(nodes) > 0 and dist <= threshold:
-                node = nodes.pop(0)
-                dist = cityblock(node, self._api.data["player_pos_area"]) # math.dist(node, self._api.data["player_pos_area"])
-                popped += 1
-            return (node, dist)
-        return (None, 0)
-
-    def walk_route(self, route, time_out=15.0, step_size=4, threshold=10, final=3.0) -> bool:
-        Logger.debug(f"Walking along route of length {len(route)} and step size {step_size}...")
-        data = self._api.data
-        steps = []
-        end = route[-1]
-        if route != None and len(route) > 0 and data != None:
-            self._api._current_path = route
-            prev = data["player_pos_area"]
-            next, distance = self._get_next_node(route, step_size)
-            start = time.time()
-            while next != None and time.time() - start < time_out and not self._should_abort_pathing():
-                data = self._api.data
-                if not data:
-                    time.sleep(0.2)
-                    continue
-                avg = ((next[0] + prev[0]) / 2, (next[1] + prev[1]) / 2) if len(steps) > 0 else next
-                move_pos_abs = world_to_abs(avg, data['player_pos_area'] + data['player_offset'])
-                move_pos_m = self._screen.convert_abs_to_monitor([move_pos_abs[0], move_pos_abs[1]], clip_input=True)
-                mouse.move(*move_pos_m)
-                keyboard.send(self._config.char["force_move"], do_release=False)
-                steps.append(prev)
-                prev = next
-                next, distance = self._get_next_node(route, step_size)
-                time.sleep(0.1)
-            keyboard.release(self._config.char["force_move"])
-            Logger.debug(f"    Done walking route, ended {distance} from {end}")
-            self._api._current_path = steps
-            time.sleep(0.2)
-            return True
         return False
 
     def traverse_walking(self,
@@ -698,7 +699,7 @@ class Pather:
 
         while (time.time() - start < time_out or not sucess) and not self._should_abort_pathing():
             data = self._api.get_data()
-            if data != None and "map" in data:
+            if data and "map" in data and data["map"] is not None:
                 if type(end) is str and obj is False:
                     if static_npc == True:
                         for p in data["static_npcs"]:
@@ -742,11 +743,8 @@ class Pather:
                 odist = math.dist([target_x, target_y],
                                   [player_x, player_y])
 
-                if odist < 4:
-                    return True
-
                 # make paths
-                if "map" in data:
+                if data['map'] is not None:
                     player_pos_area = (int(player_y_area), int(player_x_area))
                     dest_pos_area = (int(y), int(x))
                     # path_data = make_path_astar(player_local, dest, data["map"])
@@ -806,7 +804,8 @@ class Pather:
                     # distance threshold to target
                     if end < end_dist:
                         sucess = True
-                        keyboard.send(char._char_config["force_move"], do_press=False)
+                        keyboard.send(
+                            char._char_config["force_move"], do_press=False)
                         Logger.info('Walked to destination')
                         return True
                         # break
@@ -885,7 +884,7 @@ class Pather:
                  verify_location=False,
                  time_out=20.0,
                  dest_distance=15,
-                 jump_distance=17,
+                 jump_distance=15,
                 ):
         """
         Traverse to another location
@@ -897,8 +896,8 @@ class Pather:
         if do_pre_move:
             char.pre_move()
         # reduce casting frame duration since we can check for teleport skill used in memory
-        # tmp_duration = char._cast_duration
-        # char._cast_duration = max(0.18, char._cast_duration - 0.3)
+        tmp_duration = char._cast_duration
+        char._cast_duration = max(0.18, char._cast_duration - 0.3)
         last_pos = None
         last_node_pos_abs = None
         repeated_pos_count = 0
@@ -912,9 +911,9 @@ class Pather:
                 wait(0.1)
                 continue
             
-            if "map" in data:
+            if "map" in data and data["map"] is not None:
                 player_pos_area = data["player_pos_area"]
-                if data["used_skill"] == Skill.Teleport:
+                if data["used_skill"] == "Teleport":
                     time.sleep(0.01)
                     continue
 
@@ -932,7 +931,7 @@ class Pather:
                         reached_destination += 5
                     elif repeated_pos_count > 18:
                         Logger.warning("Got stuck during pathing")
-                        # char._cast_duration = tmp_duration
+                        char._cast_duration = tmp_duration
                         return False
                 else:
                     repeated_pos_count = 0
@@ -952,14 +951,14 @@ class Pather:
                     area_pos = end
                 if area_pos is None:
                     if hard_exit < 10:
-                        data = self._api.data
+                        data = self._api.get_data()
                         hard_exit += 1
                         # seems like the data isnt loading in time here, just try again
                         Logger.warning(f"Couldnt find endpoint: {end} trying one more time...")
-                        # char._cast_duration = tmp_duration
+                        char._cast_duration = tmp_duration
                         continue
                     Logger.warning(f"Couldnt find endpoint: {end}")
-                    # char._cast_duration = tmp_duration
+                    char._cast_duration = tmp_duration
                     return False
 
                 # Calc route from player to entrance
@@ -994,7 +993,6 @@ class Pather:
 
                 for i in range(len(route_list)):
                     node = np.array(route_list[i])
-                    
                     node_pos_w = [node[1], node[0]]
                     data = self._api.get_data()
                     player_pos = data['player_pos_area']+data['player_offset']
@@ -1005,30 +1003,29 @@ class Pather:
                         continue
 
                     if self._should_abort_pathing():
-                        # char._cast_duration = tmp_duration
+                        char._cast_duration = tmp_duration
                         return False
 
                     char.move((node_pos_m[0], node_pos_m[1]), force_move=force)
 
-                    if i > len(route_list) - 3 and verify_location:
-                        Logger.debug("    Getting close to destination, slowing down...")
+                    if i > len(route_list)-4:
                         time.sleep(.4)
                 data = self._api.get_data()
                 player_pos = data['player_pos_area'] + data['player_offset']
                 recalc_dist = math.dist(player_pos, area_pos)
                 if recalc_dist < dest_distance and verify_location:
                     Logger.debug(f"Traverse to {end} completed ({round(recalc_dist, 2)} from destination)")
-                    # char._cast_duration = tmp_duration
+                    char._cast_duration = tmp_duration
                     return True
                 elif not verify_location:
-                    # char._cast_duration = tmp_duration
+                    char._cast_duration = tmp_duration
                     return True
                 else:
                     Logger.warning(f"Ended too early, recalculating pathing..." + str(recalc_dist))
 
             time.sleep(0.02)
             self._api._astar_current_path = None
-            # char._cast_duration = tmp_duration
+            char._cast_duration = tmp_duration
         return False
 
     @staticmethod
