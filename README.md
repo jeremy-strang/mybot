@@ -4,7 +4,7 @@ MyBot is bemory-reading bot for Diablo 2 Resurrected. This is was originally bui
 
 [CHANGELOG.md](CHANGELOG.md) 
 
-| Run | Status | Builds |
+| Run | Status | Builds (\* Requires Enigma) |
 | ------------------ | ------------------ |----------------------------------------------------------------------------|
 | Countess | Good | Hammerdin\*, Zerker Barb\*
 | Pit | Good (only champs/uniques) | Hammerdin\*, Zerker Barb\*
@@ -19,7 +19,6 @@ MyBot is bemory-reading bot for Diablo 2 Resurrected. This is was originally bui
 | Nihlathak | Good | Hammerdin\*, Zerker Barb\*
 | Baal | Good | Hammerdin\*, Zerker Barb\*
 
-\* Builds marked with a \* only work with Enigma
 
 
 | [general]                | Descriptions              |
