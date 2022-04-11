@@ -365,19 +365,18 @@ class Pather:
             return True
         return False
 
-    def wander_towards(self, abs_pos: tuple[float, float], stop_at_area: str = None, iterations = 5, time_out: float = 7.0):
+    def wander_towards(self, abs_pos: tuple[float, float], char = None, stop_at_area: str = None, iterations = 5, time_out: float = 7.0):
         start = time.time()
         self._api.data["current_area"] if self._api.data else None
         for _ in range(iterations):
             pos = self._screen.convert_abs_to_monitor(abs_pos)
             mouse.move(pos[0], pos[1], randomize=20)
             wait(0.1, 0.15)
-            if self._char.can_tp:
-                if not self._ui_manager.is_right_skill_selected(Skill.Teleport):
-                    self._char.select_skill("teleport")
-                    wait(0.04, 0.05)
+            if char and char.can_tp:
+                keyboard.send(char._skill_hotkeys["teleport"], do_release=False)
+                wait(0.04, 0.05)
                 mouse.click(button="right")
-                wait(self._char._cast_duration)
+                wait(char._cast_duration)
             else:
                 keyboard.send(self._config.char["force_move"], do_release=False)
             wait(0.1, 0.15)
@@ -385,6 +384,7 @@ class Pather:
             if stop_at_area is not None and current_area.replace(" ", "") == stop_at_area.replace(" ", "") or time.time() - start >= time_out:
                 break
         keyboard.release(self._config.char["force_move"])
+        Logger.debug(f"Done wandering toward {abs_pos}, current area is {current_area}")
         return current_area
 
     def activate_waypoint(self,
@@ -687,7 +687,7 @@ class Pather:
                         char.reposition(pos_abs)
                     if num_clicks == 17:
                         randomize += 3
-                    if num_clicks == 20:
+                    if num_clicks == 20 and char is not None:
                         char.reposition(pos_abs)
                     if num_clicks == 22:
                         randomize += 4

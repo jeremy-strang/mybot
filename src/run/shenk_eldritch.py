@@ -93,12 +93,17 @@ class ShenkEldritch:
             Logger.info("Run Shenk")
             game_stats.update_location("Shk" if self._config.general['discord_status_condensed'] else "Shenk")
             self._curr_loc = Location.A5_SHENK_START
-
+            
+            self._pather.traverse("Frigid Highlands", self._char, verify_location=False)
             if not self._pather.traverse("Bloody Foothills", self._char, verify_location=False):
                 self._pather.walk_to_poi("Bloody Foothills")
-            if not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False):
-                self._pather.wander_towards((500, 300), "Bloody Foothills")
-                if not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False):
+            
+            current_area = self._pather.wander_towards((450, 120), self._char, "Bloody Foothills", time_out=1.5)
+            if current_area != "BloodyFoothills":
+                current_area = self._pather.wander_towards((150, 170), self._char, "Bloody Foothills", time_out=1.5)
+            if current_area != "BloodyFoothills" and not self._pather.go_to_area("Bloody Foothills", "BloodyFoothills", entrance_in_wall=False, time_out=6):
+                current_area = self._pather.wander_towards((50, 170), self._char, "Bloody Foothills", time_out=2)
+                if current_area != "BloodyFoothills":
                     return False
 
             if self._char._char_config['type'] == 'necro':

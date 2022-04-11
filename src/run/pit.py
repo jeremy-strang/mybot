@@ -89,15 +89,17 @@ class Pit:
 
         if not self._pather.traverse("Monastery Gate", self._char, dest_distance=12): return False
         if not self._pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=self._char):
-            current_area = self._go_to_tamoe_plan_b()
-
+            current_area = self._pather.wander_towards((-600, 300), self._char, "TamoeHighland")
+        wait(0.3)
+        
         if current_area == "MonasteryGate":
             if not self._pather.traverse("Tamoe Highland", self._char, dest_distance=10): return False
             if not self._pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=self._char):
-                current_area = self._go_to_tamoe_plan_b()
+                current_area = self._pather.wander_towards((-600, 300), self._char, "TamoeHighland")
+            wait(0.3)
         
         if current_area != "TamoeHighland":
-            current_area = self._go_to_tamoe_plan_b()
+            current_area = self._pather.wander_towards((-600, 300), self._char, "TamoeHighland")
             wait(0.3)
 
         if not self._pather.traverse("Pit Level 1", self._char, verify_location=True, dest_distance=12): return False

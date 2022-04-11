@@ -1,3 +1,4 @@
+import math
 from .monster_type import MonsterType
 from utils.misc import is_in_roi
 
@@ -11,7 +12,8 @@ class MonsterRule:
                  mob_number:    int = None,
                  time_out:      float = 6.0,
                  max_distance:  float = None,
-                 boundary:      list[int] = None
+                 area_tether:   tuple[float, float] = None,
+                 boundary:      list[int] = None,
                 ):
         self.names = names
         self.monster_types = monster_types
@@ -20,6 +22,7 @@ class MonsterRule:
         self.mob_number = mob_number
         self.time_out = time_out
         self.max_distance = max_distance
+        self.area_tether = area_tether
         self.boundary = boundary
     
     def evaluate_monster(self, monster: dict, min_score: int = 0) -> int:
@@ -43,6 +46,12 @@ class MonsterRule:
                 rules_met += 1
             if self.mob_number is not None and "mob_number" in monster and self.mob_number == monster["mob_number"]:
                 rules_met += 1
+            if self.max_distance is not None:
+                if self.area_tether is not None:
+                    if math.dist(self.area_tether, monster["position_area"]) > self.max_distance:
+                        return 0
+                elif monster["dist"] > self.max_distance:
+                    return 0
         score = rules_met + min_score if rules_met > 0 else 0
         return score
         
