@@ -1,4 +1,5 @@
 from types import FunctionType
+from typing import Callable
 from typing import Dict, Tuple, Union, List, Callable
 import random
 import time
@@ -517,12 +518,19 @@ class IChar:
                 Logger.error(f"Invalid monster {monster}")
         return False
 
-    def clear_zone(self, destination=None, pickit_func=None) -> int:
+    def clear_zone(self,
+                   destination = None,
+                   pickit_func = None,
+                   poi_list: list[str] = None,
+                   poi_callback: Callable[[str], bool] = None) -> int:
         looted_uniques = set()
         picked_up_items = 0
         pf = PathFinder(self._api)
         nodes = pf.solve_tsp(destination)
         Logger.debug(f"Generated a route to traverse the zone consisting of {len(nodes)} nodes")
+        pois = None
+        if poi_list is not None:
+            pois = list(filter(lambda poi: poi is not None, map(lambda label: self._api.find_poi(label), poi_list))) 
         for node in nodes:
             pf.update_map()
             dist = math.dist(pf.player_node, node)
@@ -535,6 +543,13 @@ class IChar:
                 self._pather.traverse(n, self, 0, do_pre_move=True, obj=False, kill=False, time_out=8.0)
                 wait(0.1)
                 picked_up_items += self.kill_uniques(pickit_func, 16.0, looted_uniques)
+                data = self._api.data
+                if data and poi_callback:
+                    for poi, i in enumerate(pois):
+                        if math.dist(poi["position_area"], data["player_pos_area"]) < 50:
+                            poi = pois.pop(i)
+                            poi_callback(poi, pickit_func)
+                            break
         self.post_attack()
         Logger.info(f"Killed and looted {picked_up_items} items from {len(looted_uniques)} champion/unique packs")
         return picked_up_items

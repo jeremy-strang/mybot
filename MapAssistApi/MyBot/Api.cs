@@ -601,6 +601,8 @@ namespace MapAssist.MyBot
                             objects,
                             monsters,
                             points_of_interest,
+                            map_height = _currentMapHeight,
+                            map_width = _currentMapWidth,
                         };
 
                         return JsonConvert.SerializeObject(msg, formatting);

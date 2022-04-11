@@ -90,7 +90,7 @@ class MapAssistApi:
                 self.should_chicken = data["should_chicken"]
 
                 if data["current_area"] != self.current_area:
-                    Logger.info(f"Location changed from {self.current_area} to {data['current_area']}")
+                    Logger.info(f"Location changed from {self.current_area} to {data['current_area']} (map height: {data['map_height']}, map width: {data['map_width']})")
                 self.current_area = data["current_area"]
 
                 if self._mas.player_summary is not None:
@@ -232,7 +232,7 @@ class MapAssistApi:
 
     def wait_for_hover(self, target: dict, list_name: str, time_out=0.3):
         while target and not target["is_hovered"]:
-            time.sleep(0.04)
+            time.sleep(0.1)
             if list_name == "objects":
                 target = self.find_object(target["name"])
             elif list_name == "points_of_interest":
@@ -241,7 +241,7 @@ class MapAssistApi:
                 target = self.find_monster(target["name"])
             elif "_items" in list_name:
                 target = self.find_item(target["id"], list_name)
-        return target != None and target["is_hovered"]
+        return target and target["is_hovered"]
 
     def wait_for_item_stats(self, item: dict, time_out: float = 4.0, list_name = None) -> bool:
         start = time.time()

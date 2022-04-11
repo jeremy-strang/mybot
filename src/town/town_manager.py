@@ -106,6 +106,7 @@ class TownManager:
         if curr_act is None:
             curr_act = TownManager.get_act_from_location(curr_loc)
             if curr_act is None: return False
+        self._ui_manager.wait_for_loading_finish()
         return self._acts[curr_act].open_wp(curr_loc)
 
     def go_to_act(self, act_idx: int, curr_loc: Location) -> Union[Location, bool]:

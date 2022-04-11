@@ -136,20 +136,24 @@ class Pather:
             wait(0.5)
         return is_hovered
 
-    def click_object(self, name: str, offset=None, time_out=2.5):
+    def click_object(self, name: str, offset=None, time_out=3):
+        Logger.debug(f"Clicking object '{name}'...")
         start = time.time()
         data = self._api.data
         is_hovered = False
         if data and not self._should_abort_pathing():
+            wait(0.1, 0.2)
             object = self._api.find_object(name)
             is_hovered = object and object["is_hovered"]
-            while object and not is_hovered and time.time() - start < time_out:
+            while object and time.time() - start < time_out:
                 self.move_mouse_to_abs_pos(
                     world_to_abs(object["position"], data["player_pos_world"]),
-                    math.dist(data["player_pos_area"], object["position"] - data["area_origin"]),
+                    math.dist(data["player_pos_world"], object["position"]),
                     offset=offset)
+                wait(0.1)
                 is_hovered = self._api.wait_for_hover(object, "objects")
                 object = self._api.find_object(object["name"])
+                if is_hovered: break
             Logger.debug(f"    Clicking object, confirmed hover: {is_hovered}")
             mouse.click(button="left")
             wait(0.5)
@@ -174,7 +178,8 @@ class Pather:
         x_m = pos_m[0] + offset_x
         y_m = pos_m[1] + offset_y
         adjusted_pos_m = [x_m - 9.5, y_m - 39.5] if dist < 25 else [x_m, y_m]
-        mouse.move(*adjusted_pos_m, delay_factor=[0.1, 0.2])
+        Logger.debug(f"    Moving mouse to {adjusted_pos_m}")
+        mouse.move(*adjusted_pos_m, delay_factor=[0.15, 0.25])
 
     def move_mouse_to_item(self, item, time_out=3.0):
         start = time.time()

@@ -130,9 +130,8 @@ if __name__ == "__main__":
             try:
                 data = api.get_data()
 
-                # pit.battle(True)
-                pos = screen.convert_abs_to_monitor((-600, 300))
-                mouse.move(pos[0], pos[1])
+                # pather.click_object("PandamoniumFortressWaypoint")
+
                 # print(f"monitor? or abs?: {mouse.get_position()}")
                 # print(f"convert_monitor_to_screen?: {screen.convert_monitor_to_screen(mouse.get_position())}")
                 # print(f"abs_to_screen?: {screen.convert_abs_to_screen(mouse.get_position())}")
@@ -156,9 +155,8 @@ if __name__ == "__main__":
 
                 # pickit.pick_up_items()
                 # char.tp_town()
-                # pather.click_object("TownPortal")
 
-                # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
+                bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
     
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)

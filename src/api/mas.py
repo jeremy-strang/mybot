@@ -174,6 +174,8 @@ class MAS(Thread):
             _data["hovered_unit"] = data["player_corpse"]
 
         _data["map_changed"] = data["map_changed"]
+        _data["map_height"] = data["map_height"]
+        _data["map_width"] = data["map_width"]
         if data["map_changed"]:
             _data["map"] = np.array(data["collision_grid"], dtype=np.uint8)
             _data["map"][_data["map"] == 1] = 0

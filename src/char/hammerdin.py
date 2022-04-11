@@ -486,7 +486,7 @@ class Hammerdin(IChar):
                                 monster = self._api.find_monster(monster["id"])
                             if monster and monster["dist"] <= 3:
                                 keyboard.send(self._skill_hotkeys["concentration"])
-                                wait(0.04, 0.06)
+                                wait(0.05, 0.07)
                                 if not self.tele_stomp_monster("blessed_hammer", 3.0, monster, max_distance=5):
                                     wait(0.1)
             wait(0.1)

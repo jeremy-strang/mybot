@@ -1,4 +1,5 @@
 from char import IChar
+from logger import Logger
 from town.i_act import IAct
 from screen import Screen
 from config import Config
@@ -38,13 +39,10 @@ class A4(IAct):
         return False
 
     def open_wp(self, curr_loc: Location) -> bool:
-        if not self._pather.walk_to_poi("The Pandemonium Fortress"):    
-            wp = self._api.find_object("PandamoniumFortressWaypoint")
-            if wp:
-                self._char.reposition(self._screen.convert_abs_to_monitor(wp["position_abs"], clip_input=True))
-                self._pather.walk_to_poi("The Pandemonium Fortress")        
-        if not self._pather.click_object("PandamoniumFortressWaypoint"):
-            self._pather.click_object("PandamoniumFortressWaypoint")
+        Logger.debug("Opening waypoint...")
+        self._pather.walk_to_object("PandamoniumFortressWaypoint")
+        wait(0.7)
+        self._pather.click_object("PandamoniumFortressWaypoint", (9.5, 0))
         return self._api.wait_for_menu("waypoint")
 
     def wait_for_tp(self) -> Union[Location, bool]:
