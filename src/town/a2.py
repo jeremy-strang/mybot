@@ -16,7 +16,7 @@ class A2(IAct):
         super().__init__(screen, template_finder, old_pather, char, npc_manager, pather, api)
 
     def get_wp_location(self) -> Location: return Location.A2_WP
-    def can_stash(self) -> bool: return True
+    def can_stash(self) -> bool: return False # Temporary until I fix pathing to the stash
     def can_buy_pots(self) -> bool: return True
     def can_identify(self) -> bool: return True
     def can_heal(self) -> bool: return True

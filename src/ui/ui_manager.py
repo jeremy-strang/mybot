@@ -974,7 +974,7 @@ class UiManager():
         """
         wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.08, 0.14)
+        wait(0.18, 0.22)
         keyboard.write('/nopickup', delay=0.07)
         wait(0.02, 0.04)
         keyboard.send('enter')
@@ -999,7 +999,7 @@ class UiManager():
         """
         wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.08, 0.14)
+        wait(0.18, 0.22)
         keyboard.write('/nopickup', delay=0.07)
         wait(0.03, 0.05)
         keyboard.send('enter')
