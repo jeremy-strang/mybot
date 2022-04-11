@@ -1,7 +1,9 @@
 from unittest.mock import seal
+import keyboard
 import cv2
 import time
 from char.i_char import IChar
+from char.skill import Skill
 from config import Config
 from logger import Logger
 from pathing import Location, OldPather, PathFinder, Pather
@@ -56,15 +58,47 @@ class Pit:
         wait(0.4)
         self._ui_manager.use_wp(1, 5)
         return Location.A1_PIT_WP
-    
-    def battle(self, do_pre_buff: bool=True) -> Union[bool, tuple[Location, bool]]:
-        self._char.pre_travel(do_pre_buff)
-        if not self._pather.traverse("Monastery Gate", self._char, dest_distance=12): return False
-        if not self._pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=self._char): return False
 
-        if not self._pather.traverse("Tamoe Highland", self._char, dest_distance=10): return False
-        if not self._pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=self._char): return False
-    
+    def _go_to_tamoe_plan_b(self):
+        self._api.data["current_area"] if self._api.data else None
+        for i in range(6):
+            mouse.move(172, 825, randomize=20)
+            wait(0.1, 0.15)
+            if self._char.can_tp:
+                if not self._ui_manager.is_right_skill_selected(Skill.Teleport):
+                    self._char.select_skill("teleport")
+                    wait(0.04, 0.05)
+                mouse.click(button="right")
+                wait(self._char._cast_duration)
+            else:
+                keyboard.send(self._config.char["force_move"], do_release=False)
+            wait(0.1, 0.15)
+        current_area = self._api.data["current_area"] if self._api.data else None
+        return current_area
+        
+                # char.pre_travel(True)
+                # if not pather.traverse("Monastery Gate", char, dest_distance=12): return False
+                # if not pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=char): return False
+
+                # if not pather.traverse("Tamoe Highland", char, dest_distance=10): return False
+                # if not pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=char): return False
+    def battle(self, do_pre_buff: bool=True) -> Union[bool, tuple[Location, bool]]:
+        current_area = self._pather.wait_for_location("OuterCloister")
+        self._char.pre_travel(do_pre_buff)
+
+        if not self._pather.traverse("Monastery Gate", self._char, dest_distance=12): return False
+        if not self._pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=self._char):
+            current_area = self._go_to_tamoe_plan_b()
+
+        if current_area == "MonasteryGate":
+            if not self._pather.traverse("Tamoe Highland", self._char, dest_distance=10): return False
+            if not self._pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=self._char):
+                current_area = self._go_to_tamoe_plan_b()
+        
+        if current_area != "TamoeHighland":
+            current_area = self._go_to_tamoe_plan_b()
+            wait(0.3)
+
         if not self._pather.traverse("Pit Level 1", self._char, verify_location=True, dest_distance=12): return False
         if not self._pather.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4, char=self._char): return False
         self._char.post_travel()

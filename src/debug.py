@@ -5,6 +5,7 @@ import traceback
 from tracemalloc import stop
 from turtle import pos
 from char.hammerdin import Hammerdin
+from char.skill import Skill
 import game_controller
 from pickit.pixel_pickit import PixelPickit
 from pickit.pickit import Pickit
@@ -125,10 +126,13 @@ if __name__ == "__main__":
         def do_stuff():
             print("Doing stuff...")
             wait(1.0)
+            print(mouse.get_position())
             start = time.time()
             try:
                 data = api.get_data()
 
+                pit.battle(True)
+                
                 # shenk.battle(False, True, game_stats)
                 # pindleskin.approach(Location.A5_TOWN_START)
                 
@@ -155,7 +159,7 @@ if __name__ == "__main__":
     
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
+                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
 
                 # ui_manager.fill_tome_of("Town Portal")
                 # ui_manager.throw_out_junk(item_finder)
