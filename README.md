@@ -1,16 +1,13 @@
 # <img src="assets/docs/header.png" width="370">
 
-Memory reading bot for Diablo 2 Resurrected.
-
-[**Download here**](https://github.com/pokzcodes/mybot/releases) and got to have a [**Discord**](https://discord.gg/) nowadays I guess :man_shrugging:
-
+MyBot is bemory-reading bot for Diablo 2 Resurrected. This is was originally built by integrating MapAssist with Botty, however most of the original pixel-based Botty code has been removed/rewritten, or is in the process of being removed.
 
 [CHANGELOG.md](CHANGELOG.md) 
 
 | Run | Status | Builds |
 | ------------------ | ------------------ |----------------------------------------------------------------------------|
 | Countess | Good | Hammerdin\*, Zerker Barb\*
-| Pit | Good (only kills champs/uniques for now) |
+| Pit | Good (only champs/uniques) | Hammerdin\*, Zerker Barb\*
 | Andariel | Good | Hammerdin\*, Zerker Barb\*
 | Summoner | Good | Hammerdin\*, Zerker Barb\*
 | Travincal | Good | Hammerdin, Zerker Barb\*
