@@ -1,6 +1,6 @@
 # <img src="assets/docs/header.png" width="370">
 
-MyBot is bemory-reading bot for Diablo 2 Resurrected. This is was originally built by integrating MapAssist with Botty, however most of the original pixel-based Botty code has been removed/rewritten, or is in the process of being removed.
+MyBot is memory-reading bot for Diablo 2 Resurrected. This is was originally built by integrating MapAssist with Botty, however most of the original pixel-based Botty code has been removed/rewritten, or is in the process of being removed.
 
 [CHANGELOG.md](CHANGELOG.md) 
 
