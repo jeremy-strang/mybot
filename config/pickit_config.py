@@ -97,14 +97,14 @@ class PickitConfig:
             # Item.FlawedSapphire: (Action.Keep, Options(max_quantity=5)),
             # Item.FlawedEmerald: (Action.Keep, Options(max_quantity=5)),
             # Item.FlawedRuby: (Action.Keep, Options(max_quantity=5)),
-            # Item.FlawedDiamond: (Action.Keep, Options(max_quantity=5)),
+            Item.FlawedDiamond: (Action.Keep, Options(max_quantity=5)),
 
             # Item.Amethyst: (Action.Keep, Options(max_quantity=5)),
-            # Item.Topaz: (Action.Keep, Options(max_quantity=5)),
-            # Item.Sapphire: (Action.Keep, Options(max_quantity=5)),
+            Item.Topaz: (Action.Keep, Options(max_quantity=5)),
+            Item.Sapphire: (Action.Keep, Options(max_quantity=5)),
             # Item.Emerald: (Action.Keep, Options(max_quantity=5)),
             # Item.Ruby: (Action.Keep, Options(max_quantity=5)),
-            # Item.Diamond: (Action.Keep, Options(max_quantity=3)),
+            Item.Diamond: (Action.Keep, Options(max_quantity=3)),
 
             # Item.FlawlessAmethyst: (Action.Keep, Options(max_quantity=5)),
             # Item.FlawlessTopaz: (Action.Keep, Options(max_quantity=5)),
