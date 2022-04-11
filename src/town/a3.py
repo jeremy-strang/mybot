@@ -35,16 +35,20 @@ class A3(IAct):
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
         #if not self._pather.traverse_walking("Bank",self._char, obj=True, threshold=16, static_npc=False,end_dist=10): return False
-        if not self._pather.traverse_walking([147,60],self._char, obj=False, threshold=16, static_npc=False,end_dist=10): return False
-        self._pather.activate_poi ("Bank", "Bank", collection='objects', char=self._char)    
+        # if not self._pather.traverse_walking([147,60],self._char, obj=False, threshold=16, static_npc=False,end_dist=10): return False
+        if not self._pather.walk_to_position((147, 60)): return False
+        wait(0.4, 0.6)
+        self._pather.click_object("Bank")    
         return Location.A3_STASH_WP
 
     def open_wp(self, curr_loc: Location) -> bool:
-        if not self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16): return False
-        #if not self._pather.traverse("Kurast Docks", self._char, obj=False): return False
+        if not self._pather.walk_to_poi("Kurast Docks"): return False
         wait(0.4, 0.6)
-        result = self._pather.activate_waypoint("Kurast Docks", self._char,entrance_in_wall=False, is_wp = True)
-        return result
+        return self._pather.click_object("Act3TownWaypoint")
+        # if not self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16): return False
+        # wait(0.4, 0.6)
+        # result = self._pather.activate_waypoint("Kurast Docks", self._char,entrance_in_wall=False, is_wp = True)
+        # return result
 
     def wait_for_tp(self) -> Union[Location, bool]:
         # template_match = self._template_finder.search_and_wait("A3_TOWN_10", time_out=15)

@@ -517,18 +517,19 @@ class Hammerdin(IChar):
                     monster_start = time.time()
                     if time.time() - last_move > reposition_time and reposition_pos is not None:
                         Logger.debug("    Stood in one place too long, repositioning")
-                        self._pather.traverse_walking(reposition_pos, self, time_out = 3.0)
+                        self._pather.walk_to_position(reposition_pos, time_out = 2)
                         last_move = time.time()
                     else:
-                        while monster and monster["dist"] > 3 and time.time() - monster_start < 5.0:
+                        while monster and monster["dist"] > 6 and time.time() - monster_start < 5.0:
                             Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
                             self._pather.move_to_monster(self, monster)
                             last_move = time.time()
+                            wait(0.1, 0.15)
                             monster = self._api.find_monster(monster["id"])
-                        if monster and monster["dist"] <= 3 and monster["mode"] != 12:
+                        if monster is not None and monster["mode"] != 12:
                             keyboard.send(self._skill_hotkeys["concentration"])
-                            wait(0.03, 0.05)
-                            self._cast_hammers((self._cast_duration - 0.01) * 3)
+                            wait(0.04, 0.05)
+                            self._cast_hammers((self._cast_duration - 0.01) * 5)
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
             elapsed = time.time() - start

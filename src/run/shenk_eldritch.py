@@ -62,14 +62,12 @@ class ShenkEldritch:
             self._char.pre_buff()
 
         start = time.time()
-        eld = None
-        while not eld and time.time() - start < 3.0:
-            wait(0.05)
-            eld = self._api.find_monster_by_name("MinionExp")
+        eld = self._api.find_monster_by_name("MinionExp")
         if not eld:
             self._pather.wander_towards((-50, -200), iterations=3, time_out=2.5)
-        while not eld and time.time() - start < 3.0:
-            wait(0.05)
+        eld = self._api.find_monster_by_name("MinionExp")
+        while not eld and time.time() - start < 2:
+            wait(0.1)
             eld = self._api.find_monster_by_name("MinionExp")
         
         # Move to Eldritch

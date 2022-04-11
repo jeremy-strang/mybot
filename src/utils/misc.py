@@ -42,9 +42,9 @@ def set_d2r_always_on_top():
         for w in windows_list:
             if w[1] == "Diablo II: Resurrected":
                 SetWindowPos(w[0], HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)
-                print("Set D2R to be always on top")
+                Logger.debug("Set D2R to be always on top")
     else:
-        print('OS not supported, unable to set D2R always on top')
+        Logger.debug('OS not supported, unable to set D2R always on top')
 
 def restore_d2r_window_visibility():
     if os.name == 'nt':
@@ -53,9 +53,9 @@ def restore_d2r_window_visibility():
         for w in windows_list:
             if w[1] == "Diablo II: Resurrected":
                 SetWindowPos(w[0], HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)
-                print("Restored D2R window visibility")
+                Logger.debug("Restored D2R window visibility")
     else:
-        print('OS not supported, unable to set D2R always on top')
+        Logger.debug('OS not supported, unable to set D2R always on top')
 
 def wait(min_seconds, max_seconds = None):
     if max_seconds is None:
@@ -165,7 +165,7 @@ def load_template(path, scale_factor: float = 1.0, alpha: bool = False):
             template_img = cv2.resize(template_img, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_NEAREST)
             return template_img
         except Exception as e:
-            print(e)
+            Logger.debug(e)
             raise ValueError(f"Could not load template: {path}")
     return None
 
@@ -254,8 +254,8 @@ def make_path_bfs(start, end, grid):
         x, y = path[-1]
         if (x, y) == end:
             if path is None:
-                print("NO PATH")
-                print(path)
+                Logger.debug("NO PATH")
+                Logger.debug(path)
             return path
         for x2, y2 in ((x+1, y), (x-1, y), (x, y+1), (x, y-1), (x-1, y-1), (x+1, y+1), (x+1, y-1), (x-1, y+1)):
             if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:

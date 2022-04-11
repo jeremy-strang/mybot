@@ -77,8 +77,9 @@ class Travincal:
             if self._char._char_config['type'] == 'necro' and not self._pather.traverse("Durance of Hate Level 1", self._char): return False
             elif not self._pather.traverse((156, 113), self._char, verify_location=False): return False
         else:
-            for node in [(82, 164), (112, 157), (158, 109)]:
-                self._pather.traverse_walking(node, self._char, threshold=5)
+            self._char.pre_move()
+            self._pather.walk_to_position((82, 164), time_out=20, step_size=8, threshold=12)
+            self._pather.walk_to_position((158, 109), time_out=20, step_size=8, threshold=12)
         
         if tele_swap:
             self._char.switch_weapon()
