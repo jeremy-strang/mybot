@@ -49,6 +49,7 @@ from utils.dclone_ip import get_d2r_game_ip
 #mapassist api + new old_pather
 from pathing import Pather
 from api import MapAssistApi
+from utils.levels import get_level
 
 class Bot:
 
@@ -320,6 +321,10 @@ class Bot:
             if self._api.player_summary is not None:
                 self._config.general["player_summary"] = self._api.player_summary
                 self._config.general["player_name"] = self._api.player_name
+                self._config.general["player_experience"] = self._api.player_experience
+                self._config.general["player_level"] = self._api.player_level
+                self._game_stats.log_exp(self._api.player_experience)
+
             if data["item_on_cursor"]:
                 is_loading = self._ui_manager.wait_for_loading_finish()
                 self.handle_item_on_cursor()

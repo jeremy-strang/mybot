@@ -9,6 +9,7 @@ from requests.exceptions import ConnectionError
 import math
 from threading import Thread
 from utils.coordinates import world_to_abs
+from utils.levels import get_level
 
 clr.AddReference(os.path.abspath(r'MapAssistApi/bin/x64/Release/MapAssist.dll'))
 
@@ -181,9 +182,17 @@ class MAS(Thread):
             _data["map"][_data["map"] == 1] = 0
             _data["map"] += 1
         
-        if self.player_summary is None and self.in_game:
-            self.player_summary = f"Level {data['player_level']} {data['player_class']}"
+        if self.in_game:
+            self.player_level = data['player_level']
+            self.player_experience = data['player_experience']
             self.player_name = data['player_name']
+
+            percent_to_level = ""
+            if self.player_level < 99:
+                curr_lvl = get_level(self.player_level)
+                percent_to_level =  f' | {round((self.player_experience - curr_lvl["exp"]) / curr_lvl["xp_to_next"]*100)}%'
+
+            self.player_summary = f"Level {self.player_level} {data['player_class']}{percent_to_level}"
 
         player_x_world = int(data["player_pos_world"]["X"])
         player_y_world = int(data["player_pos_world"]["Y"])
