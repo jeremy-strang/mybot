@@ -172,7 +172,7 @@ class PickitConfig:
                 lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.AllResist, ">=", 10), # IAS/@ jewel
                 lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.FireResist, ">=", 25), # IAS/FR jewel
                 lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.MaxDamage, ">=", 10), # IAS/max jewel
-                lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.MaxDamagePerent, ">=", 30), # ED/IAS jewel (I think this is the right stat...)
+                lambda item: item.check(Stat.IncreasedAttackSpeed, ">=", 15) and item.check(Stat.MaxDamagePercent, ">=", 30), # ED/IAS jewel (I think this is the right stat...)
                 lambda item: item.check(Stat.AllResist, ">=", 15), # 15@ jewel
             ],
         }
@@ -414,11 +414,11 @@ class PickitConfig:
             Item.WarPike: [lambda item: item.is_ethereal and item.sockets in [0, 6]],
 
             # Non-eth weapons
-            Item.ColossusSword: [lambda item: item.sockets == 5 and item.check(Stat.MaxDamagePerent, ">", 0)],
+            Item.ColossusSword: [lambda item: item.sockets == 5 and item.check(Stat.MaxDamagePercent, ">", 0)],
             Item.PhaseBlade: [
                 lambda item: item.sockets == 5,
-                lambda item: item.sockets == 5 and item.check(Stat.MaxDamagePerent, ">", 0),
-                lambda item: item.sockets in [0, 5, 6] and item.check(Stat.MaxDamagePerent, ">=", 15),
+                lambda item: item.sockets == 5 and item.check(Stat.MaxDamagePercent, ">", 0),
+                lambda item: item.sockets in [0, 5, 6] and item.check(Stat.MaxDamagePercent, ">=", 15),
             ],
         }
 
