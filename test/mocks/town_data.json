@@ -458,7 +458,7 @@
                     "value": 30
                 },
                 {
-                    "key": "MaxDamagePerent",
+                    "key": "MaxDamagePercent",
                     "value": 25
                 },
                 {
@@ -1846,7 +1846,7 @@
             "sockets": 1,
             "stats": [
                 {
-                    "key": "MaxDamagePerent",
+                    "key": "MaxDamagePercent",
                     "value": 7
                 },
                 {
@@ -5528,7 +5528,7 @@
             "sockets": 4,
             "stats": [
                 {
-                    "key": "MaxDamagePerent",
+                    "key": "MaxDamagePercent",
                     "value": 300
                 },
                 {

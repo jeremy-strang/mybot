@@ -878,7 +878,7 @@ class Stat:
     Gold = "Gold"
     StashGold = "StashGold"
     ArmorPercent = "ArmorPercent"
-    MaxDamagePerent = "MaxDamagePerent"
+    MaxDamagePercent = "MaxDamagePercent"
     MinDamagePercent = "MinDamagePercent"
     AttackRating = "AttackRating"
     ChanceToBlock = "ChanceToBlock"
