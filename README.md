@@ -1,72 +1,29 @@
-# <img src="assets/docs/header_green.png" width="370">
+# <img src="assets/docs/header.png" width="370">
 
-Pixelbot (and memory reading bot) for Diablo 2 Resurrected. This project is for informational and educational purposes only and is not meant for online usage. Feel free to dig around, add stuff, make PRs, or ask questions should you get stuck!
+Memory reading bot for Diablo 2 Resurrected.
 
 [**Download here**](https://github.com/pokzcodes/mybot/releases) and got to have a [**Discord**](https://discord.gg/) nowadays I guess :man_shrugging:
 
 
 [CHANGELOG.md](CHANGELOG.md) 
 
-| [run]             | current status |
-| ------------------ | -------------------------------------------------------------------------------------------------|
-| baal               | Hdin|
-| meph               | light sorc, Hdin|
-| andy               | light sorc, Hdin|
-| tower              | light sorc|
-| pindle             | legacy|
-| eld/shenk          | legacy|
-| diablo             | legacy (all)|
-| arcane             | legacy (all)|
-| nilithak           | legacy (all)|
+| Run | Status | Builds |
+| ------------------ | ------------------ |----------------------------------------------------------------------------|
+| Countess | Good | Hammerdin\*, Zerker Barb\*
+| Pit | Good (only kills champs/uniques for now) |
+| Andariel | Good | Hammerdin\*, Zerker Barb\*
+| Summoner | Good | Hammerdin\*, Zerker Barb\*
+| Travincal | Good | Hammerdin, Zerker Barb\*
+| Mephisto | Good | Hammerdin\*, Zerker Barb\*
+| Diablo | Broken (being rewritten) |
+| Eldritch | Good | Hammerdin, Zerker Barb
+| Shenk | Good | Hammerdin, Zerker Barb\*
+| Pindleskin | Good | Hammerdin, Zerker Barb
+| Nihlathak | Good | Hammerdin\*, Zerker Barb\*
+| Baal | Good | Hammerdin\*, Zerker Barb\*
 
+\* Builds marked with a \* only work with Enigma
 
-
-
-
-
-## Getting started & Prequists
-- D2r needs to be in English Language,
-- MyBot currently works with 720p D2r window (will be adjusted automatically on auto settings)
-
-### 1) Graphics and Gameplay Settings
-
-All settings will automatically be set when you execute `main.exe` and press the hotkey for "Adjust D2R settings" (default f9). It is not a 100% thing, in rare cases you might still have to fiddle around with your brightness. I suggest using the "Graphic Debugger" to verify your settings.
-**Note**: Make sure that no other external programs adapt your graphics settings (HDR, Geforce Experience, etc.)
-
-### 2) Supported builds
-
-Check the documentation for **param.ini** further down. Different Sorc builds, Hammardin, Barb, Trapsin are already implemented to different extents. It is quite straightforward to implement new classes. Give it a go if you like!
-
-### 3) Start Location
-
-Open up D2R and wait till you are at the hero selection screen. Make sure the char you running with is selected and will be in any of Act 3, 4 or 5 in the respective difficulty you set in the **param.ini** once the bot starts the game.
-
-### 4) Start MyBot
-
-You can either run from python. Follow [development.md](development.md) for that. Or you download the a prebuilt release [here](https://github.com/aeon0/MyBot/releases) (the .rar file!). Start `main.exe` in the MyBot folder. Focus your D2R window and press the start key (default f11). You can always force stop MyBot with f12. Note: MyBot will use the /nopickup command in the first game to avoid pickup up trash while traversing. This command will only allow item pickup when "show items" is active.
-
-## Graphic Debugger
-
-To check if you graphic settings are good and if the bot would pick up items there is a **Graphic Debugger Mode**. Start MyBot and press F10 (Default key). This will open up a (mostly black) window. Start a game in D2R and go to A5. You should see some templates with blue circles detected and scores printed out to the console. To check item finding, throw some items of different types on the ground. The debug window should show the item names with black background. If you throw an item on the ground that should be picked up, it will have a red circle. The console will print out the scores for each item that would be picked up. Scores should be well above 0.9 for these items.</br>
-<img src="assets/docs/graphic_debugger.png" width="900">
-
-## Development
-
-Check out the [development.md](development.md) docu for infos on how to build from source and details of the project structure and code.
-
-## param.ini
-
-All MyBot configuration files are located in the __config__ folder. To ease the switch to new MyBot versions, you can also overwrite any of the .ini fields in a **custom.ini** file. When a new version of MyBot is released you just copy the file to the new version without having to port all your **param.ini** changes to the new version. Example:
-
-```ini
-; custom.ini - overwrites 3 params in the param.ini
-[general]
-name=MyCustomName
-
-[routes]
-run_pindleskin=1
-run_shenk=0
-```
 
 | [general]                | Descriptions              |
 | --------------------     | --------------------------|
