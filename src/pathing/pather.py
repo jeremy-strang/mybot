@@ -13,7 +13,7 @@ import random
 from api import MapAssistApi
 from screen import Screen
 from config import Config
-from utils.misc import is_in_roi, wait
+from utils.misc import is_in_roi, make_path_bfs, wait
 from utils.custom_mouse import mouse
 import mouse as _mouse
 from logger import Logger
@@ -320,10 +320,13 @@ class Pather:
         route = None
         data = self._api.data
         if data:
-            pf = PathFinder(self._api)
-            dest_area = (int(dest_area[1]), int(dest_area[0]))
-            player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
-            route = pf.make_path_astar(player_area, dest_area, False)
+            # dest_area = (int(dest_area[1]), int(dest_area[0]))
+            # player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
+            # pf = PathFinder(self._api)
+            # route = pf.make_path_astar(player_area, dest_area, False)
+            dest_area = (int(dest_area[0]), int(dest_area[1]))
+            player_area = (int(data["player_pos_area"][0]), int(data["player_pos_area"][1]))
+            route = make_path_bfs(player_area, dest_area, data["map"])
             self._api._current_path = route
         return route
 
