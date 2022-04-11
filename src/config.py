@@ -228,6 +228,7 @@ class Config:
             "custom_message_hook": Config._select_val("general", "custom_message_hook"),
             "discord_status_count": False if not Config._select_val("general", "discord_status_count") else int(Config._select_val("general", "discord_status_count")),
             "discord_status_condensed": bool(int(Config._select_val("general", "discord_status_condensed"))),
+            "discord_experience_report": bool(int(Config._select_val("general", "discord_experience_report"))),
             "info_screenshots": bool(int(Config._select_val("general", "info_screenshots"))),
             "loot_screenshots": bool(int(Config._select_val("general", "loot_screenshots"))),
             "games_via_lobby": bool(int(Config._select_val("general", "games_via_lobby"))),

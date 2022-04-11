@@ -160,6 +160,7 @@ class GameStats:
         elapsed_time = time.time() - self._start_time
         elapsed_time_str = hms(elapsed_time)
         avg_length_str = "n/a"
+
         good_games_count = self._game_counter - self._runs_failed
         good_games_time = 0
         if good_games_count > 0:
@@ -171,20 +172,21 @@ class GameStats:
         msg += f'\nGames: {self._game_counter}'
         msg += f'\nAvg Game Length: {avg_length_str}'
 
-        gained_exp = self._current_exp - self._starting_exp
-        if self._config.general["player_level"] and self._config.general["player_level"] < 99 and gained_exp > 0:
-            curr_lvl = get_level(self._config.general["player_level"])
-            exp_gained = self._current_exp - curr_lvl['exp']
-            exp_per_second = gained_exp / (good_games_time if good_games_time != 0 else 1)
-            exp_per_hour = round(exp_per_second * 3600, 1)
-            exp_per_game = round(gained_exp / float(good_games_count) if good_games_count != 0 else 1, 1)
-            exp_needed = curr_lvl['xp_to_next'] - exp_gained
-            time_to_lvl = exp_needed / (exp_per_second if exp_per_second != 0 else 1)
-            games_to_lvl = exp_needed / (exp_per_game if exp_per_game != 0 else 1)
-            msg += f'\nXP Per Hour: {exp_per_hour:,}'
-            msg += f'\nXP Per Game: {exp_per_game:,}'
-            msg += f'\nTime Needed To Level: {hms(time_to_lvl)}'
-            msg += f'\nGames Needed To Level: {math.ceil(games_to_lvl):,}'
+        if self._config.general['discord_experience_report']:
+            gained_exp = self._current_exp - self._starting_exp
+            if self._config.general["player_level"] and self._config.general["player_level"] < 99 and gained_exp > 0:
+                curr_lvl = get_level(self._config.general["player_level"])
+                exp_gained = self._current_exp - curr_lvl['exp']
+                exp_per_second = gained_exp / (good_games_time if good_games_time != 0 else 1)
+                exp_per_hour = round(exp_per_second * 3600, 1)
+                exp_per_game = round(gained_exp / float(good_games_count) if good_games_count != 0 else 1, 1)
+                exp_needed = curr_lvl['xp_to_next'] - exp_gained
+                time_to_lvl = exp_needed / (exp_per_second if exp_per_second != 0 else 1)
+                games_to_lvl = exp_needed / (exp_per_game if exp_per_game != 0 else 1)
+                msg += f'\nXP Per Hour: {exp_per_hour:,}'
+                msg += f'\nXP Per Game: {exp_per_game:,}'
+                msg += f'\nTime Needed To Level: {hms(time_to_lvl)}'
+                msg += f'\nGames Needed To Level: {math.ceil(games_to_lvl):,}'
 
         table = BeautifulTable()
         table.set_style(BeautifulTable.STYLE_BOX_ROUNDED)

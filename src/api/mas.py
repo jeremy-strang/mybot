@@ -136,6 +136,7 @@ class MAS(Thread):
         # if self.potion_belt_open != data["potion_belt_open"]: print(f"potion_belt_open changed from {self.potion_belt_open} to {data['potion_belt_open']}")
         # if self.mercenary_inventory_open != data["mercenary_inventory_open"]: print(f"mercenary_inventory_open changed from {self.mercenary_inventory_open} to {data['mercenary_inventory_open']}")
 
+        game_status_changed = self.in_game != data["in_game"]
         self.in_game = _data["in_game"] = data["in_game"]
         self.in_town = _data["in_town"] = data["in_town"]
         self.should_chicken = _data["should_chicken"] = data["should_chicken"]
@@ -184,17 +185,15 @@ class MAS(Thread):
             _data["map"][_data["map"] == 1] = 0
             _data["map"] += 1
         
-        if self.in_game:
+        if self.in_game and game_status_changed:
             self.player_level = data['player_level']
             self.player_experience = data['player_experience']
             self.player_name = data['player_name']
-
-            percent_to_level = ""
-            if self.player_level < 99:
-                curr_lvl = get_level(self.player_level)
-                percent_to_level =  f' | {round((self.player_experience - curr_lvl["exp"]) / curr_lvl["xp_to_next"]*100)}%'
-
-            self.player_summary = f"Level {self.player_level} {data['player_class']}{percent_to_level}"
+            # percent_to_level = ""
+            # if self.player_level < 99:
+            #     curr_lvl = get_level(self.player_level)
+            #     percent_to_level =  f" | {round((curr_lvl['exp'] - self.player_experience) / curr_lvl['xp_to_next'])}%"
+            self.player_summary = f"Level {self.player_level} {data['player_class']}"
 
         player_x_world = int(data["player_pos_world"]["X"])
         player_y_world = int(data["player_pos_world"]["Y"])
