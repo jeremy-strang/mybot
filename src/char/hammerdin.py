@@ -10,7 +10,7 @@ from ui import UiManager
 from pathing import OldPather
 from logger import Logger
 from screen import Screen
-from utils.misc import rotate_vec, unit_vector, wait, is_in_roi
+from utils.misc import rotate_vec, unit_vector, wait, is_in_roi, point_str
 from monsters import sort_and_filter_monsters, get_unlooted_monsters, CHAMPS_UNIQUES
 from constants import Roi
 import time
@@ -114,14 +114,14 @@ class Hammerdin(IChar):
 
     def _kill_super_unique(self, name: str = None, radius: int = 25):
         center_pos = None
+        boss = self._api.find_monster_by_name("Andariel")
         if not boss:
-            boss = self._api.find_monster_by_name("Andariel")
-            if not boss:
-                bosses = self._api.find_monsters_by_type(MonsterType.SUPER_UNIQUE)
-                if len(bosses) > 0:
-                    boss = bosses[0]
+            bosses = self._api.find_monsters_by_type(MonsterType.SUPER_UNIQUE)
+            if len(bosses) > 0:
+                boss = bosses[0]
         if boss:
             center_pos = boss["position_area"]
+            Logger.info(f"Killing super unique '{boss['name']}', id: {boss['id']}, position: {point_str(boss['position_area'])}")
         elif self._api.data:
             center_pos = self._api.data["player_pos_area"]
         boundary = [center_pos[0] - radius, center_pos[1] - radius, radius * 2, radius * 2] if center_pos is not None else None
