@@ -1046,7 +1046,7 @@ class Pather:
                         char._cast_duration = tmp_duration
                         return False
 
-                    char.move((node_pos_m[0], node_pos_m[1]), force_move=force)
+                    char.move((node_pos_m[0], node_pos_m[1]), force_move=force, force_tp=(char is not None and char.can_tp))
 
                     if i > len(route_list)-4:
                         time.sleep(.4)
