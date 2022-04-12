@@ -19,6 +19,7 @@ from ui import UiManager, belt_manager
 from ui import BeltManager
 from char import IChar
 from pickit.pickit_utils import get_pickit_action
+from utils.misc import wait
 
 class Pickit:
     def __init__(self,
@@ -58,7 +59,9 @@ class Pickit:
                     Logger.debug(f"    {item['name']}, dist: {round(item['dist'], 1)}, quality: {item['quality']}, base: {item['type']}, position: {item['position']}")
         return items_found[0] if len(items_found) > 0 else None
 
-    def pick_up_items(self, time_out: float = 22, skip_nopickup: bool = False) -> bool:
+    def pick_up_items(self, time_out: float = 22.0, skip_nopickup: bool = False) -> bool:
+        # Wait a bit for items to load
+        wait(0.3, 0.4)
         start = time.time()
         elapsed = 0
         attempts = 0
@@ -71,11 +74,11 @@ class Pickit:
         potion_needs = self._belt_manager.get_pot_needs()
         item = self._next_item(potion_needs)
         last_id = 0
-
         if item and not skip_nopickup:
             Logger.info(f"\n{'*'*80}\nMemory pickit found items, disabling /nopickup...")
             self._ui_manager.disable_no_pickup()
             disabled_nopickup = True
+        
         while item and not did_time_out:
             elapsed = time.time() - start
             if elapsed >= time_out:
@@ -87,7 +90,15 @@ class Pickit:
             if item["id"] == last_id:
                 attempts += 1
                 Logger.debug(f"Attempted to pick up the same item {attempts} times so far")
-                if attempts >= 3:
+                # If we're on the same item for the third time, make sure nopickup is disabled
+                if attempts == 3:
+                    time_before_disable = time.time()
+                    self._ui_manager.disable_no_pickup()
+                    wait(0.1, 0.2)
+                    start += time.time() - time_before_disable
+                
+                # If we hit five attempts, skip the item
+                if attempts >= 5:
                     skipped_ids.add(item["id"])
                     if not is_potion:
                         skipped_items.append(item)
@@ -102,7 +113,7 @@ class Pickit:
                 click_time_out = 2
             elif get_pickit_action(item, self._config.pickit_config, game_stats=self._game_stats) > 1:
                 click_time_out = 15
-            if self._pather.click_item(item, self._char):
+            if self._pather.click_item(item, self._char, time_out=click_time_out):
                 if is_potion:
                     if "Rejuv"in item["name"]:
                         self._belt_manager.picked_up_pot("rejuv")

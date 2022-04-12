@@ -220,3 +220,29 @@ def point_str(point: tuple[float, float]) -> str:
         y = point[1]
         result = f"({round(x, 1), round(y, 1)})"
     return result
+
+def get_next_incremental_offset(previous_x: int = 0, previous_y: int = 0, adjust_x: bool = True, adjust_y: bool = False, increment_size=25):
+    if adjust_y:
+        if previous_y > -4 * increment_size:
+            previous_y -= increment_size
+        elif previous_y == -4 * increment_size:
+            previous_y += 5 * increment_size
+        elif previous_y < 4 * increment_size:
+            previous_y += increment_size
+        elif previous_y == 4 * increment_size:
+            previous_y = 0
+            adjust_x = True
+            adjust_y = False
+    if adjust_x:
+        if previous_x > -4 * increment_size:
+            previous_x -= increment_size
+        elif previous_x == -4 * increment_size:
+            previous_x += 5 * increment_size
+        elif previous_x < 4 * increment_size:
+            previous_x += increment_size
+        elif previous_x == 4 * increment_size:
+            previous_x = -increment_size
+            previous_y = -increment_size
+            adjust_x = True
+            adjust_y = True
+    return (previous_x, previous_y, adjust_x, adjust_y)

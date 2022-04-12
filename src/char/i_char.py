@@ -396,15 +396,16 @@ class IChar:
         wait(self._cast_duration)
         return True
 
-    def tp_town(self):
+    def tp_town(self) -> bool:
+        Logger.warning("Opening a town portal...")
         if not self.open_tp(): return False
         wait(1.1, 1.4) # takes quite a while for tp to be visible
-        if not self._pather.click_object("TownPortal"):
-            self.kill_blocking_mobs()
-            self._pather.click_object("TownPortal")
-        if self._pather.wait_for_town(4): return True
-
-        Logger.warning("Failed to TP to town using memory, falling back to pixels")
+        clicked = self._pather.click_object("TownPortal", on_monsters_blocking=lambda m: self.kill_blocking_mobs())
+        if not clicked:
+            clicked = self._pather.click_object("TownPortal", on_monsters_blocking=lambda m: self.kill_blocking_mobs())
+        if clicked:
+            return self._pather.wait_for_town(4)
+        Logger.warning("Failed to TP to town using memory, falling back to pixels...")
 
         roi_mouse_move = [
             int(self._config.ui_pos["screen_width"] * 0.3),

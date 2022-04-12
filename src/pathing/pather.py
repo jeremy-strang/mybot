@@ -8,7 +8,7 @@ import pyastar2d
 from copy import deepcopy
 import math
 import time
-from typing import Union
+from typing import Callable, Union
 import random
 from d2r_mem import D2rMemApi
 from screen import Screen
@@ -22,7 +22,7 @@ import keyboard
 from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
-from utils.misc import unit_vector, clip_abs_point
+from utils.misc import unit_vector, clip_abs_point, get_next_incremental_offset
 from scipy.ndimage.filters import gaussian_filter
 from pathing.path_finder import make_path_bfs, PathFinder
 
@@ -138,24 +138,10 @@ class Pather:
             return self._api.wait_for_area(stop_at_area, time_out=2)
         return True
 
-    def click_object(self, name: str, offset=None, time_out=3):
-        # data = self._api.data
-        # if data and not self._should_abort_pathing():
-        #     object = self._api.find_object(name)
-        #     if not object:
-        #         wait(0.1, 0.2)
-        #     self.move_mouse_to_object(object, offset)
-        #     wait(0.1, 0.15)
-        #     mouse.click(button="left")
-        #     wait(0.5)
-        # return True
+    def click_object(self, name: str, offset=None, time_out=4, on_monsters_blocking: Callable[[dict], bool] = None):
         Logger.debug(f"Clicking object '{name}'...")
-        do_adj_y = True
-        do_adj_x = False
-        adj_x = 0
-        adj_y = 0
-        off_x = 0
-        off_y = 0
+        adj_x, adj_y, do_adj_x, do_adj_y = get_next_incremental_offset()
+        off_x, off_y = (0, 0)
         if offset is not None and len(offset) >= 2:
             off_x = offset[0]
             off_y = offset[1]
@@ -176,31 +162,13 @@ class Pather:
                 is_hovered, hovered_unit, hovered_unit_type = self._api.wait_for_hover(object, "objects")
                 if is_hovered: break
                 elif hovered_unit:
-                    is_blocked = True
                     Logger.debug(f"    Found a hovered unit that is the wrong type ({hovered_unit_type}), adjusting offset")
-                    if do_adj_y:
-                        if adj_y > -100:
-                            adj_y -= 25
-                        elif adj_y == -100:
-                            adj_y += 125
-                        elif adj_y < 100:
-                            adj_y += 25
-                        elif adj_y == 100:
-                            adj_y = 0
-                            do_adj_x = True
-                            do_adj_y = False
-                    if do_adj_x:
-                        if adj_x > -100:
-                            adj_x -= 25
-                        elif adj_x == -100:
-                            adj_x += 125
-                        elif adj_x < 100:
-                            adj_x += 25
-                        elif adj_x == 100:
-                            adj_x = -25
-                            adj_y = -25
-                            do_adj_x = True
-                            do_adj_y = True
+                    if hovered_unit_type == "monsters" and callable(on_monsters_blocking):
+                        callback_start = time.time()
+                        on_monsters_blocking(hovered_unit)
+                        start += time.time() - callback_start
+                    else:
+                        adj_x, adj_y, do_adj_x, do_adj_y = get_next_incremental_offset(adj_x, adj_y, do_adj_x, do_adj_y)
                 object = self._api.find_object(object["name"])
 
             Logger.debug(f"    Clicking object, confirmed hover: {is_hovered}")
@@ -265,7 +233,7 @@ class Pather:
 
     def click_item(self, item: dict, char, time_out: float = 6.0, do_traverse=True, do_teleport=False):
         if item:
-            Logger.debug(f"        Clicking item {item['name']} located at {point_str(item['position'])}")
+            Logger.debug(f"    Clicking item {item['name']} located at {point_str(item['position'])}")
         start = time.time()
         if item and do_teleport:
             item = self.teleport_to_item(item, char)
