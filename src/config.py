@@ -1,11 +1,12 @@
 import os, sys, threading, ast, configparser, numpy as np
+from re import I
 from dataclasses import dataclass
 from logger import Logger
 from git import Repo
 # from pickit.pickit_config import PickitConfig, pickit_config
 
 sys.path.insert(0, "./config")
-from pickit_config import PickitConfig, pickit_config
+from pickit_default import PickitConfig, pickit_config
 
 config_lock = threading.Lock()
 
@@ -186,7 +187,7 @@ class Config:
     
     @staticmethod
     def load_data():
-        Logger.info("Loading Config Data")
+        Logger.info("Loading config data")
         is_test_env = os.environ.get('RUN_ENV') == "test"
         Config._config = configparser.ConfigParser()
         Config._config.read('config/params.ini')
@@ -198,9 +199,40 @@ class Config:
         Config._shop_config.read('config/shop.ini')
         Config._custom = configparser.ConfigParser()
         Config._custom_pickit_config = configparser.ConfigParser()
+
         if os.path.exists('config/pickit.custom.ini'):
             Config._custom_pickit_config.read('config/pickit.custom.ini')
             Config.custom_files.append('./config/pickit.custom.ini')
+        
+        if os.path.exists('config/pickit_custom.py'):
+            from pickit_custom import pickit_config
+            if pickit_config is not None:
+                id_rules = pickit_config.IdentifiedItems
+                if id_rules is not None and type(id_rules) is dict:
+                    Config.pickit_config.IdentifiedItems = id_rules
+                    Logger.debug(f"Loaded {len(id_rules)} custom pickit rules for identifying items")
+                
+                unid_rules = pickit_config.UnidentifiedItems
+                if unid_rules is not None and type(unid_rules) is dict:
+                    Config.pickit_config.UnidentifiedItems = unid_rules
+                    Logger.debug(f"Loaded {len(unid_rules)} custom pickit rules for identifying items")
+                
+                pot_rules = pickit_config.ConsumableItems
+                if pot_rules is not None and type(id_rules):
+                    Config.pickit_config.ConsumableItems = pot_rules
+                    Logger.debug(f"Loaded {len(pot_rules)} custom pickit rules for consumable items")
+                
+                basic_rules = pickit_config.BasicItems
+                if basic_rules is not None and type(id_rules):
+                    Config.pickit_config.BasicItems = basic_rules
+                    Logger.debug(f"Loaded {len(basic_rules)} custom pickit rules for basic items")
+                
+                normal_rules = pickit_config.NormalItems
+                if normal_rules is not None and type(id_rules):
+                    Config.pickit_config.NormalItems = normal_rules
+                    Logger.debug(f"Loaded {len(normal_rules)} custom pickit rules for normal items")
+            else:
+                Logger.warning(f"Founding a custom pickit file but failed to parse it")
 
         if not is_test_env:
             if os.path.exists(f'config/custom.ini'):
@@ -208,11 +240,11 @@ class Config:
                 Config._custom.read(f'config/custom.ini')
                 Config.custom_files.append('./config/custom.ini')
 
-            type = Config._select_val("char", "type")
-            if os.path.exists(f'config/{type}.custom.ini'):
-                Logger.debug(f"Loading custom config for build {type}")
-                Config._custom.read(f'config/{type}.custom.ini')
-                Config.custom_files.append(f'./config/{type}.custom.ini')
+            char_type = Config._select_val("char", "type")
+            if os.path.exists(f'config/{char_type}.custom.ini'):
+                Logger.debug(f"Loading custom config for build {char_type}")
+                Config._custom.read(f'config/{char_type}.custom.ini')
+                Config.custom_files.append(f'./config/{char_type}.custom.ini')
 
         Config.general = {
             "saved_games_folder": Config._select_val("general", "saved_games_folder"),

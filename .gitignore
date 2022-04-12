@@ -16,6 +16,7 @@ mybot_v/
 custom.ini
 config/custom.ini
 config/custom.*.ini
+config/pickit_custom.py
 *info_*.png
 .vscode
 .vs/

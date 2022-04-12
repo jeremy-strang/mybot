@@ -5,7 +5,7 @@ from pickit.pickit_item import PickitItem
 from pickit.types import *
 
 sys.path.insert(0, "./config")
-from pickit_config import PickitConfig, pickit_config
+from pickit_default import PickitConfig
 
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
