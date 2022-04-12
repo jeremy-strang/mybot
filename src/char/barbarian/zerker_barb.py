@@ -92,7 +92,7 @@ class ZerkerBarb(Barbarian):
         self._kill_mobs(rules, time_out=20, do_howl=True)
         return True
     
-    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None) -> bool:
+    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None, min_attack_time: float = 1.5) -> bool:
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
             MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),

@@ -97,7 +97,7 @@ class TownManager:
         curr_act = self.get_act_from_current_area()
         if curr_act is None:
             self._ui_manager.wait_for_loading_finish()
-            curr_act = TownManager.get_act_from_current_area()
+            curr_act = self.get_act_from_current_area()
             if curr_act is None: return False
         return self._acts[curr_act].wait_for_tp()
 

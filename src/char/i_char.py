@@ -556,14 +556,14 @@ class IChar:
             pf.update_map()
             dist = math.dist(pf.player_node, node)
             dest = [node]
-            if dist > 40:
+            if dist > 35:
                 route = pf.make_path_astar(pf.player_node, node, True)
                 split_size = math.floor(len(route) / 3)
                 dest = [route[split_size], route[split_size * 2], route[-1]]
             for n in dest:
                 self._pather.traverse(n, self, 0, do_pre_move=True, obj=False, kill=False, time_out=8.0)
                 wait(0.1)
-                picked_up_items += self.kill_uniques(pickit_func, 16.0, looted_uniques)
+                picked_up_items += self.kill_uniques(pickit_func, 16.0, looted_uniques, min_attack_time=2)
                 data = self._api.data
                 if data and poi_callback:
                     for poi, i in enumerate(pois):
@@ -686,7 +686,7 @@ class IChar:
                 unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=60)
         return picked_up_items
 
-    def kill_uniques(self, pickit: FunctionType, time_out: float=9.0, looted_uniques: set=set()) -> bool:
+    def kill_uniques(self, pickit: FunctionType, time_out: float=9.0, looted_uniques: set=set(), min_attack_time: float = 1.5) -> bool:
         raise ValueError("Kill uniques not implemented")
 
     def kill_pindleskin(self) -> bool:
