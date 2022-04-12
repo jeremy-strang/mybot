@@ -409,11 +409,12 @@ class IChar:
             return True
             
         if not in_town and not did_reposition:
-            self.reposition()
-            self.tp_town(did_reposition=True)
+            portal = self._api.find_object("TownPortal")
+            if portal:
+                self.reposition(portal["position_abs"])
+                self.tp_town(did_reposition=True)
         
         Logger.warning("Failed to TP to town using memory, falling back to pixels...")
-
 
         roi_mouse_move = [
             int(self._config.ui_pos["screen_width"] * 0.3),
