@@ -41,22 +41,22 @@ namespace MapAssist.Types
         {
             if (CheckDroppedItem(item, processId) || CheckInventoryItem(item, processId) || CheckVendorItem(item, processId))
             {
-                if (item.IsInStore)
-                {
-                    InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
-                }
-                else
-                {
-                    ItemUnitHashesSeen[processId].Add(item.HashString);
-                }
+                //if (item.IsInStore)
+                //{
+                //    InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
+                //}
+                //else
+                //{
+                //    ItemUnitHashesSeen[processId].Add(item.HashString);
+                //}
 
-                if (item.IsPlayerOwned && item.IsIdentified)
-                {
-                    //InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
-                    //ItemUnitIdsToSkip[processId].Add(item.UnitId);
-                }
+                //if (item.IsPlayerOwned && item.IsIdentified)
+                //{
+                //    //InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
+                //    //ItemUnitIdsToSkip[processId].Add(item.UnitId);
+                //}
 
-                ItemUnitIdsSeen[processId].Add(item.UnitId);
+                //ItemUnitIdsSeen[processId].Add(item.UnitId);
 
                 var (logItem, rule) = LootFilter.Filter(item);
                 if (!logItem) return;
