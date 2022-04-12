@@ -73,7 +73,7 @@ class Config:
             return Config._custom[section][key]
         elif section in Config._config:
             return Config._config[section][key]
-        elif section in Config._custom_pickit_config:
+        elif section in Config._custom_pickit_config and key in Config._custom_pickit_config[section]:
             return Config._custom_pickit_config[section][key]
         elif section in Config._pickit_config:
             return Config._pickit_config[section][key]
@@ -434,13 +434,14 @@ class Config:
             except ValueError as e:
                 print(f"Error with pickit config: {key} ({e})")
 
-        for key in Config._custom_pickit_config["items"]:
-            try:
-                Config.items[key] = Config.parse_item_config_string(key)
-                if Config.items[key].pickit_type and not os.path.exists(f"./assets/items/{key}.png"):
-                    print(f"Warning: You activated {key} in pickit, but there is no img available in assets/items")
-            except ValueError as e:
-                print(f"Error with pickit config: {key} ({e})")
+        if "items" in Config._custom_pickit_config:
+            for key in Config._custom_pickit_config["items"]:
+                try:
+                    Config.items[key] = Config.parse_item_config_string(key)
+                    if Config.items[key].pickit_type and not os.path.exists(f"./assets/items/{key}.png"):
+                        print(f"Warning: You activated {key} in pickit, but there is no img available in assets/items")
+                except ValueError as e:
+                    print(f"Error with pickit config: {key} ({e})")
 
         Config.colors = {}
         for key in Config._game_config["colors"]:
