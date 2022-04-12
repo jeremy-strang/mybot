@@ -423,3 +423,5 @@ class PickitConfig:
         }
 
 pickit_config = PickitConfig()
+
+print("Loaded default pickit config")

@@ -7,7 +7,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 from game_stats import GameStats
 from logger import Logger
 from pickit.pickit_utils import get_pickit_action
-from pickit_config import pickit_config, PickitConfig
+from pickit_default import pickit_config, PickitConfig
 from pickit.types import *
 
 
