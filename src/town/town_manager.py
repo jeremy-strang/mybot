@@ -1,4 +1,5 @@
 import time
+import keyboard
 from typing import Union
 from d2r_mem.d2r_mem_api import D2rMemApi
 from pickit import ItemFinder
@@ -162,7 +163,10 @@ class TownManager:
             return self._acts[curr_act].resurrect(curr_loc)
         new_loc = self.go_to_act(4, curr_loc)
         if not new_loc: return False
-        return self._acts[Location.A4_TOWN_START].resurrect(new_loc)
+        result = self._acts[Location.A4_TOWN_START].resurrect(new_loc)
+        if self._api.wait_for_menu("npc_interact_open", 0.25):
+            keyboard.send("esc")
+        return result
 
     def identify(self, curr_loc: Location) -> Union[Location, bool]:
         curr_act = self.get_act_from_current_area()
