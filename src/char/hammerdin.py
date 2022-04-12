@@ -341,18 +341,19 @@ class Hammerdin(IChar):
                             dist = math.dist(area_pos, data["player_pos_area"])
                             if m_is_mummy:
                                 Logger.debug("Fighting mummy: {0}, id: {1}, distance: {2}".format(m["name"], m["id"], dist))
-                                self._pather.traverse(area_pos, self, randomize=12)
-                                if dist < 8:
-                                    self._cast_hammers(1.4)
-                                    screen_space = world_to_abs(m['position'], self._api._player_pos)
-                                    screen_space = [screen_space[0]-9.5,screen_space[1]-39.5]
-                                    self._cast_holy_bolt(1.2, screen_space)
+                                if dist >= 5:
+                                    self._pather.traverse(area_pos, self, randomize=12)
+                                    dist = math.dist(area_pos, data["player_pos_area"])
+                                if dist < 5:
+                                    self.tele_stomp_monster("holy_bolt", self._cast_duration * 5, m)
                                 aura_after_battle = "cleansing"
                                 num_repositions = 0
                             elif not focus_mummies:
-                                self._pather.traverse(area_pos, self, randomize=12)
-                                if dist < 8:
-                                    self._cast_hammers(1)
+                                if dist >= 5:
+                                    self._pather.traverse(area_pos, self, randomize=12)
+                                    dist = math.dist(area_pos, data["player_pos_area"])
+                                if dist < 5:
+                                    self.tele_stomp_monster("blessed_hammer", self._cast_duration * 5, m)
                                 num_repositions = 0
                             found_a_monster = True
                             break
