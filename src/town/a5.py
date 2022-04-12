@@ -45,7 +45,7 @@ class A5(IAct):
         qual = self._api.find_monster_by_name("QualKehk")
         if qual and not self.interact_with_npc(Npc.QUAL_KEHK):
             if self._npc_manager.open_npc_menu(Npc.QUAL_KEHK):
-                self._npc_manager.press_npc_btn(Npc.QUAL_KEHK, "trade")
+                self._npc_manager.press_npc_btn(Npc.QUAL_KEHK, "resurrect")
             return Location.A5_QUAL_KEHK
         return False
         # #if not self._old_pather.traverse_nodes((curr_loc, Location.A5_QUAL_KEHK), self._char): return False
