@@ -396,16 +396,24 @@ class IChar:
         wait(self._cast_duration)
         return True
 
-    def tp_town(self) -> bool:
+    def tp_town(self, did_reposition: bool = False) -> bool:
         Logger.warning("Opening a town portal...")
         if not self.open_tp(): return False
         wait(1.1, 1.4) # takes quite a while for tp to be visible
         clicked = self._pather.click_object("TownPortal", on_monsters_blocking=lambda m: self.kill_blocking_mobs())
         if not clicked:
             clicked = self._pather.click_object("TownPortal", on_monsters_blocking=lambda m: self.kill_blocking_mobs())
+       
+        in_town = False
         if clicked:
-            return self._pather.wait_for_town(4)
+            in_town = self._pather.wait_for_town(3)
+            
+        if not in_town and not did_reposition:
+            self.reposition()
+            self.tp_town(did_reposition=True)
+        
         Logger.warning("Failed to TP to town using memory, falling back to pixels...")
+
 
         roi_mouse_move = [
             int(self._config.ui_pos["screen_width"] * 0.3),
