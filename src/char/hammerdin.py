@@ -112,15 +112,26 @@ class Hammerdin(IChar):
         self.move(pos_m, force_move=True)
         self._cast_hammers(atk_len)
 
-    def _kill_superunique(self) -> bool:
+    def _kill_super_unique(self, name: str = None, radius: int = 25):
+        center_pos = None
+        if not boss:
+            boss = self._api.find_monster_by_name("Andariel")
+            if not boss:
+                bosses = self._api.find_monsters_by_type(MonsterType.SUPER_UNIQUE)
+                if len(bosses) > 0:
+                    boss = bosses[0]
+        if boss:
+            center_pos = boss["position_area"]
+        elif self._api.data:
+            center_pos = self._api.data["player_pos_area"]
+        boundary = [center_pos[0] - radius, center_pos[1] - radius, radius * 2, radius * 2] if center_pos is not None else None
         rules = [
-            MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE]),
-            MonsterRule(monster_types=[MonsterType.UNIQUE, MonsterType.CHAMPION], max_distance=25),
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+            MonsterRule(monster_types = [MonsterType.UNIQUE]),
         ]
-        if self.can_tp:
-            return self._kill_mobs(rules)
-        else:
-            return self._kill_mobs_walking(rules)
+        if name is not None:
+            rules.append(MonsterRule(names = name))
+        return self._kill_mobs(rules, time_out=25, boundary=boundary)
 
     def kill_pindleskin(self) -> bool:
         rules = [MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE])]
@@ -381,36 +392,44 @@ class Hammerdin(IChar):
         return True
 
     def kill_mephisto(self) -> bool:
-        rules = [
-            MonsterRule(names = ["Mephisto"]),
-            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        ]
-        self._kill_mobs(rules, time_out=20)
-        return True
+        # boss = self._api.find_monster_by_name("Mephisto")
+        # boundary = None
+        # if boss:
+        #     boss_pos = boss["position_area"]
+        #     boundary = [boss_pos[0] - 25, boss_pos[1] - 25, 50, 50]
+        # rules = [
+        #     MonsterRule(names = ["Mephisto"]),
+        #     MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+        # ]
+        # self._kill_mobs(rules, time_out=25, boundary=boundary)
+        # return True
+        return self._kill_super_unique("Mephisto", radius=25)
 
     def kill_andariel(self) -> bool:
-        rules = [
-            MonsterRule(names = ["Andariel"]),
-            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        ]
-        self._kill_mobs(rules, time_out=20)
-        return True
+        # boss = self._api.find_monster_by_name("Andariel")
+        # boundary = None
+        # if boss:
+        #     boss_pos = boss["position_area"]
+        #     boundary = [boss_pos[0] - 25, boss_pos[1] - 25, 50, 50]
+        # rules = [
+        #     MonsterRule(names = ["Andariel"]),
+        #     MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+        # ]
+        # self._kill_mobs(rules, time_out=25, boundary=boundary)
+        # return True
+        return self._kill_super_unique("Andariel", radius=25)
 
     def kill_summoner(self) -> bool:
-        rules = [
-            MonsterRule(names = ["Summoner"]),
-            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        ]
-        self._kill_mobs(rules, time_out=20)
-        return True
+        return self._kill_super_unique("Summoner", radius=15)
 
     def kill_nihlathak(self) -> bool:
-        rules = [
-            MonsterRule(names = ["Nihlathak"]),
-            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        ]
-        self._kill_mobs(rules, time_out=20)
-        return True
+        # rules = [
+        #     MonsterRule(names = ["Nihlathak"]),
+        #     MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+        # ]
+        # self._kill_mobs(rules, time_out=20)
+        # return True
+        return self._kill_super_unique("Nihlathak", radius=20)
 
     def kill_countess(self) -> bool:
         rules = [

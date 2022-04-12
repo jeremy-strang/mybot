@@ -165,6 +165,15 @@ class D2rMemApi:
                     return m
         return None
 
+    def find_monsters_by_type(self, monster_type: str) -> dict:
+        results = []
+        data = self.data
+        if data and "monsters" in data and type(data["monsters"]) is list:
+            for m in data["monsters"]:
+                if monster_type in m["type"]:
+                    results.append(m)
+        return results
+
     def find_npc(self, npc: Npc):
         if self.data:
             for m in self.data["monsters"]:
