@@ -88,4 +88,4 @@ class IAct:
                         self._npc_manager.press_npc_btn(npc, action_btn_key)
                         result = True
                         break
-        return False
+        return result
