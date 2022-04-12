@@ -404,9 +404,9 @@ class IChar:
         if not clicked:
             clicked = self._pather.click_object("TownPortal", on_monsters_blocking=lambda m: self.kill_blocking_mobs())
        
-        in_town = False
-        if clicked:
-            in_town = self._pather.wait_for_town(3)
+        in_town = self._pather.wait_for_town(3)
+        if in_town:
+            return True
             
         if not in_town and not did_reposition:
             self.reposition()
