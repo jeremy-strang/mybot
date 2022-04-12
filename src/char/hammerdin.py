@@ -112,9 +112,9 @@ class Hammerdin(IChar):
         self.move(pos_m, force_move=True)
         self._cast_hammers(atk_len)
 
-    def _kill_super_unique(self, name: str = None, radius: int = 25):
+    def _kill_super_unique(self, name: str = None, radius: int = 20):
         center_pos = None
-        boss = self._api.find_monster_by_name("Andariel")
+        boss = self._api.find_monster_by_name(name) if name is not None else None
         if not boss:
             bosses = self._api.find_monsters_by_type(MonsterType.SUPER_UNIQUE)
             if len(bosses) > 0:
@@ -141,10 +141,10 @@ class Hammerdin(IChar):
             return self._kill_mobs_walking(rules)
 
     def kill_eldritch(self) -> bool:
-        return self._kill_superunique()
+        return self._kill_super_unique("Eldritch")
 
     def kill_shenk(self):
-        return self._kill_superunique()
+        return self._kill_super_unique("Shenk")
 
     def kill_council(self) -> bool:
         if not self._do_pre_move:
@@ -432,11 +432,7 @@ class Hammerdin(IChar):
         return self._kill_super_unique("Nihlathak", radius=20)
 
     def kill_countess(self) -> bool:
-        rules = [
-            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        ]
-        self._kill_mobs(rules, time_out=20)
-        return True
+        return self._kill_super_unique("Countess")
 
     def _kill_council_with_tp(self):
         sequence = [
