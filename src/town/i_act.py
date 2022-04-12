@@ -88,6 +88,4 @@ class IAct:
                         self._npc_manager.press_npc_btn(npc, action_btn_key)
                         result = True
                         break
-        if self._api.wait_for_menu("npc_interact_open", time_out=0.5):
-            keyboard.send("esc")
         return False
