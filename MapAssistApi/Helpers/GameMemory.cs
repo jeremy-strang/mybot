@@ -237,7 +237,6 @@ namespace MapAssist.Helpers
                     if (item.IsPlayerOwned && item.IsIdentified && !Items.InventoryItemUnitIdsToSkip[_currentProcessId].Contains(item.UnitId))
                     {
                         item.IsCached = false;
-
                     }
 
                     var enableInventoryFilterCheck = item.IsIdentified && item.IsPlayerOwned && !item.IsInSocket;

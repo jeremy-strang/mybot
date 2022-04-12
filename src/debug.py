@@ -57,24 +57,67 @@ from monsters import sort_and_filter_monsters
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
 
-if __name__ == "__main__":
-    from utils.coordinates import world_to_abs
-    from utils.custom_mouse import mouse
-        
-    def stop_debug(game_controller, overlay):
-        ui_manager.abort = True
-        if overlay is not None: overlay.stop_overlay()
-        on_exit(game_controller, ["capslock", "space"])
+class Debug:
+    def __init__(self):
+        self._game_controller = None
+        self._config = Config()
+        self._screen = Screen()
+        self._game_stats = GameStats()
+        self._obs_recorder = ObsRecorder(self._config)
+        self._overlay = None
+        self._overlay_thread = None
 
-    def start_overlay(bot, game_stats):
+        self._api = D2rMemApi(self._config.custom_files)
+        self._api_thread = threading.Thread(target=self._api.start)
+        self._api_thread.daemon = False
+        self._api_thread.start()
+
+        self._game_stats = GameStats() 
+        self._template_finder = TemplateFinder(self._screen)
+        self._old_pather = OldPather(self._screen, self._template_finder)
+        self._pather = Pather(self._screen, self._api)
+        self._item_finder = ItemFinder(self._config)
+        self._bot = Bot(self._screen, self._game_stats, self._template_finder, self._api, self._obs_recorder)
+        self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._api, self._game_stats)
+        self._belt_manager = BeltManager(self._screen, self._template_finder, self._api)
+        self._town_manager = self._bot._town_manager
+        self._a1 = self._town_manager.a1
+        self._a2 = self._town_manager.a2
+        self._a3 = self._town_manager.a3
+        self._a4 = self._town_manager.a4
+
+        self._char = Hammerdin(self._config.hammerdin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
+        self._pixel_pickit = PixelPickit(self._screen, self._item_finder, self._ui_manager, self._belt_manager, self._api, self._char, self._pather, self._game_stats)
+        self._pickit = Pickit(self._screen, self._ui_manager, self._belt_manager, self._char, self._pather, self._api, self._game_stats)
+        #self._char = ZerkerBarb(self._config.zerker_barb, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
+        self._char.discover_capabilities()
+        self._pindleskin = self._bot._pindleskin # Pindleskin(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._shenk = self._bot._shenk # ShenkEldritch(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._nihlathak = self._bot._nihlathak # Nihlathak(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._summoner = self._bot._summoner # Summoner(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._travincal = self._bot._travincal # Travincal(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._baal = self._bot._baal # Baal(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._mephisto = self._bot._mephisto # Mephisto(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._andariel = self._bot._andariel # Andariel(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._countess = self._bot._countess # Countess(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._diablo = self._bot._diablo # Diablo(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._pit = self._bot._pit # Pit(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+        self._stony_tomb = self._bot._stony_tomb # StonyTomb(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
+
+    def stop(self):
+        self._ui_manager.abort = True
+        if self._overlay is not None: self._overlay.stop_overlay()
+        on_exit(self._game_controller, ["capslock", "space"])
+
+    def start_overlay(self):
         print("Overlay thread starting...")
-        overlay = Overlay(bot, game_stats)
-        overlay_thread = threading.Thread(target=overlay.init)
-        overlay_thread.daemon = True
-        overlay_thread.start()
-        return overlay
+        self._overlay = Overlay(self._bot, self._game_stats)
+        self._overlay_thread = threading.Thread(target=self._overlay.init)
+        self._overlay_thread.daemon = True
+        self._overlay_thread.start()
+        return self._overlay
     
-    def load_pickle(file_path: str):
+    def load_pickle(self, file_path: str):
         data = None
         try:
             with open(file_path,"rb") as f:
@@ -83,67 +126,60 @@ if __name__ == "__main__":
             print(f"Error loading pickle file {file_path}:\n{e}")
             traceback.print_exc()
         return data
-
-    overlay = None
-    game_stats = None
-    game_controller = None
-    try:
-        config = Config()
-        screen = Screen()
-        game_stats = GameStats()
-        obs_recorder = ObsRecorder(config)
-
-        api = D2rMemApi(config.custom_files)
-        api_thread = threading.Thread(target=api.start)
-        api_thread.daemon = False
-        api_thread.start()
-
-        game_stats = GameStats() 
-        template_finder = TemplateFinder(screen)
-        old_pather = OldPather(screen, template_finder)
-        pather = Pather(screen, api)
-        item_finder = ItemFinder(config)
-        ui_manager = UiManager(screen, template_finder, obs_recorder, api, game_stats)
-        belt_manager = BeltManager(screen, template_finder, api)
-
-        char = Hammerdin(config.hammerdin, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        pixel_pickit = PixelPickit(screen, item_finder, ui_manager, belt_manager, api, char, pather, game_stats)
-        pickit = Pickit(screen, ui_manager, belt_manager, char, pather, api, game_stats)
-        # char = ZerkerBarb(config.zerker_barb, screen, template_finder, ui_manager, api, obs_recorder, old_pather, pather)
-        char.discover_capabilities()
-        bot = Bot(screen, game_stats, template_finder, api, obs_recorder)
-        pindleskin = bot._pindleskin # Pindleskin(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        shenk = bot._shenk # ShenkEldritch(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        nihlathak = bot._nihlathak # Nihlathak(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        summoner = bot._summoner # Summoner(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        travincal = bot._travincal # Travincal(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        baal = bot._baal # Baal(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        mephisto = bot._mephisto # Mephisto(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        andariel = bot._andariel # Andariel(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        countess = bot._countess # Countess(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        diablo = bot._diablo # Diablo(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        pit = bot._pit # Pit(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        stony_tomb = bot._stony_tomb # StonyTomb(screen, old_pather, town_manager, ui_manager, char, pickit, api, pather, obs_recorder)
-        
+    
+    def start_api(self):
         data = None
         print(("-" * 80) + "\n\nStarting API...")
         while data is None:
             wait(0.2)
-            data = api.get_data()
+            data = self._api.get_data()
+        return data
+
+if __name__ == "__main__":
+    from utils.coordinates import world_to_abs
+    from utils.custom_mouse import mouse
+        
+    # def stop_debug(game_controller, overlay):
+    #     ui_manager.abort = True
+    #     if overlay is not None: overlay.stop_overlay()
+    #     on_exit(game_controller, ["capslock", "space"])
+
+    # def start_overlay(bot, game_stats):
+    #     print("Overlay thread starting...")
+    #     overlay = Overlay(bot, game_stats)
+    #     overlay_thread = threading.Thread(target=overlay.init)
+    #     overlay_thread.daemon = True
+    #     overlay_thread.start()
+    #     return overlay
+    
+    # def load_pickle(file_path: str):
+    #     data = None
+    #     try:
+    #         with open(file_path,"rb") as f:
+    #             data = pickle.load(f)
+    #     except BaseException as e:
+    #         print(f"Error loading pickle file {file_path}:\n{e}")
+    #         traceback.print_exc()
+    #     return data
+    debug = None
+    try:
+        debug = Debug()
+        debug.start_api()
         
         # overlay = start_overlay(bot, game_stats)
         # pp.pprint(config.items)
 
-        def do_stuff():
+        def do_stuff(debug):
             print("Doing stuff...")
             wait(.5)
             start = time.time()
             try:
-                data = api.get_data()
+                data = debug._api.get_data()
 
                 # pather.click_object("TownPortal")
                 
-                bot._town_manager.a1.resurrect(None)
+                debug._pickit.pick_up_items()
+
                 
                 # pickled = load_pickle("pickles/pickle_d2r_mem_Travincal_20220411_214023.p")
                 # print(f"Loaded pickle data, type: {type(pickled)}")
@@ -175,7 +211,6 @@ if __name__ == "__main__":
 
                 # belt_manager.update_pot_needs()
 
-                # pickit.pick_up_items()
                 # char.tp_town()
 
                 # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
@@ -236,13 +271,13 @@ if __name__ == "__main__":
             # stop_debug(game_controller, overlay)
             print("Done doing stuff")
 
-        dump_pickles = False # config.advanced_options["dump_data_to_pickle_for_debugging"]
+        dump_pickles = False # debug._config.advanced_options["dump_data_to_pickle_for_debugging"]
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
-        keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file(pickle=dump_pickles))
-        keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: do_stuff()) #lambda: pit.battle(True))
-        keyboard.add_hotkey(config.advanced_options["exit_key"], lambda: stop_debug(game_controller, overlay))
-        keyboard.add_hotkey(config.advanced_options["graphic_debugger_key"], lambda: start_overlay(bot, game_stats))
+        keyboard.add_hotkey(debug._config.advanced_options['save_d2r_data_to_file_key'], lambda: debug._api.write_data_to_file(pickle=dump_pickles))
+        keyboard.add_hotkey(debug._config.advanced_options["resume_key"], lambda: do_stuff(debug)) #lambda: pit.battle(True))
+        keyboard.add_hotkey(debug._config.advanced_options["exit_key"], lambda: debug.stop())
+        keyboard.add_hotkey(debug._config.advanced_options["graphic_debugger_key"], lambda: debug.start_overlay())
         print("Ready!\n\n" + ("-" * 80))
         keyboard.wait()
 
@@ -251,6 +286,7 @@ if __name__ == "__main__":
     except:
         traceback.print_exc()
     finally:
-        stop_debug(game_controller, overlay)
+        if debug:
+            debug.stop()
 
 # python src/debug.py   

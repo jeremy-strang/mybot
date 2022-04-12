@@ -117,6 +117,22 @@ namespace MapAssist.MyBot
             return _townNames.Contains(currentArea);
         }
 
+        private bool ShouldUpdate(UnitItem item)
+        {
+            var result = false;
+            if (item != null && item.ItemModeMapped == ItemModeMapped.Ground)
+            {
+                result = item.ItemData.ItemQuality == ItemQuality.UNIQUE ||
+                    item.ItemData.ItemQuality == ItemQuality.SET ||
+                    item.Item == Types.Item.Jewel ||
+                    item.Item == Types.Item.SmallCharm ||
+                    item.Item == Types.Item.GrandCharm ||
+                    item.Item == Types.Item.Jewel ||
+                    item.Item.ToString().Contains("Rune");
+            }
+            return result;
+        }
+
         private List<StatKeyValuePair> GetItemStats(UnitItem item, PlayerClass playerClass)
         {
             List<StatKeyValuePair> istats = null;
@@ -414,6 +430,11 @@ namespace MapAssist.MyBot
                             if (item.ItemMode == ItemMode.ONCURSOR)
                             {
                                 item_on_cursor = true;
+                            }
+
+                            if (ShouldUpdate(item))
+                            {
+                                item.Update();
                             }
 
                             if (item.ItemModeMapped == ItemModeMapped.Ground)

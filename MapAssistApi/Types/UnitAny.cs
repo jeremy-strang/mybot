@@ -70,7 +70,7 @@ namespace MapAssist.Types
             Path = other.Path;
         }
 
-        protected bool Update()
+        public bool Update()
         {
             if (IsValidPointer)
             {
