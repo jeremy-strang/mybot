@@ -454,7 +454,11 @@ class Hammerdin(IChar):
         return True
 
     def kill_blocking_mobs(self) -> bool:
-        return self._kill_mobs(None, None, 10)
+        boundary = None
+        if self._api.data:
+            player_pos = self._api.data["player_pos_area"]
+            boundary = [player_pos[0] - 10, player_pos[1] - 10, 20, 20]
+        return self._kill_mobs(None, None, 10, boundary=boundary)
 
     def _kill_mobs(self,
                   prioritize: list[MonsterRule],

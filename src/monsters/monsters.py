@@ -33,7 +33,7 @@ def sort_and_filter_monsters(data,
     def _filter_check(m):
         if ignore_dead and m["mode"] == 12:
             return False
-        if boundary is not None and not is_in_roi(boundary, m["position"] - data["area_origin"]):
+        if boundary is not None and not is_in_roi(boundary, m["position_area"]):
             return False
         if rules is not None and len(rules) > 0 and score_monster(m, rules) <= min_score:
             return False
