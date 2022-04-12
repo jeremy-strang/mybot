@@ -11,7 +11,7 @@ from pathing import Pather
 from d2r_mem import D2rMemApi
 from typing import Union
 from template_finder import TemplateFinder
-from utils.misc import wait, pprint
+from utils.misc import wait
 from utils.custom_mouse import mouse
 
 class IAct:
