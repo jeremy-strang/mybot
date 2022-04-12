@@ -112,7 +112,7 @@ class Hammerdin(IChar):
         self.move(pos_m, force_move=True)
         self._cast_hammers(atk_len)
 
-    def _kill_super_unique(self, name: str = None, radius: int = 20):
+    def _kill_super_unique(self, name: str = None, radius: int = 20, min_attack_time: float = 0):
         center_pos = None
         boss = self._api.find_monster_by_name(name) if name is not None else None
         if not boss:
@@ -131,20 +131,19 @@ class Hammerdin(IChar):
         ]
         if name is not None:
             rules.append(MonsterRule(names = name))
-        return self._kill_mobs(rules, time_out=25, boundary=boundary)
+        if self.can_tp:
+            return self._kill_mobs(rules, time_out=25, boundary=boundary, min_attack_time=min_attack_time)
+        else:
+            return self._kill_mobs_walking(rules, time_out=25, boundary=boundary, min_attack_time=min_attack_time)
 
     def kill_pindleskin(self) -> bool:
-        rules = [MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE])]
-        if self.can_tp:
-            return self._kill_mobs(rules)
-        else:
-            return self._kill_mobs_walking(rules)
+        return self._kill_super_unique("Pindleskin", self._cast_duration * 7)
 
     def kill_eldritch(self) -> bool:
-        return self._kill_super_unique("Eldritch")
+        return self._kill_super_unique("Eldritch", self._cast_duration * 7)
 
     def kill_shenk(self):
-        return self._kill_super_unique("Shenk")
+        return self._kill_super_unique("Shenk", self._cast_duration * 7)
 
     def kill_council(self) -> bool:
         if not self._do_pre_move:
@@ -392,47 +391,19 @@ class Hammerdin(IChar):
         return True
 
     def kill_mephisto(self) -> bool:
-        # boss = self._api.find_monster_by_name("Mephisto")
-        # boundary = None
-        # if boss:
-        #     boss_pos = boss["position_area"]
-        #     boundary = [boss_pos[0] - 25, boss_pos[1] - 25, 50, 50]
-        # rules = [
-        #     MonsterRule(names = ["Mephisto"]),
-        #     MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        # ]
-        # self._kill_mobs(rules, time_out=25, boundary=boundary)
-        # return True
         return self._kill_super_unique("Mephisto", radius=25)
 
     def kill_andariel(self) -> bool:
-        # boss = self._api.find_monster_by_name("Andariel")
-        # boundary = None
-        # if boss:
-        #     boss_pos = boss["position_area"]
-        #     boundary = [boss_pos[0] - 25, boss_pos[1] - 25, 50, 50]
-        # rules = [
-        #     MonsterRule(names = ["Andariel"]),
-        #     MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        # ]
-        # self._kill_mobs(rules, time_out=25, boundary=boundary)
-        # return True
         return self._kill_super_unique("Andariel", radius=25)
 
     def kill_summoner(self) -> bool:
         return self._kill_super_unique("Summoner", radius=15)
 
     def kill_nihlathak(self) -> bool:
-        # rules = [
-        #     MonsterRule(names = ["Nihlathak"]),
-        #     MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
-        # ]
-        # self._kill_mobs(rules, time_out=20)
-        # return True
         return self._kill_super_unique("Nihlathak", radius=20)
 
     def kill_countess(self) -> bool:
-        return self._kill_super_unique("Countess")
+        return self._kill_super_unique("Countess", radius=20)
 
     def _kill_council_with_tp(self):
         sequence = [
@@ -473,7 +444,7 @@ class Hammerdin(IChar):
         if self._api.data:
             player_pos = self._api.data["player_pos_area"]
             boundary = [player_pos[0] - 10, player_pos[1] - 10, 20, 20]
-        return self._kill_mobs(None, None, 10, boundary=boundary)
+        return self._kill_mobs(None, None, 10, boundary=boundary, min_attack_time=2)
 
     def _kill_mobs(self,
                   prioritize: list[MonsterRule],
@@ -481,7 +452,8 @@ class Hammerdin(IChar):
                   time_out: float = 40.0,
                   boundary: tuple[float, float, float, float] = None,
                   reposition_pos: tuple[float, float] = None,
-                  reposition_time: float = 7.0
+                  reposition_time: float = 7.0,
+                  min_attack_time: float = 0,
                 ) -> bool:
         start = time.time()
         last_move = start
@@ -509,7 +481,7 @@ class Hammerdin(IChar):
                             if monster and monster["dist"] <= 3:
                                 keyboard.send(self._skill_hotkeys["concentration"])
                                 wait(0.05, 0.07)
-                                if not self.tele_stomp_monster("blessed_hammer", 3.0, monster, max_distance=5):
+                                if not self.tele_stomp_monster("blessed_hammer", 3.0, monster, max_distance=5, min_attack_time=min_attack_time):
                                     wait(0.1)
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
@@ -525,6 +497,7 @@ class Hammerdin(IChar):
                   boundary: Tuple = None,
                   reposition_pos = None,
                   reposition_time: float = 7.0,
+                  min_attack_time: float = 0,
                 ) -> bool:
         start = time.time()
         last_move = start
@@ -551,7 +524,7 @@ class Hammerdin(IChar):
                         if monster is not None and monster["mode"] != 12:
                             keyboard.send(self._skill_hotkeys["concentration"])
                             wait(0.04, 0.05)
-                            self._cast_hammers((self._cast_duration - 0.01) * 5)
+                            self._cast_hammers(max(self._cast_duration * 4, min_attack_time))
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
             elapsed = time.time() - start
@@ -559,7 +532,7 @@ class Hammerdin(IChar):
         Logger.debug(f"    Finished killing mobs, combat took {elapsed} sec")
         return True
 
-    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None):
+    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None, min_attack_time: float = 1.5):
         start = time.time()
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
@@ -592,7 +565,7 @@ class Hammerdin(IChar):
                                 keyboard.send(self._skill_hotkeys["concentration"])
                                 wait(0.04, 0.06)
                                 nearby = len(list(filter(lambda m: m["dist"] < 15, self._api.data["monsters"])))
-                                if self.tele_stomp_monster("blessed_hammer", self._cast_duration * 8, monster, max_distance=5, stop_when_dead=nearby < 5):
+                                if self.tele_stomp_monster("blessed_hammer", self._cast_duration * 8, monster, max_distance=5, stop_when_dead=nearby < 5, min_attack_time=min_attack_time):
                                     picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
                                 wait(0.1)
                                 last_move = time.time()

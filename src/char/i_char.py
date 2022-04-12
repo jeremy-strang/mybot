@@ -13,7 +13,7 @@ from pathing import PathFinder, Pather, OldPather
 from monsters import MonsterType
 from char.skill import Skill
 from utils.custom_mouse import mouse
-from utils.misc import rotate_vec, unit_vector, wait, cut_roi, is_in_roi, color_filter
+from utils.misc import point_str, rotate_vec, unit_vector, wait, cut_roi, is_in_roi, color_filter
 
 from logger import Logger
 from config import Config
@@ -495,11 +495,17 @@ class IChar:
                 mouse.release(button=mouse_button)
             keyboard.send(self._char_config["stand_still"], do_press=False)
     
-    def tele_stomp_monster(self, skill_key: str, time_in_s: float, monster: dict, mouse_button: str = "left", stop_when_dead=True, max_distance=4.0) -> bool:
+    def tele_stomp_monster(self, skill_key: str,
+                           time_in_s: float,
+                           monster: dict,
+                           mouse_button: str = "left",
+                           stop_when_dead=True,
+                           max_distance=4.0,
+                           min_attack_time=0) -> bool:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
                 mid = monster['id']
-                Logger.debug(f"Attacking monster {monster['type']} '{monster['name']}' (ID: {mid}) with {skill_key}, distance: {round(monster['dist'], 2)}, mouse: ({round(monster['position'][0], 2)}, {round(monster['position'][0], 2)})")
+                Logger.debug(f"    Attacking {monster['type']} monster '{monster['name']}' (ID: {mid}) with {skill_key}, distance: {round(monster['dist'], 1)}, pos: {point_str(monster['position_area'])}")
                 keyboard.send(self._char_config["stand_still"], do_release=False)
                 wait(0.03, 0.04)
                 keyboard.send(self._skill_hotkeys[skill_key])
@@ -513,14 +519,15 @@ class IChar:
                     mouse.press(button=mouse_button)
                     wait(0.03, 0.04)
                     monster = self._api.find_monster(mid)
-                    if monster is None or monster["dist"] > max_distance or (monster["mode"] == 12 and stop_when_dead): break
+                    if monster is None or monster["dist"] > max_distance or (monster["mode"] == 12 and stop_when_dead) or time.time() - start < min_attack_time:
+                        break
                 mouse.release(button=mouse_button)
                 wait(0.02, 0.03)
                 keyboard.release(self._config.char["stand_still"])
                 wait(0.02, 0.03)
                 return True
             else:
-                Logger.error(f"Invalid monster {monster}")
+                Logger.error(f"Invalid monster: {monster}")
         return False
 
     def clear_zone(self,
