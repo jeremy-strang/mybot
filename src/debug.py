@@ -143,11 +143,14 @@ if __name__ == "__main__":
 
                 # pather.click_object("TownPortal")
                 
-                pickled = load_pickle("pickles/pickle_d2r_mem_KurastDocks_20220411_195809.p")
+                pickled = load_pickle("pickles/pickle_d2r_mem_Travincal_20220411_214023.p")
                 print(f"Loaded pickle data, type: {type(pickled)}")
                 print(f"    current_area:   {pickled['current_area']}")
                 print(f"    map shape:      {pickled['map'].shape}")
                 print(f"    map size:       {pickled['map'].size}")
+                for m in pickled["monsters"]:
+                    if "Unique" in m["type"]:
+                        pp.pprint(m)
 
                 # print(f"monitor? or abs?: {mouse.get_position()}")
                 # print(f"convert_monitor_to_screen?: {screen.convert_monitor_to_screen(mouse.get_position())}")

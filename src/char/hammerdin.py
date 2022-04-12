@@ -460,6 +460,10 @@ class Hammerdin(IChar):
         elapsed = 0
         monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
         if len(monsters) == 0: return True
+        # for m in monsters:
+        #     if "conviction" in m["type"] or "cursed" in m["type"]:
+        #         self._api.write_data_to_file(file_prefix="monster_type_check")
+        #         break
         Logger.debug(f"Beginning combat against {len(monsters)} monsters...")
         while elapsed < time_out and len(monsters) > 0:
             data = self._api.get_data()

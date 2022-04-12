@@ -1,3 +1,4 @@
+from lib2to3.pytree import Base
 import pickle
 import traceback
 import os
@@ -52,26 +53,32 @@ class D2rMemApi:
         Logger.debug(f"Updated data {n} times in {round(elapsed, 2)} sec ({round(n_per_sec, 2)} per sec)")
         return (elapsed, n, n_per_sec)
 
-    def write_data_to_file(self, file_path=None, pickle: bool = False):
+    def write_data_to_file(self, file_path=None, pickle: bool = False, file_prefix: str = ""):
         if pickle:
             self.write_data_to_pickle(file_path)
         else:
+            try:
+                if file_path is None:
+                    current_area = self.data["current_area"]
+                    file_path = f"./stats/{file_prefix if file_prefix is not None else 'mybot_data'}_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
+                with open(file_path, "w") as f:
+                    f.write(json.dumps(json.loads(self._raw_data_str), indent=4, sort_keys=True))
+                    f.close()
+                Logger.info(f"Saved D2R memory snapshot to {os.path.normpath(file_path)}")
+            except BaseException as e:
+                Logger.error(f"Error dumping JSON data: {e}")
+
+    def write_data_to_pickle(self, file_path=None, file_prefix: str = ""):
+        try:
             if file_path is None:
                 current_area = self.data["current_area"]
-                file_path = f"./stats/mybot_data_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
-            with open(file_path, "w") as f:
-                f.write(json.dumps(json.loads(self._raw_data_str), indent=4, sort_keys=True))
+                file_path = f"./pickles/{file_prefix if file_prefix is not None else 'mybot_data'}_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
+            with open(file_path, "wb") as f:
+                pickle.dump(self.data, f)
                 f.close()
-            Logger.info(f"Saved D2R memory snapshot to {os.path.normpath(file_path)}")
-
-    def write_data_to_pickle(self, file_path=None):
-        if file_path is None:
-            current_area = self.data["current_area"]
-            file_path = f"./pickles/pickle_d2r_mem_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.p"
-        with open(file_path, "wb") as f:
-            pickle.dump(self.data, f)
-            f.close()
-        Logger.info(f"Pickled D2R memory snapshot to {os.path.normpath(file_path)}")
+            Logger.info(f"Pickled D2R memory snapshot to {os.path.normpath(file_path)}")
+        except BaseException as e:
+            Logger.error(f"Error pickling data: {e}")
 
     def get_data(self):
         return self.data
