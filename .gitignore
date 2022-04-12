@@ -31,3 +31,4 @@ config/*.custom.ini
 binary/*.dll
 binary/*.*
 logs/
+pickles/

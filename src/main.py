@@ -110,7 +110,7 @@ def main():
     print(f"    Stop Bot:                 {config.advanced_options['exit_key']} key")
     print("=" * 80 + "\n")
 
-    dump_pickles = pickle=config.advanced_options["dump_data_to_pickle_for_debugging"]
+    dump_pickles = config.advanced_options["dump_data_to_pickle_for_debugging"]
     keyboard.add_hotkey(config.advanced_options['auto_settings_key'], lambda: adjust_settings())
     keyboard.add_hotkey(config.advanced_options['graphic_debugger_key'], lambda: start_or_stop_graphic_debugger(controllers))
     keyboard.add_hotkey(config.advanced_options['restore_settings_from_backup_key'], lambda: restore_settings_from_backup())

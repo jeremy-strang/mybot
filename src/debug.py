@@ -12,6 +12,7 @@ from pickit.pickit import Pickit
 import keyboard
 import os
 import sys
+import pickle
 from monsters.monster_rule import MonsterRule
 from npc_manager import Npc
 from obs import obs_recorder
@@ -72,6 +73,16 @@ if __name__ == "__main__":
         overlay_thread.daemon = True
         overlay_thread.start()
         return overlay
+    
+    def load_pickle(file_path: str):
+        data = None
+        try:
+            with open(file_path,"rb") as f:
+                data = pickle.load(f)
+        except BaseException as e:
+            print(f"Error loading pickle file {file_path}:\n{e}")
+            traceback.print_exc()
+        return data
 
     overlay = None
     game_stats = None
@@ -130,7 +141,13 @@ if __name__ == "__main__":
             try:
                 data = api.get_data()
 
-                pather.click_object("TownPortal")
+                # pather.click_object("TownPortal")
+                
+                pickled = load_pickle("pickles/pickle_d2r_mem_KurastDocks_20220411_195809.p")
+                print(f"Loaded pickle data, type: {type(pickled)}")
+                print(f"    current_area:   {pickled['current_area']}")
+                print(f"    map shape:      {pickled['map'].shape}")
+                print(f"    map size:       {pickled['map'].size}")
 
                 # print(f"monitor? or abs?: {mouse.get_position()}")
                 # print(f"convert_monitor_to_screen?: {screen.convert_monitor_to_screen(mouse.get_position())}")
@@ -214,7 +231,7 @@ if __name__ == "__main__":
             # stop_debug(game_controller, overlay)
             print("Done doing stuff")
 
-        dump_pickles = pickle=config.advanced_options["dump_data_to_pickle_for_debugging"]
+        dump_pickles = config.advanced_options["dump_data_to_pickle_for_debugging"]
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file(pickle=dump_pickles))

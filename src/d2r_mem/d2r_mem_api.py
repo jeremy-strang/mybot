@@ -67,7 +67,7 @@ class D2rMemApi:
     def write_data_to_pickle(self, file_path=None):
         if file_path is None:
             current_area = self.data["current_area"]
-            file_path = f"./pickles/pickle_d2r_mem_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.json"
+            file_path = f"./pickles/pickle_d2r_mem_{current_area}_{time.strftime('%Y%m%d_%H%M%S')}.p"
         with open(file_path, "wb") as f:
             pickle.dump(self.data, f)
             f.close()
