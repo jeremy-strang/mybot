@@ -142,7 +142,8 @@ if __name__ == "__main__":
                 data = api.get_data()
 
                 # pather.click_object("TownPortal")
-                char.tp_town()
+                
+                bot._town_manager.a1.resurrect(None)
                 
                 # pickled = load_pickle("pickles/pickle_d2r_mem_Travincal_20220411_214023.p")
                 # print(f"Loaded pickle data, type: {type(pickled)}")
@@ -235,7 +236,7 @@ if __name__ == "__main__":
             # stop_debug(game_controller, overlay)
             print("Done doing stuff")
 
-        dump_pickles = config.advanced_options["dump_data_to_pickle_for_debugging"]
+        dump_pickles = False # config.advanced_options["dump_data_to_pickle_for_debugging"]
 
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(config.advanced_options['save_d2r_data_to_file_key'], lambda: api.write_data_to_file(pickle=dump_pickles))

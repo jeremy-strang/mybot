@@ -35,7 +35,7 @@ class A5(IAct):
         malah = self._api.find_monster_by_name("Malah")
         if malah and not self._pather.walk_to_monster(malah["id"]):
             self._pather.traverse_walking("Malah", self._char, obj=False, threshold=16, static_npc=True)
-        if not self.trade_with_npc(Npc.MALAH):
+        if not self.interact_with_npc(Npc.MALAH):
             if self._npc_manager.open_npc_menu(Npc.MALAH):
                 self._npc_manager.press_npc_btn(Npc.MALAH, "trade")
         return Location.A5_MALAH
@@ -43,7 +43,7 @@ class A5(IAct):
     def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
         self._pather.walk_to_poi("Harrogath", time_out=3)
         qual = self._api.find_monster_by_name("QualKehk")
-        if qual and not self.trade_with_npc(Npc.QUAL_KEHK):
+        if qual and not self.interact_with_npc(Npc.QUAL_KEHK):
             if self._npc_manager.open_npc_menu(Npc.QUAL_KEHK):
                 self._npc_manager.press_npc_btn(Npc.QUAL_KEHK, "trade")
             return Location.A5_QUAL_KEHK
@@ -83,7 +83,7 @@ class A5(IAct):
         #     self._npc_manager.press_npc_btn(Npc.LARZUK, "trade_repair")
         # return Location.A5_LARZUK
         if not self._pather.walk_to_position([141, 43]): return False
-        if not self.trade_with_npc(Npc.LARZUK, "trade_repair"):
+        if not self.interact_with_npc(Npc.LARZUK, "trade_repair"):
             self._npc_manager.open_npc_menu(Npc.LARZUK)
             self._npc_manager.press_npc_btn(Npc.LARZUK, "trade_repair")
         return Location.A5_LARZUK

@@ -28,7 +28,7 @@ class A3(IAct):
 
     def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
         if not self._pather.traverse_walking("Ormus", self._char, obj=False, threshold=16, static_npc=True): return False
-        if not self.trade_with_npc(Npc.ORMUS):
+        if not self.interact_with_npc(Npc.ORMUS):
             if self._npc_manager.open_npc_menu(Npc.ORMUS):
                 self._npc_manager.press_npc_btn(Npc.ORMUS, "trade")
         return Location.A3_ORMUS

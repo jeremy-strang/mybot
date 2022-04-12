@@ -54,6 +54,7 @@ class D2rMemApi:
         return (elapsed, n, n_per_sec)
 
     def write_data_to_file(self, file_path=None, pickle: bool = False, file_prefix: str = ""):
+        print(pickle)
         if pickle:
             self.write_data_to_pickle(file_path)
         else:

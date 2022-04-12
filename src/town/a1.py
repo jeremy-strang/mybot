@@ -23,11 +23,19 @@ class A1(IAct):
     def can_trade_and_repair(self) -> bool: return True
 
     def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Kashya", self._char, obj=False, threshold=10, static_npc=True): return False
-        if self._npc_manager.open_npc_menu(Npc.KASHYA):
-            self._npc_manager.press_npc_btn(Npc.KASHYA, "resurrect")
-            return Location.A1_KASHYA_CAIN
-        return False
+        # if not self._pather.traverse_walking("Kashya", self._char, obj=False, threshold=10, static_npc=True): return False
+        # if self._npc_manager.open_npc_menu(Npc.KASHYA):
+        #     self._npc_manager.press_npc_btn(Npc.KASHYA, "resurrect")
+        #     return Location.A1_KASHYA_CAIN
+        # return False
+        npc = self._api.find_monster_by_name(Npc.KASHYA)
+        if npc:
+            self._pather.walk_to_monster(npc)
+            if self.interact_with_npc(Npc.KASHYA, "resurrect"):
+                return Location.A1_KASHYA_CAIN
+        self._npc_manager.open_npc_menu(Npc.KASHYA)
+        self._npc_manager.press_npc_btn(Npc.KASHYA, "resurrect")
+        return Location.A1_KASHYA_CAIN
 
     def open_wp(self, curr_loc: Location) -> bool:
         if not self._pather.traverse_walking("Rogue Encampment", self._char, obj=False, threshold=10): return False
@@ -52,7 +60,7 @@ class A1(IAct):
 
     def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
         if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
-        if not self.trade_with_npc(Npc.AKARA):
+        if not self.interact_with_npc(Npc.AKARA, "trade"):
             self._npc_manager.open_npc_menu(Npc.AKARA)
             self._npc_manager.press_npc_btn(Npc.AKARA, "trade")
         return Location.A1_AKARA
@@ -63,9 +71,9 @@ class A1(IAct):
         return Location.A1_STASH
 
     def heal(self, curr_loc: Location) -> Union[Location, bool]:
-        #if not self._old_pather.traverse_nodes((curr_loc, Location.A1_AKARA), self._char, force_move=True): return False
         if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
-        self._npc_manager.open_npc_menu(Npc.AKARA)
+        if not self.interact_with_npc(Npc.AKARA):
+            self._npc_manager.open_npc_menu(Npc.AKARA)
         return Location.A1_AKARA
 
     def open_trade_and_repair_menu(self, curr_loc: Location) -> Union[Location, bool]:

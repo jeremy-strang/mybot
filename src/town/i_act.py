@@ -1,5 +1,5 @@
-import pprint
 import time
+import keyboard
 from typing import Union
 from pathing import Location
 from char import IChar
@@ -11,9 +11,8 @@ from pathing import Pather
 from d2r_mem import D2rMemApi
 from typing import Union
 from template_finder import TemplateFinder
-from utils.misc import wait
+from utils.misc import wait, pprint
 from utils.custom_mouse import mouse
-pp = pprint.PrettyPrinter(depth=6)
 
 class IAct:
     def __init__(self, screen: Screen, template_finder: TemplateFinder, old_pather: OldPather, char: IChar, npc_manager: NpcManager, pather: Pather, api: D2rMemApi):
@@ -70,7 +69,8 @@ class IAct:
     
     def gamble (self, curr_loc: Location) -> Union[Location, bool]: return False
 
-    def trade_with_npc(self, npc: Npc, action_btn_key="trade") -> bool:
+    def interact_with_npc(self, npc: Npc, action_btn_key="trade") -> bool:
+        result = False
         m = self._api.find_npc(npc)
         if m is not None:
             menu_open = False
@@ -81,10 +81,13 @@ class IAct:
                 if m is not None:
                     mouse.click(button="left")
                     wait(1.0)
-                    # pp.pprint(m)
+                    # pprint(m)
                     data = self._api.get_data()
                     menu_open = data is not None and data["npc_interact_open"]
                     if menu_open:
                         self._npc_manager.press_npc_btn(npc, action_btn_key)
-                        return True
+                        result = True
+                        break
+        if self._api.wait_for_menu("npc_interact_open", time_out=0.5):
+            keyboard.send("esc")
         return False
