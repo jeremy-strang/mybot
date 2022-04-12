@@ -413,6 +413,10 @@ class IChar:
             if portal:
                 self.reposition(portal["position_abs"])
                 self.tp_town(did_reposition=True)
+
+        in_town = self._pather.wait_for_town(3)
+        if in_town:
+            return True
         
         Logger.warning("Failed to TP to town using memory, falling back to pixels...")
 
