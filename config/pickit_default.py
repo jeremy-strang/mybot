@@ -377,14 +377,14 @@ class PickitConfig:
         # should be functions that take in a PickitItem and return a boolean.
         self.NormalItems = {
             # Non-eth Enigma/CoH/Fortitude bases
-            Item.ArchonPlate: [lambda item: not item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.EnhancedDefense, ">=", 14)],
-            Item.DuskShroud: [lambda item: not item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.EnhancedDefense, ">=", 15)],
-            Item.MagePlate: [lambda item: not item.is_ethereal and (item.sockets in [0, 3]) and item.check(Stat.EnhancedDefense, ">=", 10)],
+            Item.ArchonPlate: [lambda item: not item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.MaxDamagePercent, ">=", 14)],
+            Item.DuskShroud: [lambda item: not item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.MaxDamagePercent, ">=", 15)],
+            Item.MagePlate: [lambda item: not item.is_ethereal and (item.sockets in [0, 3]) and item.check(Stat.MaxDamagePercent, ">=", 10)],
             
             # Eth items for merc Fortitude/Treachery
-            Item.ArchonPlate: [lambda item: item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.EnhancedDefense, ">=", 10)],
-            Item.LacqueredPlate: [lambda item: item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.EnhancedDefense, ">=", 10)],
-            Item.SacredArmor: [lambda item: item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.EnhancedDefense, ">=", 10)],
+            Item.ArchonPlate: [lambda item: item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.MaxDamagePercent, ">=", 10)],
+            Item.LacqueredPlate: [lambda item: item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.MaxDamagePercent, ">=", 10)],
+            Item.SacredArmor: [lambda item: item.is_ethereal and (item.sockets in [0, 3, 4]) and item.check(Stat.MaxDamagePercent, ">=", 10)],
 
             # Eth polearms
             Item.Thresher: [

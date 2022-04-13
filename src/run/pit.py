@@ -107,6 +107,8 @@ class Pit:
         self._char.post_travel()
 
         picked_up_items = 0
+        self._ui_manager.wait_for_loading_finish()
+        wait(0.1, 0.2)
         self._ui_manager.disable_no_pickup()
         pickit_func = lambda: self._pickit.pick_up_items(self._char, skip_nopickup=True)
 

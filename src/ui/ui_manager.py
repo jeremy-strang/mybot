@@ -978,22 +978,22 @@ class UiManager():
         """
         wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.18, 0.22)
+        wait(0.17, 0.20)
         keyboard.write('/nopickup', delay=0.07)
-        wait(0.02, 0.04)
+        wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.17, 0.22)
+        wait(0.17, 0.20)
         no_pickup = self._template_finder.search_and_wait(["ITEM_PICKUP_ENABLED", "ITEM_PICKUP_DISABLED"], roi=self._config.ui_roi["no_pickup"], best_match=True, time_out=3)
         if not no_pickup.valid:
             return False
         if no_pickup.name == "ITEM_PICKUP_DISABLED":
             return True
         keyboard.send('enter')
-        wait(0.17, 0.22)
+        wait(0.17, 0.20)
         keyboard.send('up')
-        wait(0.08, 0.14)
+        wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.08, 0.14)
+        wait(0.03, 0.05)
         return True
     
     def disable_no_pickup(self) -> bool:
@@ -1003,22 +1003,22 @@ class UiManager():
         """
         wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.18, 0.22)
+        wait(0.17, 0.20)
         keyboard.write('/nopickup', delay=0.07)
         wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.17, 0.22)
+        wait(0.03, 0.05)
         no_pickup = self._template_finder.search_and_wait(["ITEM_PICKUP_ENABLED", "ITEM_PICKUP_DISABLED"], roi=self._config.ui_roi["no_pickup"], best_match=True, time_out=3)
         if not no_pickup.valid:
             return False
         if no_pickup.name == "ITEM_PICKUP_ENABLED":
             return True
         keyboard.send('enter')
-        wait(0.17, 0.22)
+        wait(0.17, 0.20)
         keyboard.send('up')
-        wait(0.08, 0.14)
+        wait(0.03, 0.05)
         keyboard.send('enter')
-        wait(0.08, 0.14)
+        wait(0.03, 0.05)
         return True
 
     def buy_pots(self, healing_pots: int = 0, mana_pots: int = 0):
