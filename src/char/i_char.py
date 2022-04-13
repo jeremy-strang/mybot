@@ -509,7 +509,8 @@ class IChar:
                 mouse.release(button=mouse_button)
             keyboard.send(self._char_config["stand_still"], do_press=False)
     
-    def tele_stomp_monster(self, skill_key: str,
+    def tele_stomp_monster(self,
+                           skill_key: str,
                            time_in_s: float,
                            monster: dict,
                            mouse_button: str = "left",

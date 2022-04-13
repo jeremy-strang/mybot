@@ -529,7 +529,7 @@ class Hammerdin(IChar):
                             monster = self._api.find_monster(monster["id"])
                         if monster is not None and monster["mode"] != 12:
                             keyboard.send(self._skill_hotkeys["concentration"])
-                            wait(0.04, 0.05)
+                            wait(0.07, 0.09)
                             self._cast_hammers(max(self._cast_duration * 4, min_attack_time))
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
