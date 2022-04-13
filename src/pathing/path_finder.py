@@ -70,13 +70,13 @@ def make_path_bfs(start, end, grid):
     path = None
     wall = 0
     queue = deque([[start]])
-    seen = set([start])
+    seen = set([(start[0], start[1])])
     width = len(grid)
     height = len(grid[0])
     while queue:
         path = queue.popleft()
         x, y = path[-1]
-        if (x, y) == end:
+        if (x, y) == (end[0], end[1]):
             break
         for x2, y2 in ((x+1, y), (x-1, y), (x, y+1), (x, y-1), (x-1, y-1), (x+1, y+1), (x+1, y-1), (x-1, y+1)):
             if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != wall and (x2, y2) not in seen:
@@ -129,21 +129,33 @@ class PathFinder:
         queue = deque(self._clusters)
         queue.appendleft(self.player_node)
 
+        dummy = (0, 0)
         end_given = end is not None
         if end_given:
             end = (end[0], end[1])
             queue.append(end)
+            queue.append(dummy)
         nodes = np.asarray(queue)
         N = len(nodes)
-        if end_given: N += 1
 
+        print(f"TSP start:  {self.player_node}, nodes[0]: {nodes[0]}")
+        print(f"TSP end:    {end}, nodes[{N}-2]: {nodes[N-2]}")
         # Find distance in number of nodes between each node i, j
         dist_matrix = np.zeros((N, N))
         for i in range(N):
             for j in range(N):
-                if not end_given or (i != N-1 and j != N-1):
-                    dist_matrix[i, j] = cityblock(nodes[i], nodes[j])
-        if end_given: dist_matrix[0, N-1] = 0
+                dist = 99999
+                if not end_given or (end_given and i != N-1 and j != N-1):
+                    dist = cityblock(nodes[i], nodes[j])
+                elif end_given:
+                    if i == N-1 or j == N-1: # i or j is the dummy node
+                        if i == 0 or j == 0 or i == N-2 or j == N-2:
+                            dist = 0 # dist is 0 if i, j connects the dummy to the start or the end nodes
+                        else:
+                            dist = 99999
+                dist_matrix[i, j] = dist
+
+        # if end_given: dist_matrix[0, N-1] = 0
         elapsed = time.time() - start
         permutation = None
         distance = 0
@@ -156,7 +168,10 @@ class PathFinder:
             if not end_given or (end_given and i != N-1):
                 path.append(nodes[i])
         elapsed = time.time() - start
-        print(f"Done solving TSP in {round(elapsed, 2)} seconds, distance: {round(distance, 2)}")
-        return path[:-1] if end_given else path
+        print(f"Done solving TSP with {len(path)} nodes in {round(elapsed, 2)} seconds, distance: {round(distance, 2)}")
+        print(f"---")
+        print(f"TSP start:  {path[0]}")
+        print(f"TSP end:    {path[-2]}")
+        return path if end_given else path
     
     

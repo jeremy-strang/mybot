@@ -16,7 +16,7 @@ import pickle
 from monsters.monster_rule import MonsterRule
 from npc_manager import Npc
 from obs import obs_recorder
-from pathing import PathFinder
+from pathing.path_finder import make_path_bfs, PathFinder
 from run.baal import Baal
 from run.diablo import Diablo
 from run.mephisto import Mephisto
@@ -166,7 +166,7 @@ if __name__ == "__main__":
         debug = Debug()
         debug.start_api()
         
-        # overlay = start_overlay(bot, game_stats)
+        # overlay = debug.start_overlay()
         # pp.pprint(config.items)
 
         def do_stuff(debug):
@@ -246,24 +246,22 @@ if __name__ == "__main__":
                 # api.get_metrics()
 
                 # ui_manager.throw_out_junk(item_finder) 
-                # akara = find_npc(Npc.AKARA, api)
-                # pf = PathFinder(api)
-                # start = pf.player_node
 
-                # pit_lvl2 = pather.get_entity_coords_from_str("Pit Level 2", "points_of_interest", False)
-                # pf = PathFinder(api, 25)
-                # path = pf.solve_tsp(pit_lvl2, True)
-                # api._current_path = []
+                # # pit_lvl2 = debug._pather.get_entity_coords_from_str("Pit Level 2", "points_of_interest", False)
+                # akara = debug._api.find_npc(Npc.AKARA)
+                # pf = PathFinder(debug._api, 25)
+                # path = pf.solve_tsp(akara["position_area"], True)
+                # debug.start_overlay()
+                # nodes = []
                 # current = pf.player_node
                 # for node in path:
                 #     print(f"    distance from current ({current}) to next node ({node}): {math.dist(current, node)}")
-                #     api._current_path += pf.make_path_astar(current, node, True)
+                #     bfs_nodes = make_path_bfs(current, node, debug._api.data["map"])
+                #     for n in bfs_nodes:
+                #         nodes.append(n)
+                #     debug._pather.traverse_walking(node, debug._char)
                 #     current = node
-                #     print("Press Enter for next ...")
-                #     input()
-
-                # api._current_path = path
-                # bot._town_manager.a1.open_trade_menu(Location.A1_TOWN_START)
+                # debug._api._current_path = nodes
 
             except BaseException as e:
                 print(e)
