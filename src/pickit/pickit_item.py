@@ -1,5 +1,5 @@
 from typing import Any
-from pickit.types import Action, Item, Quality, ItemMode, InventoryPage, BodyLoc, SkillTree, StashType, Flag, Stat
+from pickit.types import ITEM_CLASSES, Action, Item, Quality, ItemMode, ItemClass, InventoryPage, BodyLoc, SkillTree, StashType, Flag, Stat
 
 class PickitItem:
     def __init__(self, item: dict, action: Action = Action.DontKeep):
@@ -26,6 +26,7 @@ class PickitItem:
         self._raw_stats = self.stats["_raw_stats"] = item["stats"]
         self.is_ethereal = self.stats["is_ethereal"] = Flag.Ethereal in item["flags"]
         self.action = Action(action)
+        self.item_class = self.stats["item_class"] = ITEM_CLASSES[self.type] if self.type in ITEM_CLASSES else None
 
         if item["stats"]:
             fr = 0
