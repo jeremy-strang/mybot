@@ -258,6 +258,8 @@ class Config:
             "difficulty": Config._select_val("general", "difficulty"),
             "message_api_type": Config._select_val("general", "message_api_type"),
             "custom_message_hook": Config._select_val("general", "custom_message_hook"),
+            "custom_loot_message_hook": Config._select_val("general", "custom_loot_message_hook"),
+            "custom_error_message_hook": Config._select_val("general", "custom_error_message_hook"),
             "discord_status_count": False if not Config._select_val("general", "discord_status_count") else int(Config._select_val("general", "discord_status_count")),
             "discord_status_condensed": bool(int(Config._select_val("general", "discord_status_condensed"))),
             "discord_experience_report": bool(int(Config._select_val("general", "discord_experience_report"))),

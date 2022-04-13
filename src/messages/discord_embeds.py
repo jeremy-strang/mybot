@@ -14,15 +14,22 @@ class DiscordEmbeds(GenericApi):
         self._config = Config()
         self._file = None
         self._psnURL = "https://i.psnprofiles.com/games/3bffee/trophies/"
+        self._webhook = None
+        self._loot_webhook = None
+        self._error_webhook = None
         try:
             self._webhook = Webhook.from_url(self._config.general['custom_message_hook'], adapter=RequestsWebhookAdapter(), )
+            loot_url = self._config.general['custom_loot_message_hook']
+            self._loot_webhook = Webhook.from_url(loot_url, adapter=RequestsWebhookAdapter(), ) if loot_url else self._webhook
+            error_url = self._config.general['custom_error_message_hook']
+            self._error_webhook = Webhook.from_url(error_url, adapter=RequestsWebhookAdapter(), ) if error_url else self._webhook
         except InvalidArgument:
             Logger.warning(f"Your custom_message_hook URL {self._config.general['custom_message_hook']} is invalid, Discord updates will not be sent")
     
     def send_discarded_item(self, item_description: str):
         player_summary = self._config.general['player_summary']
         msg = f"{player_summary}: Discarded an item that didn't meet requirements: {item_description}"
-        self.send_message(msg)
+        self.send_message(msg, self._webhook)
 
     def send_item(self, item: str, image:  np.ndarray, location: str):
         d = datetime.datetime.now(datetime.timezone.utc)
@@ -38,7 +45,7 @@ class DiscordEmbeds(GenericApi):
             color=self._get_Item_Color(item),
         )
         e.set_image(url=f"attachment://{imgName}.png")
-        self._send_embed(e, file)
+        self._send_embed(e, file, self._loot_webhook)
 
     def send_death(self, location, image_path):
         file = self._add_file(image_path, "death.png")
@@ -47,7 +54,7 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"Died at {location}")
         e.set_thumbnail(url=f"{self._psnURL}33L5e3600.png")
         e.set_image(url="attachment://death.png")
-        self._send_embed(e, file)
+        self._send_embed(e, file, self._webhook)
 
     def send_chicken(self, location, image_path):
         file = self._add_file(image_path, "chicken.png")
@@ -56,21 +63,21 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"chickened at {location}")
         e.set_thumbnail(url=f"{self._psnURL}39Ldf113b.png")
         e.set_image(url="attachment://chicken.png")
-        self._send_embed(e, file)
+        self._send_embed(e, file, self._webhook)
 
     def send_stash(self):
         e = discord.Embed(title=f"{self._config.general['name']} has a full stash!", color=Color.dark_grey())
         e.title=(f"{self._config.general['name']} has a full stash!")
         e.description=(f"{self._config.general['name']} has to quit. \n They cannot store anymore items!")
         e.set_thumbnail(url=f"{self._psnURL}35L63a9df.png")
-        self._send_embed(e)
+        self._send_embed(e, self._webhook)
 
     def send_gold(self):
         e = discord.Embed(title=f"{self._config.general['name']} is rich!", color=Color.dark_grey())
         e.title=(f"{self._config.general['name']} is Rich!")
         e.description=(f"{self._config.general['name']} can't store any more money!\n turning off gold pickup.")
         e.set_thumbnail(url=f"{self._psnURL}6L341955.png")
-        self._send_embed(e)
+        self._send_embed(e, self._webhook)
 
     def send_message(self, msg: str, no_thumbnail=False):
         player_summary = self._config.general['player_summary']
@@ -78,16 +85,16 @@ class DiscordEmbeds(GenericApi):
         e = discord.Embed(title=self._config.general['name'], description=f"```{msg}```", color=Color.dark_teal())
         if not no_thumbnail and not self._config.general['discord_status_condensed']:
             e.set_thumbnail(url=f"{self._psnURL}36L4a4994.png")
-        self._send_embed(e)
+        self._send_embed(e, self._webhook)
 
-    def _send_embed(self, e, file = None):
+    def _send_embed(self, e, webhook, file = None):
         if self._config.active_branch:
             e.set_footer(text=f'MyBot, branch: {self._config.active_branch}, commit: {self._config.latest_commit_sha[:7]}')
         else:
             e.set_footer(text=f'MyBot, v{__version__}')
         e.timestamp=datetime.datetime.now(datetime.timezone.utc)
         try:
-            self._webhook.send(embed=e, file=file, username=self._config.general['name'])
+            webhook.send(embed=e, file=file, username=self._config.general['name'])
         except BaseException as err:
             Logger.error("Error sending Discord embed: " + str(err))
 
