@@ -173,7 +173,7 @@ class D2rMemLoader(Thread):
         _data["player_corpse"] = data["player_corpse"]
         _data["item_on_cursor"] = data["item_on_cursor"]
         _data["hovered_unit"] = None
-        if data["player_corpse"] and data["hovered_unit"]:
+        if data["player_corpse"] and data["player_corpse"]["is_hovered"]:
             _data["hovered_unit"] = data["player_corpse"]
             _data["hovered_unit_type"] = "player_corpse"
 
