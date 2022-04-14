@@ -544,9 +544,10 @@ class IChar:
                         monsters_nearby = list(filter(lambda m: m["dist"] < 10, self._api.data["monsters"]))
                         if len(monsters_nearby) > max_mobs_left:
                             mobs_to_finish = True
-                    if not mobs_to_finish and (monster is None or monster["dist"] > max_distance or \
-                        (monster["mode"] == 12 and stop_when_dead)) or time.time() - start < min_attack_time:
+                    if not mobs_to_finish and time.time() - start >= min_attack_time and (monster is None or monster["dist"] > max_distance or \
+                        (monster["mode"] == 12 and stop_when_dead)):
                         break
+                wait(self._cast_duration)
                 mouse.release(button=mouse_button)
                 wait(0.04, 0.05)
                 keyboard.release(self._config.char["stand_still"])
