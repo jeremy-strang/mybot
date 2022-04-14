@@ -116,6 +116,7 @@ class A4(IAct):
         self.interact_with_npc(npc, menu)
         if self._api.wait_for_menu(D2rMenu.NpcInteract):
             keyboard.send("esc")
+            wait(0.12, 0.15)
         return Location.A4_JAMELLA
 
     def open_trade_and_repair_menu(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:

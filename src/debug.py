@@ -135,8 +135,7 @@ class Debug:
             wait(0.2)
             data = self._api.get_data()
         return data
-    
-    def write_data_to_file(self, pickle: bool = False):
+         
         fp = self._api.write_data_to_file()
         if fp is not None:
             try:
@@ -146,17 +145,20 @@ class Debug:
         self.stop()
 
     def test_a1_town(self):
-        print("\n\n Testing open_trade_menu()...")
-        debug._a1.open_trade_menu()
-        wait(3)
+        print("\n\n Testing open_trade_and_repair_menu()...")
+        debug._a1.open_trade_and_repair_menu()
+        wait(3)    
 
-        print("\n\n Testing open_wp()...")
-        debug._a1.open_wp()
-        wait(3)
+        # print("\n\n Testing open_trade_menu()...")  
+        # wait(3)
 
-        print("\n\n Testing open_stash()...")
-        debug._a1.open_stash()
-        wait(3)
+        # print("\n\n Testing open_wp()...")
+        # debug._a1.open_wp()
+        # wait(3)
+
+        # print("\n\n Testing open_stash()...")
+        # debug._a1.open_stash()
+        # wait(3)
 
     def test_a2_town(self):
         print("\n\n Testing heal()...")
@@ -274,7 +276,7 @@ if __name__ == "__main__":
                 #     debug._a1.open_stash(Location.A3_STASH_WP)
                 # debug._ui_manager.stash_all_items(debug._config.char["num_loot_columns"], debug._item_finder, False)
 
-                debug.test_a3_town()
+                debug.test_a1_town()
 
                 # debug._pickit.pick_up_items()
 

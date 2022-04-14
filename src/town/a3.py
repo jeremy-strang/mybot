@@ -42,6 +42,7 @@ class A3(IAct):
         self.interact_with_npc(npc, menu)
         if self._api.wait_for_menu(D2rMenu.NpcInteract):
             keyboard.send("esc")
+            wait(0.12, 0.15)
         return Location.A3_ORMUS
 
     def open_trade_menu(self, curr_loc: Location = Location.A3_ORMUS) -> Union[Location, bool]:

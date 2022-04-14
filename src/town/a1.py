@@ -60,11 +60,6 @@ class A1(IAct):
         return Location.A1_KASHYA_CAIN
 
     def open_trade_menu(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        # if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
-        # if not self.interact_with_npc(Npc.AKARA, "trade"):
-        #     self._npc_manager.open_npc_menu(Npc.AKARA)
-        #     self._npc_manager.press_npc_btn(Npc.AKARA, "trade")
-        # return Location.A1_AKARA
         npc = self._api.find_npc(Npc.AKARA)
         if npc:
             print(npc)
@@ -83,13 +78,22 @@ class A1(IAct):
         return Location.A3_STASH_WP
 
     def heal(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
-        if not self.interact_with_npc(Npc.AKARA):
-            self._npc_manager.open_npc_menu(Npc.AKARA)
+        npc = self._api.find_npc(Npc.AKARA)
+        if npc:
+            self._pather.walk_to_position(npc["position_area"])
+            wait(0.4, 0.5)
+        self.interact_with_npc(Npc.AKARA, "trade")
+        if self._api.wait_for_menu(D2rMenu.NpcInteract):
+            keyboard.send("esc")
+            wait(0.12, 0.15)
         return Location.A1_AKARA
 
     def open_trade_and_repair_menu(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Charsi", self._char, obj=False,threshold=10, static_npc=True): return False    
-        self._npc_manager.open_npc_menu(Npc.CHARSI)
-        self._npc_manager.press_npc_btn(Npc.CHARSI, "trade_repair")
+        npc = self._api.find_npc(Npc.CHARSI)
+        if npc:
+            self._pather.walk_to_position(npc["position_area"])
+            wait(0.4, 0.5)
+        if not self.interact_with_npc(Npc.CHARSI, "trade_repair"):
+            self._npc_manager.open_npc_menu(Npc.CHARSI)
+            self._npc_manager.press_npc_btn(Npc.CHARSI, "trade_repair")
         return Location.A1_CHARSI
