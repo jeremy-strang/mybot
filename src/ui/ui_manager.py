@@ -32,7 +32,7 @@ from d2r import D2rApi, D2rMenu
 import random 
 import string
 
-from pickit.pickit_utils import get_pickit_action
+from pickit.pickit_utils import get_free_inventory_space, get_pickit_action
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -49,6 +49,7 @@ class UiManager():
         self._screen = screen
         self._gold_full = False
         self._gambling_round = 1
+        self._map_showing = False
         self._curr_stash = {
             "items": 3 if self._config.char["fill_shared_stash_first"] else 0,
             "gold": 0
@@ -133,19 +134,22 @@ class UiManager():
         return False
 
     def is_overburdened(self) -> bool:
-        """
-        :return: Bool if the last pick up overburdened your char. Must be called right after picking up an item.
-        """
-        img = cut_roi(self._screen.grab(), self._config.ui_roi["is_overburdened"])
-        _, filtered_img = color_filter(img, self._config.colors["gold"])
-        templates = [cv2.imread("assets/templates/inventory_full_msg_0.png"), cv2.imread("assets/templates/inventory_full_msg_1.png")]
-        for template in templates:
-            _, filtered_template = color_filter(template, self._config.colors["gold"])
-            res = cv2.matchTemplate(filtered_img, filtered_template, cv2.TM_CCOEFF_NORMED)
-            _, max_val, _, _ = cv2.minMaxLoc(res)
-            if max_val > 0.8:
+        if self._api.data:
+            wait(0.05, 0.6)
+            free_slot_count, free_column_count = get_free_inventory_space(self._api.data["inventory_items"], self._config.char["num_loot_columns"])
+            if free_column_count <= 2:
                 return True
         return False
+        # img = cut_roi(self._screen.grab(), self._config.ui_roi["is_overburdened"])
+        # _, filtered_img = color_filter(img, self._config.colors["gold"])
+        # templates = [cv2.imread("assets/templates/inventory_full_msg_0.png"), cv2.imread("assets/templates/inventory_full_msg_1.png")]
+        # for template in templates:
+        #     _, filtered_template = color_filter(template, self._config.colors["gold"])
+        #     res = cv2.matchTemplate(filtered_img, filtered_template, cv2.TM_CCOEFF_NORMED)
+        #     _, max_val, _, _ = cv2.minMaxLoc(res)
+        #     if max_val > 0.8:
+        #         return True
+        # return False
 
     def wait_for_loading_screen(self, time_out: float = None) -> bool:
         """
@@ -181,6 +185,7 @@ class UiManager():
         Performes save and exit action from within game
         :return: Bool if action was successful
         """
+        self._map_showing = False
         start = time.time()
         while (time.time() - start) < 15:
             Logger.debug(f"Saving and exiting (chicken: {does_chicken})")
@@ -315,6 +320,7 @@ class UiManager():
         :return: Bool if action was successful
         """
         Logger.debug("Wait for Play button")
+        self._map_showing = False
         start = time.time()
         while 1:
             img = self._screen.grab()
@@ -726,34 +732,6 @@ class UiManager():
                     if not keep_open and (inv_open or vendor_open):
                         keyboard.send("esc")
                         wait(0.3, 0.4)
-        # Logger.info("Throwing out junk")
-        # wait(0.2, 0.3)
-        # keyboard.send(self._config.char["inventory_screen"])
-        # wait(0.5, 0.6)
-        # num_loot_columns = self._config.char["num_loot_columns"]
-        # for column, row in itertools.product(range(num_loot_columns), range(4)):
-        #     img = self._screen.grab()
-        #     slot_pos, slot_img = self.get_slot_pos_and_img(self._config, img, column, row)
-        #     if self._slot_has_item(slot_img):
-        #         x_m, y_m = self._screen.convert_screen_to_monitor(slot_pos)
-        #         mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
-        #         # Sheck item again and discard it or stash it
-        #         wait(0.4, 0.6)
-        #         hovered_item = self._screen.grab()
-        #         found_items = self._keep_item(item_finder, hovered_item, inv_pos=(column, row), center=(x_m, y_m))
-        #         if len(found_items) == 0:
-        #             keyboard.release(self._config.char["show_items"])
-        #             wait(0.1, 0.2)
-        #             keyboard.release(self._config.char["stand_still"])
-        #             wait(0.1, 0.2)
-        #             keyboard.send("ctrl", do_release=False)
-        #             wait(0.1, 0.2)
-        #             mouse.click(button="left")
-        #             wait(0.1, 0.2)
-        #             keyboard.release("ctrl")
-        #             wait(0.3)
-        # keyboard.send(self._config.char["inventory_screen"])
-        # wait(0.3, 0.4)
 
     def transfer_shared_to_private_gold(self, count: int):
         for x in range (3):
@@ -789,26 +767,11 @@ class UiManager():
             looted_items = list(filter(lambda item: item != None and "Potion" not in item["name"], looted_items))
             return len(looted_items) > 0
         return False
-        # wait(0.2, 0.3)
-        # keyboard.send(self._config.char["inventory_screen"])
-        # wait(0.7, 1.0)
-        # should_stash = self._inventory_has_items(self._screen.grab(), num_loot_columns)
-        # keyboard.send(self._config.char["inventory_screen"])
-        # wait(0.4, 0.6)
-        # return should_stash
 
     def close_vendor_screen(self):
         keyboard.send("esc")
-        # just in case also bring cursor to center and click
-        # x, y = self._screen.convert_screen_to_monitor((self._config.ui_pos["center_x"], self._config.ui_pos["center_y"]))
-        # mouse.move(x, y, randomize=25, delay_factor=[1.0, 1.5])
-        # mouse.click(button="left")
 
     def repair_and_fill_up_tp(self) -> bool:
-        """
-        Repair and fills up TP buy selling tome and buying. Vendor inventory needs to be open!
-        :return: Bool if success
-        """
         repair_btn = self._template_finder.search_and_wait("REPAIR_BTN", roi=self._config.ui_roi["repair_btn"], time_out=4, normalize_monitor=True)
         if not repair_btn.valid:
             return False
@@ -1048,4 +1011,16 @@ class UiManager():
         
         self.fill_tome_of("Identify")
         self.fill_tome_of("Town Portal")
-        
+    
+    def show_map(self):
+        if not self._map_showing:
+            keyboard.send(self._config.char["toggle_minimap_key"])
+            wait(0.03, 0.5)
+            self._map_showing = True
+            
+    def hide_map(self):
+        if self._map_showing:
+            keyboard.send(self._config.char["toggle_minimap_key"])
+            wait(0.03, 0.5)
+            self._map_showing = False
+            

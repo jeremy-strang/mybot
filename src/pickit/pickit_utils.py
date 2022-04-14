@@ -125,4 +125,4 @@ def get_free_inventory_space(inventory_items: list[dict], num_loot_columns: int 
 
     Logger.debug(f"Computed inventory space with {looted_item_count} items in {num_loot_columns} loot columns: {free_slot_count} 1x1 slots, {free_column_count} free full columns")
     Logger.debug(f"\n{inventory}")
-    return free_slot_count
+    return (free_slot_count, free_column_count)
