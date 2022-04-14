@@ -1,3 +1,4 @@
+import keyboard
 from char import IChar
 from logger import Logger
 from town.i_act import IAct
@@ -23,49 +24,51 @@ class A3(IAct):
     def can_stash(self) -> bool: return True
 
     def heal(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Ormus", self._char, obj=False, threshold=16, static_npc=True): return False
-        self._npc_manager.open_npc_menu(Npc.ORMUS)
+        npc = Npc.ORMUS
+        menu = None
+        Logger.debug(f"Attempting to heal in Act 3, moving to {npc}...")
+        if not self._pather.walk_to_monster(npc):
+            Logger.error(f"    Failed to walk to NPC: {npc}")
+        self.interact_with_npc(npc, menu)
+        if self._api.wait_for_menu(D2rMenu.NpcInteract):
+            keyboard.send("esc")
         return Location.A3_ORMUS
 
     def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
-        # if not self._pather.traverse_walking("Ormus", self._char, obj=False, threshold=16, static_npc=True): return False
-        if not self._pather.walk_to_monster(Npc.ORMUS):
-            Logger.error(f"    Failed to walk to NPC: '{Npc.ORMUS}'")
-            return False
-        if not self.interact_with_npc(Npc.ORMUS):
-            Logger.warning(f"    Failed to open menu, falling back to pixel method")
-            if self._npc_manager.open_npc_menu(Npc.ORMUS):
-                self._npc_manager.press_npc_btn(Npc.ORMUS, "trade")
+        npc = Npc.ORMUS
+        menu = "trade"
+        Logger.debug(f"Attempting to trade in Act 3, moving to {npc}...")
+        if not self._pather.walk_to_monster(npc):
+            Logger.error(f"    Failed to walk to NPC: {npc}")
+        if not self.interact_with_npc(npc, menu):
+            Logger.warning(f"    Failed to {menu}, falling back to pixel method")
+            if self._npc_manager.open_npc_menu(npc):
+                self._npc_manager.press_npc_btn(npc, menu)
         return Location.A3_ORMUS
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
-        #if not self._pather.traverse_walking("Bank",self._char, obj=True, threshold=16, static_npc=False,end_dist=10): return False
-        # if not self._pather.traverse_walking([147,60],self._char, obj=False, threshold=16, static_npc=False,end_dist=10): return False
         if not self._pather.walk_to_position((147, 60)): return False
-        wait(0.4, 0.6)
+        wait(0.4, 0.5)
         self._pather.click_object("Bank")    
         return Location.A3_STASH_WP
 
     def open_wp(self, curr_loc: Location) -> bool:
         if not self._pather.walk_to_poi("Kurast Docks"): return False
-        wait(0.4, 0.6)
+        wait(0.4, 0.5)
         return self._pather.click_object("Act3TownWaypoint")
-        # if not self._pather.traverse_walking("Kurast Docks", self._char, obj=False, threshold=16): return False
-        # wait(0.4, 0.6)
-        # result = self._pather.activate_waypoint("Kurast Docks", self._char,entrance_in_wall=False, is_wp = True)
-        # return result
 
     def wait_for_tp(self) -> Union[Location, bool]:
-        # template_match = self._template_finder.search_and_wait("A3_TOWN_10", time_out=15)
-        # if template_match.valid:
-        #     self._old_pather.traverse_nodes((Location.A3_STASH_WP, Location.A3_STASH_WP), self._char, force_move=True)
-        #     return Location.A3_STASH_WP
-        # return False
         return Location.A3_STASH_WP
 
     def identify(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._old_pather.traverse_nodes((curr_loc, Location.A3_STASH_WP), self._char): return False
-        if self._npc_manager.open_npc_menu(Npc.CAIN):
-            self._npc_manager.press_npc_btn(Npc.CAIN, "identify")
-            return Location.A3_STASH_WP
-        return False
+        npc = Npc.CAIN
+        menu = "identify"
+        Logger.debug(f"Attempting to identify in Act 3, moving to {npc}...")
+        self._pather.walk_to_poi("KurastDocks", time_out=10)
+        if not self._pather.walk_to_monster(npc):
+            Logger.error(f"    Failed to walk to NPC: {npc}")
+        if not self.interact_with_npc(npc, menu):
+            Logger.warning(f"    Failed to {menu}, falling back to pixel method")
+            if self._npc_manager.open_npc_menu(npc):
+                self._npc_manager.press_npc_btn(npc, menu)
+        return Location.A3_STASH_WP

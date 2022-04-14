@@ -61,8 +61,6 @@ class A4(IAct):
         self._pather.walk_to_position((27, 41), time_out=5)
         if not self._pather.walk_to_monster(npc):
             Logger.error(f"    Failed to walk to NPC: {npc}")
-            # Logger.error(f"    Failed to walk to NPC: {npc}, trying traverse...")
-            # self._pather.traverse_walking("DeckardCain", self._char, threshold=10)
         if not self.interact_with_npc(npc, menu):
             Logger.warning(f"    Failed to {menu}, falling back to pixel method")
             if self._npc_manager.open_npc_menu(npc):
@@ -119,8 +117,6 @@ class A4(IAct):
         self._pather.walk_to_position((78, 43), time_out=5)
         if not self._pather.walk_to_monster(npc):
             Logger.error(f"    Failed to walk to NPC: {npc}")
-            # Logger.error(f"    Failed to walk to NPC: {npc}, trying traverse...")
-            # self._pather.traverse_walking(npc, self._char, threshold=10)
         self.interact_with_npc(npc, menu)
         if self._api.wait_for_menu(D2rMenu.NpcInteract):
             keyboard.send("esc")
