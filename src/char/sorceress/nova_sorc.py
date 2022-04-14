@@ -1,21 +1,20 @@
+
 import keyboard
-from char.sorceress import Sorceress
 from utils.custom_mouse import mouse
-from logger import Logger
-from utils.misc import wait, rotate_vec, unit_vector
-import random
-from pathing import Location
-import numpy as np
-from logger import Logger
-from config import Config
-from screen import Screen
+from char.sorceress import Sorceress
 from template_finder import TemplateFinder
 from ui import UiManager
-from pathing import OldPather, Location
+from pathing import OldPather
+from logger import Logger
+from screen import Screen
+from utils.misc import wait, point_str
+from monsters import sort_and_filter_monsters
+import time
+from pathing import OldPather
 
 from d2r.d2r_api import D2rApi
 from pathing import Pather
-from state_monitor import StateMonitor
+from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
 
 class NovaSorc(Sorceress):
@@ -24,18 +23,17 @@ class NovaSorc(Sorceress):
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, old_pather)
         self._old_pather = old_pather
         self._pather = pather
-        # we want to change positions a bit of end points
-        self._old_pather.offset_node(149, (70, 10))
 
     def get_cast_frames(self):
         fcr = self.get_fcr()
-        frames = 13
-        if fcr >= 200: frames = 7
-        elif fcr >= 105: frames = 8
-        elif fcr >= 63: frames = 9
-        elif fcr >= 37: frames = 10
-        elif fcr >= 20: frames = 11
-        elif fcr >= 9: frames = 12
+        frames = 15
+        if fcr >= 125: frames = 9
+        if fcr >= 75: frames = 10
+        elif fcr >= 48: frames = 11
+        elif fcr >= 30: frames = 12
+        elif fcr >= 18: frames = 13
+        elif fcr >= 9: frames = 14
+        Logger.debug(f"FCR recalculated to be FCR: {fcr} ({frames} frames)")
         return frames
 
     def _nova(self, time_in_s: float):
@@ -50,77 +48,109 @@ class NovaSorc(Sorceress):
             wait(0.12, 0.2)
             mouse.release(button="right")
 
-    def _move_and_attack(self, abs_move: tuple[int, int], atk_len: float):
-        pos_m = self._screen.convert_abs_to_monitor(abs_move)
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        self._nova(atk_len)
-
     def kill_pindleskin(self) -> bool:
-        self._old_pather.traverse_nodes_fixed("pindle_end", self)
-        self._cast_static(0.6)
-        self._nova(self._char_config["atk_len_pindle"])
-        return True
+        return self._kill_super_unique("Pindleskin", self._cast_duration * 7)
 
     def kill_eldritch(self) -> bool:
-        self._old_pather.traverse_nodes_fixed([(675, 30)], self)
-        self._cast_static(0.6)
-        self._nova(self._char_config["atk_len_eldritch"])
-        return True
+        return self._kill_super_unique("Eldritch", self._cast_duration * 7)
 
-    def kill_shenk(self) -> bool:
-        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0)
-        self._cast_static(0.6)
-        self._nova(self._char_config["atk_len_shenk"])
-        return True
+    def kill_shenk(self):
+        return self._kill_super_unique("Shenk", self._cast_duration * 7)
 
-    def kill_council(self) -> bool:
-        # Check out the node screenshot in assets/templates/trav/nodes to see where each node is at
-        atk_len = self._char_config["atk_len_trav"] * 0.21
-        # change node to be further to the right
-        offset_229 = np.array([200, 100])
-        self._old_pather.offset_node(229, offset_229)
-        def clear_inside():
-            self._old_pather.traverse_nodes_fixed([(1110, 120)], self)
-            self._old_pather.traverse_nodes([229], self, time_out=0.8, force_tp=True)
-            self._nova(atk_len)
-            self._move_and_attack((-40, -20), atk_len)
-            self._move_and_attack((40, 20), atk_len)
-            self._move_and_attack((40, 20), atk_len)
-        def clear_outside():
-            self._old_pather.traverse_nodes([226], self, time_out=0.8, force_tp=True)
-            self._nova(atk_len)
-            self._move_and_attack((45, -20), atk_len)
-            self._move_and_attack((-45, 20), atk_len)
-        clear_inside()
-        clear_outside()
-        clear_inside()
-        clear_outside()
-        # change back node as it is used in trav.py
-        self._old_pather.offset_node(229, -offset_229)
-        return True
+    def kill_mephisto(self) -> bool:
+        return self._kill_super_unique("Mephisto", radius=25)
 
-    def kill_nihlathak(self, end_nodes: list[int]) -> bool:
-        atk_len = self._char_config["atk_len_nihlathak"] * 0.3
-        # Move close to nihlathak
-        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8, do_pre_move=False)
-        # move mouse to center
-        pos_m = self._screen.convert_abs_to_monitor((0, 0))
-        mouse.move(*pos_m, randomize=80, delay_factor=[0.5, 0.7])
-        self._cast_static(0.6)
-        self._nova(atk_len)
-        self._move_and_attack((50, 25), atk_len)
-        self._move_and_attack((-70, -35), atk_len)
-        return True
+    def kill_andariel(self) -> bool:
+        return self._kill_super_unique("Andariel", radius=25)
 
     def kill_summoner(self) -> bool:
-        # move mouse to below altar
-        pos_m = self._screen.convert_abs_to_monitor((0, 20))
-        mouse.move(*pos_m, randomize=80, delay_factor=[0.5, 0.7])
-        # Attack
-        self._nova(self._char_config["atk_len_arc"])
-        # Move a bit back and another round
-        self._move_and_attack((0, 80), self._char_config["atk_len_arc"] * 0.5)
-        wait(0.1, 0.15)
-        self._nova(self._char_config["atk_len_arc"] * 0.5)
+        return self._kill_super_unique("Summoner", radius=15)
+
+    def kill_nihlathak(self) -> bool:
+        return self._kill_super_unique("Nihlathak", radius=20)
+
+    def kill_countess(self) -> bool:
+        return self._kill_super_unique("Countess", radius=20)
+
+    def kill_council(self) -> bool:
+        if not self._do_pre_move:
+            keyboard.send(self._skill_hotkeys["concentration"])
+            wait(0.05, 0.10)
+        sequence = [
+            (10, [MonsterRule(auras = ["CONVICTION"])]),
+            (10, [MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"])]),
+            (20, [MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE])]),
+            (25, [MonsterRule(names = ["CouncilMember"]), MonsterRule(monster_types = [MonsterType.UNIQUE])]),
+        ]
+        for time, rules in sequence:
+            self._kill_mobs(rules, time_out=time, reposition_pos=(156, 113), boundary=(122, 80, 50, 50))
+        wait(0.05, 0.08)
+        return True
+
+    def _kill_super_unique(self, name: str = None, radius: int = 20, min_attack_time: float = 0):
+        center_pos = None
+        boss = self._api.find_monster_by_name(name) if name is not None else None
+        if not boss:
+            bosses = self._api.find_monsters_by_type(MonsterType.SUPER_UNIQUE)
+            if len(bosses) > 0:
+                boss = bosses[0]
+        if boss:
+            center_pos = boss["position_area"]
+            Logger.info(f"Killing super unique '{boss['name']}', id: {boss['id']}, position: {point_str(boss['position_area'])}")
+        elif self._api.data:
+            center_pos = self._api.data["player_pos_area"]
+        boundary = [center_pos[0] - radius, center_pos[1] - radius, radius * 2, radius * 2] if center_pos is not None else None
+        rules = [
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+            MonsterRule(monster_types = [MonsterType.UNIQUE]),
+        ]
+        if name is not None:
+            rules.append(MonsterRule(names = name))
+        return self._kill_mobs(rules, time_out=25, boundary=boundary, min_attack_time=min_attack_time)
+
+    def _kill_mobs(self,
+                  prioritize: list[MonsterRule],
+                  ignore: list[MonsterRule] = None,
+                  time_out: float = 40.0,
+                  boundary: tuple[float, float, float, float] = None,
+                  reposition_pos: tuple[float, float] = None,
+                  reposition_time: float = 7.0,
+                  min_attack_time: float = 0,
+                ) -> bool:
+        start = time.time()
+        last_move = start
+        elapsed = 0
+        monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
+        if len(monsters) == 0: return True
+        # for m in monsters:
+        #     if "conviction" in m["type"] or "cursed" in m["type"]:
+        #         self._api.write_data_to_file(file_prefix="monster_type_check")
+        #         break
+        Logger.debug(f"Beginning combat against {len(monsters)} monsters...")
+        while elapsed < time_out and len(monsters) > 0:
+            data = self._api.get_data()
+            if data:
+                for monster in monsters:
+                    monster = self._api.find_monster(monster["id"])
+                    if monster:
+                        monster_start = time.time()
+                        if time.time() - last_move > reposition_time and reposition_pos is not None:
+                            Logger.debug("    Stood in one place too long, repositioning")
+                            self._pather.traverse(reposition_pos, self, time_out = 3.0)
+                            last_move = time.time()
+                        else:
+                            while monster and monster["dist"] > 3 and time.time() - monster_start < 5.0:
+                                Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
+                                self._pather.move_to_monster(self, monster)
+                                last_move = time.time()
+                                monster = self._api.find_monster(monster["id"])
+                            if monster and monster["dist"] <= 3:
+                                wait(0.05, 0.07)
+                                if not self.tele_stomp_monster("nova", 4.0, monster, mouse_button="right", max_distance=5, min_attack_time=min_attack_time):
+                                    wait(0.1)
+            wait(0.1)
+            monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
+            elapsed = time.time() - start
+        self.post_attack()
+        Logger.debug(f"    Finished killing mobs, combat took {elapsed} sec")
         return True
