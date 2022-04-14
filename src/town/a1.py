@@ -70,7 +70,6 @@ class A1(IAct):
             self._npc_manager.press_npc_btn(Npc.AKARA, "trade")
         return Location.A1_AKARA
 
-
     def open_stash(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
         if not self._pather.walk_to_position((133, 122)): return False
         wait(0.4, 0.5)
