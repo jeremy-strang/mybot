@@ -520,8 +520,7 @@ class IChar:
                            stop_when_dead=True,
                            max_distance=4.0,
                            min_attack_time=0,
-                           max_mobs_left=None,
-                           ) -> bool:
+                           max_mobs_left=None) -> bool:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
                 mid = monster['id']
@@ -547,7 +546,7 @@ class IChar:
                     if not mobs_to_finish and time.time() - start >= min_attack_time and (monster is None or monster["dist"] > max_distance or \
                         (monster["mode"] == 12 and stop_when_dead)):
                         break
-                wait(self._cast_duration)
+                wait(0.04, 0.05)
                 mouse.release(button=mouse_button)
                 wait(0.04, 0.05)
                 keyboard.release(self._config.char["stand_still"])

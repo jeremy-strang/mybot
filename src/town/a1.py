@@ -50,11 +50,8 @@ class A1(IAct):
     def identify(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
         npc = Npc.CAIN
         menu = "identify"
-        Logger.debug(f"Attempting to identify in Act 1, moving to {npc}...")
-        if not self._pather.walk_to_monster(npc):
-            Logger.error(f"    Failed to walk to NPC: {npc}")
+        self._pather.walk_to_monster(npc)
         if not self.interact_with_npc(npc, menu):
-            Logger.warning(f"    Failed to {menu}, falling back to pixel method")
             if self._npc_manager.open_npc_menu(npc):
                 self._npc_manager.press_npc_btn(npc, menu)
         return Location.A1_KASHYA_CAIN
