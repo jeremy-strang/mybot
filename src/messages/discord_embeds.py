@@ -14,6 +14,9 @@ class DiscordEmbeds(GenericApi):
         self._config = Config()
         self._file = None
         self._psnURL = "https://i.psnprofiles.com/games/3bffee/trophies/"
+        self._webhook = None
+        self._loot_webhook = None
+        self._error_webhook = None
         self._webhook = self._get_webhook()
         self._loot_webhook = self._get_loot_webhook()
         self._error_webhook = self._get_error_webhook()
