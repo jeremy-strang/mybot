@@ -112,7 +112,7 @@ class GameController:
                             self.template_finder = TemplateFinder(self.screen)
                             self.start_health_manager_thread()
                             self.start_death_manager_thread()
-                            self.game_recovery = GameRecovery(self.screen, self.death_manager, self.template_finder)
+                            self.game_recovery = GameRecovery(self.screen, self.death_manager, self.template_finder, obs_recorder=self.obs_recorder, api = self.api)
                             return self.run_bot(True)
                     Logger.error("Could not restart the game. Quitting.")
                     messenger.send_message("Got stuck and could not restart the game. Quitting.")
