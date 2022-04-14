@@ -310,7 +310,7 @@ if __name__ == "__main__":
     from config import Config
     from game_stats import GameStats
     from pathing import Pather
-    from d2r_mem import D2rMemApi
+    from d2r import D2rApi
     import threading
     from template_finder import TemplateFinder
     from ui import UiManager, char_selector
@@ -325,7 +325,7 @@ if __name__ == "__main__":
     screen = Screen()
     game_stats = GameStats()
 
-    api = D2rMemApi()
+    api = D2rApi()
     api_thread = threading.Thread(target=api.start)
     api_thread.daemon = False
     api_thread.start()

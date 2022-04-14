@@ -12,13 +12,13 @@ import random
 import numpy as np
 from pathing import OldPather, Location
 
-from d2r_mem.d2r_mem_api import D2rMemApi
+from d2r.d2r_api import D2rApi
 from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 class Basic_Ranged(IChar):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: D2rMemApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, api: D2rApi, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather):
         Logger.info("Setting up Basic Ranged Character")
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder)
         self._old_pather = old_pather

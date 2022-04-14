@@ -14,7 +14,7 @@ from utils.misc import wait
 from utils.custom_mouse import mouse
 from screen import Screen
 import math
-from d2r_mem.d2r_mem_api import D2rMemApi
+from d2r.d2r_api import D2rApi
 from pathing import Pather
 from obs import ObsRecorder
 
@@ -28,7 +28,7 @@ class StonyTomb:
         ui_manager: UiManager,
         char: IChar,
         pickit: PixelPickit,
-        api: D2rMemApi,
+        api: D2rApi,
         pather: Pather,
         obs_recorder: ObsRecorder,
     ):

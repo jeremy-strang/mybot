@@ -18,13 +18,13 @@ import numpy as np
 import random
 import cv2
 
-from d2r_mem.d2r_mem_api import D2rMemApi
+from d2r.d2r_api import D2rApi
 from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder
 
 class SingerBarb(Barbarian):
-    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather, api: D2rMemApi):
+    def __init__(self, skill_hotkeys: dict, screen: Screen, template_finder: TemplateFinder, ui_manager: UiManager, obs_recorder: ObsRecorder, old_pather: OldPather, pather: Pather, api: D2rApi):
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, old_pather)
         self._old_pather = old_pather
         self._pather = pather

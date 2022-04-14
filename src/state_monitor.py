@@ -6,7 +6,7 @@ from copy import deepcopy
 import math
 from typing import Union
 import random
-from d2r_mem import D2rMemApi
+from d2r import D2rApi
 from config import Config
 from logger import Logger
 import threading
@@ -19,7 +19,7 @@ pp = pprint.PrettyPrinter(depth=6)
 class StateMonitor:
     def __init__(self,
                  names: list,
-                 api: D2rMemApi,
+                 api: D2rApi,
                  super_unique: bool = False,
                  unique_id: int=-1,
                  many=False,

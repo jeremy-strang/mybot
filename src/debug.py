@@ -36,7 +36,7 @@ from config import Config
 from game_stats import GameStats
 from pathing import Location, OldPather
 from pathing import Pather
-from d2r_mem import D2rMemApi
+from d2r import D2rApi
 import threading
 from state_monitor import StateMonitor
 from template_finder import TemplateFinder
@@ -67,7 +67,7 @@ class Debug:
         self._overlay = None
         self._overlay_thread = None
 
-        self._api = D2rMemApi(self._config.custom_files)
+        self._api = D2rApi(self._config.custom_files)
         self._api_thread = threading.Thread(target=self._api.start)
         self._api_thread.daemon = False
         self._api_thread.start()

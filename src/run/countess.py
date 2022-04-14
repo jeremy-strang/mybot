@@ -4,7 +4,7 @@ from logger import Logger
 from pathing import Location, OldPather
 from typing import Union
 from pickit.pixel_pickit import PixelPickit
-from d2r_mem import D2rMemApi
+from d2r import D2rApi
 from pathing import Pather
 from template_finder import TemplateFinder
 from town.town_manager import TownManager
@@ -26,7 +26,7 @@ class Countess:
         ui_manager: UiManager,
         char: IChar,
         pickit: PixelPickit,
-        api: D2rMemApi,
+        api: D2rApi,
         pather: Pather,
         obs_recorder: ObsRecorder,
     ):

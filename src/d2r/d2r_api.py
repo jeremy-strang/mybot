@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 from npc_manager import Npc
-from .d2r_mem_loader import D2rMemLoader
+from .d2r_loader import D2rLoader
 import math
 import time
 import threading
@@ -14,7 +14,7 @@ import time
 from logger import Logger
 from event import events
 
-class D2rMemApi:
+class D2rApi:
     def __init__(self, custom_files=[]):
         self.data = None
         self.should_chicken = False
@@ -136,7 +136,7 @@ class D2rMemApi:
     
     def start(self):
         Logger.info("Starting MAS api")
-        self._loader = D2rMemLoader(self._on_data, self._custom_files)
+        self._loader = D2rLoader(self._on_data, self._custom_files)
         self._loader.start()
 
     def stop(self):

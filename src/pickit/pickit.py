@@ -5,7 +5,7 @@ import cv2
 from operator import itemgetter
 
 from pytest import skip
-from d2r_mem.d2r_mem_api import D2rMemApi
+from d2r.d2r_api import D2rApi
 from game_stats import GameStats
 from pickit.types import ItemMode
 from pathing import Pather
@@ -28,7 +28,7 @@ class Pickit:
                  belt_manager: BeltManager,
                  char: IChar,
                  pather: Pather,
-                 api: D2rMemApi,
+                 api: D2rApi,
                  game_stats: GameStats,
                  ):
         self._screen = screen

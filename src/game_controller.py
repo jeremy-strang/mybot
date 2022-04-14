@@ -18,7 +18,7 @@ from messages import Messenger
 from screen import Screen
 from utils.restart import restart_game, kill_game
 from utils.misc import kill_thread, set_d2r_always_on_top, restore_d2r_window_visibility
-from d2r_mem import D2rMemApi
+from d2r import D2rApi
 from obs import ObsRecorder
 
 from item_manager import ItemManager
@@ -191,7 +191,7 @@ class GameController:
 
     def start_api_thread(self):
         # run map assist
-        self.api = D2rMemApi(self.config.custom_files)
+        self.api = D2rApi(self.config.custom_files)
         self.api.start()
 
     def start_game_controller_thread(self):

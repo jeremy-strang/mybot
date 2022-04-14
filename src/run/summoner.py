@@ -1,4 +1,4 @@
-from d2r_mem.d2r_mem_api import D2rMemApi
+from d2r.d2r_api import D2rApi
 from char.i_char import IChar
 from config import Config
 from logger import Logger
@@ -25,7 +25,7 @@ class Summoner:
         ui_manager: UiManager,
         char: IChar,
         pickit: PixelPickit,
-        api: D2rMemApi,
+        api: D2rApi,
         pather: Pather,
         obs_recorder: ObsRecorder,
     ):

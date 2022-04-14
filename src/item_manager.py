@@ -1,4 +1,4 @@
-from d2r_mem import D2rMemApi
+from d2r import D2rApi
 from logger import Logger
 from screen import Screen
 import time
@@ -16,7 +16,7 @@ from utils.custom_mouse import mouse
 import keyboard
 
 class ItemManager:
-	def __init__(self,screen: Screen, mapi: D2rMemApi):
+	def __init__(self,screen: Screen, mapi: D2rApi):
 		self._health_pots = 0
 		self._rejuv_pots = 0
 		self._mana_pots = 0

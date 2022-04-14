@@ -13,7 +13,7 @@ from template_finder import TemplateFinder
 from ui import UiManager
 from pathing import OldPather, Location
 
-from d2r_mem.d2r_mem_api import D2rMemApi
+from d2r.d2r_api import D2rApi
 from pathing import Pather
 from state_monitor import StateMonitor
 from obs import ObsRecorder, obs_recorder

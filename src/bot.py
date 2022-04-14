@@ -48,7 +48,7 @@ from utils.dclone_ip import get_d2r_game_ip
 
 #mapassist api + new old_pather
 from pathing import Pather
-from d2r_mem import D2rMemApi
+from d2r import D2rApi
 from utils.levels import get_level
 
 class Bot:
@@ -58,7 +58,7 @@ class Bot:
         screen: Screen,
         game_stats: GameStats,
         template_finder: TemplateFinder,
-        mapi: D2rMemApi,
+        mapi: D2rApi,
         obs_recorder: ObsRecorder,
         pick_corpse: bool = False
     ):

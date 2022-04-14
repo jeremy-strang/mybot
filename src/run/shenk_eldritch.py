@@ -1,7 +1,7 @@
 import math
 import time
 import keyboard
-from d2r_mem.d2r_mem_api import D2rMemApi
+from d2r.d2r_api import D2rApi
 from char import IChar
 from char.skill import Skill
 from config import Config
@@ -29,7 +29,7 @@ class ShenkEldritch:
         ui_manager: UiManager,
         char: IChar,
         pickit: PixelPickit,
-        api: D2rMemApi,
+        api: D2rApi,
         pather: Pather,
         obs_recorder: ObsRecorder,
     ):

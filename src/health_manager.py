@@ -1,4 +1,4 @@
-from d2r_mem.d2r_mem_api import D2rMemApi
+from d2r.d2r_api import D2rApi
 from template_finder import TemplateFinder
 from ui import UiManager
 from ui import BeltManager
@@ -17,7 +17,7 @@ from obs import ObsRecorder
 
 
 class HealthManager:
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: D2rMemApi):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: D2rApi):
         self._config = Config()
         self._obs_recorder = obs_recorder
         self._screen = screen
