@@ -43,7 +43,7 @@ class Pather:
                 return True
 
             if self._api.data["inventory_open"]:
-                Logger.warning(f"    Aborting pathing, inventory is open")
+                # Logger.warning(f"    Aborting pathing, inventory is open")
                 return True
         return False
 

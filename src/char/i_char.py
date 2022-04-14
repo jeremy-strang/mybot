@@ -179,7 +179,7 @@ class IChar:
                 wait(0.15, 0.2)
             wait(0.06, 0.08)
             keyboard.send(self._config.char["inventory_screen"])
-            self._api.wait_for_menu("inventory")
+            self._api.wait_for_menu("inventory", time_out=3)
         
         if self._template_finder.search_and_wait(["WS1"], threshold=0.84, time_out=2.5, roi=[862, 50, 110, 100]).valid:
             Logger.info("Weapon slot 1 is active")
