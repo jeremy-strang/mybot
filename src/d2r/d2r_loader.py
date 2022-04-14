@@ -158,6 +158,22 @@ class D2rLoader(Thread):
         self.cube_open = _data["cube_open"] = data["cube_open"]
         self.potion_belt_open = _data["potion_belt_open"] = data["potion_belt_open"]
         self.mercenary_inventory_open = _data["mercenary_inventory_open"] = data["mercenary_inventory_open"]
+        self.any_menu_open = _data["any_menu_open"] = self.inventory_open or \
+            self.character_open or \
+            self.skill_select_open or \
+            self.skill_tree_open or \
+            self.chat_open or \
+            self.npc_interact_open or \
+            self.esc_menu_open or \
+            self.map_open or \
+            self.npc_shop_open or \
+            self.quest_log_open or \
+            self.waypoint_open or \
+            self.party_open or \
+            self.stash_open or \
+            self.cube_open or \
+            self.potion_belt_open or \
+            self.mercenary_inventory_open
 
         _data["used_skill"] = data["used_skill"]
         _data["left_skill"] = data["left_skill"]

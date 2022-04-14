@@ -172,13 +172,14 @@ class IChar:
         if active_slot != -1: return active_slot
 
         #Check to make sure we are on our main weapon set in slot 1, and not the secondary set in slot 2
-        wait(0.4, 0.05)
-        keyboard.send(self._config.char["inventory_screen"])
-        wait(0.4, 0.05)
         data = self._api.data
-        if data is not None and not data["inventory_open"]:
+        if data and not data["inventory_open"]:
+            if data["any_menu_open"]:
+                keyboard.send("esc")
+                wait(0.15, 0.2)
+            wait(0.06, 0.08)
             keyboard.send(self._config.char["inventory_screen"])
-            wait(0.25, 0.3)
+            self._api.wait_for_menu("inventory")
         
         if self._template_finder.search_and_wait(["WS1"], threshold=0.84, time_out=2.5, roi=[862, 50, 110, 100]).valid:
             Logger.info("Weapon slot 1 is active")
@@ -192,7 +193,7 @@ class IChar:
             Logger.warning("Could not determine the active weapon slot")
         data = self._api.data
         if data is not None and data["inventory_open"]:
-            keyboard.send(self._config.char["inventory_screen"])
+            keyboard.send("esc")
             wait(0.25, 0.3)
         return active_slot
 
