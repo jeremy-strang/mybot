@@ -116,7 +116,7 @@ class BlizzSorc(Sorceress):
                         else:
                             while monster and monster["dist"] > max_distance and time.time() - monster_start < 5.0:
                                 Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
-                                self._pather.move_to_monster(monster)
+                                self._pather.move_to_monster(self,monster,[15,15])
                                 last_move = time.time()
                                 monster = self._api.find_monster(monster["id"])
                             if monster and monster["dist"] <= max_distance and monster["dist"] > min_distance:
@@ -129,7 +129,7 @@ class BlizzSorc(Sorceress):
                                 wait(0.05, 0.07)
                             elif monster and monster["dist"] <= min_distance:
                                 Logger.debug(f"    Monster {monster['id']} distance is too close ({round(monster['dist'], 2)}), moving farther...")
-                                self._pather.move_to_monster(monster)
+                                self._pather.move_to_monster(self,monster,[15,15])
                                 wait(0.05, 0.07)
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
