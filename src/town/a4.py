@@ -98,10 +98,6 @@ class A4(IAct):
         return Location.A4_JAMELLA
 
     def open_stash(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:
-        # #if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=10): return False
-        # if not self._pather.traverse_walking([22, 44], self._char, obj=False, threshold=10, static_npc=False, end_dist=10, time_out=6): return False
-        # self._pather.activate_poi("Bank", "Bank", collection='objects', char=self._char)   
-        # return Location.A4_TYRAEL_STASH
         self._pather.walk_to_position((27, 41), time_out=5)
         self._pather.walk_to_object("Bank")
         wait(0.3, 0.4)

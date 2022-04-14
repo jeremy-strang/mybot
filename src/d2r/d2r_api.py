@@ -53,10 +53,9 @@ class D2rApi:
         Logger.debug(f"Updated data {n} times in {round(elapsed, 2)} sec ({round(n_per_sec, 2)} per sec)")
         return (elapsed, n, n_per_sec)
 
-    def write_data_to_file(self, file_path=None, pickle: bool = False, file_prefix: str = ""):
-        print(pickle)
+    def write_data_to_file(self, file_path=None, pickle: bool = False, file_prefix: str = "") -> str:
         if pickle:
-            self.write_data_to_pickle(file_path)
+            return self.write_data_to_pickle(file_path)
         else:
             try:
                 if file_path is None:
@@ -66,10 +65,12 @@ class D2rApi:
                     f.write(json.dumps(json.loads(self._raw_data_str), indent=4, sort_keys=True))
                     f.close()
                 Logger.info(f"Saved D2R memory snapshot to {os.path.normpath(file_path)}")
+                return file_path
             except BaseException as e:
                 Logger.error(f"Error dumping JSON data: {e}")
+        return None
 
-    def write_data_to_pickle(self, file_path=None, file_prefix: str = ""):
+    def write_data_to_pickle(self, file_path=None, file_prefix: str = "") -> str:
         try:
             if file_path is None:
                 current_area = self.data["current_area"]
@@ -77,9 +78,11 @@ class D2rApi:
             with open(file_path, "wb") as f:
                 pickle.dump(self.data, f)
                 f.close()
+                return file_path
             Logger.info(f"Pickled D2R memory snapshot to {os.path.normpath(file_path)}")
         except BaseException as e:
             Logger.error(f"Error pickling data: {e}")
+        return None
 
     def get_data(self):
         return self.data
@@ -251,11 +254,12 @@ class D2rApi:
                     results.append(item)
         return results
 
-    def find_object(self, object: str):
+    def find_object(self, object: str, exact: bool = False):
+        object = object if exact else object.lower().replace(" ", "")
         if self.data:
             for o in self.data["objects"]:
-                name = o["name"]
-                if name.lower().startswith(object.lower()):
+                name = o["name"] if exact else o["name"].lower().replace(" ", "")
+                if name.startswith(object):
                     return o
         return None
     
@@ -267,13 +271,21 @@ class D2rApi:
             time.sleep(0.1)
         return is_open(self.data)
 
-    def wait_for_monster(self, name: str, time_out=3.0, exact: bool=False):
+    def wait_for_monster(self, name: str, time_out=1.0, exact: bool=False):
         start = time.time()
         monster = self.find_monster_by_name(name, exact=exact)
         while monster is None and time.time() - start < time_out:
             time.sleep(0.1)
             monster = self.find_monster_by_name(name, exact=exact)
         return monster
+
+    def wait_for_object(self, name: str, time_out=1.0, exact: bool=False):
+        start = time.time()
+        object = self.find_object(name, exact=exact)
+        while object is None and time.time() - start < time_out:
+            time.sleep(0.1)
+            object = self.find_object(name, exact=exact)
+        return object
 
     def wait_for_area(self, area: str, time_out=5.0):
         start = time.time()

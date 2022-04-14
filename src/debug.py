@@ -135,46 +135,61 @@ class Debug:
             wait(0.2)
             data = self._api.get_data()
         return data
+    
+    def write_data_to_file(self, pickle: bool = False):
+        fp = self._api.write_data_to_file()
+        if fp is not None:
+            try:
+                os.system("start " + fp)
+            except BaseException as e:
+                print(f"Error writing data to a file: {e}")
+        self.stop()
+
+    def run_a2_tests(self):
+        wait(4)
+        print("\n\nTesting open_stash()...")
+        self._a2.open_stash(Location.A2_TOWN_START)
+
 
     def run_a4_tests(self):
         print("\n\nTesting resurrect()...")
         self._a4.resurrect(Location.A4_TOWN_START)
         wait(2)
-        debug._pather.walk_to_position((46, 41), 6)
+        self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting open_wp()...")
         self._a4.open_wp(Location.A4_TOWN_START)
         wait(2)
-        debug._pather.walk_to_position((46, 41), 6)
+        self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting identify()...")
         self._a4.identify(Location.A4_TOWN_START)
         wait(2)
-        debug._pather.walk_to_position((46, 41), 6)
+        self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting gamble()...")
         self._a4.gamble(Location.A4_TOWN_START)
         wait(2)
-        debug._pather.walk_to_position((46, 41), 6)
+        self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting open_trade_menu()...")
         self._a4.open_trade_menu(Location.A4_TOWN_START)
         wait(2)
-        debug._pather.walk_to_position((46, 41), 6)
+        self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting open_stash()...")
         self._a4.open_stash(Location.A4_TOWN_START)
-        debug._pather.walk_to_position((46, 41), 6)
+        self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting heal()...")
         self._a4.heal(Location.A4_TOWN_START)
-        debug._pather.walk_to_position((46, 41), 6)
+        self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting open_trade_and_repair_menu()...")
@@ -225,9 +240,9 @@ if __name__ == "__main__":
                 print(f"Player location: {point_str(debug._api.data['player_pos_area'])}")
                 # debug._pickit.pick_up_items()
 
-                # debug.run_a4_tests()
+                debug.run_a2_tests()
 
-                debug._a3.resurrect()
+                # debug._a3.resurrect()
 
 
 
@@ -318,11 +333,9 @@ if __name__ == "__main__":
                 traceback.print_exc()
             # stop_debug(game_controller, overlay)
             print("Done doing stuff")
-
-        dump_pickles = False # debug._config.advanced_options["dump_data_to_pickle_for_debugging"]
-
+    
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
-        keyboard.add_hotkey(debug._config.advanced_options['save_d2r_data_to_file_key'], lambda: debug._api.write_data_to_file(pickle=dump_pickles))
+        keyboard.add_hotkey(debug._config.advanced_options['save_d2r_data_to_file_key'], lambda: debug.write_data_to_file())
         keyboard.add_hotkey(debug._config.advanced_options["resume_key"], lambda: do_stuff(debug)) #lambda: pit.battle(True))
         keyboard.add_hotkey(debug._config.advanced_options["exit_key"], lambda: debug.stop())
         keyboard.add_hotkey(debug._config.advanced_options["graphic_debugger_key"], lambda: debug.start_overlay())

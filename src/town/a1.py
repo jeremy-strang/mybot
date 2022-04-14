@@ -1,3 +1,4 @@
+import keyboard
 from char import IChar
 from town.i_act import IAct
 from screen import Screen

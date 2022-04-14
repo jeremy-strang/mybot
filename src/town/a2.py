@@ -1,4 +1,7 @@
+import math
+import keyboard
 from char import IChar
+from logger import Logger
 from town.i_act import IAct
 from screen import Screen
 from config import Config
@@ -22,15 +25,42 @@ class A2(IAct):
     def can_heal(self) -> bool: return True
     def can_trade_and_repair(self) -> bool: return True
 
+    def _get_central_pos(self):
+        pos1 = (123, 81)
+        pos2 = (101, 95)
+        if self._api.data:
+            player_area = self._api.data["player_pos_area"]
+            dist_pos1 = math.dist(pos1, player_area)
+            dist_pos2 = math.dist(pos2, player_area)
+            if dist_pos2 < dist_pos1:
+                return pos2
+        return pos1
+
     def heal(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._old_pather.traverse_nodes((curr_loc, Location.A2_FARA_STASH), self._char, force_move=True): return False
-        if self._npc_manager.open_npc_menu(Npc.FARA):
-            return Location.A2_FARA_STASH
-        return False
+        # if not self._old_pather.traverse_nodes((curr_loc, Location.A2_FARA_STASH), self._char, force_move=True): return False
+        # if self._npc_manager.open_npc_menu(Npc.FARA):
+        #     return Location.A2_FARA_STASH
+        # return False
+        npc = Npc.FARA
+        menu = None
+        Logger.debug(f"Attempting to heal in Act 3, moving to {npc}...")
+        if not self._pather.walk_to_monster(npc):
+            Logger.error(f"    Failed to walk to NPC: {npc}")
+        self.interact_with_npc(npc, menu)
+        if self._api.wait_for_menu(D2rMenu.NpcInteract):
+            keyboard.send("esc")
+        return Location.A2_FARA_STASH
 
     def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=8): return False
-        self._pather.activate_poi ("Bank", "Bank", collection='objects', char=self._char)    
+        self._pather.walk_to_position(self._get_central_pos(), time_out=15)
+        self._pather.walk_to_position((123, 78), time_out=8)
+        bank = self._api.wait_for_object("Bank", 1.0)
+        if not bank:
+            self._pather.walk_to_position(self._get_central_pos(), time_out=15)
+            bank = self._api.wait_for_object("Bank", 3.0)
+        self._pather.click_object("Bank")
+        if not self._api.wait_for_menu(D2rMenu.Stash):
+            return False
         return Location.A2_FARA_STASH
 
     def identify(self, curr_loc: Location) -> Union[Location, bool]:
@@ -41,10 +71,20 @@ class A2(IAct):
         return False
 
     def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Lysander", self._char, obj=False, threshold=16, static_npc=True): return False
-        if not self.interact_with_npc(Npc.LYSANDER):
-            if self._npc_manager.open_npc_menu(Npc.LYSANDER):
-                self._npc_manager.press_npc_btn(Npc.LYSANDER, "trade")
+        # if not self._pather.traverse_walking("Lysander", self._char, obj=False, threshold=16, static_npc=True): return False
+        # if not self.interact_with_npc(Npc.LYSANDER):
+        #     if self._npc_manager.open_npc_menu(Npc.LYSANDER):
+        #         self._npc_manager.press_npc_btn(Npc.LYSANDER, "trade")
+        # return Location.A2_LYSANDER
+        npc = Npc.A2_LYSANDER
+        menu = "trade"
+        Logger.debug(f"Attempting to trade in Act 3, moving to {npc}...")
+        if not self._pather.walk_to_monster(npc):
+            Logger.error(f"    Failed to walk to NPC: {npc}")
+        if not self.interact_with_npc(npc, menu):
+            Logger.warning(f"    Failed to {menu}, falling back to pixel method")
+            if self._npc_manager.open_npc_menu(npc):
+                self._npc_manager.press_npc_btn(npc, menu)
         return Location.A2_LYSANDER
 
     def open_trade_and_repair_menu(self, curr_loc: Location) -> Union[Location, bool]:
