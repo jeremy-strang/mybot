@@ -32,7 +32,7 @@ class DiscordEmbeds(GenericApi):
     def send_discarded_item(self, item_description: str):
         player_summary = self._config.general['player_summary']
         msg = f"{player_summary}: Discarded an item that didn't meet requirements: {item_description}"
-        self.send_message(msg, self._get_webhook())
+        self.send_message(msg, self._webhook)
 
     def send_item(self, item: str, image:  np.ndarray, location: str):
         d = datetime.datetime.now(datetime.timezone.utc)
@@ -48,11 +48,7 @@ class DiscordEmbeds(GenericApi):
             color=self._get_Item_Color(item),
         )
         e.set_image(url=f"attachment://{imgName}.png")
-        Logger.debug("~" * 80)
-        Logger.debug(f"Discord Embeds: Sending loot")
-        hook = self._loot_webhook
-        Logger.debug(hook)
-        self._send_embed(e, hook, file)
+        self._send_embed(e, self._loot_webhook, file)
 
     def send_death(self, location, image_path):
         file = self._add_file(image_path, "death.png")
@@ -61,11 +57,7 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"Died at {location}")
         e.set_thumbnail(url=f"{self._psnURL}33L5e3600.png")
         e.set_image(url="attachment://death.png")
-        hook = self._webhook
-        Logger.debug("~" * 80)
-        Logger.debug(f"Discord Embeds: Sending death")
-        Logger.debug(hook)
-        self._send_embed(e, hook, file)
+        self._send_embed(e, self._webhook, file)
 
 
     def send_chicken(self, location, image_path):
@@ -75,11 +67,7 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"chickened at {location}")
         e.set_thumbnail(url=f"{self._psnURL}39Ldf113b.png")
         e.set_image(url="attachment://chicken.png")
-        hook = self._webhook
-        Logger.debug("~" * 80)
-        Logger.debug(f"Discord Embeds: Sending chicken")
-        Logger.debug(hook)
-        self._send_embed(e, hook, file)
+        self._send_embed(e, self._webhook, file)
 
     def send_stash(self):
         e = discord.Embed(title=f"{self._config.general['name']} has a full stash!", color=Color.dark_grey())
@@ -87,9 +75,7 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"{self._config.general['name']} has to quit. \n They cannot store anymore items!")
         e.set_thumbnail(url=f"{self._psnURL}35L63a9df.png")
         Logger.debug(f"Discord Embeds: Sending error - full stash")
-        hook = self._error_webhook
-        Logger.debug(hook)
-        self._send_embed(e, hook)
+        self._send_embed(e, self._error_webhook)
 
 
     def send_gold(self):
@@ -98,9 +84,7 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"{self._config.general['name']} can't store any more money!\n turning off gold pickup.")
         e.set_thumbnail(url=f"{self._psnURL}6L341955.png")
         Logger.debug(f"Discord Embeds: Sending error - full gold")
-        hook = self._error_webhook
-        Logger.debug(hook)
-        self._send_embed(e, hook)
+        self._send_embed(e, self._error_webhook)
 
 
     def send_message(self, msg: str, no_thumbnail=False):
@@ -110,9 +94,7 @@ class DiscordEmbeds(GenericApi):
         if not no_thumbnail and not self._config.general['discord_status_condensed']:
             e.set_thumbnail(url=f"{self._psnURL}36L4a4994.png")
         Logger.debug(f"Discord Embeds: Sending message'{msg}'")
-        hook = self._error_webhook
-        Logger.debug(hook)
-        self._send_embed(e, hook)
+        self._send_embed(e, self._webhook)
 
 
     def _send_embed(self, e, webhook, file = None):
