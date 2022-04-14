@@ -71,12 +71,12 @@ class IAct:
 
     def interact_with_npc(self, npc: Npc, menu_selection: str = "trade") -> bool:
         result = False
-        m = self._api.find_npc(npc)
+        m = self._api.find_monster_by_name(npc)
         if m is not None:
             menu_open = False
             start = time.time()
             while not menu_open and time.time() - start < 10:
-                m = self._api.find_npc(npc)
+                m = self._api.find_monster_by_name(npc)
                 self._pather.move_mouse_to_abs_pos(m["position_abs"], m["dist"])
                 wait(0.15, 0.2)
                 if m is not None:
