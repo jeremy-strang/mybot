@@ -217,7 +217,7 @@ if __name__ == "__main__":
     
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                # ui_manager.stash_all_items(config.char["num_loot_columns"], item_finder, False)
+                debug._ui_manager.stash_all_items(debug._config.char["num_loot_columns"], debug._item_finder, False)
 
                 # ui_manager.fill_tome_of("Town Portal")
                 # ui_manager.throw_out_junk(item_finder)

@@ -75,6 +75,7 @@ class Bot:
         self._old_pather = OldPather(self._screen, self._template_finder)
         self._pather = Pather(screen, self._api)
         self._obs_recorder = ObsRecorder(self._config)
+        self._char_selector = CharSelector(self._screen, self._template_finder)
         # Memory reading stuff
 
 
@@ -165,7 +166,6 @@ class Bot:
         self._current_threads = []
         self._no_stash_counter = 0
         self._ran_no_pickup = False
-        self._char_selector = CharSelector(self._screen, self._template_finder)
 
         # Create State Machine
         self._states=['initialization', 'hero_selection', 'town', 'pindleskin', 'shenk', 'travincal', 'nihlathak', 'summoner', 'diablo', 'baal', 'mephisto', 'andariel','countess', 'pit', 'stony_tomb']

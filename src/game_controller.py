@@ -16,7 +16,6 @@ from health_manager import HealthManager
 from logger import Logger
 from messages import Messenger
 from screen import Screen
-from ui.char_selector import CharSelector
 from utils.restart import restart_game, kill_game
 from utils.misc import kill_thread, set_d2r_always_on_top, restore_d2r_window_visibility
 from d2r_mem import D2rMemApi
@@ -51,14 +50,6 @@ class GameController:
 
     def run_bot(self, pick_corpse: bool = False):
         try:
-            if self.config.general['restart_d2r_when_stuck']:
-                # Make sure the correct char is selected
-                if self.char_selector.has_char_template_saved():
-                    Logger.info("Selecting original char")
-                    self.char_selector.select_char()
-                else:
-                    Logger.info("Saving top-most char as template")
-                    self.char_selector.save_char_template()
             # Start bot thread + API thread
             self.start_api_thread()
             #self.start_item_manager()

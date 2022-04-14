@@ -1,6 +1,7 @@
 import sys
 from typing import Union
 from game_stats import GameStats
+from logger import Logger
 from pickit.pickit_item import PickitItem
 from pickit.types import *
 
@@ -24,6 +25,7 @@ def _parse_pickit_action(opt: Union[Action, tuple[Action, Options], bool], item:
                     result = action
                 elif options == EthOption.NonEthOnly and not is_eth:
                     result = action
+            # Logger.debug(f"parsing item {item['name']}, options.max_quantity: {options.max_quantity}, game_stats.kept_item_quanties[item['name']]: {game_stats.kept_item_quanties[item['name']]}")
             if options.min_defense != None and item["defense"] < options.min_defense:
                 result = Action.DontKeep
             if result != Action.DontKeep and options.max_quantity is not None and game_stats is not None \
@@ -46,7 +48,7 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
         type_quality = (item_type, quality)
         # Runes, gems
         if item_type in config.BasicItems:
-            result = _parse_pickit_action(config.BasicItems[item_type], item)
+            result = _parse_pickit_action(config.BasicItems[item_type], item, game_stats=game_stats)
             
         # Unique, set, magic, rare (to remain unidentified)
         elif quality <= Quality.Superior and item_type in config.NormalItems:
@@ -54,7 +56,7 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
             item_obj = PickitItem(item)
             for rule in rules:
                 match = rule(item_obj)
-                act = _parse_pickit_action(match)
+                act = _parse_pickit_action(match, game_stats=game_stats)
                 if act > result:
                     result = act
                     break
@@ -70,7 +72,7 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
 
         # Unique, set, magic, rare (to remain unidentified)
         elif type_quality in config.UnidentifiedItems:
-            result = _parse_pickit_action(config.UnidentifiedItems[type_quality], item)
+            result = _parse_pickit_action(config.UnidentifiedItems[type_quality], item, game_stats=game_stats)
 
         # Check if it's an item we want to identify
         if type_quality in config.IdentifiedItems:

@@ -69,6 +69,7 @@ class GameStats:
                 self.kept_item_quanties[item_name] += 1
             else:
                 self.kept_item_quanties[item_name] = 1
+            Logger.debug(f"    Updated quantity to {self.kept_item_quanties[item_name]} for '{item_name}'")
 
         if self._location is not None and not any(substring in item_name for substring in self.filtered_items):
             self._location_stats[self._location]["items"].append(item_name)

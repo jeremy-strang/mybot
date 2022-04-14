@@ -486,7 +486,7 @@ class UiManager():
             mem_items = []
             for item in self._api.find_items_by_position(inv_pos, "inventory_items"):
                 if item:
-                    action = get_pickit_action(item, self._config.pickit_config)
+                    action = get_pickit_action(item, self._config.pickit_config, game_stats=self._game_stats)
                     if action >= Action.Keep and not "Potion" in item["name"]:
                         pickit_item = PickitItem(item, action)
                         keep = True
@@ -498,7 +498,7 @@ class UiManager():
                                 action = Action.Keep
                             else:
                                 item = loaded_item
-                                action = get_pickit_action(item, self._config.pickit_config)
+                                action = get_pickit_action(item, self._config.pickit_config, game_stats=self._game_stats)
                             pickit_item = PickitItem(item, action)
                             # Recalc action after identifying
                             keep = action >= Action.Keep

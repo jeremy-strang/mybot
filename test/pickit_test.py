@@ -26,9 +26,8 @@ def pickit_test():
     game_stats = GameStats()
     data = load_json(os.path.join(dir_path, "mocks", "town_data.json"))
     items = list(filter(lambda item: item["type"] == Item.Amulet, data["stash_items"]))
-    print(len(items))
     for item in items:
-        action = get_pickit_action(item, pickit_config, { "health": 0, "mana": 2, "rejuv": 1 }, )
+        action = get_pickit_action(item, pickit_config, { "health": 0, "mana": 2, "rejuv": 1 }, game_stats=game_stats)
         if action > Action.Keep:
             print(f"\n\n{'-' * 80}\n{action}{'-' }")
             pp.pprint(item)
