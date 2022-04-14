@@ -35,40 +35,46 @@ class A1(IAct):
         return Location.A1_KASHYA_CAIN
 
     def open_wp(self, curr_loc: Location = Location.A1_TOWN_START) -> bool:
-        Logger.debug("Calling open_wp()...")
         success = False
         if self._pather.walk_to_poi("Rogue Encampment", time_out=15):
             success = self._api.wait_for_menu(D2rMenu.Waypoint)
             if not success:
-                Logger.debug("~~~~~~~~ not success 1")
                 wait(0.7)
                 self._pather.click_poi("Rogue Encampment", offset=(0, -20), target_menu=D2rMenu.Waypoint)
                 success = self._api.wait_for_menu(D2rMenu.Waypoint)
-                Logger.debug(f"~~~~~~~~ success {success}")
-        Logger.debug(f"    Success: {success}")
         return success
 
     def wait_for_tp(self) -> Union[Location, bool]:
-        # success = self._template_finder.search_and_wait(["A1_TOWN_7", "A1_TOWN_9"], time_out=20).valid
-        # if not self._old_pather.traverse_nodes([Location.A1_TOWN_TP, Location.A1_KASHYA_CAIN], self._char, force_move=True): return False
-        # if success:
-        #     return Location.A1_KASHYA_CAIN
-        # return False
         return Location.A1_KASHYA_CAIN
 
     def identify(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        if not self._old_pather.traverse_nodes((curr_loc, Location.A1_KASHYA_CAIN), self._char): return False
-        if self._npc_manager.open_npc_menu(Npc.CAIN):
-            self._npc_manager.press_npc_btn(Npc.CAIN, "identify")
-            return Location.A1_KASHYA_CAIN
-        return False
+        npc = Npc.CAIN
+        menu = "identify"
+        Logger.debug(f"Attempting to identify in Act 1, moving to {npc}...")
+        if not self._pather.walk_to_monster(npc):
+            Logger.error(f"    Failed to walk to NPC: {npc}")
+        if not self.interact_with_npc(npc, menu):
+            Logger.warning(f"    Failed to {menu}, falling back to pixel method")
+            if self._npc_manager.open_npc_menu(npc):
+                self._npc_manager.press_npc_btn(npc, menu)
+        return Location.A1_KASHYA_CAIN
 
     def open_trade_menu(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
+        # if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
+        # if not self.interact_with_npc(Npc.AKARA, "trade"):
+        #     self._npc_manager.open_npc_menu(Npc.AKARA)
+        #     self._npc_manager.press_npc_btn(Npc.AKARA, "trade")
+        # return Location.A1_AKARA
+        npc = self._api.find_npc(Npc.AKARA)
+        if npc:
+            print(npc)
+            self._pather.walk_to_position(npc["position_area"])
+            wait(0.4, 0.5)
         if not self.interact_with_npc(Npc.AKARA, "trade"):
             self._npc_manager.open_npc_menu(Npc.AKARA)
             self._npc_manager.press_npc_btn(Npc.AKARA, "trade")
         return Location.A1_AKARA
+
 
     def open_stash(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
         if not self._pather.walk_to_position((133, 122)): return False
@@ -84,7 +90,6 @@ class A1(IAct):
 
     def open_trade_and_repair_menu(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
         if not self._pather.traverse_walking("Charsi", self._char, obj=False,threshold=10, static_npc=True): return False    
-        #if not self._old_pather.traverse_nodes((curr_loc, Location.A1_CHARSI), self._char): return False
         self._npc_manager.open_npc_menu(Npc.CHARSI)
         self._npc_manager.press_npc_btn(Npc.CHARSI, "trade_repair")
         return Location.A1_CHARSI
