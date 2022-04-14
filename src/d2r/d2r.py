@@ -16,3 +16,17 @@ class D2rMenu:
     Cube = "cube"
     PotionBelt = "potion_belt"
     MercenaryInventory = "mercenary_inventory"
+
+class D2rArea:
+    Harrogath = "Harrogath"
+    ThePandemoniumFortress = "ThePandemoniumFortress"
+    KurastDocks = "KurastDocks"
+    LutGholein = "LutGholein"
+    RogueEncampment = "RogueEncampment"
+
+TOWNS = set([
+    D2rArea.RogueEncampment,
+    D2rArea.LutGholein,
+    D2rArea.KurastDocks,
+    D2rArea.ThePandemoniumFortress,
+    D2rArea.Harrogath])

@@ -1,7 +1,7 @@
 from typing import Callable, Union
 
 from pickit.pickit_item import PickitItem
-from pickit.types import Item, Options, Quality, ItemMode, Flag, Stat, SkillTree, Action, EthOption
+from pickit.item_types import Item, Options, Quality, ItemMode, Flag, Stat, SkillTree, Action, EthOption
 
 class PickitConfig:
     # Low-priority consumable items to pick up when low on them

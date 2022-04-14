@@ -2,7 +2,9 @@ from lib2to3.pytree import Base
 import pickle
 import traceback
 import os
+from typing import Union
 import numpy as np
+from d2r.d2r import D2rArea, TOWNS
 
 from npc_manager import Npc
 from .d2r_loader import D2rLoader
@@ -301,6 +303,14 @@ class D2rApi:
         while not area_detected and time.time() - start < time_out:
             time.sleep(0.1)
             area_detected = self.data is not None and self.data["current_area"].lower().replace(" ", "") == area
+        return area_detected
+
+    def wait_for_town(self, time_out=10.0):
+        start = time.time()
+        area_detected = self.data is not None and self.data["current_area"] in TOWNS
+        while not area_detected and time.time() - start < time_out:
+            time.sleep(0.1)
+            area_detected = self.data is not None and self.data["current_area"] in TOWNS
         return area_detected
 
     def wait_for_hover(self, target: dict, list_name: str, time_out=0.33) -> bool:

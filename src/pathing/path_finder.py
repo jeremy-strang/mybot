@@ -138,8 +138,6 @@ class PathFinder:
         nodes = np.asarray(queue)
         N = len(nodes)
 
-        print(f"TSP start:  {self.player_node}, nodes[0]: {nodes[0]}")
-        print(f"TSP end:    {end}, nodes[{N}-2]: {nodes[N-2]}")
         # Find distance in number of nodes between each node i, j
         dist_matrix = np.zeros((N, N))
         for i in range(N):
@@ -168,10 +166,6 @@ class PathFinder:
             if not end_given or (end_given and i != N-1):
                 path.append(nodes[i])
         elapsed = time.time() - start
-        print(f"Done solving TSP with {len(path)} nodes in {round(elapsed, 2)} seconds, distance: {round(distance, 2)}")
-        print(f"---")
-        print(f"TSP start:  {path[0]}")
-        print(f"TSP end:    {path[-2]}")
         return path if end_given else path
     
     
