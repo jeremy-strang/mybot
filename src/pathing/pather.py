@@ -428,7 +428,7 @@ class Pather:
         route = self.make_route_to_position(dest_area)
         return self.walk_route(route, time_out, step_size)
 
-    def make_route_to_position(self, dest_area):
+    def make_route_to_position(self, dest_area, ):
         route = None
         data = self._api.data
         if data:
