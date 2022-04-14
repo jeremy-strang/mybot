@@ -38,7 +38,7 @@ class A2(IAct):
     
     def _go_to_stash_area(self):
         self._pather.walk_to_position(self._get_central_pos(), time_out=15)
-        self._pather.walk_to_position((123, 78), time_out=8)
+        self._pather.walk_to_position((125, 75), time_out=8)
 
     def heal(self, curr_loc: Location = Location.A2_TOWN_START) -> Union[Location, bool]:
         npc = Npc.FARA
@@ -57,7 +57,7 @@ class A2(IAct):
         if not bank:
             self._pather.walk_to_position(self._get_central_pos(), time_out=15)
             bank = self._api.wait_for_object("Bank", 3.0)
-        self._pather.click_object("Bank")
+        self._pather.click_object("Bank", offset=(25, -25))
         if not self._api.wait_for_menu(D2rMenu.Stash):
             return False
         return Location.A2_FARA_STASH

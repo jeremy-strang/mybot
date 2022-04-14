@@ -259,7 +259,9 @@ if __name__ == "__main__":
                 print(f"Player location: {point_str(debug._api.data['player_pos_area'])}")
                 # debug._pickit.pick_up_items()
 
-                debug.run_a2_tests()
+
+                debug._pather.click_object("Bank")
+                # debug.run_a2_tests()
 
                 # debug._a3.resurrect()
 
