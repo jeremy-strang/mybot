@@ -22,6 +22,7 @@ class Npc:
     LYSANDER = "lysander"
     #A3
     ORMUS = "ormus"
+    ASHEARA = "asheara"
     #A4
     TYRAEL = "tyrael"
     JAMELLA = "jamella"
@@ -107,6 +108,19 @@ class NpcManager:
                     "trade": {
                         "white": color_filter(self._template_finder.get_template("TRADE"), self._config.colors["white"])[1],
                         "blue": color_filter(self._template_finder.get_template("TRADE_BLUE"), self._config.colors["blue"])[1],
+                    }
+                },
+                "roi": [444, 13, (816-444), (331-13)],
+                "poses": [[526, 131], [602, 192], [698, 218], [756, 188]],
+                "template_group": ["ORMUS_0", "ORMUS_1", "ORMUS_2", "ORMUS_3", "ORMUS_4", "ORMUS_5"]
+            },
+            Npc.ASHEARA: {
+                "name_tag_white": color_filter(self._template_finder.get_template("ORMUS_NAME_TAG_WHITE"), self._config.colors["white"])[1],
+                "name_tag_gold": color_filter(self._template_finder.get_template("ORMUS_NAME_TAG_GOLD"), self._config.colors["gold"])[1],
+                "action_btns": {
+                    "resurrect": {
+                        "white": color_filter(self._template_finder.get_template("RESURRECT"), self._config.colors["white"])[1],
+                        "blue": color_filter(self._template_finder.get_template("RESURRECT_BLUE"), self._config.colors["blue"])[1],
                     }
                 },
                 "roi": [444, 13, (816-444), (331-13)],

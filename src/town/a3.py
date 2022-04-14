@@ -17,13 +17,23 @@ class A3(IAct):
         super().__init__(screen, template_finder, old_pather, char, npc_manager, pather, api)
 
     def get_wp_location(self) -> Location: return Location.A3_STASH_WP
+    def can_resurrect(self) -> bool: return True
     def can_buy_pots(self) -> bool: return True
     def can_identify(self) -> bool: return True
     def can_heal(self) -> bool: return True
     def can_identify(self) -> bool: return True
     def can_stash(self) -> bool: return True
 
-    def heal(self, curr_loc: Location) -> Union[Location, bool]:
+    def resurrect(self, curr_loc: Location = Location.A3_ORMUS) -> Union[Location, bool]:
+        npc = Npc.ASHEARA
+        menu = "resurrect"
+        self._pather.walk_to_position((120, 90), time_out=12)
+        self._pather.walk_to_position((48, 91), time_out=12)
+        self.interact_with_npc(npc, menu)
+        self._pather.walk_to_position((120, 90), time_out=12)
+        return Location.A3_ORMUS
+
+    def heal(self, curr_loc: Location = Location.A3_ORMUS) -> Union[Location, bool]:
         npc = Npc.ORMUS
         menu = None
         Logger.debug(f"Attempting to heal in Act 3, moving to {npc}...")
@@ -34,7 +44,7 @@ class A3(IAct):
             keyboard.send("esc")
         return Location.A3_ORMUS
 
-    def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
+    def open_trade_menu(self, curr_loc: Location = Location.A3_ORMUS) -> Union[Location, bool]:
         npc = Npc.ORMUS
         menu = "trade"
         Logger.debug(f"Attempting to trade in Act 3, moving to {npc}...")
@@ -46,13 +56,13 @@ class A3(IAct):
                 self._npc_manager.press_npc_btn(npc, menu)
         return Location.A3_ORMUS
 
-    def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
+    def open_stash(self, curr_loc: Location = Location.A3_ORMUS) -> Union[Location, bool]:
         if not self._pather.walk_to_position((147, 60)): return False
         wait(0.4, 0.5)
         self._pather.click_object("Bank")    
         return Location.A3_STASH_WP
 
-    def open_wp(self, curr_loc: Location) -> bool:
+    def open_wp(self, curr_loc: Location = Location.A3_ORMUS) -> bool:
         if not self._pather.walk_to_poi("Kurast Docks"): return False
         wait(0.4, 0.5)
         return self._pather.click_object("Act3TownWaypoint")
@@ -60,7 +70,7 @@ class A3(IAct):
     def wait_for_tp(self) -> Union[Location, bool]:
         return Location.A3_STASH_WP
 
-    def identify(self, curr_loc: Location) -> Union[Location, bool]:
+    def identify(self, curr_loc: Location = Location.A3_ORMUS) -> Union[Location, bool]:
         npc = Npc.CAIN
         menu = "identify"
         Logger.debug(f"Attempting to identify in Act 3, moving to {npc}...")

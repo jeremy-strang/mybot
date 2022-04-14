@@ -222,9 +222,12 @@ if __name__ == "__main__":
             start = time.time()
             try:
                 data = debug._api.get_data()
+                print(f"Player location: {point_str(debug._api.data['player_pos_area'])}")
                 # debug._pickit.pick_up_items()
 
-                debug.run_a4_tests()
+                # debug.run_a4_tests()
+
+                debug._a3.resurrect()
 
 
 

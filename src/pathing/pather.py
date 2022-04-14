@@ -343,6 +343,7 @@ class Pather:
         return False
 
     def walk_to_position(self, dest_area, time_out=15.0, step_size=5, threshold=10) -> bool:
+        Logger.debug(f"Walking to position {point_str(dest_area)}...")
         route = self.make_route_to_position(dest_area)
         return self.walk_route(route, time_out, step_size)
 
@@ -373,7 +374,7 @@ class Pather:
         return (None, 0)
 
     def walk_route(self, route, time_out=15.0, step_size=5, threshold=10, final=3.0) -> bool:
-        Logger.debug(f"Walking along route of length {len(route)} and step size {step_size}...")
+        Logger.debug(f"    Walking along route of length {len(route)} and step size {step_size}...")
         data = self._api.data
         steps = []
         end = route[-1]

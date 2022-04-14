@@ -26,7 +26,7 @@ class A4(IAct):
     def can_stash(self) -> bool: return True
     def can_trade_and_repair(self) -> bool: return True
 
-    def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
+    def resurrect(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:
         npc = Npc.TYRAEL
         menu = "resurrect"
         self._pather.walk_to_position((27, 41), time_out=5)
@@ -40,7 +40,7 @@ class A4(IAct):
                 self._npc_manager.press_npc_btn(npc, menu)
         return Location.A4_TYRAEL_STASH
 
-    def open_wp(self, curr_loc: Location) -> bool:
+    def open_wp(self, curr_loc: Location = Location.A4_TOWN_START) -> bool:
         Logger.debug("Opening waypoint...")
         self._pather.walk_to_object("PandamoniumFortressWaypoint")
         wait(0.7)
@@ -54,7 +54,7 @@ class A4(IAct):
         # return False
         return Location.A4_TOWN_START
 
-    def identify(self, curr_loc: Location) -> Union[Location, bool]:
+    def identify(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:
         npc = Npc.CAIN
         menu = "identify"
         Logger.debug(f"Attempting to identify in Act 4, moving to {npc}...")
@@ -67,7 +67,7 @@ class A4(IAct):
                 self._npc_manager.press_npc_btn(Npc.CAIN, menu)
         return Location.A4_TYRAEL_STASH
     
-    def gamble(self, curr_loc: Location) -> Union[Location, bool]:
+    def gamble(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:
         npc = Npc.JAMELLA
         menu = "gamble"
         Logger.debug(f"Attempting to gamble in Act 4, moving to {npc}...")
@@ -82,7 +82,7 @@ class A4(IAct):
                 self._npc_manager.press_npc_btn(npc, menu)
         return Location.A4_JAMELLA
 
-    def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
+    def open_trade_menu(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:
         npc = Npc.JAMELLA
         menu = "trade"
         Logger.debug(f"Attempting to open_trade_menu in Act 4, moving to {npc}...")
@@ -97,7 +97,7 @@ class A4(IAct):
                 self._npc_manager.press_npc_btn(npc, menu)
         return Location.A4_JAMELLA
 
-    def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
+    def open_stash(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:
         # #if not self._pather.traverse_walking("Bank",self._char, obj=True,threshold=10,static_npc=False,end_dist=10): return False
         # if not self._pather.traverse_walking([22, 44], self._char, obj=False, threshold=10, static_npc=False, end_dist=10, time_out=6): return False
         # self._pather.activate_poi("Bank", "Bank", collection='objects', char=self._char)   
@@ -110,7 +110,7 @@ class A4(IAct):
             return False
         return Location.A4_TYRAEL_STASH
 
-    def heal(self, curr_loc: Location) -> Union[Location, bool]:
+    def heal(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:
         npc = Npc.JAMELLA
         menu = None
         Logger.debug(f"Attempting to heal in Act 4, moving to {npc}...")
@@ -122,7 +122,7 @@ class A4(IAct):
             keyboard.send("esc")
         return Location.A4_JAMELLA
 
-    def open_trade_and_repair_menu(self, curr_loc: Location) -> Union[Location, bool]:
+    def open_trade_and_repair_menu(self, curr_loc: Location = Location.A4_TOWN_START) -> Union[Location, bool]:
         npc = Npc.HALBU
         menu = "trade_repair"
         Logger.debug(f"Attempting to open trade and repair menu in Act 4, moving to {npc}...")
