@@ -127,15 +127,8 @@ class Debug:
             print(f"Error loading pickle file {file_path}:\n{e}")
             traceback.print_exc()
         return data
-    
-    def start_api(self):
-        data = None
-        print(("-" * 80) + "\n\nStarting API...")
-        while data is None:
-            wait(0.2)
-            data = self._api.get_data()
-        return data
-         
+
+    def dump_data_to_file(self, do_pickle: bool = False) -> str:
         fp = self._api.write_data_to_file()
         if fp is not None:
             try:
@@ -144,21 +137,22 @@ class Debug:
                 print(f"Error writing data to a file: {e}")
         self.stop()
 
+    def start_api(self):
+        data = None
+        print(("-" * 80) + "\n\nStarting API...")
+        while data is None:
+            wait(0.2)
+            data = self._api.get_data()
+        return data
+
     def test_a1_town(self):
-        print("\n\n Testing open_trade_and_repair_menu()...")
-        debug._a1.open_trade_and_repair_menu()
-        wait(3)    
+        # print("\n\n Testing open_trade_and_repair_menu()...")
+        # debug._a1.open_trade_and_repair_menu()
+        # wait(3)    
 
-        # print("\n\n Testing open_trade_menu()...")  
-        # wait(3)
-
-        # print("\n\n Testing open_wp()...")
-        # debug._a1.open_wp()
-        # wait(3)
-
-        # print("\n\n Testing open_stash()...")
-        # debug._a1.open_stash()
-        # wait(3)
+        print("\n\n Testing open_trade_menu()...")  
+        debug._a1.open_trade_menu()
+        wait(3)
 
     def test_a2_town(self):
         print("\n\n Testing heal()...")
@@ -375,7 +369,7 @@ if __name__ == "__main__":
             print("Done doing stuff")
     
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
-        keyboard.add_hotkey(debug._config.advanced_options['save_d2r_data_to_file_key'], lambda: debug.write_data_to_file())
+        keyboard.add_hotkey(debug._config.advanced_options['save_d2r_data_to_file_key'], lambda: debug.dump_data_to_file())
         keyboard.add_hotkey(debug._config.advanced_options["resume_key"], lambda: do_stuff(debug)) #lambda: pit.battle(True))
         keyboard.add_hotkey(debug._config.advanced_options["exit_key"], lambda: debug.stop())
         keyboard.add_hotkey(debug._config.advanced_options["graphic_debugger_key"], lambda: debug.start_overlay())
