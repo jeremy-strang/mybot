@@ -78,12 +78,11 @@ class IAct:
             while not menu_open and time.time() - start < 10:
                 m = self._api.find_npc(npc)
                 self._pather.move_mouse_to_abs_pos(m["position_abs"], m["dist"])
+                wait(0.15, 0.2)
                 if m is not None:
                     mouse.click(button="left")
-                    wait(1.0)
-                    # pprint(m)
-                    data = self._api.get_data()
-                    menu_open = data is not None and data["npc_interact_open"]
+                    wait(0.8)
+                    menu_open = self._api.wait_for_menu("npc_interact")
                     if menu_open:
                         if menu_selection is not None:
                             self._npc_manager.press_npc_btn(npc, menu_selection)

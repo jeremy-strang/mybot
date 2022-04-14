@@ -220,9 +220,13 @@ class D2rLoader(Thread):
                                            py_float])
 
         for npc in data["static_npcs"]:
-            for p in npc["position"]:
-                p = np.array([int(p["X"]), int(p["Y"])])
-                npc["position"] = p
+            npc["position"] = npc["position"][0]
+            npc_world_x = int(npc["position"]["X"])
+            npc_world_y = int(npc["position"]["Y"])
+            npc["position"] = np.array([npc_world_x, npc_world_y])
+            npc["position_abs"] = np.array(world_to_abs(npc["position"], self._player_pos_world))
+            npc["position_area"] = np.array([npc_world_x - area_origin_x, npc_world_y - area_origin_y])
+            npc["dist"] = math.dist(_data["player_pos_area"], npc["position_area"])
             _data["static_npcs"].append(npc)
 
         for monster in data["monsters"]:

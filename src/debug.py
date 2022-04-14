@@ -146,14 +146,18 @@ class Debug:
         self.stop()
 
     def test_a1_town(self):
-        print("\n\n Testing open_wp()...")
-        debug._a1.open_wp()
+        print("\n\n Testing open_trade_menu()...")
+        debug._a1.open_trade_menu()
         wait(4)
 
-        print("\n\n Testing open_stash()...")
-        debug._a1.open_stash()
-        wait(4)
+        # print("\n\n Testing open_wp()...")
+        # debug._a1.open_wp()
+        # wait(4)
 
+        # print("\n\n Testing open_stash()...")
+        # debug._a1.open_stash()
+        # wait(4)
+    
 
     def test_a2_town(self):
         print("\n\n Testing heal()...")
