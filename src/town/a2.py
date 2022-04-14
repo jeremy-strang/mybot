@@ -26,15 +26,7 @@ class A2(IAct):
     def can_trade_and_repair(self) -> bool: return True
 
     def _get_central_pos(self):
-        pos1 = (123, 81)
-        pos2 = (101, 95)
-        if self._api.data:
-            player_area = self._api.data["player_pos_area"]
-            dist_pos1 = math.dist(pos1, player_area)
-            dist_pos2 = math.dist(pos2, player_area)
-            if dist_pos2 < dist_pos1:
-                return pos2
-        return pos1
+        return (100, 94)
     
     def _go_to_stash_area(self):
         self._pather.walk_to_position(self._get_central_pos(), time_out=15)
@@ -99,7 +91,13 @@ class A2(IAct):
         success = False
         self._go_to_stash_area()
         if self._pather.walk_to_poi("Lut Gholein", time_out=15):
-            self._pather.click_poi()
+            wait(0.7)
+            self._pather.click_object("Act2Waypoint", offset=(10, -35))
+            success = self._api.wait_for_menu(D2rMenu.Waypoint)
+        if not success:
+            self._pather.walk_to_object("Act2Waypoint")
+            wait(0.7)
+            self._pather.click_poi("Lut Gholein", offset=(50, -35))
             success = self._api.wait_for_menu(D2rMenu.Waypoint)
         return success
 

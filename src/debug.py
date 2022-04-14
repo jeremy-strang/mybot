@@ -145,6 +145,11 @@ class Debug:
                 print(f"Error writing data to a file: {e}")
         self.stop()
 
+    def run_a1_tests(self):
+        print("\n\n Testing open_wp()...")
+        debug._a1.open_wp()
+        wait(2)
+
     def run_a2_tests(self):
         print("\n\n Testing heal()...")
         self._a2.heal()
@@ -215,40 +220,13 @@ class Debug:
         self._a4.open_trade_and_repair_menu(Location.A4_TOWN_START)
 
 if __name__ == "__main__":
-    from utils.coordinates import world_to_abs
     from utils.custom_mouse import mouse
-        
-    # def stop_debug(game_controller, overlay):
-    #     ui_manager.abort = True
-    #     if overlay is not None: overlay.stop_overlay()
-    #     on_exit(game_controller, ["capslock", "space"])
-
-    # def start_overlay(bot, game_stats):
-    #     print("Overlay thread starting...")
-    #     overlay = Overlay(bot, game_stats)
-    #     overlay_thread = threading.Thread(target=overlay.init)
-    #     overlay_thread.daemon = True
-    #     overlay_thread.start()
-    #     return overlay
-    
-    # def load_pickle(file_path: str):
-    #     data = None
-    #     try:
-    #         with open(file_path,"rb") as f:
-    #             data = pickle.load(f)
-    #     except BaseException as e:
-    #         print(f"Error loading pickle file {file_path}:\n{e}")
-    #         traceback.print_exc()
-    #     return data
     debug = None
     try:
         debug = Debug()
         debug.start_api()
         
         print(f"Player location: {point_str(debug._api.data['player_pos_area'])}")
-
-        # overlay = debug.start_overlay()
-        # pp.pprint(config.items)
 
         def do_stuff(debug):
             print("Doing stuff...")
@@ -260,7 +238,7 @@ if __name__ == "__main__":
                 # debug._pickit.pick_up_items()
 
 
-                debug._pather.click_object("Bank")
+                # debug._pather.click_object("Bank")
                 # debug.run_a2_tests()
 
                 # debug._a3.resurrect()

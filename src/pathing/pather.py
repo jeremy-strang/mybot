@@ -119,7 +119,7 @@ class Pather:
 
         return area_pos
 
-    def click_poi(self, poi_label: str, offset=None, time_out=1.5, stop_at_area: str = None):
+    def click_poi(self, poi_label: str, offset=None, time_out=1.5, stop_at_area: str = None, wait_for_menu: str = None):
         start = time.time()
         data = self._api.data
         if data and not self._should_abort_pathing():
@@ -131,6 +131,8 @@ class Pather:
                     offset)
                 mouse.click(button="left")
                 if stop_at_area is not None and self._api.wait_for_area(stop_at_area, time_out=2):
+                    return True
+                elif wait_for_menu is not None and self._api.wait_for_menu(wait_for_menu):
                     return True
                 else:
                     wait(0.5)
