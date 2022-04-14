@@ -1,4 +1,4 @@
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from screen import Screen
 from template_finder import TemplateFinder
 from config import Config

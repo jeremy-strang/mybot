@@ -4,7 +4,7 @@ from logger import Logger
 from pathing import Location, OldPather
 from typing import Union
 from pickit.pixel_pickit import PixelPickit
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from pathing import Pather
 from template_finder import TemplateFinder
 from town.town_manager import TownManager

@@ -12,7 +12,7 @@ from transmute import Transmute
 from ui import UiManager
 from town import IAct, A1, A2, A3, A4, A5
 from utils.misc import wait
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 
 TOWN_MARKERS = [
             "A5_TOWN_0", "A5_TOWN_1",

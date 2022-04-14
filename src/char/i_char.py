@@ -12,6 +12,7 @@ import obs
 from pathing import PathFinder, Pather, OldPather
 from monsters import MonsterType
 from char.skill import Skill
+from pathing.path_finder import make_path_bfs
 from utils.custom_mouse import mouse
 from utils.misc import point_str, rotate_vec, unit_vector, wait, cut_roi, is_in_roi, color_filter
 
@@ -307,7 +308,7 @@ class IChar:
         # return self._ui_manager.is_right_skill_selected(["TELE_ACTIVE", "TELE_INACTIVE"])
         if self._skill_hotkeys["teleport"] and not self._ui_manager.is_right_skill_selected(Skill.Teleport):
             keyboard.send(self._skill_hotkeys["teleport"])
-            wait(0.1, 0.15)
+            wait(0.2, 0.25)
         return self._ui_manager.is_right_skill_selected(Skill.Teleport)
 
     def get_skill_charges(self, img: np.ndarray = None):
@@ -467,6 +468,8 @@ class IChar:
     def pre_travel(self, do_pre_buff=True, force_switch_back=False):
         if do_pre_buff:
             self.pre_buff(switch_back=force_switch_back or not self._config.char["teleport_weapon_swap"])
+        if self.can_tp:
+            self.select_tp()
 
     def post_travel(self, skip_weapon_swap=False):
         if self._config.char["teleport_weapon_swap"] and not skip_weapon_swap:
@@ -516,30 +519,38 @@ class IChar:
                            mouse_button: str = "left",
                            stop_when_dead=True,
                            max_distance=4.0,
-                           min_attack_time=0) -> bool:
+                           min_attack_time=0,
+                           max_mobs_left=None,
+                           ) -> bool:
         if self._skill_hotkeys[skill_key]:
             if type(monster) is dict:
                 mid = monster['id']
                 Logger.debug(f"    Attacking {monster['type']} monster '{monster['name']}' (ID: {mid}) with {skill_key}, distance: {round(monster['dist'], 1)}, pos: {point_str(monster['position_area'])}")
                 keyboard.send(self._char_config["stand_still"], do_release=False)
-                wait(0.03, 0.04)
+                wait(0.04, 0.05)
                 keyboard.send(self._skill_hotkeys[skill_key])
-                wait(0.03, 0.04)
+                wait(0.04, 0.05)
                 start = time.time()
                 while (time.time() - start) < time_in_s:
                     monster = self._api.find_monster(mid)
                     if monster is None: break
                     self._pather.move_mouse_to_monster(monster)
-                    wait(0.03, 0.04)
+                    wait(0.04, 0.05)
                     mouse.press(button=mouse_button)
-                    wait(0.03, 0.04)
+                    wait(0.04, 0.05)
                     monster = self._api.find_monster(mid)
-                    if monster is None or monster["dist"] > max_distance or (monster["mode"] == 12 and stop_when_dead) or time.time() - start < min_attack_time:
+                    mobs_to_finish = False
+                    if max_mobs_left is not None and self._api.data:
+                        monsters_nearby = list(filter(lambda m: m["dist"] < 10, self._api.data["monsters"]))
+                        if len(monsters_nearby) > max_mobs_left:
+                            mobs_to_finish = True
+                    if not mobs_to_finish and (monster is None or monster["dist"] > max_distance or \
+                        (monster["mode"] == 12 and stop_when_dead)) or time.time() - start < min_attack_time:
                         break
                 mouse.release(button=mouse_button)
-                wait(0.02, 0.03)
+                wait(0.04, 0.05)
                 keyboard.release(self._config.char["stand_still"])
-                wait(0.02, 0.03)
+                wait(0.04, 0.05)
                 return True
             else:
                 Logger.error(f"Invalid monster: {monster}")
@@ -556,14 +567,29 @@ class IChar:
         nodes = pf.solve_tsp(destination)
         Logger.debug(f"Generated a route to traverse the zone consisting of {len(nodes)} nodes")
         pois = None
+        poi_indices = {}
         if poi_list is not None:
             pois = list(filter(lambda poi: poi is not None, map(lambda label: self._api.find_poi(label), poi_list))) 
-        for node in nodes:
+            for poi in pois:
+                Logger.debug(f"    POI in route: {poi}")
+                closest_dist = 9999
+                closest_index = -1
+                for i, node in enumerate(nodes):
+                    node_dist = math.dist(poi["position_area"], node)
+                    if node_dist < closest_dist:
+                        closest_dist = node_dist
+                        closest_index = i
+                if closest_index >= 0:
+                    Logger.debug(f"        Replacing node at index {closest_index} with POI {poi['label']}")
+                    nodes[closest_index] = poi["position_area"]
+                    poi_indices[closest_index] = poi
+
+        for i, node in enumerate(nodes):
             pf.update_map()
             dist = math.dist(pf.player_node, node)
             dest = [node]
             if dist > 35:
-                route = pf.make_path_astar(pf.player_node, node, True)
+                route = make_path_bfs(pf.player_node, node, self._api.data["map"]) # pf.make_path_astar(pf.player_node, node, True)
                 split_size = math.floor(len(route) / 3)
                 dest = [route[split_size], route[split_size * 2], route[-1]]
             for n in dest:
@@ -571,12 +597,12 @@ class IChar:
                 wait(0.1)
                 picked_up_items += self.kill_uniques(pickit_func, 16.0, looted_uniques, min_attack_time=2)
                 data = self._api.data
-                if data and poi_callback:
-                    for poi, i in enumerate(pois):
-                        if math.dist(poi["position_area"], data["player_pos_area"]) < 50:
-                            poi = pois.pop(i)
-                            poi_callback(poi, pickit_func)
-                            break
+                if data and poi_callback and i in poi_indices:
+                    poi = poi_indices[i]
+                    self._pather.traverse(poi["position_area"], self)
+                    self._pather.click_poi(poi["label"])
+                    picked_up_items += self.kill_uniques(pickit_func, 25.0, looted_uniques, min_attack_time=2)
+
         self.post_attack()
         Logger.info(f"Killed and looted {picked_up_items} items from {len(looted_uniques)} champion/unique packs")
         return picked_up_items

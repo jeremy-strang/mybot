@@ -18,7 +18,7 @@ from messages import Messenger
 from screen import Screen
 from utils.restart import restart_game, kill_game
 from utils.misc import kill_thread, set_d2r_always_on_top, restore_d2r_window_visibility
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from obs import ObsRecorder
 
 from item_manager import ItemManager

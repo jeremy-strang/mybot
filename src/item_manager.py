@@ -1,4 +1,4 @@
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from logger import Logger
 from screen import Screen
 import time

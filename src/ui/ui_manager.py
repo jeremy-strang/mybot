@@ -27,7 +27,7 @@ from template_finder import TemplateFinder
 from messages import Messenger
 from game_stats import GameStats
 from obs import ObsRecorder
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 
 import random 
 import string

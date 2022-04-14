@@ -310,7 +310,7 @@ if __name__ == "__main__":
     from config import Config
     from game_stats import GameStats
     from pathing import Pather
-    from d2r import D2rApi
+    from d2r import D2rApi, D2rMenu
     import threading
     from template_finder import TemplateFinder
     from ui import UiManager, char_selector

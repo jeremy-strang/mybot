@@ -6,7 +6,7 @@ from copy import deepcopy
 import math
 from typing import Union
 import random
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from config import Config
 from logger import Logger
 import threading

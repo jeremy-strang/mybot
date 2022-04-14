@@ -169,7 +169,9 @@ class D2rApi:
                 name = name.lower().replace(" ", "")
             for m in data["monsters"]:
                 m_name = m["name"].lower().replace(" ", "") if m["name"] and not exact else m["name"]
-                if m_name == name:
+                if not exact and m_name.startswith(name):
+                    return m
+                elif m_name == name:
                     return m
         return None
 
@@ -185,8 +187,12 @@ class D2rApi:
     def find_npc(self, npc: Npc):
         if self.data:
             for m in self.data["monsters"]:
-                name = m["name"]
-                if name.lower() == npc.lower().replace(" ", ""):
+                name = m["name"].lower().replace(" ", "")
+                if npc.lower().replace(" ", "") in name:
+                    return m
+            for m in self.data["static_npcs"]:
+                name = m["name"].lower().replace(" ", "")
+                if npc.lower().replace(" ", "") in name:
                     return m
         return None
 
@@ -253,14 +259,22 @@ class D2rApi:
                     return o
         return None
     
-    def wait_for_menu(self, menu: str, time_out=3.0):
+    def wait_for_menu(self, menu: str, time_out=1):
         key = f"{menu}_open"
         start = time.time()
         is_open = lambda data: data != None and key in data and data[key]
         while not (is_open(self.data)) and time.time() - start < time_out:
             time.sleep(0.1)
         return is_open(self.data)
-    
+
+    def wait_for_monster(self, name: str, time_out=3.0, exact: bool=False):
+        start = time.time()
+        monster = self.find_monster_by_name(name, exact=exact)
+        while monster is None and time.time() - start < time_out:
+            time.sleep(0.1)
+            monster = self.find_monster_by_name(name, exact=exact)
+        return monster
+
     def wait_for_area(self, area: str, time_out=5.0):
         start = time.time()
         area = area.lower().replace(" ", "")

@@ -1,11 +1,12 @@
 from char import IChar
+from logger import Logger
 from town.i_act import IAct
 from screen import Screen
 from config import Config
 from npc_manager import NpcManager, Npc
 from pathing import OldPather, Location
 from pathing import Pather
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from typing import Union
 from template_finder import TemplateFinder
 from utils.misc import wait
@@ -27,8 +28,12 @@ class A3(IAct):
         return Location.A3_ORMUS
 
     def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Ormus", self._char, obj=False, threshold=16, static_npc=True): return False
+        # if not self._pather.traverse_walking("Ormus", self._char, obj=False, threshold=16, static_npc=True): return False
+        if not self._pather.walk_to_monster(Npc.ORMUS):
+            Logger.error(f"    Failed to walk to NPC: '{Npc.ORMUS}'")
+            return False
         if not self.interact_with_npc(Npc.ORMUS):
+            Logger.warning(f"    Failed to open menu, falling back to pixel method")
             if self._npc_manager.open_npc_menu(Npc.ORMUS):
                 self._npc_manager.press_npc_btn(Npc.ORMUS, "trade")
         return Location.A3_ORMUS

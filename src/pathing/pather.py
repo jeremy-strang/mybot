@@ -10,7 +10,7 @@ import math
 import time
 from typing import Callable, Union
 import random
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from screen import Screen
 from config import Config
 from utils.misc import is_in_roi, point_str, wait
@@ -278,7 +278,7 @@ class Pather:
             if char.can_tp:
                 char.pre_move()
                 mouse.click(button="right")
-                wait(char._cast_duration)
+                wait(char._cast_duration + 0.02)
             else:
                 keyboard.send(self._config.char["force_move"])
                 wait(0.5)
@@ -286,21 +286,42 @@ class Pather:
             return False
         return True
 
-    def walk_to_monster(self, monster_id: int, time_out=10.0, step_size=4):
-        dest = self._api.find_monster(monster_id)
-        if dest:
-            self.walk_to_position(dest["position_area"], time_out, step_size)
+    def walk_to_monster(self, monster_id: Union[int, str, dict], time_out=10.0, step_size=5):
+        monster = None
+        if type(monster_id) is str:
+            monster = self._api.find_monster_by_name(monster_id)
+        elif type(monster_id) is int:
+            monster = self._api.find_monster(monster_id)
+        elif type(monster_id) is dict:
+            monster = monster_id
+        if monster:
+            self.walk_to_position(monster["position_area"], time_out, step_size)
             return True
         return False
 
-    def walk_to_item(self, item_id: int, time_out=10.0, step_size=4):
+    def walk_to_npc(self, npc: Union[int, str, dict], time_out=10.0, step_size=5):
+        target = None
+        if type(npc) is str:
+            target = self._api.find_npc(npc)
+            if not target:
+                target = self._api.find_monster(npc)
+        elif type(npc) is int:
+            target = self._api.find_monster(npc)
+        elif type(npc) is dict:
+            target = npc
+        if target:
+            self.walk_to_position(target["position_area"], time_out, step_size)
+            return True
+        return False
+
+    def walk_to_item(self, item_id: int, time_out=10.0, step_size=5):
         dest = self._api.find_item(item_id)
         if dest:
             self.walk_to_position(dest["position_area"], time_out, step_size)
             return True
         return False
 
-    def walk_to_object(self, obj_name: str, time_out=10.0, step_size=4):
+    def walk_to_object(self, obj_name: str, time_out=10.0, step_size=5):
         Logger.debug(f"Walking to object {obj_name}...")
         dest = self._api.find_object(obj_name)
         if dest:
@@ -310,7 +331,7 @@ class Pather:
         Logger.error(f"    No object found named {obj_name}")
         return False
 
-    def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=4):
+    def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=5):
         Logger.debug(f"Walking to POI {poi_label}")
         dest = self._api.find_poi(poi_label)
         if dest:
@@ -321,7 +342,7 @@ class Pather:
             Logger.error(f"    POI {poi_label} not found")
         return False
 
-    def walk_to_position(self, dest_area, time_out=15.0, step_size=4, threshold=10) -> bool:
+    def walk_to_position(self, dest_area, time_out=15.0, step_size=5, threshold=10) -> bool:
         route = self.make_route_to_position(dest_area)
         return self.walk_route(route, time_out, step_size)
 
@@ -339,7 +360,7 @@ class Pather:
             self._api._current_path = route
         return route
 
-    def _get_next_node(self, nodes, step_size=4, threshold=10) -> tuple[tuple[float, float], float]:
+    def _get_next_node(self, nodes, step_size=5, threshold=10) -> tuple[tuple[float, float], float]:
         if self._api.data and len(nodes) > 0:
             popped = 0
             node = nodes.pop(0)
@@ -351,7 +372,7 @@ class Pather:
             return (node, dist)
         return (None, 0)
 
-    def walk_route(self, route, time_out=15.0, step_size=4, threshold=10, final=3.0) -> bool:
+    def walk_route(self, route, time_out=15.0, step_size=5, threshold=10, final=3.0) -> bool:
         Logger.debug(f"Walking along route of length {len(route)} and step size {step_size}...")
         data = self._api.data
         steps = []
@@ -514,7 +535,7 @@ class Pather:
     
     def activate_poi(self,
                      poi: Union[tuple[int, int], str],
-                     end_loc: str,
+                     end_loc: str = "",
                      entrance_in_wall: bool = True,
                      collection="points_of_interest",
                      char=None,

@@ -1,7 +1,7 @@
 import json
 
 from numpy import str0
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from npc_manager import Npc
 from monsters import MonsterType, MonsterRule
 from utils.misc import is_in_roi

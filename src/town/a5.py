@@ -5,7 +5,7 @@ from config import Config
 from npc_manager import NpcManager, Npc
 from pathing import OldPather, Location
 from pathing import Pather
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from typing import Union
 from template_finder import TemplateFinder
 from utils.misc import wait

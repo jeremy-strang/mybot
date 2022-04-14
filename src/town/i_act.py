@@ -8,7 +8,7 @@ from config import Config
 from npc_manager import NpcManager, Npc
 from pathing import OldPather, Location
 from pathing import Pather
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from typing import Union
 from template_finder import TemplateFinder
 from utils.misc import wait
@@ -69,7 +69,7 @@ class IAct:
     
     def gamble (self, curr_loc: Location) -> Union[Location, bool]: return False
 
-    def interact_with_npc(self, npc: Npc, action_btn_key="trade") -> bool:
+    def interact_with_npc(self, npc: Npc, menu_selection: str = "trade") -> bool:
         result = False
         m = self._api.find_npc(npc)
         if m is not None:
@@ -85,7 +85,8 @@ class IAct:
                     data = self._api.get_data()
                     menu_open = data is not None and data["npc_interact_open"]
                     if menu_open:
-                        self._npc_manager.press_npc_btn(npc, action_btn_key)
+                        if menu_selection is not None:
+                            self._npc_manager.press_npc_btn(npc, menu_selection)
                         result = True
                         break
         return result

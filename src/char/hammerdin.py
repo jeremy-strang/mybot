@@ -85,9 +85,9 @@ class Hammerdin(IChar):
         if self._char_config["cta_available"]:
             self._pre_buff_cta()
         keyboard.send(self._skill_hotkeys["holy_shield"])
-        wait(0.04, 0.1)
+        wait(0.05, 0.1)
         mouse.click(button="right")
-        wait(self._cast_duration, self._cast_duration + 0.06)
+        wait(self._cast_duration + 0.04, self._cast_duration + 0.06)
 
     def pre_move(self):
         # select teleport if available
@@ -567,11 +567,13 @@ class Hammerdin(IChar):
                                 self._pather.move_to_monster(self, monster)
                                 last_move = time.time()
                                 monster = self._api.find_monster(monster["id"])
-                            if monster and monster["dist"] <= 3:
+                            if monster and monster["dist"] <= 4:
+                                Logger.debug(f"        Using concentration")
                                 keyboard.send(self._skill_hotkeys["concentration"])
                                 wait(0.07, 0.09)
+                                Logger.debug(f"            Right skill: {self._api.data['right_skill']}")
                                 nearby = len(list(filter(lambda m: m["dist"] < 15, self._api.data["monsters"])))
-                                if self.tele_stomp_monster("blessed_hammer", self._cast_duration * 8, monster, max_distance=5, stop_when_dead=nearby < 5, min_attack_time=min_attack_time):
+                                if self.tele_stomp_monster("blessed_hammer", self._cast_duration * 8, monster, max_distance=5, stop_when_dead=nearby < 5, min_attack_time=min_attack_time, max_mobs_left=3):
                                     picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
                                 wait(0.1)
                                 last_move = time.time()

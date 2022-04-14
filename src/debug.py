@@ -36,7 +36,7 @@ from config import Config
 from game_stats import GameStats
 from pathing import Location, OldPather
 from pathing import Pather
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 import threading
 from state_monitor import StateMonitor
 from template_finder import TemplateFinder
@@ -50,7 +50,7 @@ import threading
 from overlay import Overlay
 from main import on_exit
 from utils.custom_mouse import mouse
-from utils.misc import wait
+from utils.misc import point_str, wait
 from obs import ObsRecorder
 from monsters import sort_and_filter_monsters
 
@@ -85,6 +85,7 @@ class Debug:
         self._a2 = self._town_manager.a2
         self._a3 = self._town_manager.a3
         self._a4 = self._town_manager.a4
+        self._a5 = self._town_manager.a5
 
         self._char = Hammerdin(self._config.hammerdin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         self._pixel_pickit = PixelPickit(self._screen, self._item_finder, self._ui_manager, self._belt_manager, self._api, self._char, self._pather, self._game_stats)
@@ -135,6 +136,50 @@ class Debug:
             data = self._api.get_data()
         return data
 
+    def run_a4_tests(self):
+        print("\n\nTesting resurrect()...")
+        self._a4.resurrect(Location.A4_TOWN_START)
+        wait(2)
+        debug._pather.walk_to_position((46, 41), 6)
+
+        wait(4)
+        print("\n\nTesting open_wp()...")
+        self._a4.open_wp(Location.A4_TOWN_START)
+        wait(2)
+        debug._pather.walk_to_position((46, 41), 6)
+
+        wait(4)
+        print("\n\nTesting identify()...")
+        self._a4.identify(Location.A4_TOWN_START)
+        wait(2)
+        debug._pather.walk_to_position((46, 41), 6)
+
+        wait(4)
+        print("\n\nTesting gamble()...")
+        self._a4.gamble(Location.A4_TOWN_START)
+        wait(2)
+        debug._pather.walk_to_position((46, 41), 6)
+
+        wait(4)
+        print("\n\nTesting open_trade_menu()...")
+        self._a4.open_trade_menu(Location.A4_TOWN_START)
+        wait(2)
+        debug._pather.walk_to_position((46, 41), 6)
+
+        wait(4)
+        print("\n\nTesting open_stash()...")
+        self._a4.open_stash(Location.A4_TOWN_START)
+        debug._pather.walk_to_position((46, 41), 6)
+
+        wait(4)
+        print("\n\nTesting heal()...")
+        self._a4.heal(Location.A4_TOWN_START)
+        debug._pather.walk_to_position((46, 41), 6)
+
+        wait(4)
+        print("\n\nTesting open_trade_and_repair_menu()...")
+        self._a4.open_trade_and_repair_menu(Location.A4_TOWN_START)
+
 if __name__ == "__main__":
     from utils.coordinates import world_to_abs
     from utils.custom_mouse import mouse
@@ -166,21 +211,23 @@ if __name__ == "__main__":
         debug = Debug()
         debug.start_api()
         
+        print(f"Player location: {point_str(debug._api.data['player_pos_area'])}")
+
         # overlay = debug.start_overlay()
         # pp.pprint(config.items)
 
         def do_stuff(debug):
             print("Doing stuff...")
-            wait(.5)
+            wait(1)
             start = time.time()
             try:
                 data = debug._api.get_data()
+                # debug._pickit.pick_up_items()
 
-                # pather.click_object("TownPortal")
-                
-                debug._pickit.pick_up_items()
+                debug.run_a4_tests()
 
-                
+
+
                 # pickled = load_pickle("pickles/pickle_d2r_mem_Travincal_20220411_214023.p")
                 # print(f"Loaded pickle data, type: {type(pickled)}")
                 # print(f"    current_area:   {pickled['current_area']}")
@@ -217,7 +264,7 @@ if __name__ == "__main__":
     
                 # if not data["stash_open"]:
                 #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                debug._ui_manager.stash_all_items(debug._config.char["num_loot_columns"], debug._item_finder, False)
+                # debug._ui_manager.stash_all_items(debug._config.char["num_loot_columns"], debug._item_finder, False)
 
                 # ui_manager.fill_tome_of("Town Portal")
                 # ui_manager.throw_out_junk(item_finder)

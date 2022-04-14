@@ -48,7 +48,7 @@ from utils.dclone_ip import get_d2r_game_ip
 
 #mapassist api + new old_pather
 from pathing import Pather
-from d2r import D2rApi
+from d2r import D2rApi, D2rMenu
 from utils.levels import get_level
 
 class Bot:
