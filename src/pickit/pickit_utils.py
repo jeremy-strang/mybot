@@ -1,9 +1,12 @@
 import sys
 from typing import Union
+
+import numpy as np
 from game_stats import GameStats
 from logger import Logger
 from pickit.pickit_item import PickitItem
-from pickit.types import *
+from pickit.item_types import *
+from utils.misc import is_in_roi, point_str
 
 sys.path.insert(0, "./config")
 from pickit_default import PickitConfig
@@ -90,3 +93,36 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
             else:
                 result = Action.Keep
     return result
+
+def get_free_inventory_space(inventory_items: list[dict], num_loot_columns: int = 10):
+    inventory = np.zeros((4, 10)) + 1
+    for j in range(num_loot_columns, 10):
+        print(f"i: {j}")
+        inventory[0, j] = 0
+        inventory[1, j] = 0
+        inventory[2, j] = 0
+        inventory[3, j] = 0
+
+    looted_item_count = 0
+    for item in inventory_items:
+        x, y = item["position"]
+        w, h = ITEM_DIMENSIONS[item["type"]] if item["type"] in ITEM_DIMENSIONS else (1, 1)
+        if item and is_in_roi([-1, -1, num_loot_columns + 1, 4], item["position"]):
+            looted_item_count += 1
+            Logger.debug(f"****Item {item['type']} in ROI {[0, 0, num_loot_columns - 1, 3]}:\n    {item['type']}, dimensions: {(w, h)}, position: {(x, y)}")
+            for i in range(x, x + w):
+                for j in range(y, y + h):
+                    inventory[j, i] = 0
+        # elif item:
+        #     Logger.debug(f"    Item {item['type']} not in ROI {[0, 0, num_loot_columns - 1, 3]}:\n    {item['type']}, dimensions: {(w, h)}, position: {(x, y)}")
+    
+
+    free_column_count = 0
+    free_slot_count = 40 - np.sum(inventory)
+    for j in range(0, num_loot_columns):
+        if inventory[j, 0] == inventory[j, 1] == inventory[j, 2] == inventory[j, 3] == 1:
+            free_column_count += 1
+
+    Logger.debug(f"Computed inventory space with {looted_item_count} items in {num_loot_columns} loot columns: {free_slot_count} 1x1 slots, {free_column_count} free full columns")
+    Logger.debug(f"\n{inventory}")
+    return free_slot_count

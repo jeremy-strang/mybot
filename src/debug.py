@@ -7,6 +7,7 @@ from turtle import pos
 from char.hammerdin import Hammerdin
 from char.skill import Skill
 import game_controller
+from pickit.pickit_utils import get_free_inventory_space
 from pickit.pixel_pickit import PixelPickit
 from pickit.pickit import Pickit
 import keyboard
@@ -50,7 +51,7 @@ import threading
 from overlay import Overlay
 from main import on_exit
 from utils.custom_mouse import mouse
-from utils.misc import point_str, wait
+from utils.misc import point_str, restore_d2r_window_visibility, wait, set_d2r_always_on_top
 from obs import ObsRecorder
 from monsters import sort_and_filter_monsters
 
@@ -108,6 +109,7 @@ class Debug:
     def stop(self):
         self._ui_manager.abort = True
         if self._overlay is not None: self._overlay.stop_overlay()
+        restore_d2r_window_visibility()
         on_exit(self._game_controller, ["capslock", "space"])
 
     def start_overlay(self):
@@ -138,6 +140,7 @@ class Debug:
         self.stop()
 
     def start_api(self):
+        set_d2r_always_on_top()
         data = None
         print(("-" * 80) + "\n\nStarting API...")
         while data is None:
@@ -270,11 +273,11 @@ if __name__ == "__main__":
                 #     debug._a1.open_stash(Location.A3_STASH_WP)
                 # debug._ui_manager.stash_all_items(debug._config.char["num_loot_columns"], debug._item_finder, False)
 
-                debug.test_a1_town()
+                
 
                 # debug._pickit.pick_up_items()
 
-
+                get_free_inventory_space(debug._api.data["inventory_items"], debug._config.char["num_loot_columns"])
 
 
                 # debug._pather.click_object("Bank")
@@ -361,12 +364,12 @@ if __name__ == "__main__":
                 #     debug._pather.traverse_walking(node, debug._char)
                 #     current = node
                 # debug._api._current_path = nodes
-
             except BaseException as e:
                 print(e)
                 traceback.print_exc()
             # stop_debug(game_controller, overlay)
             print("Done doing stuff")
+            debug.stop()
     
         # keyboard.add_hotkey(config.advanced_options["resume_key"], lambda: pickit.pick_up_items(char, True))
         keyboard.add_hotkey(debug._config.advanced_options['save_d2r_data_to_file_key'], lambda: debug.dump_data_to_file())

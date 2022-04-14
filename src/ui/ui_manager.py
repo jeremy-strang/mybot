@@ -10,7 +10,7 @@ from d2r.d2r_api import D2rApi
 import pickit
 from pickit.item_finder import PixelItem
 from pickit.pickit_item import PickitItem
-from pickit.types import Action, Stat
+from pickit.item_types import Action, Stat
 import obs
 from obs import obs_recorder
 from char.skill import Skill

@@ -7,7 +7,7 @@ from beautifultable import BeautifulTable
 from logger import Logger
 from config import Config
 from messages import Messenger
-from pickit.types import Item
+from pickit.item_types import Item
 from utils.misc import hms
 from version import __version__
 from utils.levels import get_level

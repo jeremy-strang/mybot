@@ -8,7 +8,7 @@ from game_stats import GameStats
 from logger import Logger
 from pickit.pickit_utils import get_pickit_action
 from pickit_default import pickit_config, PickitConfig
-from pickit.types import *
+from pickit.item_types import *
 
 
 pp = pprint.PrettyPrinter(indent=4)

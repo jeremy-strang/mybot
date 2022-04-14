@@ -1,5 +1,5 @@
 from typing import Any
-from pickit.types import ITEM_CLASSES, Action, Item, Quality, ItemMode, ItemClass, InventoryPage, BodyLoc, SkillTree, StashType, Flag, Stat
+from pickit.item_types import ITEM_CLASSES, Action, Item, Quality, ItemMode, ItemClass, InventoryPage, BodyLoc, SkillTree, StashType, Flag, Stat
 
 class PickitItem:
     def __init__(self, item: dict, action: Action = Action.DontKeep):

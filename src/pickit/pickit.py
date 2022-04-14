@@ -7,7 +7,7 @@ from operator import itemgetter
 from pytest import skip
 from d2r.d2r_api import D2rApi
 from game_stats import GameStats
-from pickit.types import ItemMode
+from pickit.item_types import ItemMode
 from pathing import Pather
 
 from utils.custom_mouse import mouse
