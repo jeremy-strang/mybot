@@ -75,7 +75,7 @@ def get_pickit_action(item: dict, config: PickitConfig, potion_needs: dict = Non
             result = _parse_pickit_action(config.UnidentifiedItems[type_quality], item, game_stats=game_stats)
 
         # Check if it's an item we want to identify
-        if type_quality in config.IdentifiedItems:
+        if type_quality in config.IdentifiedItems and len(config.IdentifiedItems[type_quality]) > 0:
             # If it's identified, evaluate the rules for it and see if any of them pass
             if item["is_identified"]:
                 result = Action.DontKeep
