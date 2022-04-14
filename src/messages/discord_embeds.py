@@ -88,7 +88,7 @@ class DiscordEmbeds(GenericApi):
 
 
     def send_message(self, msg: str, no_thumbnail=False):
-        player_summary = self._config.general['player_summary']
+        player_summary = self._config.general['player_summary'] if 'player_summary' in self._config.general else 'Bot'
         msg = f"{player_summary} {msg}" if player_summary is not None else msg
         e = discord.Embed(title=self._config.general['name'], description=f"```{msg}```", color=Color.dark_teal())
         if not no_thumbnail and not self._config.general['discord_status_condensed']:
