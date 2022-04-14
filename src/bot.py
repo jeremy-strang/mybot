@@ -312,7 +312,7 @@ class Bot:
 
     def on_maintenance(self):
         Logger.debug("Town maintenance...")
-        is_loading = True
+        is_loading = self._ui_manager.wait_for_loading_finish()
         merc_alive = False
         health_pct = 1
         mana_pct = 1
