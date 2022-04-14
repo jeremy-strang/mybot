@@ -148,70 +148,94 @@ class Debug:
     def test_a1_town(self):
         print("\n\n Testing open_trade_menu()...")
         debug._a1.open_trade_menu()
-        wait(4)
+        wait(3)
 
-        # print("\n\n Testing open_wp()...")
-        # debug._a1.open_wp()
-        # wait(4)
+        print("\n\n Testing open_wp()...")
+        debug._a1.open_wp()
+        wait(3)
 
-        # print("\n\n Testing open_stash()...")
-        # debug._a1.open_stash()
-        # wait(4)
-    
+        print("\n\n Testing open_stash()...")
+        debug._a1.open_stash()
+        wait(3)
 
     def test_a2_town(self):
         print("\n\n Testing heal()...")
         self._a2.heal()
-        wait(2)
+        wait(3)
         
         print("\n\n Testing open_stash()...")
         self._a2.open_stash()
-        wait(2)
+        wait(3)
         
         print("\n\n Testing identify()...")
         self._a2.identify()
-        wait(2)
+        wait(3)
         
         print("\n\n Testing open_trade_menu()...")
         self._a2.open_trade_menu()
-        wait(2)
+        wait(3)
         
         print("\n\n Testing open_trade_and_repair_menu()...")
         self._a2.open_trade_and_repair_menu()
-        wait(2)
+        wait(3)
         
         print("\n\n Testing open_wp()...")
         self._a2.open_wp()
-        wait(2)
+        wait(3)
+
+    def test_a3_town(self):
+        print("\n\n Testing heal()...")
+        self._a3.heal()
+        wait(3)
+        
+        print("\n\n Testing open_wp()...")
+        self._a3.resurrect()
+        wait(3)
+        
+        print("\n\n Testing open_stash()...")
+        self._a3.open_stash()
+        wait(3)
+        
+        print("\n\n Testing identify()...")
+        self._a3.identify()
+        wait(3)
+        
+        print("\n\n Testing open_trade_menu()...")
+        self._a3.open_trade_menu()
+        wait(3)
+        
+        print("\n\n Testing open_wp()...")
+        self._a3.open_wp()
+        wait(3)
 
     def test_a4_town(self):
         print("\n\nTesting resurrect()...")
         self._a4.resurrect(Location.A4_TOWN_START)
-        wait(2)
+        wait(3)
         self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting open_wp()...")
         self._a4.open_wp(Location.A4_TOWN_START)
-        wait(2)
+        wait(3)
         self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting identify()...")
         self._a4.identify(Location.A4_TOWN_START)
-        wait(2)
+        wait(3)
         self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting gamble()...")
         self._a4.gamble(Location.A4_TOWN_START)
-        wait(2)
+        wait(3)
         self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
         print("\n\nTesting open_trade_menu()...")
         self._a4.open_trade_menu(Location.A4_TOWN_START)
-        wait(2)
+        wait(3)
         self._pather.walk_to_position((46, 41), 6)
 
         wait(4)
@@ -250,7 +274,7 @@ if __name__ == "__main__":
                 #     debug._a1.open_stash(Location.A3_STASH_WP)
                 # debug._ui_manager.stash_all_items(debug._config.char["num_loot_columns"], debug._item_finder, False)
 
-                debug.test_a1_town()
+                debug.test_a3_town()
 
                 # debug._pickit.pick_up_items()
 
