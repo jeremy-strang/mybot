@@ -42,18 +42,22 @@ class A1(IAct):
                 wait(0.7)
                 self._pather.click_poi("Rogue Encampment", wait_for_menu=D2rMenu.Waypoint)
                 success = self._api.wait_for_menu(D2rMenu.Waypoint)
-        Logger.debug(f"    Success: {success}")
         return success
 
     def wait_for_tp(self) -> Union[Location, bool]:
         return Location.A1_KASHYA_CAIN
 
     def identify(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        if not self._old_pather.traverse_nodes((curr_loc, Location.A1_KASHYA_CAIN), self._char): return False
-        if self._npc_manager.open_npc_menu(Npc.CAIN):
-            self._npc_manager.press_npc_btn(Npc.CAIN, "identify")
-            return Location.A1_KASHYA_CAIN
-        return False
+        npc = Npc.CAIN
+        menu = "identify"
+        Logger.debug(f"Attempting to identify in Act 1, moving to {npc}...")
+        if not self._pather.walk_to_monster(npc):
+            Logger.error(f"    Failed to walk to NPC: {npc}")
+        if not self.interact_with_npc(npc, menu):
+            Logger.warning(f"    Failed to {menu}, falling back to pixel method")
+            if self._npc_manager.open_npc_menu(npc):
+                self._npc_manager.press_npc_btn(npc, menu)
+        return Location.A1_KASHYA_CAIN
 
     def open_trade_menu(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
         if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
@@ -75,7 +79,6 @@ class A1(IAct):
 
     def open_trade_and_repair_menu(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
         if not self._pather.traverse_walking("Charsi", self._char, obj=False,threshold=10, static_npc=True): return False    
-        #if not self._old_pather.traverse_nodes((curr_loc, Location.A1_CHARSI), self._char): return False
         self._npc_manager.open_npc_menu(Npc.CHARSI)
         self._npc_manager.press_npc_btn(Npc.CHARSI, "trade_repair")
         return Location.A1_CHARSI
