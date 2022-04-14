@@ -428,18 +428,20 @@ class Pather:
         route = self.make_route_to_position(dest_area)
         return self.walk_route(route, time_out, step_size)
 
-    def make_route_to_position(self, dest_area, ):
+    def make_route_to_position(self, position_area: tuple[float, float], do_astar: bool = False):
         route = None
         data = self._api.data
         if data:
-            # dest_area = (int(dest_area[1]), int(dest_area[0]))
-            # player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
-            # pf = PathFinder(self._api)
-            # route = pf.make_path_astar(player_area, dest_area, False)
-            dest_area = (int(dest_area[0]), int(dest_area[1]))
-            player_area = (int(data["player_pos_area"][0]), int(data["player_pos_area"][1]))
-            route = make_path_bfs(player_area, dest_area, data["map"])
-            self._api._current_path = route
+            if do_astar:
+                position_area = (int(position_area[1]), int(position_area[0]))
+                player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
+                pf = PathFinder(self._api)
+                route = pf.make_path_astar(player_area, position_area, False)
+            else:
+                position_area = (int(position_area[0]), int(position_area[1]))
+                player_area = (int(data["player_pos_area"][0]), int(data["player_pos_area"][1]))
+                route = make_path_bfs(player_area, position_area, data["map"])
+                self._api._current_path = route
         return route
 
     def _get_next_node(self, nodes, step_size=5, threshold=10) -> tuple[tuple[float, float], float]:
