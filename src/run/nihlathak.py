@@ -72,7 +72,7 @@ class Nihlathak:
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         is_barb = "_barb" in self._char._char_config["type"]
-        if not self._pather.wait_for_location("HallsOfPain"): return False
+        if not self._api.wait_for_area("HallsOfPain"): return False
         
         self._char.pre_travel(do_pre_buff)
 
@@ -82,10 +82,10 @@ class Nihlathak:
 
         self._char.post_travel()
 
-        self._pather.click_poi("Halls of Vaught", offset=(35, -39.5), time_out=5, stop_at_area="HallsOfVaught")
-        if not self._pather.wait_for_location("HallsOfVaught"):
-            self._pather.click_poi("Halls of Vaught", offset=(35, -39.5), time_out=5, stop_at_area="HallsOfVaught")
-            if not self._pather.wait_for_location("HallsOfVaught"):
+        self._pather.click_poi("Halls of Vaught", offset=(35, -39.5), time_out=5, target_area="HallsOfVaught")
+        if not self._api.wait_for_area("HallsOfVaught"):
+            self._pather.click_poi("Halls of Vaught", offset=(35, -39.5), time_out=5, target_area="HallsOfVaught")
+            if not self._api.wait_for_area("HallsOfVaught"):
                 if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=False, randomize=2, time_out=25, offset=[44, 0]):
                     if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=4, time_out=25, offset=[35, -39.5]):
                         return False

@@ -56,7 +56,7 @@ class Countess:
         return False
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather.wait_for_location("BlackMarsh"): return False
+        if not self._api.wait_for_area("BlackMarsh"): return False
 
         self._char.pre_travel(do_pre_buff)
         jump_dist = 15

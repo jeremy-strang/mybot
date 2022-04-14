@@ -66,7 +66,7 @@ class Travincal:
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         tele_swap = self._config.char["teleport_weapon_swap"]
-        if not self._pather.wait_for_location("Travincal"): return False
+        if not self._api.wait_for_area("Travincal"): return False
         if do_pre_buff:
             self._char.pre_buff(switch_back=not tele_swap)
 

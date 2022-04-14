@@ -263,6 +263,13 @@ class D2rApi:
                     return o
         return None
     
+    def get_hovered_unit(self):
+        if self.data:
+            hovered_unit = self.data["hovered_unit"]
+            hovered_unit_type = self.data["hovered_unit_type"]
+            return (hovered_unit, hovered_unit_type)
+        return (None, None)
+
     def wait_for_menu(self, menu: str, time_out=1):
         key = f"{menu}_open"
         start = time.time()
@@ -295,13 +302,6 @@ class D2rApi:
             time.sleep(0.1)
             area_detected = self.data is not None and self.data["current_area"].lower().replace(" ", "") == area
         return area_detected
-    
-    def get_hovered_unit(self):
-        if self.data:
-            hovered_unit = self.data["hovered_unit"]
-            hovered_unit_type = self.data["hovered_unit_type"]
-            return (hovered_unit, hovered_unit_type)
-        return (None, None)
 
     def wait_for_hover(self, target: dict, list_name: str, time_out=0.33) -> bool:
         result = (False, None, None)

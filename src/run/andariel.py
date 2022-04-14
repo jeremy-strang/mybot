@@ -59,7 +59,7 @@ class Andariel:
     # "Catacombs Level 3"
     # CatacombsLevel1
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather.wait_for_location("CatacombsLevel2"): return False
+        if not self._api.wait_for_area("CatacombsLevel2"): return False
         
         self._char.pre_travel(do_pre_buff)
         if not self._pather.traverse("Catacombs Level 3", self._char,verify_location=True): return False

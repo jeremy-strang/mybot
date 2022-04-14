@@ -118,30 +118,17 @@ class Pather:
             area_pos = area_pos - data["area_origin"]
 
         return area_pos
-
-    def click_poi(self, poi_label: str, offset=None, time_out=1.5, stop_at_area: str = None, wait_for_menu: str = None):
-        start = time.time()
-        data = self._api.data
-        if data and not self._should_abort_pathing():
-            poi = self._api.find_poi(poi_label)
-            while poi and time.time() - start < time_out:
-                self.move_mouse_to_abs_pos(
-                    world_to_abs(poi["position"], data["player_pos_world"]),
-                    math.dist(data["player_pos_area"], poi["position"] - data["area_origin"]),
-                    offset)
-                mouse.click(button="left")
-                if stop_at_area is not None and self._api.wait_for_area(stop_at_area, time_out=2):
-                    return True
-                elif wait_for_menu is not None and self._api.wait_for_menu(wait_for_menu):
-                    return True
-                else:
-                    wait(0.5)
-        if stop_at_area is not None:
-            return self._api.wait_for_area(stop_at_area, time_out=2)
-        return True
-
-    def click_object(self, name: str, offset=None, time_out=4, on_monsters_blocking: Callable[[dict], bool] = None):
-        Logger.debug(f"Clicking object '{name}'...")
+    
+    def click_unit(self,
+                   unit: dict,
+                   update_unit: Callable[[dict], dict],
+                   unit_list: str,
+                   confirm_hover: bool = True,
+                   offset = None,
+                   time_out = 4,
+                   target_area: str = None,
+                   target_menu: str = None,
+                   on_monsters_blocking: Callable[[dict], bool] = None):
         adj_x, adj_y, do_adj_x, do_adj_y = get_next_incremental_offset()
         off_x, off_y = (0, 0)
         if offset is not None and len(offset) >= 2:
@@ -149,34 +136,165 @@ class Pather:
             off_y = offset[1]
         start = time.time()
         data = self._api.data
-        is_hovered = False
+        is_confirmed = False
         is_blocked = False
         if data and not self._should_abort_pathing():
             wait(0.1, 0.2)
-            object = self._api.find_object(name)
-            is_hovered = object and object["is_hovered"]
-            while object and time.time() - start < time_out:
+            unit = update_unit(unit)
+            while unit and not is_confirmed and time.time() - start < time_out:
                 self.move_mouse_to_abs_pos(
-                    world_to_abs(object["position"], data["player_pos_world"]),
-                    math.dist(data["player_pos_world"], object["position"]),
+                    world_to_abs(unit["position"], data["player_pos_world"]),
+                    math.dist(data["player_pos_world"], unit["position"]),
                     offset=(off_x + adj_x, off_y + adj_y))
                 wait(0.1)
-                is_hovered, hovered_unit, hovered_unit_type = self._api.wait_for_hover(object, "objects")
-                if is_hovered: break
-                elif hovered_unit:
-                    Logger.debug(f"    Found a hovered unit that is the wrong type ({hovered_unit_type}), adjusting offset")
-                    if hovered_unit_type == "monsters" and callable(on_monsters_blocking):
-                        callback_start = time.time()
-                        on_monsters_blocking(hovered_unit)
-                        start += time.time() - callback_start
-                    else:
-                        adj_x, adj_y, do_adj_x, do_adj_y = get_next_incremental_offset(adj_x, adj_y, do_adj_x, do_adj_y)
-                object = self._api.find_object(object["name"])
+                is_confirmed = False
+                if confirm_hover:
+                    is_hovered, hovered_unit, hovered_unit_type = self._api.wait_for_hover(unit, unit_list)
+                    if is_hovered:
+                        Logger.debug(f"    Clicking unit, confirmed hover: {is_hovered}")
+                        mouse.click(button="left")
+                        is_confirmed = True
+                    elif hovered_unit:
+                        if hovered_unit_type == "monsters" and callable(on_monsters_blocking):
+                            Logger.debug(f"    Found a hovered unit that is the wrong type ({hovered_unit_type}), killing...")
+                            callback_start = time.time()
+                            on_monsters_blocking(hovered_unit)
+                            start += time.time() - callback_start
+                        else:
+                            Logger.debug(f"    Found a hovered unit that is the wrong type ({hovered_unit_type}), adjusting offset...")
+                            adj_x, adj_y, do_adj_x, do_adj_y = get_next_incremental_offset(adj_x, adj_y, do_adj_x, do_adj_y)
+                    elif confirm_hover and not is_hovered:
+                        keyboard.send(self._config.char["force_move"])
+                else:
+                    mouse.click(button="left")
+                if target_area:
+                    Logger.debug(f"        Waiting for area {target_area}...")
+                    is_confirmed = self._api.wait_for_area(target_area)
+                    Logger.debug(f"             Menu confirmed: {is_confirmed}")
+                elif target_menu:
+                    Logger.debug(f"        Waiting for menu {target_menu}...")
+                    is_confirmed = self._api.wait_for_menu(target_menu)
+                    Logger.debug(f"             Menu confirmed: {is_confirmed}")
+                else:
+                    wait(0.5)
+                unit = update_unit(unit)
+        return is_confirmed
 
-            Logger.debug(f"    Clicking object, confirmed hover: {is_hovered}")
-            mouse.click(button="left")
-            wait(0.5)
-        return is_hovered
+    def click_object(self,
+                     name: str,
+                     offset: tuple[float, float] = None,
+                     time_out: float = 4,
+                     target_area: str = None,
+                     target_menu: str = None,
+                     on_monsters_blocking: Callable[[dict], bool] = None):
+        # adj_x, adj_y, do_adj_x, do_adj_y = get_next_incremental_offset()
+        # off_x, off_y = (0, 0)
+        # if offset is not None and len(offset) >= 2:
+        #     off_x = offset[0]
+        #     off_y = offset[1]
+        # start = time.time()
+        # data = self._api.data
+        # is_hovered = False
+        # if data and not self._should_abort_pathing():
+        #     wait(0.1, 0.2)
+        #     object = self._api.find_object(name)
+        #     is_hovered = object and object["is_hovered"]
+        #     while object and time.time() - start < time_out:
+        #         self.move_mouse_to_abs_pos(
+        #             world_to_abs(object["position"], data["player_pos_world"]),
+        #             math.dist(data["player_pos_world"], object["position"]),
+        #             offset=(off_x + adj_x, off_y + adj_y))
+        #         wait(0.1)
+        #         is_hovered, hovered_unit, hovered_unit_type = self._api.wait_for_hover(object, "objects")
+        #         if is_hovered: break
+        #         elif hovered_unit:
+        #             Logger.debug(f"    Found a hovered unit that is the wrong type ({hovered_unit_type}), adjusting offset")
+        #             if hovered_unit_type == "monsters" and callable(on_monsters_blocking):
+        #                 callback_start = time.time()
+        #                 on_monsters_blocking(hovered_unit)
+        #                 start += time.time() - callback_start
+        #             else:
+        #                 adj_x, adj_y, do_adj_x, do_adj_y = get_next_incremental_offset(adj_x, adj_y, do_adj_x, do_adj_y)
+        #         object = self._api.find_object(object["name"])
+
+        #     Logger.debug(f"    Clicking object, confirmed hover: {is_hovered}")
+        #     mouse.click(button="left")
+        #     wait(0.5)
+        # return is_hovered
+        Logger.debug(f"Clicking object '{name}'...")
+        obj = self._api.find_object(name)
+        update_obj = lambda o: self._api.find_object(o["name"])
+        return self.click_unit(
+                   obj,
+                   update_obj,
+                   unit_list="objects",
+                   confirm_hover = True,
+                   offset=offset,
+                   time_out=time_out,
+                   target_area=target_area,
+                   target_menu=target_menu,
+                   on_monsters_blocking=on_monsters_blocking)
+
+    def click_poi(self,
+                  label: str,
+                  offset=None,
+                  time_out=1.5,
+                  target_area: str = None,
+                  target_menu: str = None,
+                  on_monsters_blocking: Callable[[dict], bool] = None):
+        Logger.debug(f"Clicking POI '{label}'...")
+        poi = self._api.find_poi(label)
+        update_poi = lambda p: self._api.find_poi(p["label"])
+        # return self.click_unit(self, poi, update_poi, "points_of_interest", offset, time_out, target_area, target_menu, on_monsters_blocking)
+        return self.click_unit(
+                   poi,
+                   update_poi,
+                   unit_list="points_of_interest",
+                   confirm_hover = False,
+                   offset=offset,
+                   time_out=time_out,
+                   target_area=target_area,
+                   target_menu=target_menu,
+                   on_monsters_blocking=on_monsters_blocking)
+
+    def click_item(self, item: dict, char, time_out: float = 6.0, do_traverse=True, do_teleport=False):
+        if item:
+            Logger.debug(f"    Clicking item {item['name']} located at {point_str(item['position'])}")
+        start = time.time()
+        if item and do_teleport:
+            item = self.teleport_to_item(item, char)
+
+        if item and item["dist"] > 5.0 and do_traverse:
+            Logger.debug(f"    Item {item['name']} (ID: {item['id']}) is {round(item['dist'], 1)}yds away, moving toward it...")
+            if item["dist"] > 30 and char.can_tp:
+                Logger.debug(f"        Item {item['name']} (ID: {item['id']}) is far away, traversing...")
+                self.traverse(item["position_area"], char, dest_distance=4, time_out=time_out / 2)
+            else:
+                self.walk_to_item(item["id"], 3)
+            item = self._api.find_item(item["id"])
+
+        while item and time.time() - start < time_out:
+            self.move_mouse_to_item(item)
+            wait(0.03, 0.05)
+            item = self._api.find_item(item["id"])
+            if item:
+                confirmed = item["is_hovered"]
+                if confirmed or not self._api.data["hovered_unit"]:
+                    mouse.click(button="left")
+                elif self._api.data["hovered_unit"]:
+                    keyboard.send(self._config.char["force_move"])
+                wait(0.5)
+                if confirmed:
+                    inv_item = self._api.find_item(item["id"], "inventory_items")
+                    if inv_item:
+                        Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it is now in inventory")
+                        return True
+                    else:
+                        Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it was hovered, but did not find it in inventory")
+                item = self._api.find_item(item["id"])
+        if item:
+            return self.click_item(item, char, 3.0, do_traverse=False, do_teleport=True)
+        return False
 
     def move_mouse_to_abs_pos(self, position_abs, dist, offset=None):
         offset_x = offset[0] if offset != None else 0
@@ -232,45 +350,6 @@ class Pather:
             mouse.click(button="right")
             wait(char._cast_duration)
             item = self._api.find_item(item['id'])
-
-    def click_item(self, item: dict, char, time_out: float = 6.0, do_traverse=True, do_teleport=False):
-        if item:
-            Logger.debug(f"    Clicking item {item['name']} located at {point_str(item['position'])}")
-        start = time.time()
-        if item and do_teleport:
-            item = self.teleport_to_item(item, char)
-
-        if item and item["dist"] > 5.0 and do_traverse:
-            Logger.debug(f"    Item {item['name']} (ID: {item['id']}) is {round(item['dist'], 1)}yds away, moving toward it...")
-            if item["dist"] > 30 and char.can_tp:
-                Logger.debug(f"        Item {item['name']} (ID: {item['id']}) is far away, traversing...")
-                self.traverse(item["position_area"], char, dest_distance=4, time_out=time_out / 2)
-            else:
-                self.walk_to_item(item["id"], 3)
-            item = self._api.find_item(item["id"])
-
-        while item and time.time() - start < time_out:
-            self.move_mouse_to_item(item)
-            wait(0.03, 0.05)
-            item = self._api.find_item(item["id"])
-            if item:
-                confirmed = item["is_hovered"]
-                if confirmed or not self._api.data["hovered_unit"]:
-                    mouse.click(button="left")
-                elif self._api.data["hovered_unit"]:
-                    keyboard.send(self._config.char["force_move"])
-                wait(0.5)
-                if confirmed:
-                    inv_item = self._api.find_item(item["id"], "inventory_items")
-                    if inv_item:
-                        Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it is now in inventory")
-                        return True
-                    else:
-                        Logger.debug(f"    Clicked item {item['name']} (ID: {item['id']}), confirmed that it was hovered, but did not find it in inventory")
-                item = self._api.find_item(item["id"])
-        if item:
-            return self.click_item(item, char, 3.0, do_traverse=False, do_teleport=True)
-        return False
 
     def move_to_monster(self, char, monster: dict) -> bool:
         if self._should_abort_pathing(): return False
@@ -353,13 +432,13 @@ class Pather:
         route = None
         data = self._api.data
         if data:
-            dest_area = (int(dest_area[1]), int(dest_area[0]))
-            player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
-            pf = PathFinder(self._api)
-            route = pf.make_path_astar(player_area, dest_area, False)
-            # dest_area = (int(dest_area[0]), int(dest_area[1]))
-            # player_area = (int(data["player_pos_area"][0]), int(data["player_pos_area"][1]))
-            # route = make_path_bfs(player_area, dest_area, data["map"])
+            # dest_area = (int(dest_area[1]), int(dest_area[0]))
+            # player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
+            # pf = PathFinder(self._api)
+            # route = pf.make_path_astar(player_area, dest_area, False)
+            dest_area = (int(dest_area[0]), int(dest_area[1]))
+            player_area = (int(data["player_pos_area"][0]), int(data["player_pos_area"][1]))
+            route = make_path_bfs(player_area, dest_area, data["map"])
             self._api._current_path = route
         return route
 
@@ -406,7 +485,7 @@ class Pather:
             return True
         return False
 
-    def wander_towards(self, abs_pos: tuple[float, float], char = None, stop_at_area: str = None, iterations = 5, time_out: float = 7.0):
+    def wander_towards(self, abs_pos: tuple[float, float], char = None, target_area: str = None, iterations = 5, time_out: float = 7.0):
         Logger.debug(f"Wandering towards absolute pos {point_str(abs_pos)}...")
         start = time.time()
         self._api.data["current_area"] if self._api.data else None
@@ -423,7 +502,7 @@ class Pather:
                 keyboard.send(self._config.char["force_move"], do_release=False)
             wait(0.1, 0.15)
             current_area = self._api.data["current_area"] if self._api.data else None
-            if stop_at_area is not None and current_area.replace(" ", "") == stop_at_area.replace(" ", "") or time.time() - start >= time_out:
+            if target_area is not None and current_area.replace(" ", "") == target_area.replace(" ", "") or time.time() - start >= time_out:
                 break
         keyboard.release(self._config.char["force_move"])
         Logger.debug(f"Done wandering toward {abs_pos}, current area is {current_area}")
@@ -1103,15 +1182,6 @@ class Pather:
             if dist < 29:
                 return r
         return None
-
-    def wait_for_location(self, name, time_out: float = 10.0) -> bool:
-        start = time.time()
-        while time.time() - start < time_out:
-            data = self._api.data
-            if data and data["current_area"] == name:
-                return True
-            time.sleep(0.1)
-        return False
 
     def wait_for_town(self, time_out: float = 10.0) -> bool:
         start = time.time()

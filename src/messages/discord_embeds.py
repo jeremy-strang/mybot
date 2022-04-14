@@ -14,42 +14,20 @@ class DiscordEmbeds(GenericApi):
         self._config = Config()
         self._file = None
         self._psnURL = "https://i.psnprofiles.com/games/3bffee/trophies/"
-        self._webhook = None
-        self._loot_webhook = None
-        self._error_webhook = None
-        self._webhook = self._get_webhook()
-        self._loot_webhook = self._get_loot_webhook()
-        self._error_webhook = self._get_error_webhook()
+        self._webhook = self._get_webhook(self._config.general["custom_message_hook"])
+        self._loot_webhook = self._get_webhook(self._config.general["custom_loot_message_hook"])
+        self._error_webhook = self._get_webhook(self._config.general["custom_error_message_hook"])
     
-    def _get_webhook(self):
-        if not self._webhook:
+    def _get_webhook(self, hook_url: str):
+        hook = None
+        if not hook_url:
+            hook_url = self._config.general['custom_message_hook']
+        if hook_url:
             try:
-                self._webhook = Webhook.from_url(self._config.general['custom_message_hook'], adapter=RequestsWebhookAdapter(), )
+                hook = Webhook.from_url(hook_url, adapter=RequestsWebhookAdapter(), )
             except BaseException as e:
                 Logger.error(f"Error initializing webhook: {e}")
-        return self._webhook
-
-    def _get_loot_webhook(self):
-        loot_url = self._config.general['custom_loot_message_hook']
-        if not self._loot_webhook and loot_url is not None and len(loot_url) > 0:
-            try:
-                self._loot_webhook = Webhook.from_url(loot_url, adapter=RequestsWebhookAdapter(), )
-            except BaseException as e:
-                Logger.error(f"Error initializing loot webhook: {e}")
-        else:
-            self._loot_webhook = self._get_webhook()
-        return self._loot_webhook
-
-    def _get_error_webhook(self):
-        error_url = self._config.general['custom_error_message_hook']
-        if not self._error_webhook and error_url is not None and len(error_url) > 0:
-            try:
-                self._error_webhook = Webhook.from_url(error_url, adapter=RequestsWebhookAdapter(), )
-            except BaseException as e:
-                Logger.error(f"Error initializing error webhook: {e}")
-        else:
-            self._error_webhook = self._get_webhook()
-        return self._error_webhook
+        return hook
 
     def send_discarded_item(self, item_description: str):
         player_summary = self._config.general['player_summary']
@@ -70,7 +48,11 @@ class DiscordEmbeds(GenericApi):
             color=self._get_Item_Color(item),
         )
         e.set_image(url=f"attachment://{imgName}.png")
-        self._send_embed(e, file, self._get_loot_webhook())
+        Logger.debug("~" * 80)
+        Logger.debug(f"Discord Embeds: Sending loot")
+        hook = self._loot_webhook
+        Logger.debug(hook)
+        self._send_embed(e, hook, file)
 
     def send_death(self, location, image_path):
         file = self._add_file(image_path, "death.png")
@@ -79,7 +61,12 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"Died at {location}")
         e.set_thumbnail(url=f"{self._psnURL}33L5e3600.png")
         e.set_image(url="attachment://death.png")
-        self._send_embed(e, file, self._get_webhook())
+        hook = self._webhook
+        Logger.debug("~" * 80)
+        Logger.debug(f"Discord Embeds: Sending death")
+        Logger.debug(hook)
+        self._send_embed(e, hook, file)
+
 
     def send_chicken(self, location, image_path):
         file = self._add_file(image_path, "chicken.png")
@@ -88,21 +75,33 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"chickened at {location}")
         e.set_thumbnail(url=f"{self._psnURL}39Ldf113b.png")
         e.set_image(url="attachment://chicken.png")
-        self._send_embed(e, file, self._get_webhook())
+        hook = self._webhook
+        Logger.debug("~" * 80)
+        Logger.debug(f"Discord Embeds: Sending chicken")
+        Logger.debug(hook)
+        self._send_embed(e, hook, file)
 
     def send_stash(self):
         e = discord.Embed(title=f"{self._config.general['name']} has a full stash!", color=Color.dark_grey())
         e.title=(f"{self._config.general['name']} has a full stash!")
         e.description=(f"{self._config.general['name']} has to quit. \n They cannot store anymore items!")
         e.set_thumbnail(url=f"{self._psnURL}35L63a9df.png")
-        self._send_embed(e, self._get_error_webhook())
+        Logger.debug(f"Discord Embeds: Sending error - full stash")
+        hook = self._error_webhook
+        Logger.debug(hook)
+        self._send_embed(e, hook)
+
 
     def send_gold(self):
         e = discord.Embed(title=f"{self._config.general['name']} is rich!", color=Color.dark_grey())
         e.title=(f"{self._config.general['name']} is Rich!")
         e.description=(f"{self._config.general['name']} can't store any more money!\n turning off gold pickup.")
         e.set_thumbnail(url=f"{self._psnURL}6L341955.png")
-        self._send_embed(e, self._get_webhook())
+        Logger.debug(f"Discord Embeds: Sending error - full gold")
+        hook = self._error_webhook
+        Logger.debug(hook)
+        self._send_embed(e, hook)
+
 
     def send_message(self, msg: str, no_thumbnail=False):
         player_summary = self._config.general['player_summary']
@@ -110,7 +109,11 @@ class DiscordEmbeds(GenericApi):
         e = discord.Embed(title=self._config.general['name'], description=f"```{msg}```", color=Color.dark_teal())
         if not no_thumbnail and not self._config.general['discord_status_condensed']:
             e.set_thumbnail(url=f"{self._psnURL}36L4a4994.png")
-        self._send_embed(e, self._get_webhook())
+        Logger.debug(f"Discord Embeds: Sending message'{msg}'")
+        hook = self._error_webhook
+        Logger.debug(hook)
+        self._send_embed(e, hook)
+
 
     def _send_embed(self, e, webhook, file = None):
         if self._config.active_branch:

@@ -84,7 +84,7 @@ class Pit:
                 # if not pather.traverse("Tamoe Highland", char, dest_distance=10): return False
                 # if not pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=char): return False
     def battle(self, do_pre_buff: bool=True) -> Union[bool, tuple[Location, bool]]:
-        current_area = self._pather.wait_for_location("OuterCloister")
+        current_area = self._api.wait_for_area("OuterCloister")
         self._char.pre_travel(do_pre_buff)
 
         if not self._pather.traverse("Monastery Gate", self._char, dest_distance=12): return False

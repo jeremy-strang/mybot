@@ -68,7 +68,7 @@ class Diablo:
         return False
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather.wait_for_location("RiverOfFlame"): return False
+        if not self._api.wait_for_area("RiverOfFlame"): return False
         
         self._char.pre_travel(do_pre_buff)
 

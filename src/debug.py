@@ -145,12 +145,17 @@ class Debug:
                 print(f"Error writing data to a file: {e}")
         self.stop()
 
-    def run_a1_tests(self):
+    def test_a1_town(self):
         print("\n\n Testing open_wp()...")
         debug._a1.open_wp()
-        wait(2)
+        wait(4)
 
-    def run_a2_tests(self):
+        print("\n\n Testing open_stash()...")
+        debug._a1.open_stash()
+        wait(4)
+
+
+    def test_a2_town(self):
         print("\n\n Testing heal()...")
         self._a2.heal()
         wait(2)
@@ -175,7 +180,7 @@ class Debug:
         self._a2.open_wp()
         wait(2)
 
-    def run_a4_tests(self):
+    def test_a4_town(self):
         print("\n\nTesting resurrect()...")
         self._a4.resurrect(Location.A4_TOWN_START)
         wait(2)
@@ -219,6 +224,7 @@ class Debug:
         print("\n\nTesting open_trade_and_repair_menu()...")
         self._a4.open_trade_and_repair_menu(Location.A4_TOWN_START)
 
+
 if __name__ == "__main__":
     from utils.custom_mouse import mouse
     debug = None
@@ -235,7 +241,16 @@ if __name__ == "__main__":
             try:
                 data = debug._api.get_data()
                 print(f"Player location: {point_str(debug._api.data['player_pos_area'])}")
+    
+                # if not data["stash_open"]:
+                #     debug._a1.open_stash(Location.A3_STASH_WP)
+                # debug._ui_manager.stash_all_items(debug._config.char["num_loot_columns"], debug._item_finder, False)
+
+                debug.test_a1_town()
+
                 # debug._pickit.pick_up_items()
+
+
 
 
                 # debug._pather.click_object("Bank")
@@ -278,10 +293,6 @@ if __name__ == "__main__":
                 # char.tp_town()
 
                 # bot._town_manager.a4.open_wp(Location.A4_TOWN_START)
-    
-                # if not data["stash_open"]:
-                #     bot._town_manager.a3.open_stash(Location.A3_STASH_WP)
-                # debug._ui_manager.stash_all_items(debug._config.char["num_loot_columns"], debug._item_finder, False)
 
                 # ui_manager.fill_tome_of("Town Portal")
                 # ui_manager.throw_out_junk(item_finder)

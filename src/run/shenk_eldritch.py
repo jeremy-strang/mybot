@@ -57,7 +57,7 @@ class ShenkEldritch:
         return False
 
     def battle(self, do_shenk: bool, do_pre_buff: bool, game_stats) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather.wait_for_location("FrigidHighlands"): return False
+        if not self._api.wait_for_area("FrigidHighlands"): return False
         if do_pre_buff:
             self._char.pre_buff()
 

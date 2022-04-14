@@ -73,7 +73,7 @@ class Baal:
 
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
-        if not self._pather.wait_for_location("TheWorldStoneKeepLevel2"): return False
+        if not self._api.wait_for_area("TheWorldStoneKeepLevel2"): return False
         if do_pre_buff:
             self._char.pre_buff()
 

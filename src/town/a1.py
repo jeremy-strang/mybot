@@ -35,13 +35,16 @@ class A1(IAct):
         return Location.A1_KASHYA_CAIN
 
     def open_wp(self, curr_loc: Location = Location.A1_TOWN_START) -> bool:
+        Logger.debug("Calling open_wp()...")
         success = False
         if self._pather.walk_to_poi("Rogue Encampment", time_out=15):
             success = self._api.wait_for_menu(D2rMenu.Waypoint)
             if not success:
+                Logger.debug("~~~~~~~~ not success 1")
                 wait(0.7)
-                self._pather.click_poi("Rogue Encampment", offset=(10, -5), wait_for_menu=D2rMenu.Waypoint)
+                self._pather.click_poi("Rogue Encampment", offset=(0, -20), target_menu=D2rMenu.Waypoint)
                 success = self._api.wait_for_menu(D2rMenu.Waypoint)
+                Logger.debug(f"~~~~~~~~ success {success}")
         Logger.debug(f"    Success: {success}")
         return success
 
@@ -68,9 +71,10 @@ class A1(IAct):
         return Location.A1_AKARA
 
     def open_stash(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("Bank", self._char, obj=True, threshold=10, static_npc=False, end_dist=8): return False
-        self._pather.activate_poi("Bank", "Bank", collection='objects', char=self._char)   
-        return Location.A1_STASH
+        if not self._pather.walk_to_position((133, 122)): return False
+        wait(0.4, 0.5)
+        self._pather.click_object("Bank", target_menu="stash")    
+        return Location.A3_STASH_WP
 
     def heal(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
         if not self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True): return False
