@@ -193,7 +193,7 @@ class PickitConfig:
             (Item.Ring, Quality.Unique): Action.Keep,
             (Item.SmallCharm, Quality.Unique): Action.Keep,
             
-            # Unique jewelry, jewels
+            # Rare jewelry, jewels
             # (Item.Amulet, Quality.Rare): Action.Keep,
             # (Item.Ring, Quality.Rare): Action.Keep,
             # (Item.Jewel, Quality.Rare): Action.Keep,
