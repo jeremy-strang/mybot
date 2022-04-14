@@ -40,17 +40,12 @@ class A1(IAct):
             success = self._api.wait_for_menu(D2rMenu.Waypoint)
             if not success:
                 wait(0.7)
-                self._pather.click_poi("Rogue Encampment", offset=(10, -5), wait_for_menu=D2rMenu.Waypoint)
+                self._pather.click_poi("Rogue Encampment", wait_for_menu=D2rMenu.Waypoint)
                 success = self._api.wait_for_menu(D2rMenu.Waypoint)
         Logger.debug(f"    Success: {success}")
         return success
 
     def wait_for_tp(self) -> Union[Location, bool]:
-        # success = self._template_finder.search_and_wait(["A1_TOWN_7", "A1_TOWN_9"], time_out=20).valid
-        # if not self._old_pather.traverse_nodes([Location.A1_TOWN_TP, Location.A1_KASHYA_CAIN], self._char, force_move=True): return False
-        # if success:
-        #     return Location.A1_KASHYA_CAIN
-        # return False
         return Location.A1_KASHYA_CAIN
 
     def identify(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
