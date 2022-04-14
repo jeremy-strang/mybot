@@ -146,10 +146,29 @@ class Debug:
         self.stop()
 
     def run_a2_tests(self):
-        wait(4)
-        print("\n\nTesting open_stash()...")
-        self._a2.open_stash(Location.A2_TOWN_START)
-
+        print("\n\n Testing heal()...")
+        self._a2.heal()
+        wait(2)
+        
+        print("\n\n Testing open_stash()...")
+        self._a2.open_stash()
+        wait(2)
+        
+        print("\n\n Testing identify()...")
+        self._a2.identify()
+        wait(2)
+        
+        print("\n\n Testing open_trade_menu()...")
+        self._a2.open_trade_menu()
+        wait(2)
+        
+        print("\n\n Testing open_trade_and_repair_menu()...")
+        self._a2.open_trade_and_repair_menu()
+        wait(2)
+        
+        print("\n\n Testing open_wp()...")
+        self._a2.open_wp()
+        wait(2)
 
     def run_a4_tests(self):
         print("\n\nTesting resurrect()...")
