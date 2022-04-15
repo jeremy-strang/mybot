@@ -365,6 +365,11 @@ class Config:
         if "nova_sorc" in Config._custom:
             Config.nova_sorc.update(dict(Config._custom["nova_sorc"]))
         Config.nova_sorc.update(sorc_base_cfg)
+        # hydra sorc
+        Config.hydra_sorc = dict(Config._config["hydra_sorc"])
+        if "hydra_sorc" in Config._custom:
+            Config.hydra_sorc.update(dict(Config._custom["hydra_sorc"]))
+        Config.hydra_sorc.update(sorc_base_cfg)
 
         # Palandin config
         Config.hammerdin = Config._config["hammerdin"]
