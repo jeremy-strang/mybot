@@ -3,7 +3,7 @@ import keyboard
 from char.sorceress import Sorceress
 from utils.custom_mouse import mouse
 from logger import Logger
-from utils.misc import wait, point_str
+from utils.misc import rotate_vec, unit_vector, wait, point_str
 import random
 from pathing import Location
 import numpy as np
@@ -38,24 +38,22 @@ class BlizzSorc(Sorceress):
         if fcr >= 9: return 12
         return 13
 
-    def _ice_blast(self, cast_pos_abs: tuple[float, float], delay: tuple[float, float] = (0.16, 0.23)):
+    def _ice_blast(self, cast_pos_abs: tuple[float, float], delay: tuple[float, float] = (0.16, 0.23), dist: int = 0):
         keyboard.send(self._char_config["stand_still"], do_release=False)
         if self._skill_hotkeys["ice_blast"]:
             keyboard.send(self._skill_hotkeys["ice_blast"])
         for _ in range(5):
-            cast_pos_monitor = self._screen.convert_abs_to_monitor(cast_pos_abs)
-            mouse.move(*cast_pos_monitor)
+            self._pather.move_mouse_to_abs_pos(cast_pos_abs, dist)
             mouse.press(button="left")
             wait(delay[0], delay[1])
             mouse.release(button="left")
         keyboard.send(self._char_config["stand_still"], do_press=False)
 
-    def _blizzard(self, cast_pos_abs: tuple[float, float]):
+    def _blizzard(self, cast_pos_abs: tuple[float, float], dist: int = 0):
         if not self._skill_hotkeys["blizzard"]:
             raise ValueError("You did not set a hotkey for blizzard!")
         keyboard.send(self._skill_hotkeys["blizzard"])
-        cast_pos_monitor = self._screen.convert_abs_to_monitor(cast_pos_abs)
-        mouse.move(*cast_pos_monitor)
+        self._pather.move_mouse_to_abs_pos(cast_pos_abs, dist)
         click_tries = random.randint(2, 4)
         for _ in range(click_tries):
             mouse.press(button="right")
@@ -93,8 +91,9 @@ class BlizzSorc(Sorceress):
                   min_attack_time: float = 0, 
                   static: int = 0,
                 ) -> bool:
-        min_distance = 40
-        max_distance = 50
+        min_distance = 10
+        max_distance = 30
+        kite_dist = 5
         start = time.time()
         last_move = start
         elapsed = 0
@@ -116,21 +115,25 @@ class BlizzSorc(Sorceress):
                         else:
                             while monster and monster["dist"] > max_distance and time.time() - monster_start < 5.0:
                                 Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
-                                self._pather.move_to_monster(self,monster,[15,15])
+                                self._pather.move_to_monster(self,monster)
                                 last_move = time.time()
                                 monster = self._api.find_monster(monster["id"])
                             if monster and monster["dist"] <= max_distance and monster["dist"] > min_distance:
                                 Logger.debug(f"    Monster {monster['id']} distance just right ({round(monster['dist'], 2)}), attacking...")
-                                if not casted_static: 
-                                    self._cast_static(3.0)
-                                    casted_static=1
-                                self._blizzard(cast_pos_abs=monster['position_area'])
-                                self._ice_blast(cast_pos_abs=monster['position_area'])
+                                # if not casted_static: 
+                                #     self._cast_static(3.0)
+                                #     casted_static=1
+                                self._blizzard(cast_pos_abs=monster['position_abs'], dist=monster['dist'])
+                                self._ice_blast(cast_pos_abs=monster['position_abs'], dist=monster['dist'])
                                 wait(0.05, 0.07)
                             elif monster and monster["dist"] <= min_distance:
                                 Logger.debug(f"    Monster {monster['id']} distance is too close ({round(monster['dist'], 2)}), moving farther...")
-                                self._pather.move_to_monster(self,monster,[15,15])
-                                wait(0.05, 0.07)
+                                rot_deg = random.randint(-180,180)
+                                tele_pos_abs = unit_vector(rotate_vec(monster['position_area'], rot_deg)) * 320 * kite_dist
+                                tele_pos_abs = self._pather._adjust_abs_range_to_screen([tele_pos_abs[0],tele_pos_abs[1]])
+                                pos_m = self._screen.convert_abs_to_monitor(tele_pos_abs)
+                                self.pre_move()
+                                self.move(pos_m)
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
             elapsed = time.time() - start
@@ -149,3 +152,6 @@ class BlizzSorc(Sorceress):
 
     def kill_summoner(self) -> bool:
         return self._kill_super_unique("Summoner", radius=15)
+
+    def kill_eldritch(self) -> bool:
+        return self._kill_super_unique("Eldritch", radius=20)
