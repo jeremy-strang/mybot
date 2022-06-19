@@ -62,13 +62,13 @@ class Andariel:
         if not self._api.wait_for_area("CatacombsLevel2"): return False
         
         self._char.pre_travel(do_pre_buff)
-        if not self._pather.traverse("Catacombs Level 3", self._char,verify_location=True): return False
+        if not self._pather.traverse("Catacombs Level 3", self._char,verify_location=True, slow_finish=True): return False
         if not self._pather.go_to_area("Catacombs Level 3", "CatacombsLevel3", entrance_in_wall=False): return False
-        if not self._pather.traverse("Catacombs Level 4", self._char,verify_location=True): return False
+        if not self._pather.traverse("Catacombs Level 4", self._char,verify_location=True, slow_finish=True): return False
         if not self._pather.go_to_area("Catacombs Level 4", "CatacombsLevel4", entrance_in_wall=False): return False
         self._char.post_travel()
 
-        self._pather.traverse((47, 42), self._char)
+        self._pather.traverse((47, 60), self._char)
         self._char.kill_andariel()
         picked_up_items = self._pickit.pick_up_items(self._char)
         self._pather.traverse((47, 42), self._char)

@@ -54,3 +54,22 @@ def get_unlooted_monsters(api: D2rApi, rules: list[MonsterRule], looted_monsters
         monsters = sort_and_filter_monsters(data, rules, None, boundary)
         return list(filter(lambda m: m["mode"] == 12 and m["id"] not in looted_monsters and m["dist"] < max_distance, monsters))
     return []
+
+def get_closest_monster(data,
+                        rules: list[MonsterRule] = None,
+                        ignore: list[MonsterRule] = None,
+                        boundary = None,
+                        min_score = 0,
+                        ignore_dead = False) -> dict:
+    if data is not None and data["monsters"] is not None and len(data["monsters"]) > 0:
+        monsters = data["monsters"]
+        if rules is not None and len(rules) > 0:
+            monsters = sort_and_filter_monsters(data, rules, ignore, boundary, min_score, ignore_dead)
+        min_dist = 9999
+        closest = None
+        for m in monsters:
+            if m["dist"] < min_dist:
+                closest = m
+                min_dist = m["dist"]
+        return closest
+    return None

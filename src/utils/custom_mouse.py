@@ -236,7 +236,7 @@ class mouse:
         else:
             _winmouse.move_to(x, y)
 
-    def move(x, y, absolute: bool = True, randomize: Union[int, Tuple[int, int]] = 5, delay_factor: Tuple[float, float] = [0.9, 1.1]):
+    def move(x, y, absolute: bool = True, randomize: Union[int, Tuple[int, int]] = 5, delay_factor: Tuple[float, float] = [0.6, 0.7]):
         from_point = _mouse.get_position()
         dist = math.dist((x, y), from_point)
         offsetBoundaryX = max(10, int(0.08 * dist))

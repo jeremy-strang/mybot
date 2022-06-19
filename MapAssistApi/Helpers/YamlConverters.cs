@@ -29,6 +29,27 @@ namespace MapAssist.Helpers
         }
     }
 
+    internal sealed class ColorConfigurationTypeConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type)
+        {
+            return type == typeof(Color) || type == typeof(Color?);
+        }
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteYaml(IEmitter emitter, object value, Type type)
+        {
+            if (value != null)
+            {
+                emitter.Emit(new Scalar(null, Helpers.GetColorName((Color)value)));
+            }
+        }
+    }
+
     internal sealed class MapColorConfigurationTypeConverter : IYamlTypeConverter
     {
         public bool Accepts(Type type)
@@ -48,15 +69,18 @@ namespace MapAssist.Helpers
             var node = (MapColorConfiguration)value;
             if (node.Walkable != null)
             {
-                var col = (Color)node.Walkable;
                 emitter.Emit(new Scalar(null, "Walkable"));
-                emitter.Emit(new Scalar(null, col.R + ", " + col.G + ", " + col.B));
+                emitter.Emit(new Scalar(null, Helpers.GetColorName((Color)node.Walkable)));
             }
             if (node.Border != null)
             {
-                var col = (Color)node.Border;
                 emitter.Emit(new Scalar(null, "Border"));
-                emitter.Emit(new Scalar(null, col.R + ", " + col.G + ", " + col.B));
+                emitter.Emit(new Scalar(null, Helpers.GetColorName((Color)node.Border)));
+            }
+            if (node.ExpRange != null)
+            {
+                emitter.Emit(new Scalar(null, "ExpRange"));
+                emitter.Emit(new Scalar(null, Helpers.GetColorName((Color)node.ExpRange)));
             }
 
             emitter.Emit(new MappingEnd());
@@ -195,11 +219,8 @@ namespace MapAssist.Helpers
         {
             if (parser.TryConsume<Scalar>(out var scalar))
             {
-                if (Enum.TryParse("Class" + scalar.Value.Replace(" ", "").Replace("-", ""), true, out Item itemClass))
-                {
-                    return itemClass;
-                }
-                else if (Enum.TryParse(scalar.Value.Replace(" ", "").Replace("-", ""), true, out Item item))
+                var item = Items.ParseFromString(scalar.Value);
+                if (item != null)
                 {
                     return item;
                 }
@@ -377,6 +398,8 @@ namespace MapAssist.Helpers
             var isFilled = node.IconColor != null && node.IconColor.A > 0;
             var isOutline = node.IconOutlineColor != null && node.IconOutlineColor.A > 0;
 
+            if (node.IconOpacity == 0) return;
+
             if (isFilled)
             {
                 emitter.Emit(new Scalar(null, "IconColor"));
@@ -401,6 +424,11 @@ namespace MapAssist.Helpers
             {
                 emitter.Emit(new Scalar(null, "IconThickness"));
                 emitter.Emit(new Scalar(null, node.IconThickness.ToString()));
+            }
+
+            if (node.IconOpacity < 1) { 
+                emitter.Emit(new Scalar(null, "IconOpacity"));
+                emitter.Emit(new Scalar(null, node.IconOpacity.ToString()));
             }
         }
 

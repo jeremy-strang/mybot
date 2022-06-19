@@ -4,6 +4,7 @@ This runs map assist from compiled dlls
 import configparser
 import os
 import clr
+from d2r.d2r import D2rMenu
 import numpy as np
 from requests.exceptions import ConnectionError
 import math
@@ -19,6 +20,7 @@ from System import String
 from System import Object
 from System.Collections.Generic import Dictionary
 
+EXPECTED_API_VERSION = "1.0.3"
 class D2rLoader(Thread):
     def __init__(self, callback, custom_files=[]):
         super(D2rLoader, self).__init__()
@@ -51,6 +53,9 @@ class D2rLoader(Thread):
         self.mercenary_inventory_open = False
         self.player_summary = None
         self.player_name = None
+        self.player_experience = 0
+        self.player_level_progress = 0
+        self.API_VERSION = None
 
     def update(self):
         pass
@@ -80,8 +85,9 @@ class D2rLoader(Thread):
     def cancel(self):
         ApiHost.Stop()
 
-    def get_data(self, data) -> dict:
+    def load_data(self, data) -> dict:
         _data = {
+            "API_VERSION": None,
             "monsters": [],
             "mercs": [],
             "points_of_interest": [],
@@ -95,6 +101,7 @@ class D2rLoader(Thread):
             "merc_items": [],
             "logged_items": [],
             "static_npcs": [],
+            "player_stats": [],
             "map": None,
             "player_pos_world": None,
             "player_pos_area": None,
@@ -113,6 +120,7 @@ class D2rLoader(Thread):
             "player_corpse": None,
             "hovered_unit": None,
             "hovered_unit_type": None,
+            "open_menus": set(),
         }
 
         # if self.in_game != data["in_game"]: print(f"in_game changed from {self.in_game} to {data['in_game']}")
@@ -136,6 +144,17 @@ class D2rLoader(Thread):
         # if self.potion_belt_open != data["potion_belt_open"]: print(f"potion_belt_open changed from {self.potion_belt_open} to {data['potion_belt_open']}")
         # if self.mercenary_inventory_open != data["mercenary_inventory_open"]: print(f"mercenary_inventory_open changed from {self.mercenary_inventory_open} to {data['mercenary_inventory_open']}")
 
+        if data["API_VERSION"] != self.API_VERSION:
+            self.API_VERSION = _data["API_VERSION"] = data["API_VERSION"]
+            if self.API_VERSION != EXPECTED_API_VERSION:
+                print(f"\n\n\n{80*'X'}\n{80*'X'}\n{80*'X'}")
+                print("YOU ARE RUNNING THE WRONG API VERSION")
+                print(f"    Version detected: {self.API_VERSION}")
+                print(f"    Version expected: {EXPECTED_API_VERSION}")
+                print(f"{80*'X'}\n{80*'X'}\n{80*'X'}")
+            else:
+                print(f"Detected the expected API version: {self.API_VERSION}")
+
         game_status_changed = self.in_game != data["in_game"]
         self.in_game = _data["in_game"] = data["in_game"]
         self.in_town = _data["in_town"] = data["in_town"]
@@ -158,22 +177,24 @@ class D2rLoader(Thread):
         self.cube_open = _data["cube_open"] = data["cube_open"]
         self.potion_belt_open = _data["potion_belt_open"] = data["potion_belt_open"]
         self.mercenary_inventory_open = _data["mercenary_inventory_open"] = data["mercenary_inventory_open"]
-        self.any_menu_open = _data["any_menu_open"] = self.inventory_open or \
-            self.character_open or \
-            self.skill_select_open or \
-            self.skill_tree_open or \
-            self.chat_open or \
-            self.npc_interact_open or \
-            self.esc_menu_open or \
-            self.map_open or \
-            self.npc_shop_open or \
-            self.quest_log_open or \
-            self.waypoint_open or \
-            self.party_open or \
-            self.stash_open or \
-            self.cube_open or \
-            self.potion_belt_open or \
-            self.mercenary_inventory_open
+
+        if self.inventory_open: _data["open_menus"].add(D2rMenu.Inventory)
+        if self.character_open: _data["open_menus"].add(D2rMenu.Character)
+        if self.skill_select_open: _data["open_menus"].add(D2rMenu.SkillSelect)
+        if self.skill_tree_open: _data["open_menus"].add(D2rMenu.SkillTree)
+        if self.chat_open: _data["open_menus"].add(D2rMenu.Chat)
+        if self.npc_interact_open: _data["open_menus"].add(D2rMenu.NpcInteract)
+        if self.esc_menu_open: _data["open_menus"].add(D2rMenu.EscMenu)
+        if self.map_open: _data["open_menus"].add(D2rMenu.Map)
+        if self.npc_shop_open: _data["open_menus"].add(D2rMenu.NpcShop)
+        if self.quest_log_open: _data["open_menus"].add(D2rMenu.QuestLog)
+        if self.waypoint_open: _data["open_menus"].add(D2rMenu.Waypoint)
+        if self.party_open: _data["open_menus"].add(D2rMenu.Party)
+        if self.stash_open: _data["open_menus"].add(D2rMenu.Stash)
+        if self.cube_open: _data["open_menus"].add(D2rMenu.Cube)
+        if self.potion_belt_open: _data["open_menus"].add(D2rMenu.PotionBelt)
+        if self.mercenary_inventory_open: _data["open_menus"].add(D2rMenu.MercenaryInventory)
+        self.any_menu_open = _data["any_menu_open"] = len(_data["open_menus"])
 
         _data["used_skill"] = data["used_skill"]
         _data["left_skill"] = data["left_skill"]
@@ -201,15 +222,12 @@ class D2rLoader(Thread):
             _data["map"][_data["map"] == 1] = 0
             _data["map"] += 1
         
-        if self.in_game and game_status_changed:
+        if self.in_game: # and game_status_changed:
             self.player_level = data['player_level']
             self.player_experience = data['player_experience']
+            self.player_level_progress = data['player_level_progress']
             self.player_name = data['player_name']
-            # percent_to_level = ""
-            # if self.player_level < 99:
-            #     curr_lvl = get_level(self.player_level)
-            #     percent_to_level =  f" | {round((curr_lvl['exp'] - self.player_experience) / curr_lvl['xp_to_next'])}%"
-            self.player_summary = f"Level {self.player_level} {data['player_class']}"
+            self.player_summary = f"{data['player_name']} - {data['player_level']} {data['player_class']}"
 
         player_x_world = int(data["player_pos_world"]["X"])
         player_y_world = int(data["player_pos_world"]["Y"])

@@ -7,7 +7,8 @@ import time
 from logger import Logger
 from typing import Tuple
 from config import Config
-from utils.misc import find_d2r_window, clip_abs_point
+from utils.custom_mouse import mouse
+from utils.misc import find_d2r_window, clip_abs_point, wait
 import os
 
 class Screen:
@@ -19,6 +20,7 @@ class Screen:
             Logger.error("How do you not have a monitor connected?!")
             os._exit(1)
         self._config = Config()
+        self._legacy_mode = True if self._config.advanced_options["toggle_legacy_mode_key"] else False
         self._monitor_roi = self._sct.monitors[0]
         # Find d2r screen offsets and monitor idx
         self.found_offsets = False
@@ -44,6 +46,10 @@ class Screen:
 
     def convert_monitor_to_screen(self, screen_coord: Tuple[float, float]) -> Tuple[float, float]:
         return (screen_coord[0] - self._monitor_roi["left"], screen_coord[1] - self._monitor_roi["top"])
+    
+    def convert_monitor_to_abs(self, screen_coord: Tuple[float, float]) -> Tuple[float, float]:
+        x, y = self.convert_monitor_to_screen(screen_coord)
+        return (x - 640, y - 360)
 
     def convert_screen_to_monitor(self, screen_coord: Tuple[float, float]) -> Tuple[float, float]:
         x = screen_coord[0] + self._monitor_roi["left"]
@@ -63,15 +69,16 @@ class Screen:
 
     def convert_abs_to_monitor(self, abs_coord: Tuple[float, float], clip_input: bool = False) -> Tuple[float, float]:
         if clip_input:
-            abs_coord = clip_abs_point(abs_coord)
+            abs_coord = clip_abs_point(abs_coord, legacy_mode=self._legacy_mode)
         screen_coord = self.convert_abs_to_screen(abs_coord)
         monitor_coord = self.convert_screen_to_monitor(screen_coord)
         return monitor_coord
 
     def convert_player_target_world_to_monitor(self, target_pos_world: Tuple[float, float], player_pos_world: Tuple[float, float]) -> Tuple[float, float]:
         target_pos = world_to_abs(target_pos_world, player_pos_world)
-        target_pos = [target_pos[0] - 9.5,target_pos[1] - 39.5]
-        x = np.clip(target_pos[0], -638, 638)
+        target_pos = [target_pos[0] - 9.5, target_pos[1] - 39.5]
+        half_w = 638 if not self._legacy_mode else 475
+        x = np.clip(target_pos[0], -half_w, half_w)
         y = np.clip(target_pos[1], -350, 235)
         pos_m = self.convert_abs_to_monitor([x, y])
         return pos_m
@@ -79,3 +86,11 @@ class Screen:
     def grab(self) -> np.ndarray:
         img = np.array(self._sct.grab(self._monitor_roi))
         return img[:, :, :3]
+
+    def activate_d2r_window(self):
+        prev_x, prev_y = mouse.get_position()
+        mon_x, mon_y = self.convert_abs_to_monitor((0, -360))
+        mouse.move(mon_x, mon_y - 25, delay_factor=[0.1, 0.15])
+        mouse.click(button="left")
+        wait(0.05)
+        mouse.move(prev_x, prev_y, delay_factor=[0.1, 0.15])

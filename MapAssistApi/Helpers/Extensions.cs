@@ -1,37 +1,17 @@
-﻿/**
- *   Copyright (C) 2021 okaygo, OneXDeveloper
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
+﻿using MapAssist.Types;
+using SharpDX;
+using SharpDX.Direct2D1;
+using SharpDX.Mathematics.Interop;
 using System;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using MapAssist.Types;
-using SharpDX;
-using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
 using System.Text.RegularExpressions;
+using Color = GameOverlay.Drawing.Color;
 using Geometry = GameOverlay.Drawing.Geometry;
 using Graphics = GameOverlay.Drawing.Graphics;
 using Point = GameOverlay.Drawing.Point;
 using Rectangle = GameOverlay.Drawing.Rectangle;
-using Color = GameOverlay.Drawing.Color;
-using GraphicsWindow = GameOverlay.Windows.GraphicsWindow;
 using SystemBitmap = System.Drawing.Bitmap;
 using SystemColor = System.Drawing.Color;
 using SystemImaging = System.Drawing.Imaging;
@@ -45,14 +25,16 @@ namespace MapAssist.Helpers
 
         // Math
         public static Point Subtract(this Point point, float offset) => point.Subtract(offset, offset);
+
         public static Point Subtract(this Point point, Point offset) => point.Subtract(offset.X, offset.Y);
-        
+
         public static Point Subtract(this Point point, float x, float y)
         {
             return new Point(point.X - x, point.Y - y);
         }
 
         public static Point Add(this Point point, Point offset) => point.Add(offset.X, offset.Y);
+
         public static Point Add(this Point point, float x, float y)
         {
             return new Point(point.X + x, point.Y + y);
@@ -69,6 +51,8 @@ namespace MapAssist.Helpers
 
         public static Point Rotate(this Point point, float angleRadians, Point centerPoint)
         {
+            if (angleRadians == 0) return point;
+
             return new Point(
               (float)(centerPoint.X + Math.Cos(angleRadians) * (point.X - centerPoint.X) - Math.Sin(angleRadians) * (point.Y - centerPoint.Y)),
               (float)(centerPoint.Y + Math.Sin(angleRadians) * (point.X - centerPoint.X) + Math.Cos(angleRadians) * (point.Y - centerPoint.Y))
@@ -95,6 +79,8 @@ namespace MapAssist.Helpers
             return point.ToVector().Length();
         }
 
+        public static double DistanceTo(this Point a, Point b) => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
+
         // System type conversions
         public static Vector2 ToVector(this Point point)
         {
@@ -114,6 +100,11 @@ namespace MapAssist.Helpers
             var maxY = points.Max(point => point.Y);
 
             return new Rectangle(minX - padding, minY - padding, maxX + padding, maxY + padding);
+        }
+
+        public static bool IncludesPoint(this Rectangle rect, Point point)
+        {
+            return point.X >= rect.Left && point.X <= rect.Right && point.Y >= rect.Top && point.Y <= rect.Bottom;
         }
 
         public static SystemColor SetOpacity(this SystemColor color, float opacity)

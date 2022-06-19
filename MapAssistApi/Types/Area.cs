@@ -1,26 +1,7 @@
-﻿/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
-using MapAssist.Helpers;
+﻿using MapAssist.Helpers;
 using MapAssist.Settings;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MapAssist.Types
 {
@@ -173,6 +154,7 @@ namespace MapAssist.Types
     public static class AreaExtensions
     {
         public static Dictionary<string, LocalizedObj> LocalizedAreas = new Dictionary<string, LocalizedObj>();
+
         private static readonly Dictionary<Area, AreaLabel> _areaLabels = new Dictionary<Area, AreaLabel>()
         {
             [Area.None] = new AreaLabel() {
@@ -233,7 +215,7 @@ namespace MapAssist.Types
             },
             [Area.UndergroundPassageLevel2] = new AreaLabel() {
                 Text = "Underground Passage Level 2",
-                Level = new int[] { 4, 38, 83 }
+                Level = new int[] { 4, 38, 85 }
             },
             [Area.HoleLevel2] = new AreaLabel() {
                 Text = "Hole Level 2",
@@ -397,7 +379,7 @@ namespace MapAssist.Types
             },
             [Area.StonyTombLevel1] = new AreaLabel() {
                 Text = "Stony Tomb Level 1",
-                Level = new int[] { 12, 44, 78 }
+                Level = new int[] { 12, 44, 85 }
             },
             [Area.HallsOfTheDeadLevel1] = new AreaLabel() {
                 Text = "Halls of the Dead Level 1",
@@ -413,7 +395,7 @@ namespace MapAssist.Types
             },
             [Area.StonyTombLevel2] = new AreaLabel() {
                 Text = "Stony Tomb Level 2",
-                Level = new int[] { 12, 44, 79 }
+                Level = new int[] { 12, 44, 85 }
             },
             [Area.HallsOfTheDeadLevel3] = new AreaLabel() {
                 Text = "Halls of the Dead Level 3",
@@ -513,7 +495,7 @@ namespace MapAssist.Types
             },
             [Area.SpiderCave] = new AreaLabel() {
                 Text = "Arachnid Lair",
-                Level = new int[] { 21, 50, 79 }
+                Level = new int[] { 21, 50, 85 }
             },
             [Area.SpiderCavern] = new AreaLabel() {
                 Text = "Spider Cavern",
@@ -521,11 +503,11 @@ namespace MapAssist.Types
             },
             [Area.SwampyPitLevel1] = new AreaLabel() {
                 Text = "Swampy Pit Level 1",
-                Level = new int[] { 21, 51, 80 }
+                Level = new int[] { 21, 51, 85 }
             },
             [Area.SwampyPitLevel2] = new AreaLabel() {
                 Text = "Swampy Pit Level 2",
-                Level = new int[] { 21, 51, 81 }
+                Level = new int[] { 21, 51, 85 }
             },
             [Area.FlayerDungeonLevel1] = new AreaLabel() {
                 Text = "Flayer Dungeon Level 1",
@@ -537,7 +519,7 @@ namespace MapAssist.Types
             },
             [Area.SwampyPitLevel3] = new AreaLabel() {
                 Text = "Swampy Pit Level 3",
-                Level = new int[] { 21, 51, 82 }
+                Level = new int[] { 21, 51, 85 }
             },
             [Area.FlayerDungeonLevel3] = new AreaLabel() {
                 Text = "Flayer Dungeon Level 3",
@@ -545,7 +527,7 @@ namespace MapAssist.Types
             },
             [Area.SewersLevel1Act3] = new AreaLabel() {
                 Text = "Sewers Level 1",
-                Level = new int[] { 23, 52, 84 }
+                Level = new int[] { 23, 52, 85 }
             },
             [Area.SewersLevel2Act3] = new AreaLabel() {
                 Text = "Sewers Level 2",
@@ -553,15 +535,15 @@ namespace MapAssist.Types
             },
             [Area.RuinedTemple] = new AreaLabel() {
                 Text = "Ruined Temple",
-                Level = new int[] { 23, 53, 84 }
+                Level = new int[] { 23, 53, 85 }
             },
             [Area.DisusedFane] = new AreaLabel() {
                 Text = "Disused Fane",
-                Level = new int[] { 23, 53, 84 }
+                Level = new int[] { 23, 53, 85 }
             },
             [Area.ForgottenReliquary] = new AreaLabel() {
                 Text = "Forgotten Reliquary",
-                Level = new int[] { 23, 53, 84 }
+                Level = new int[] { 23, 53, 85 }
             },
             [Area.ForgottenTemple] = new AreaLabel() {
                 Text = "Forgotten Temple",
@@ -641,7 +623,7 @@ namespace MapAssist.Types
             },
             [Area.DrifterCavern] = new AreaLabel() {
                 Text = "Drifter Cavern",
-                Level = new int[] { 29, 61, 84 }
+                Level = new int[] { 29, 61, 85 }
             },
             [Area.FrozenTundra] = new AreaLabel() {
                 Text = "Frozen Tundra",
@@ -653,7 +635,7 @@ namespace MapAssist.Types
             },
             [Area.IcyCellar] = new AreaLabel() {
                 Text = "Icy Cellar",
-                Level = new int[] { 29, 62, 83 }
+                Level = new int[] { 29, 62, 85 }
             },
             [Area.ArreatSummit] = new AreaLabel() {
                 Text = "Arreat Summit",
@@ -677,15 +659,15 @@ namespace MapAssist.Types
             },
             [Area.Abaddon] = new AreaLabel() {
                 Text = "Abaddon",
-                Level = new int[] { 39, 60, 81 }
+                Level = new int[] { 39, 60, 85 }
             },
             [Area.PitOfAcheron] = new AreaLabel() {
                 Text = "Pit of Acheron",
-                Level = new int[] { 39, 61, 82 }
+                Level = new int[] { 39, 61, 85 }
             },
             [Area.InfernalPit] = new AreaLabel() {
                 Text = "Infernal Pit",
-                Level = new int[] { 39, 62, 83 }
+                Level = new int[] { 39, 62, 85 }
             },
             [Area.TheWorldStoneKeepLevel1] = new AreaLabel() {
                 Text = "Worldstone Keep Level 1",
@@ -725,47 +707,63 @@ namespace MapAssist.Types
             },
         };
 
-        private static readonly HashSet<Area> StitchedAreas = new HashSet<Area>()
+        private static readonly List<HashSet<Area>> _StitchedAreas = new List<HashSet<Area>>()
         {
-            Area.RogueEncampment,
-            Area.BloodMoor,
-            Area.ColdPlains,
-            Area.StonyField,
-            Area.DarkWood,
-            Area.BlackMarsh,
-            Area.TamoeHighland,
-            Area.BurialGrounds,
-            Area.MonasteryGate,
-            Area.OuterCloister,
-            Area.Barracks,
-            Area.InnerCloister,
-            Area.Cathedral,
-            Area.LutGholein,
-            Area.RockyWaste,
-            Area.DryHills,
-            Area.FarOasis,
-            Area.LostCity,
-            Area.ValleyOfSnakes,
-            Area.CanyonOfTheMagi,
-            Area.KurastDocks,
-            Area.SpiderForest,
-            Area.GreatMarsh,
-            Area.FlayerJungle,
-            Area.LowerKurast,
-            Area.KurastBazaar,
-            Area.UpperKurast,
-            Area.KurastCauseway,
-            Area.Travincal,
-            Area.ThePandemoniumFortress,
-            Area.OuterSteppes,
-            Area.PlainsOfDespair,
-            Area.CityOfTheDamned,
-            Area.RiverOfFlame,
-            Area.ChaosSanctuary,
-            Area.Harrogath,
-            Area.BloodyFoothills,
-            Area.FrigidHighlands,
-            Area.ArreatPlateau,
+            new HashSet<Area> {
+                Area.RogueEncampment,
+                Area.BloodMoor,
+                Area.ColdPlains,
+                Area.StonyField,
+                Area.BurialGrounds,
+            },
+            new HashSet<Area> {
+                Area.DarkWood,
+                Area.BlackMarsh,
+                Area.TamoeHighland,
+                Area.BurialGrounds,
+                Area.MonasteryGate,
+                Area.OuterCloister,
+                Area.Barracks,
+            },
+            new HashSet<Area> {
+                Area.InnerCloister,
+                Area.Cathedral,
+            },
+            new HashSet<Area> {
+                Area.LutGholein,
+                Area.RockyWaste,
+                Area.DryHills,
+                Area.FarOasis,
+                Area.LostCity,
+                Area.ValleyOfSnakes,
+            },
+            new HashSet<Area> {
+                Area.KurastDocks,
+                Area.SpiderForest,
+                Area.GreatMarsh,
+                Area.FlayerJungle,
+                Area.LowerKurast,
+                Area.KurastBazaar,
+                Area.UpperKurast,
+                Area.KurastCauseway,
+                Area.Travincal,
+            },
+            new HashSet<Area> {
+                Area.ThePandemoniumFortress,
+                Area.OuterSteppes,
+                Area.PlainsOfDespair,
+                Area.CityOfTheDamned,
+            },
+            new HashSet<Area> {
+                Area.RiverOfFlame,
+                Area.ChaosSanctuary,
+            },
+            new HashSet<Area> {
+                Area.Harrogath,
+                Area.BloodyFoothills,
+                Area.FrigidHighlands,
+                Area.ArreatPlateau,
+            },
         };
 
         public static string MapLabel(this Area area, Difficulty difficulty)
@@ -774,8 +772,7 @@ namespace MapAssist.Types
             var areaLevel = area.Level(difficulty);
             if (areaLevel > 0)
             {
-
-                //label += $" ({areaLevel})";
+                label += $" ({areaLevel})";
             }
             return label;
         }
@@ -843,8 +840,14 @@ namespace MapAssist.Types
 
         public static bool RequiresStitching(this Area area)
         {
-            return StitchedAreas.Contains(area);
+            return MapAssistConfiguration.Loaded.RenderingConfiguration.OverlayMode && area.StitchedAreas() != null;
         }
+
+        public static HashSet<Area> StitchedAreas(this Area area)
+        {
+            return _StitchedAreas.FirstOrDefault(x => x.Contains(area))?.Where(x => x != area).ToHashSet();
+        }
+
         public static bool IsTown(this Area area)
         {
             return area == Area.RogueEncampment ||

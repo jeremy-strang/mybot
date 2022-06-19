@@ -1,6 +1,7 @@
 import time
 import keyboard
 from typing import Union
+from logger import Logger
 from pathing import Location
 from char import IChar
 from screen import Screen
@@ -69,6 +70,55 @@ class IAct:
     
     def gamble (self, curr_loc: Location) -> Union[Location, bool]: return False
 
+    def close_menus(self):
+        wait(0.1)
+        data = self._api.wait_for_data()
+        if data and data["any_menu_open"]:
+            Logger.debug(f"Detected {', '.join(list(data['open_menus']))} menu open, closing")
+            keyboard.send("esc")
+            wait(0.05)
+
+    def click_trade_button(self, npc: Union[dict, str], y_offset: int = 0) -> bool:
+        if type(npc) is str:
+            npc = self._api.find_monster_by_name(npc)
+        elif type(npc) is dict:
+            npc = self._api.find_monster_by_name(npc["name"])
+        if npc:
+            mon_x, mon_y = self._screen.convert_abs_to_monitor(npc["position_abs"])
+            mon_x = mon_x - 9.5
+            mon_y = mon_y - 39.5 - 153
+            mouse.move(mon_x, mon_y + y_offset)
+            wait(0.1)
+            mouse.click(button="left")
+            wait(2)
+        return False
+
+    def find_vendor_and_open_trade(self, npc_name: Npc, menu_selection: str = "trade", confirm_menu: D2rMenu = D2rMenu.NpcShop, y_offset: int = 0) -> bool:
+        success = False
+        npc = self._api.find_monster_by_name(npc_name)
+        if npc and npc["dist"] > 10:
+            self._pather.walk_to_monster(npc_name)
+            wait(0.1)
+        npc = self._api.find_monster_by_name(npc_name)
+        if npc and self.interact_with_npc(npc_name, None):
+            wait(0.1)
+            if menu_selection is not None:
+                self.click_trade_button(npc, y_offset=y_offset)
+            if confirm_menu is not None:
+                success = self._api.wait_for_menu(confirm_menu)
+            else:
+                success = True
+        if success:
+            Logger.debug(f"Successfully opened NPC vendor menu ({npc_name}) using only memory")
+        else:
+            Logger.debug(f"Failed to open menu using memory, using pixels instead")
+        
+        if not success and not self.interact_with_npc(npc_name, menu_selection):
+            if self._npc_manager.open_npc_menu(npc_name):
+                self._npc_manager.press_npc_btn(npc_name, menu_selection)
+                return True
+        return success
+
     def interact_with_npc(self, npc: Npc, menu_selection: str = "trade") -> bool:
         result = False
         m = self._api.find_monster_by_name(npc)
@@ -78,10 +128,10 @@ class IAct:
             while not menu_open and time.time() - start < 10:
                 m = self._api.find_monster_by_name(npc)
                 self._pather.move_mouse_to_abs_pos(m["position_abs"], m["dist"])
-                wait(0.15, 0.2)
+                wait(0.05)
+                m = self._api.find_monster_by_name(npc)
                 if m is not None:
                     mouse.click(button="left")
-                    wait(0.8)
                     menu_open = self._api.wait_for_menu("npc_interact")
                     if menu_open:
                         if menu_selection is not None:

@@ -37,7 +37,6 @@ class Config:
     gamble = {}
     ui_roi = {}
     ui_pos = {}
-    dclone = {}
     routes = {}
     routes_order = []
     char = {}
@@ -45,17 +44,16 @@ class Config:
     colors = {}
     shop = {}
     path = {}
+    mephisto = {}
     blizz_sorc = {}
     light_sorc = {}
     nova_sorc = {}
+    hydra_sorc = {}
     hammerdin = {}
-    trapsin = {}
+    fohdin = {}
     barbarian = {}
-    necro = {}
     zerker_barb = {}
     singer_barb = {}
-    basic = {}
-    basic_ranged = {}
     active_branch = ""
     latest_commit_sha = ""
     custom_files = []
@@ -263,18 +261,14 @@ class Config:
             "discord_status_count": False if not Config._select_val("general", "discord_status_count") else int(Config._select_val("general", "discord_status_count")),
             "discord_status_condensed": bool(int(Config._select_val("general", "discord_status_condensed"))),
             "discord_experience_report": bool(int(Config._select_val("general", "discord_experience_report"))),
+            "send_chickens_as_errors": bool(int(Config._select_val("general", "send_chickens_as_errors"))),
             "info_screenshots": bool(int(Config._select_val("general", "info_screenshots"))),
             "loot_screenshots": bool(int(Config._select_val("general", "loot_screenshots"))),
             "games_via_lobby": bool(int(Config._select_val("general", "games_via_lobby"))),
             "d2r_path": Config._select_val("general", "d2r_path"),
             "restart_d2r_when_stuck": bool(int(Config._select_val("general", "restart_d2r_when_stuck"))),
             "kill_d2r_on_bot_exception": bool(int(Config._select_val("general", "kill_d2r_on_bot_exception"))),
-        }
-
-        # Added for dclone ip hunting
-        Config.dclone = {
-            "region_ips": Config._select_val("dclone", "region_ips"),
-            "dclone_hotip": Config._select_val("dclone", "dclone_hotip"),
+            "battle_net": bool(int(Config._select_val("general", "battle_net"))),
         }
 
         Config.routes = {}
@@ -298,6 +292,7 @@ class Config:
             "heal_merc": float(Config._select_val("char", "heal_merc")),
             "heal_rejuv_merc": float(Config._select_val("char", "heal_rejuv_merc")),
             "chicken": float(Config._select_val("char", "chicken")),
+            "emergency_chicken": float(Config._select_val("char", "emergency_chicken")),
             "merc_chicken": float(Config._select_val("char", "merc_chicken")),
             "tp": Config._select_val("char", "tp"),
             "belt_rows": int(Config._select_val("char", "belt_rows")),
@@ -343,9 +338,18 @@ class Config:
             "chicken_if_dolls": bool(int(Config._select_val("char", "chicken_if_dolls"))),
             "chicken_if_souls": bool(int(Config._select_val("char", "chicken_if_souls"))),
             "chicken_nihlathak_conviction": bool(int(Config._select_val("char", "chicken_nihlathak_conviction"))),
+            "chicken_council_conviction": bool(int(Config._select_val("char", "chicken_council_conviction"))),
+            "chicken_council_might": bool(int(Config._select_val("char", "chicken_council_might"))),
             "send_throne_leecher_tp": bool(int(Config._select_val("char", "send_throne_leecher_tp"))),
             "density": ast.literal_eval (Config._select_val("char", "density")),
             "area": ast.literal_eval (Config._select_val("char", "area")),
+            "toggle_map": Config._select_val("char", "toggle_map"),
+            "toggle_run_walk": Config._select_val("char", "toggle_run_walk"),
+            "enable_combat_walking": bool(int(Config._select_val("char", "enable_combat_walking"))),
+        }
+
+        Config.mephisto = {
+            "kill_council": bool(int(Config._select_val("mephisto", "kill_council"))),
         }
 
         # Sorc base config
@@ -367,16 +371,26 @@ class Config:
         if "nova_sorc" in Config._custom:
             Config.nova_sorc.update(dict(Config._custom["nova_sorc"]))
         Config.nova_sorc.update(sorc_base_cfg)
+        # hydra sorc
+        Config.hydra_sorc = dict(Config._config["hydra_sorc"])
+        if "hydra_sorc" in Config._custom:
+            Config.hydra_sorc.update(dict(Config._custom["hydra_sorc"]))
+        Config.hydra_sorc.update(sorc_base_cfg)
+
+        # Paladin base config
+        paladin_base_cfg = dict(Config._config["paladin"])
+        if "paladin" in Config._custom:
+            sorc_base_cfg.update(dict(Config._custom["paladin"]))
+        # FoH Paladin
+        Config.fohdin = dict(Config._config["fohdin"])
+        if "fohdin" in Config._custom:
+            Config.fohdin.update(dict(Config._custom["fohdin"]))
+        Config.fohdin.update(paladin_base_cfg)
 
         # Palandin config
         Config.hammerdin = Config._config["hammerdin"]
         if "hammerdin" in Config._custom:
             Config.hammerdin.update(Config._custom["hammerdin"])
-
-        # Assasin config
-        Config.trapsin = Config._config["trapsin"]
-        if "trapsin" in Config._custom:
-            Config.trapsin.update(Config._custom["trapsin"])
 
         # Singer Barb config
         Config.singer_barb = Config._config["singer_barb"]
@@ -391,21 +405,6 @@ class Config:
             Config.zerker_barb.update(Config._custom["zerker_barb"])
         Config.zerker_barb = dict(Config.zerker_barb)
 
-        # Basic config
-        Config.basic = Config._config["basic"]
-        if "basic" in Config._custom:
-            Config.basic.update(Config._custom["basic"])
-
-        # Basic Ranged config
-        Config.basic_ranged = Config._config["basic_ranged"]
-        if "basic_ranged" in Config._custom:
-            Config.basic_ranged.update(Config._custom["basic_ranged"])
-
-        # Necro config
-        Config.necro = Config._config["necro"]
-        if "necro" in Config._custom:
-            Config.necro.update(Config._custom["necro"])
-
         Config.advanced_options = {
             "pathing_delay_factor": min(max(int(Config._select_val("advanced_options", "pathing_delay_factor")), 1), 10),
             "message_headers": Config._select_val("advanced_options", "message_headers"),
@@ -419,12 +418,16 @@ class Config:
             "settings_backup_key": Config._select_val("advanced_options", "settings_backup_key"),
             "graphic_debugger_key": Config._select_val("advanced_options", "graphic_debugger_key"),
             "save_d2r_data_to_file_key": Config._select_val("advanced_options", "save_d2r_data_to_file_key"),
+            "toggle_legacy_mode_key": Config._select_val("advanced_options", "toggle_legacy_mode_key"),
+            "toggle_minimap_key": Config._select_val("advanced_options", "toggle_minimap_key"),
             'debug_overlay': bool(int(Config._select_val("advanced_options", "debug_overlay"))),
             'obs_run_recording_enabled':bool(int(Config._select_val("advanced_options", "obs_run_recording_enabled"))),
             'obs_debug_replays_enabled':bool(int(Config._select_val("advanced_options", "obs_debug_replays_enabled"))),
             "obs_cli_path": Config._select_val("advanced_options", "obs_cli_path"),
             "obs_scene_name": Config._select_val("advanced_options", "obs_scene_name"),
-            "dump_data_to_pickle_for_debugging": bool(Config._select_val("advanced_options", "dump_data_to_pickle_for_debugging")),
+            "dump_data_to_pickle_for_debugging": bool(int(Config._select_val("advanced_options", "dump_data_to_pickle_for_debugging"))),
+            "required_executable": str(Config._select_val("advanced_options", "required_executable")),
+            "expected_character_names": str(Config._select_val("advanced_options", "expected_character_names")),
         }
 
         Config.items = {}

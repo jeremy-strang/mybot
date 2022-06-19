@@ -141,7 +141,7 @@ namespace MapAssist.Files
                     var numLinesToLog = 5;
                     var linesToLog = lines.Skip(Math.Max(ex.Start.Line - numLinesToLog + 1, 0)).Take(5).ToArray();
 
-                    // _log.Info("Invalid yaml block" + Environment.NewLine + string.Join(Environment.NewLine, linesToLog));
+                    _log.Info("Invalid yaml block" + Environment.NewLine + string.Join(Environment.NewLine, linesToLog));
                 }
 
                 throw ex;

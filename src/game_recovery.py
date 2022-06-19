@@ -22,6 +22,7 @@ class GameRecovery:
 
     def go_to_hero_selection(self):
         set_d2r_always_on_top()
+        self._screen.activate_d2r_window()
         time.sleep(1)
         # clean up key presses that might be pressed in the run_thread
         keyboard.release(self._config.char["stand_still"])

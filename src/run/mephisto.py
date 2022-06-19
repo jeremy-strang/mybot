@@ -13,8 +13,14 @@ from utils.misc import wait, is_in_roi
 from utils.custom_mouse import mouse
 from screen import Screen
 import time
+import keyboard
 from state_monitor import StateMonitor
 from obs import ObsRecorder
+
+COUNCIL_POS_LEFT = (101, 118)
+COUNCIL_POS_MID = (150, 66)
+COUNCIL_POS_RIGHT = (97, 25)
+MEPHISTO_POS = (69, 54)
 
 class Mephisto:
     def __init__(
@@ -60,12 +66,31 @@ class Mephisto:
         
         self._char.pre_travel(do_pre_buff)
 
-        if not self._pather.traverse("Durance of Hate Level 3", self._char, verify_location=True): return False
+        if not self._pather.traverse("Durance of Hate Level 3", self._char, verify_location=True, slow_finish=True): return False
         if not self._pather.go_to_area("Durance of Hate Level 3", "DuranceOfHateLevel3"): return False
-        if not self._pather.traverse((69, 54), self._char, verify_location=True): return False
 
+        picked_up_items = False
+
+        pickit_func = lambda: self._pickit.pick_up_items(self._char)
+        looted_uniques = set()
+        if self._config.mephisto["kill_council"]:
+            for pos in [COUNCIL_POS_MID, COUNCIL_POS_LEFT, COUNCIL_POS_RIGHT]:
+                self._pather.traverse(pos, self._char, verify_location=True)
+                wait(0.1)
+                picked_up_items |= self._char.kill_uniques(pickit_func, looted_uniques=looted_uniques, min_attack_time=2)
+
+        self._pather.traverse(MEPHISTO_POS, self._char, verify_location=True)
         self._char.post_travel()
 
         self._char.kill_mephisto()
-        picked_up_items = self._pickit.pick_up_items(self._char)
+        wait(0.2)
+        picked_up_items |= self._pickit.pick_up_items(self._char)
+        
+        if self._config.general["loot_screenshots"]:
+            keyboard.send(self._config.char["show_items"])
+            wait(0.7)
+            self._pickit.take_loot_screenshot()
+            keyboard.send(self._config.char["show_items"])
+            wait(0.1)
+
         return (Location.A3_MEPH_END, picked_up_items)

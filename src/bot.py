@@ -1,3 +1,4 @@
+from re import M
 from transitions import Machine
 import time
 import keyboard
@@ -12,7 +13,7 @@ from run.stony_tomb import StonyTomb
 from town.i_act import IAct
 from transmute import Transmute
 from utils.custom_mouse import mouse
-from utils.misc import wait
+from utils.misc import normalize_text, wait
 from game_stats import GameStats
 from logger import Logger
 from config import Config
@@ -28,32 +29,28 @@ from pathing import OldPather, Location
 from npc_manager import NpcManager, Npc
 from health_manager import HealthManager
 from death_manager import DeathManager
-from char.sorceress import LightSorc, BlizzSorc, NovaSorc
-from char.trapsin import Trapsin
+from char.sorceress import LightSorc, BlizzSorc, NovaSorc, HydraSorc
 from char.hammerdin import Hammerdin
+from char.paladin import FoHdin
 from char.barbarian.zerker_barb import ZerkerBarb
 from char.barbarian.singer_barb import SingerBarb
-from char.necro import Necro
-from char.basic import Basic
-from char.basic_ranged import Basic_Ranged
 from obs import ObsRecorder
 from utils.misc import wait, hms
+from messages import Messenger
 
 from run import Pindleskin, ShenkEldritch, Travincal, Nihlathak, Summoner, Diablo, Baal, Andariel, Countess, Mephisto, Pit
 from town import TownManager, A1, A2, A3, A4, A5, town_manager
 
-# Added for dclone ip hunt
-from messages import Messenger
-from utils.dclone_ip import get_d2r_game_ip
 
 #mapassist api + new old_pather
 from pathing import Pather
 from d2r import D2rApi, D2rMenu
 from utils.levels import get_level
+from utils.restart import process_exists
 
 class Bot:
 
-    _MAIN_MENU_MARKERS = ["MAIN_MENU_TOP_LEFT","MAIN_MENU_TOP_LEFT_DARK", "LOBBY_MENU_TOP_LEFT"]
+    _MAIN_MENU_MARKERS = ["MAIN_MENU_TOP_LEFT", "MAIN_MENU_TOP_LEFT_DARK", "LOBBY_MENU_TOP_LEFT"]
     def __init__(self,
         screen: Screen,
         game_stats: GameStats,
@@ -70,12 +67,11 @@ class Bot:
         self._item_finder = ItemFinder(self._config)
         self._obs_recorder = obs_recorder
         self._api = mapi
-        self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._api, self._game_stats)
+        self._char_selector = CharSelector(self._screen, self._template_finder)
+        self._ui_manager = UiManager(self._screen, self._template_finder, self._obs_recorder, self._api, self._char_selector, self._game_stats)
         self._belt_manager = BeltManager(self._screen, self._template_finder, self._api)
         self._old_pather = OldPather(self._screen, self._template_finder)
         self._pather = Pather(screen, self._api)
-        self._obs_recorder = ObsRecorder(self._config)
-        self._char_selector = CharSelector(self._screen, self._template_finder)
         # Memory reading stuff
 
 
@@ -86,20 +82,16 @@ class Bot:
             self._char: IChar = BlizzSorc(self._config.blizz_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "nova_sorc":
             self._char: IChar = NovaSorc(self._config.nova_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
+        elif self._config.char["type"] == "hydra_sorc":
+            self._char: IChar = HydraSorc(self._config.hydra_sorc, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "hammerdin":
             self._char: IChar = Hammerdin(self._config.hammerdin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
-        elif self._config.char["type"] == "trapsin":
-            self._char: IChar = Trapsin(self._config.trapsin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
+        elif self._config.char["type"] == "fohdin":
+            self._char: IChar = FoHdin(self._config.fohdin, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "singer_barb":
             self._char: IChar = SingerBarb(self._config.singer_barb, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         elif self._config.char["type"] == "zerker_barb":
             self._char: IChar = ZerkerBarb(self._config.zerker_barb, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
-        elif self._config.char["type"] == "necro":
-            self._char: IChar = Necro(self._config.necro, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
-        elif self._config.char["type"] == "basic":
-            self._char: IChar = Basic(self._config.basic, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
-        elif self._config.char["type"] == "basic_ranged":
-            self._char: IChar = Basic_Ranged(self._config.basic_ranged, self._screen, self._template_finder, self._ui_manager, self._api, self._obs_recorder, self._old_pather, self._pather)
         else:
             Logger.error(f'{self._config.char["type"]} is not supported! Closing down bot.')
             os._exit(1)
@@ -210,6 +202,14 @@ class Bot:
         return self._curr_loc
 
     def start(self):
+        # Check for a required executable
+        if self._config.advanced_options["required_executable"] and not process_exists(self._config.advanced_options["required_executable"]):
+            print(f"\n\n\n{60*'X'}\n{60*'X'}\n{60*'X'}")
+            print(f"    REQUIRED EXECUTABLE NOT FOUND: {self._config.advanced_options['required_executable']}")
+            print(f"    SHUTTING DOWN")
+            print(f"{60*'X'}\n{60*'X'}\n{60*'X'}\n\n")
+            os._exit(1)
+
         self._obs_recorder.start_replaybuffer_if_enabled()
         self.trigger_or_stop('init')
 
@@ -248,6 +248,13 @@ class Bot:
                 found_unfinished_run = True
                 break
         return not found_unfinished_run
+    
+    def is_first_run(self):
+        found_finished_run = False
+        for key in self._do_runs:
+            if not self._do_runs[key]:
+                return True
+        return False
 
     def _rebuild_as_asset_to_trigger(trigger_to_assets: dict):
         result = {}
@@ -312,21 +319,41 @@ class Bot:
 
     def on_maintenance(self):
         Logger.debug("Town maintenance...")
-        is_loading = self._ui_manager.wait_for_loading_finish()
+        self._ui_manager.wait_for_loading_finish()
+        self._ui_manager.show_map()
         merc_alive = False
         health_pct = 1
         mana_pct = 1
-        data = self._api.get_data()
+
+        loc_attempts = 0
+        while not self._curr_loc and loc_attempts < 10:
+            self._curr_loc = self._town_manager.get_act_from_current_area()
+            if not self._curr_loc:
+                wait(1)
+            loc_attempts += 1
+        
+        data = self._api.data if self._api is not None else None
+        if data is None and self._api is not None:
+            data = self._api.wait_for_data(10)
+        
+        expected_character_names = self._config.advanced_options["expected_character_names"]
+        Logger.debug(f"Verifying character name {self._api.player_name} is one of: {expected_character_names}")
+        names = list(map(lambda n: normalize_text(n), expected_character_names.split(","))) if type(expected_character_names) is str and len(expected_character_names) else False
         if data is not None:
+            if names and len(names) > 0 and self._api.player_name and normalize_text(self._api.player_name) not in names:
+                self._messenger.send_wrong_character(self._api.player_name)
+                os._exit(1)
+
             if self._api.player_summary is not None:
                 self._config.general["player_summary"] = self._api.player_summary
                 self._config.general["player_name"] = self._api.player_name
-                self._config.general["player_experience"] = self._api.player_experience
-                self._config.general["player_level"] = self._api.player_level
-                self._game_stats.log_exp(self._api.player_experience)
+            self._config.general["player_experience"] = self._api.player_experience
+            self._config.general["player_level_progress"] = self._api.player_level_progress
+            self._config.general["player_level"] = self._api.player_level
+            self._game_stats.log_exp(self._api.player_experience)
+            Logger.info(f"    self._api.player_level {self._api.player_level} from memory")
 
             if data["item_on_cursor"]:
-                is_loading = self._ui_manager.wait_for_loading_finish()
                 self.handle_item_on_cursor()
                 data = self._api.get_data()
             self._pick_corpse = "player_corpse" in data and data["player_corpse"] is not None and type(data["player_corpse"]) is dict
@@ -335,7 +362,17 @@ class Bot:
             health_pct = data["player_health_pct"]
             mana_pct = data["player_mana_pct"]
             Logger.debug(f"    Maintenance: Loaded player HP/MP from memory, HP: {round(health_pct * 100, 1)}%, MP: {round(mana_pct * 100, 1)}%")
+        else:
+            Logger.error(f"    Maintenance: D2R data is None")
 
+        if self._char.is_walking or self._pick_corpse or self._game_stats._did_chicken_last_run or self._game_stats._game_counter == 0:
+            self._char.get_active_weapon_tab()
+            self._char.switch_weapon()
+            self._char.verify_active_weapon_tab()
+            wait(0.1, 0.2)
+            self._char.toggle_run_walk(False, (150, 0))
+
+        self._char.pre_move()
         # Figure out how many pots need to be picked up
         self._belt_manager.update_pot_needs()
         tp_tome, num_tps = self._ui_manager.get_tome_of("Town Portal")
@@ -349,7 +386,6 @@ class Bot:
         # Handle picking up corpse in case of death
         if self._pick_corpse:
             Logger.debug(f"    Maintenance: Picking up corpse")
-            is_loading = self._ui_manager.wait_for_loading_finish()
             self._char.discover_capabilities()
             self._pick_corpse = False
             time.sleep(1.6)
@@ -361,45 +397,9 @@ class Bot:
                 keybind = self._char._skill_hotkeys["teleport"]
                 Logger.info(f"    Maintenance: Teleport keybind is lost upon death. Rebinding teleport to '{keybind}'")
                 self._char.remap_right_skill_hotkey("TELE_ACTIVE", self._char._skill_hotkeys["teleport"])
-        else:
-            dest = None
-            dest_loc = self._curr_loc
-            pre_walk_time = 4.5
-            if "a1_" in self._curr_loc:
-                dest = "Akara" if buy_pots or should_heal else "Rogue Encampment"
-                dest_loc = Location.A1_AKARA if buy_pots or should_heal else Location.A1_WP_NORTH
-                if self._picked_up_items or should_res_merc:
-                    dest = None
-                pre_walk_time = 1.5
-            elif "a2_" in self._curr_loc:
-                dest = "Lysander" if buy_pots or should_heal else "Lut Gholein"
-                dest_loc = Location.A2_FARA_STASH if buy_pots or should_heal else Location.A2_WP
-                pre_walk_time = 6
-            elif "a3_" in self._curr_loc:
-                dest = "Ormus" if buy_pots or should_heal else "Kurast Docks"
-                dest_loc = Location.A3_ORMUS if buy_pots or should_heal else Location.A3_STASH_WP
-                if dest == "Ormus":
-                    pre_walk_time = 3
-            elif "a4_" in self._curr_loc:
-                dest = "Jamella" if buy_pots or should_heal else "The Pandemonium Fortress"
-                dest_loc = Location.A4_JAMELLA if buy_pots or should_heal else Location.A4_WP
-                if self._picked_up_items or should_res_merc:
-                    dest = None
-            elif "a5_" in self._curr_loc:
-                dest = "Malah" if buy_pots or should_heal else "Harrogath"
-                dest_loc = Location.A5_MALAH if buy_pots or should_heal else Location.A5_STASH
-
-            if dest is not None:
-                Logger.info(f"    Maintenance: Heading toward {dest}, buy pots: {buy_pots}, need to heal: {should_heal}")
-                if dest == "Akara":
-                    self._pather.traverse_walking("Akara", self._char, obj=False, threshold=10, static_npc=True)
-                else:
-                    self._pather.traverse_walking(dest, self._char, obj=False, threshold=16, time_out=pre_walk_time, end_dist=10)
-                self._curr_loc = dest_loc
 
         if should_heal or buy_pots:
             if buy_pots:
-                if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 Logger.info("    Maintenance: Buy pots at next possible Vendor")
                 self._belt_manager.update_pot_needs()
                 pot_needs = self._belt_manager.get_pot_needs()
@@ -409,31 +409,24 @@ class Bot:
                 self._belt_manager.update_pot_needs()
             else:
                 Logger.info("    Maintenance: Healing at next possible Vendor")
-                if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 self._curr_loc = self._town_manager.heal(self._curr_loc)
-            
-            if not self._curr_loc:
-                return self.trigger_or_stop("end_game", failed=True)
 
         # Check if we should force stash (e.g. when picking up items by accident or after failed runs or chicken/death)
         force_stash = False
         self._no_stash_counter += 1
         if not self._picked_up_items and (self._no_stash_counter > 4 or self._pick_corpse):
             self._no_stash_counter = 0
-            force_stash = self._ui_manager.should_stash()
+            force_stash = self._ui_manager.should_stash(min_free = self._config.char["num_loot_columns"] - 1)
         
         # Stash stuff, either when item was picked up or after X runs without stashing because of unwanted loot in inventory
         if self._picked_up_items or force_stash:
             # Check config/gold and see if we need to enable/disable gold pickup
             if self._config.char["id_items"]:
                 Logger.info("    Maintenance: Identifying items")
-                if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                 self._curr_loc = self._town_manager.identify(self._curr_loc)
                 if not self._curr_loc:
-                    if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
                     return self.trigger_or_stop("end_game", failed=True)
             Logger.info(f"    Maintenance: Stashing items, current location: {self._curr_loc}")
-            if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             self._curr_loc = self._town_manager.stash(self._curr_loc)
             self._check_gold_pickup()
             # Logger.info("Maintenance: Running transmutes")
@@ -445,7 +438,6 @@ class Bot:
             self._picked_up_items = False
             wait(1.0)
 
-        if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
         self._char.discover_capabilities()
 
         # Check if we are out of tps or need repairing
@@ -462,7 +454,8 @@ class Bot:
             elif need_routine_repair: Logger.info(f"    Maintenance: Routine repair. Run count={self._game_stats._run_counter}, runs_per_repair={self._config.char['runs_per_repair']}")
             elif need_refill_teleport: Logger.info("    Maintenance: Teleport charges ran out. Need to repair")
             else: Logger.info("    Maintenance: Repairing and buying TPs at next Vendor")
-            self._curr_loc = self._town_manager.repair_and_fill_tps(self._curr_loc)
+            if self._curr_loc:
+                self._curr_loc = self._town_manager.repair_and_fill_tps(self._curr_loc)
             if not self._curr_loc:
                 return self.trigger_or_stop("end_game", failed=True)
             self._tps_left = 20
@@ -471,7 +464,6 @@ class Bot:
         # Check if merc needs to be revived
         if should_res_merc:
             Logger.info(f"    Maintenance: Detected that merc is dead in memory, confirming via pixels...")
-            if is_loading: is_loading = self._ui_manager.wait_for_loading_finish()
             merc_alive = self._template_finder.search(["MERC_A2", "MERC_A1", "MERC_A5", "MERC_A3"], self._screen.grab(), threshold=0.9, roi=self._config.ui_roi["merc_icon"]).valid
             should_res_merc = not merc_alive and self._config.char["use_merc"]
             Logger.info(f"        Confirmed via pixels that merc is {'alive' if merc_alive else 'dead'}")
@@ -512,6 +504,7 @@ class Bot:
         Logger.info("    Town maintenance complete, starting runs")
         started_run = False
         for key in self._do_runs:
+            self._char.pre_move()
             if self._do_runs[key]:
                 self.trigger_or_stop(key)
                 started_run = True
@@ -536,6 +529,7 @@ class Bot:
                 Logger.eror("Failed to detect player gold")
 
     def on_end_game(self, failed: bool = False):
+        Logger.info(f"Ending game ({'game failed' if failed else 'success'})")
         if self._config.general["info_screenshots"] and failed:
             cv2.imwrite("./info_screenshots/info_failed_game_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self._screen.grab())
         self._curr_loc = False
@@ -549,7 +543,7 @@ class Bot:
 
             if elapsed_time > (self._config.general["max_runtime_before_break_m"]*60):
                 Logger.info(f'Max session length reached, taking a break for {self._config.general["break_length_m"]} minutes.')
-                self._messenger.send_message(f'Ran for {hms(elapsed_time)}, taking a break for {self._config.general["break_length_m"]} minutes.')
+                self._messenger.send_message(f'Ran for {hms(elapsed_time)}, taking a break for {self._config.general["break_length_m"]} minutes')
                 if not self._pausing:
                     self.toggle_pause()
 
@@ -573,6 +567,7 @@ class Bot:
         if not self._config.char["pre_buff_every_run"]:
             self._pre_buffed = True
         success = self._char.tp_town()
+        wait(0.2)
         if success:
             self._tps_left -= 1
             self._curr_loc = self._town_manager.wait_for_tp()
@@ -590,6 +585,7 @@ class Bot:
         if res:
             failed_run = False
             self._curr_loc, self._picked_up_items = res
+            self._game_stats.log_exp(self._api.player_experience)
         # in case its the last run or the run was failed, end game, otherwise move to next run
         if self.is_last_run() or failed_run:
             if failed_run:
@@ -601,10 +597,11 @@ class Bot:
     def on_run_pindleskin(self):
         res = False
         self._do_runs["run_pindleskin"] = False
-        self._game_stats.update_location("Pin" if self._config.general['discord_status_condensed'] else "Pindle")
+        self._game_stats.update_location("Pnd" if self._config.general['discord_status_condensed'] else "Pindle")
         self._curr_loc = self._pindleskin.approach(self._curr_loc)
         if self._curr_loc:
             res = self._pindleskin.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Pindleskin, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_shenk(self):
@@ -613,44 +610,49 @@ class Bot:
         self._curr_loc = self._shenk.approach(self._curr_loc)
         if self._curr_loc:
             res = self._shenk.battle(self._route_config["run_shenk"], not self._pre_buffed, self._game_stats)
+        Logger.info(f"Finished running Shenk, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_travincal(self):
         res = False
         self._do_runs["run_travincal"] = False
-        self._game_stats.update_location("Trav" if self._config.general['discord_status_condensed'] else "Travincal")
+        self._game_stats.update_location("Trv" if self._config.general['discord_status_condensed'] else "Travincal")
         self._curr_loc = self._travincal.approach(self._curr_loc)
         if self._curr_loc:
             res = self._travincal.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Travincal, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_nihlathak(self):
         res = False
         self._do_runs["run_nihlathak"] = False
-        self._game_stats.update_location("Nihl" if self._config.general['discord_status_condensed'] else "Nihlathak")
+        self._game_stats.update_location("Nhl" if self._config.general['discord_status_condensed'] else "Nihlathak")
         self._curr_loc = self._nihlathak.approach(self._curr_loc)
         if self._curr_loc:
             res = self._nihlathak.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Travincal, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_summoner(self):
         res = False
         self._do_runs["run_summoner"] = False
-        self._game_stats.update_location("Summ" if self._config.general['discord_status_condensed'] else "Summoner")
+        self._game_stats.update_location("Sum" if self._config.general['discord_status_condensed'] else "Summoner")
         self._curr_loc = self._summoner.approach(self._curr_loc)
         if self._curr_loc:
             res = self._summoner.battle(not self._pre_buffed)
         self._tps_left -= self._summoner.used_tps
+        Logger.info(f"Finished running Travincal, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_diablo(self):
         res = False
         self._do_runs["run_diablo"] = False
-        self._game_stats.update_location("Dia" if self._config.general['discord_status_condensed'] else "Diablo")
+        self._game_stats.update_location("CS" if self._config.general['discord_status_condensed'] else "Diablo")
         self._curr_loc = self._diablo.approach(self._curr_loc)
         if self._curr_loc:
             res = self._diablo.battle(not self._pre_buffed)
         self._tps_left -= 1 # we use one tp at pentagram for calibration
+        Logger.info(f"Finished running Diablo, result: {res}")
         self._ending_run_helper(res)
     
     def on_run_baal(self):
@@ -660,33 +662,37 @@ class Bot:
         self._curr_loc = self._baal.approach(self._curr_loc)
         if self._curr_loc:
             res = self._baal.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Baal, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_mephisto(self):
         res = False
         self._do_runs["run_mephisto"] = False
-        self._game_stats.update_location("Meph")
+        self._game_stats.update_location("Mep")
         self._curr_loc = self._mephisto.approach(self._curr_loc)
         if self._curr_loc:
             res = self._mephisto.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Mephisto, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_andariel(self):
         res = False
         self._do_runs["run_andariel"] = False
-        self._game_stats.update_location("Andy")
+        self._game_stats.update_location("And")
         self._curr_loc = self._andariel.approach(self._curr_loc)
         if self._curr_loc:
             res = self._andariel.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Andariel, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_countess(self):
         res = False
         self._do_runs["run_countess"] = False
-        self._game_stats.update_location("Tower")
+        self._game_stats.update_location("Cou")
         self._curr_loc = self._countess.approach(self._curr_loc)
         if self._curr_loc:
             res = self._countess.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Countess, result: {res}")
         self._ending_run_helper(res)
 
     def on_run_pit(self):
@@ -696,13 +702,15 @@ class Bot:
         self._curr_loc = self._pit.approach(self._curr_loc)
         if self._curr_loc:
             res = self._pit.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Pit, result: {res}")
         self._ending_run_helper(res)
         
     def on_run_stony_tomb(self):
         res = False
         self._do_runs["run_stony_tomb"] = False
-        self._game_stats.update_location("Stony Tomb")
+        self._game_stats.update_location("ST")
         self._curr_loc = self._stony_tomb.approach(self._curr_loc)
         if self._curr_loc:
             res = self._stony_tomb.battle(not self._pre_buffed)
+        Logger.info(f"Finished running Stony Tomb, result: {res}")
         self._ending_run_helper(res)

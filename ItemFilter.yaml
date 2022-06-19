@@ -38,17 +38,17 @@ Monarch:
   - Qualities: [normal, superior]
     Sockets: [0, 4]
 
-# This will show a short staff with +1 to skills, +1 to sorc skills, +1 to fire skills, and +1 fire bolt
-# Notifications are turned off for this item specifically using the PlaySoundOnDrop: false option
-Short Staff:
-  - Skills:
-      Fire Bolt: 1
-    Class Skill Tree:
-      Sorceress Fire: 1
-    Class Skills:
-      Sorceress: 1
-    All Skills: 1
-    PlaySoundOnDrop: false
+## This will show a short staff with +1 to skills, +1 to sorc skills, +1 to fire skills, and +1 fire bolt
+## Notifications are turned off for this item specifically using the PlaySoundOnDrop: false option
+#Short Staff:
+#  - Skills:
+#      Fire Bolt: 1
+#    Class Skill Tree:
+#      Sorceress Fire: 1
+#    Class Skills:
+#      Sorceress: 1
+#    All Skills: 1
+#    PlaySoundOnDrop: false
 
 # This is just an object that holds all our commonly used aliases
 # Aliases are labeled by the `&` and then the name and provide a simple way to reuse rule criteria later on
@@ -65,29 +65,31 @@ x-bases:
     Sockets: [0, 3, 4]
     Defense: 400
   - &merc-wep-base
-    Ethereal: true
+    #Ethereal: true
     Qualities: [normal, superior]
     Sockets: [4]
 
 # This ring rule will show all unidentified magic, rare, and unique rings that drop on the ground
 Ring:
-  - Qualities: [magic, rare, unique]
+  - Qualities: [rare, unique]
   # The rings below have stats that are only possible on identified items, so these rules
   # will alert you when a matching item is identified by you or picked up as identified
-  - Qualities: magic
-    Magic Find: 40
-  - Qualities: magic
-    Faster Cast Rate: 10
-    Max Mana: 120
-  - Qualities: magic
-    Magic Find: 15
-    Max Mana: 120
-  - Qualities: magic
-    Faster Cast Rate: 10
-    Sum Resist: 30
-  - Qualities: magic
-    Magic Find: 15
-    Sum Resist: 30
+  #- Qualities: magic
+  #  Min Area Level: 85
+  #- Qualities: magic
+  #  Magic Find: 40
+  #- Qualities: magic
+  #  Faster Cast Rate: 10
+  #  Max Mana: 120
+  #- Qualities: magic
+  #  Magic Find: 15
+  #  Max Mana: 120
+  #- Qualities: magic
+  #  Faster Cast Rate: 10
+  #  Sum Resist: 30
+  #- Qualities: magic
+  #  Magic Find: 15
+  #  Sum Resist: 30
   - Qualities: rare
     Faster Cast Rate: 10
     Max Mana: 80
@@ -160,25 +162,24 @@ Archon Plate:
   - *player-arm-base
 Flail:
   - Qualities: [normal, superior]
-    Sockets: [4, 5]
+    Sockets: [4]
 Crystal Sword:
   - Qualities: [normal, superior]
     Sockets: [4, 5]
 Phase Blade:
   - Qualities: [normal, superior]
-    Sockets: [5]
+    Sockets: [0, 3, 4, 5, 6]
 Matriarchal Javelin:
-  - Qualities: [magic, rare]
+  #- Qualities: [magic, rare]
   - Qualities: unique # Thunderstroke
-Assassin Katars:
-  - Tiers: [exceptional, elite]
-    Qualities: [normal, superior]
-    Sockets: [3]
+#Assassin Katars:
+#  - Tiers: [exceptional, elite]
+#    Qualities: [normal, superior]
+#    Sockets: [3]
 
 ### Misc
 Amulet:
   - Qualities:
-    - magic
     - rare
     - unique
     - set
@@ -202,41 +203,40 @@ Burning Essence of Terror:
 Festering Essence of Destruction:
 
 ### Boots
-Boots:
-  - Tiers: [exceptional, elite]
-    Qualities: rare
+#Boots:
+#  - Tiers: [exceptional, elite]
+#    Qualities: rare
 
 ### Gloves
-Gloves:
-  - Tiers: [exceptional, elite]
-    Qualities: rare
-  # This will show 3/20 Javazon Gloves when a town vendor has a pair for sale
-  # It will work with all exceptional and elite gloves
-  - Tiers: [exceptional, elite]
-    Qualities: magic
-    Increased Attack Speed: 20
-    Class Skill Tree:
-        Amazon Javelin And Spear: 3
+#Gloves:
+#  - Tiers: [exceptional, elite]
+#    Qualities: rare
+#  # This will show 3/20 Javazon Gloves when a town vendor has a pair for sale
+#  # It will work with all exceptional and elite gloves
+#  - Tiers: [exceptional, elite]
+#    Increased Attack Speed: 20
+#    Class Skill Tree:
+#        Amazon Javelin And Spear: 3
 
 ### Helmets
 Bone Visage:
   - Qualities: [normal, superior]
     Sockets: [0, 3]
-Demonhead:
-  - Qualities: [normal, superior]
-    Sockets: [0, 3]
-  - Qualities: unique # Andariel's Visage
+#Demonhead:
+#  - Qualities: [normal, superior]
+#    Sockets: [0, 3]
+#  - Qualities: unique # Andariel's Visage
 
 ### Circlets
-Circlet:
-  - Qualities: [magic, rare]
-Tiara:
-  - Qualities: [magic, rare]
-  - Qualities: unique # Kira's Guardian
-Coronet:
-  - Qualities: [magic, rare]
+#Circlet:
+#  - Qualities: [magic, rare]
+#Tiara:
+#  - Qualities: [magic, rare]
+#  - Qualities: unique # Kira's Guardian
+#Coronet:
+#  - Qualities: [magic, rare]
 Diadem:
-  - Qualities: [magic, rare]
+  - Qualities: [normal, rare]
   - Qualities: unique # Griffon's Eye
 
 ### Druid Pelts
@@ -245,19 +245,55 @@ Druid Helms:
     Qualities: [magic, rare]
 
 ### Barbarian Helms
-Barbarian Helms:
-  - Tiers: elite
-    Qualities: [magic, rare]
+#Barbarian Helms:
+#  - Tiers: [exceptional, elite]
+#    Qualities: [magic, rare]
 
 ### Paladin Shields
 Paladin Shields:
-  - Tiers: elite
+  - Tiers: [exceptional, elite]
     Qualities: [normal, superior]
     All Resist: 25
-    Sockets: [0, 4]
+    Sockets: [0, 3, 4]
+
+Swords:
+  - Qualities: magic
+    Class Skill Tree:
+      Barbarian Warcries: 3
+
+Daggers:
+  - Qualities: magic
+    Class Skill Tree:
+      Barbarian Warcries: 3
+
+Throwing Knifes:
+  - Qualities: magic
+    Class Skill Tree:
+      Barbarian Warcries: 3
+
+Throwing Axes:
+  - Qualities: magic
+    Class Skill Tree:
+      Barbarian Warcries: 3
+
+Javelins:
+  - Qualities: magic
+    Class Skill Tree:
+      Barbarian Warcries: 3
+
+Spears:
+  - Qualities: magic
+    Class Skill Tree:
+      Barbarian Warcries: 3
 
 ### Runes
-Hel Rune:
+#Amn Rune:
+#Sol Rune:
+#Lum Rune:
+#Hel Rune:
+#Io Rune:
+Fal Rune:
+Lem Rune:
 Pul Rune:
 Um Rune:
 Mal Rune:
@@ -273,13 +309,7 @@ Cham Rune:
 Zod Rune:
 
 ### Gems
-Flawless Ruby:
-Flawless Sapphire:
-Flawless Emerald:
-Flawless Amethyst:
-Flawless Diamond:
-Flawless Topaz:
-Flawless Skull:
+#Flawless Amethyst:
 Perfect Ruby:
 Perfect Emerald:
 Perfect Sapphire:
@@ -404,8 +434,8 @@ Ballista:
 
 ### Sets
 # Tal Rasha's Horadric Crest
-Death Mask:
-  - Qualities: set
+#Death Mask:
+#  - Qualities: set
 # Tal Rasha's Fine Spun Cloth
 Mesh Belt:
   - Qualities: set

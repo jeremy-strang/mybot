@@ -33,3 +33,5 @@ binary/*.dll
 binary/*.*
 logs/
 pickles/
+dxdiag.txt
+blz-log.txt

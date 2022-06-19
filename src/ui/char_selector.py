@@ -52,7 +52,7 @@ class CharSelector:
 
     def select_online_tab(self, region: tuple[int, int, int, int] = None, center: tuple[int, int] = None):
         btn_width = center[0] - region[0]
-        if CharSelector._online_character:
+        if self._config.general["battle_net"]:
             Logger.debug(f"Selecting online tab")
             x = region[0] + (btn_width / 2)
         else:
@@ -65,9 +65,20 @@ class CharSelector:
         mouse.click(button="left")
         wait(0.4, 0.6)
 
+    def confirm_battle_net(self):
+        online_tabs = self._template_finder.search(["CHARACTER_STATE_OFFLINE", "CHARACTER_STATE_ONLINE"], self._screen.grab(), roi=self._config.ui_roi["character_online_status"], threshold=0.8, best_match = True)
+        if online_tabs.valid:
+            Logger.debug(f"online_tabs.name: {online_tabs.name}, self._config.general['battle_net']: {self._config.general['battle_net']}")
+            if online_tabs.name == "CHARACTER_STATE_ONLINE" and not self._config.general["battle_net"]:
+                self.select_online_tab(online_tabs.region, online_tabs.center)
+                wait(1, 1.5)
+            elif online_tabs.name == "CHARACTER_STATE_OFFLINE" and self._config.general["battle_net"]:
+                self.select_online_tab(online_tabs.region, online_tabs.center)
+                wait(1, 1.5)
+
     def select_char(self):
         if CharSelector._last_char_template is not None:
-            online_tabs = self._template_finder.search(["CHARACTER_STATE_OFFLINE","CHARACTER_STATE_ONLINE"], self._screen.grab(), roi=self._config.ui_roi["character_online_status"], threshold=0.8, best_match = True)
+            online_tabs = self._template_finder.search(["CHARACTER_STATE_OFFLINE", "CHARACTER_STATE_ONLINE"], self._screen.grab(), roi=self._config.ui_roi["character_online_status"], threshold=0.8, best_match = True)
             if online_tabs.valid:
                 if online_tabs.name == "CHARACTER_STATE_ONLINE" and (not CharSelector._online_character):
                     self.select_online_tab(online_tabs.region, online_tabs.center)
@@ -109,7 +120,6 @@ class CharSelector:
                     scrolls_attempts += 1
                     wait(0.4, 0.6)
             Logger.error(f"select_char: unable to find saved profile after {scrolls_attempts} scroll attempts")
-
 
 if __name__ == "__main__":
     import keyboard

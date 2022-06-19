@@ -61,6 +61,10 @@ class ShenkEldritch:
         if do_pre_buff:
             self._char.pre_buff()
 
+        wait(0.2, 0.3)
+        if not self._char.can_tp and self._config.char["enable_combat_walking"]:
+            self._char.toggle_run_walk(should_walk=True, test_pos_abs=(-80, -200))
+
         start = time.time()
         eld = self._api.find_monster_by_name("MinionExp")
         if not eld:
@@ -76,13 +80,12 @@ class ShenkEldritch:
         else:
             self._pather.walk_to_position(eld["position_area"])
         
-        if self._char._char_config['type'] == 'necro':
-            game_state = StateMonitor(['MinionExp'], self._api,super_unique=True)
-            self._char.kill_eldrich_mem(game_state)
-            game_state.stop()
-        else:
-            self._char.kill_eldritch()
+        self._char.kill_eldritch()
+        
         wait(0.1)
+        if not self._char.can_tp and self._config.char["enable_combat_walking"]:
+            self._char.toggle_run_walk(should_walk=False, test_pos_abs=(80, 200))
+
         loc = Location.A5_ELDRITCH_END
         picked_up_items = self._pickit.pick_up_items(self._char)
 
@@ -95,7 +98,10 @@ class ShenkEldritch:
             self._pather.traverse("Frigid Highlands", self._char, verify_location=False)
             if not self._pather.traverse("Bloody Foothills", self._char, verify_location=False):
                 self._pather.walk_to_poi("Bloody Foothills")
-            
+
+            if not self._char.can_tp and self._config.char["enable_combat_walking"]:
+                self._char.toggle_run_walk(should_walk=True, test_pos_abs=(80, 200))
+
             current_area = self._pather.wander_towards((450, 120), self._char, "Bloody Foothills", time_out=1.5)
             if current_area != "BloodyFoothills":
                 current_area = self._pather.wander_towards((150, 170), self._char, "Bloody Foothills", time_out=1.5)
@@ -104,16 +110,14 @@ class ShenkEldritch:
                 if current_area != "BloodyFoothills":
                     return False
 
-            if self._char._char_config['type'] == 'necro':
-                wait(0.1, 0.2)
-                if not self._pather.traverse([95, 121], self._char): return False
-                game_state = StateMonitor(['OverSeer'], self._api,super_unique=True)
-                result = self._char.kill_shenk_mem(game_state)
-                game_state.stop()
-            else:
-                if not self._char.can_tp or not self._pather.traverse((80, 117), self._char):
-                    self._pather.walk_to_position((80, 117), time_out=7)
-                self._char.kill_shenk()
+            if not self._char.can_tp or not self._pather.traverse((80, 117), self._char):
+                self._pather.walk_to_position((80, 117), time_out=7)
+
+            self._char.kill_shenk()
+
+            wait(0.1)
+            if not self._char.can_tp and self._config.char["enable_combat_walking"]:
+                self._char.toggle_run_walk(should_walk=False, test_pos_abs=(-80, -200))
 
             loc = Location.A5_SHENK_END
             wait(0.1)

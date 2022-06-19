@@ -1,98 +1,102 @@
-/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
 using MapAssist.Helpers;
 using MapAssist.Settings;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using YamlDotNet.Serialization;
 
 namespace MapAssist.Types
 {
-    public class Items
+    public static class Items
     {
+        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+
         public static Dictionary<int, HashSet<string>> ItemUnitHashesSeen = new Dictionary<int, HashSet<string>>();
         public static Dictionary<int, HashSet<uint>> ItemUnitIdsSeen = new Dictionary<int, HashSet<uint>>();
         public static Dictionary<int, HashSet<uint>> ItemUnitIdsToSkip = new Dictionary<int, HashSet<uint>>();
         public static Dictionary<int, HashSet<uint>> InventoryItemUnitIdsToSkip = new Dictionary<int, HashSet<uint>>();
+        public static Dictionary<int, Dictionary<string, string>> ItemDisplayNames = new Dictionary<int, Dictionary<string, string>>();
         public static Dictionary<int, Dictionary<uint, Npc>> ItemVendors = new Dictionary<int, Dictionary<uint, Npc>>();
         public static Dictionary<int, List<ItemLogEntry>> ItemLog = new Dictionary<int, List<ItemLogEntry>>();
         public static Dictionary<string, LocalizedObj> LocalizedItems = new Dictionary<string, LocalizedObj>();
+        public static Dictionary<ushort, LocalizedObj> LocalizedRunewords = new Dictionary<ushort, LocalizedObj>();
+        public static Dictionary<string, QualityLevelsObj> QualityLevels = new Dictionary<string, QualityLevelsObj>();
 
-        public static void LogItem(UnitItem item, int processId)
+        public static void LogItem(UnitItem item, Area area, int areaLevel, int playerLevel, int processId)
         {
-            if (CheckDroppedItem(item, processId) || CheckInventoryItem(item, processId) || CheckVendorItem(item, processId))
+            if (item.IsInStore)
             {
-                if (item.IsInStore)
-                {
-                    //InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
-                }
-                else
-                {
-                    ItemUnitHashesSeen[processId].Add(item.HashString);
-                }
-
-                if (item.IsPlayerOwned && item.IsIdentified)
-                {
-                    //InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
-                    //ItemUnitIdsToSkip[processId].Add(item.UnitId);
-                }
-
-                ItemUnitIdsSeen[processId].Add(item.UnitId);
-
-                var (logItem, rule) = LootFilter.Filter(item);
-                if (!logItem) return;
-
-                if (MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop && (rule == null || rule.PlaySoundOnDrop))
-                {
-                    AudioPlayer.PlayItemAlert();
-                }
-
-                ItemLog[processId].Add(new ItemLogEntry()
-                {
-                    Text = ItemLogDisplayName(item, rule),
-                    Color = item.ItemBaseColor,
-                    ItemHashString = item.HashString,
-                    UnitItem = item
-                });
+                InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
             }
+            else
+            {
+                ItemUnitHashesSeen[processId].Add(item.HashString);
+            }
+
+            ItemUnitIdsSeen[processId].Add(item.UnitId);
+
+            if (item.IsAnyPlayerHolding && item.IsIdentified)
+            {
+                InventoryItemUnitIdsToSkip[processId].Add(item.UnitId);
+                ItemUnitIdsToSkip[processId].Add(item.UnitId);
+
+                if (!item.IsPlayerOwned)
+                {
+                    return;
+                }
+            }
+
+            var (logItem, rule) = LootFilter.Filter(item, areaLevel, playerLevel);
+            if (!logItem) return;
+
+            if (MapAssistConfiguration.Loaded.ItemLog.PlaySoundOnDrop && (rule == null || rule.PlaySoundOnDrop))
+            {
+                AudioPlayer.PlayItemAlert(rule?.SoundFile ?? MapAssistConfiguration.Loaded.ItemLog.SoundFile);
+            }
+
+            item.IsIdentifiedForLog = item.IsIdentified;
+
+            var newLogEntry = new ItemLogEntry()
+            {
+                ItemHashString = item.HashString,
+                UnitItem = item,
+                Rule = rule,
+                Area = area,
+                ProcessId = processId,
+            };
+
+            ItemLog[processId].Add(newLogEntry);
+
+            _log.Info($"Added item to log: {newLogEntry.UnitItem.MappedItemQuality} {newLogEntry.UnitItem.Item}");
         }
 
-        private static bool CheckInventoryItem(UnitItem item, int processId) =>
-            item.IsIdentified && item.IsPlayerOwned &&
+        public static bool CheckInventoryItem(UnitItem item, int processId) =>
+            MapAssistConfiguration.Loaded.ItemLog.CheckItemOnIdentify &&
+            item.IsIdentified && item.IsPlayerOwned && item.IsInInventoryOrCube &&
+            !item.IsGem && !item.IsRune &&
             !InventoryItemUnitIdsToSkip[processId].Contains(item.UnitId);
 
-        private static bool CheckDroppedItem(UnitItem item, int processId) =>
+        public static bool CheckDroppedItem(UnitItem item, int processId) =>
+            !item.IsIdentified && item.IsDropped &&
             !ItemUnitHashesSeen[processId].Contains(item.HashString) &&
             !ItemUnitIdsSeen[processId].Contains(item.UnitId) &&
             !ItemUnitIdsToSkip[processId].Contains(item.UnitId);
 
-        private static bool CheckVendorItem(UnitItem item, int processId) =>
+        public static bool CheckVendorItem(UnitItem item, int processId) =>
+            MapAssistConfiguration.Loaded.ItemLog.CheckVendorItems &&
             item.IsInStore &&
             !ItemUnitIdsSeen[processId].Contains(item.UnitId) &&
             !ItemUnitIdsToSkip[processId].Contains(item.UnitId);
 
-        public static string ItemLogDisplayName(UnitItem item, ItemFilter rule)
+        public static string ItemLogDisplayName(UnitItem item, ItemFilter rule, int processId, DateTime logDate)
         {
-            var statsProcessed = new List<Stat>();
+            var cacheKey = item.UnitId + "/" + logDate.Second;
+            if (ItemDisplayNames[processId].TryGetValue(cacheKey, out var itemDisplayName))
+            {
+                return itemDisplayName;
+            }
+
+            var statsProcessed = new List<Stats.Stat>();
             var itemBaseName = GetItemName(item);
             var itemSpecialName = "";
             var itemPrefix = "";
@@ -103,19 +107,24 @@ namespace MapAssist.Types
                 var vendorLabel = item.VendorOwner != Npc.Unknown ? NpcExtensions.Name(item.VendorOwner) : "Vendor";
                 itemPrefix += $"[{vendorLabel}] ";
             }
-            else if (item.IsIdentified)
+            else if (item.IsIdentifiedForLog)
             {
                 itemPrefix += "[Identified] ";
             }
 
-            if (rule == null) return itemPrefix + itemBaseName;
+            if (rule == null)
+            {
+                var itemShortName = itemPrefix + itemBaseName;
+                ItemDisplayNames[processId].Add(cacheKey, itemShortName);
+                return itemShortName;
+            }
 
-            if ((item.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL)
+            if (item.IsEthereal)
             {
                 itemPrefix += "[Eth] ";
             }
 
-            if (item.Stats.TryGetValue(Stat.NumSockets, out var numSockets))
+            if (item.Stats.TryGetValue(Stats.Stat.NumSockets, out var numSockets))
             {
                 itemPrefix += "[" + numSockets + " S] ";
             }
@@ -123,6 +132,15 @@ namespace MapAssist.Types
             if (item.ItemData.ItemQuality == ItemQuality.SUPERIOR)
             {
                 itemPrefix += "Sup. ";
+            }
+
+            if (rule.MinQualityLevel != null || rule.MaxQualityLevel != null)
+            {
+                var qualityLevel = GetQualityLevel(item);
+                if (qualityLevel != null)
+                {
+                    itemSuffix += $" (qlvl {qualityLevel})";
+                }
             }
 
             if (rule.AllResist != null)
@@ -145,22 +163,25 @@ namespace MapAssist.Types
 
             if (rule.AllSkills != null)
             {
-                var itemAllSkills = GetItemStat(item, Stat.AllSkills);
-                if (itemAllSkills > 0)
+                var points = GetItemStat(item, Stats.Stat.AllSkills);
+                if (points > 0)
                 {
-                    itemSuffix += $" (+{itemAllSkills} all skills)";
+                    itemSuffix += $" (+{points} all skills)";
                 }
-                statsProcessed.Add(Stat.AllSkills);
+                statsProcessed.Add(Stats.Stat.AllSkills);
             }
 
             if (rule.ClassSkills != null)
             {
                 foreach (var subrule in rule.ClassSkills)
                 {
-                    var (className, classSkills) = GetItemStatAddClassSkills(item, subrule.Key);
-                    if (classSkills > 0)
+                    var (classes, points) = GetItemStatAddClassSkills(item, subrule.Key);
+                    if (points > 0)
                     {
-                        itemSuffix += $" (+{classSkills} {className} skills)";
+                        foreach (var className in classes)
+                        {
+                            itemSuffix += $" (+{points} {className} skills)";
+                        }
                     }
                 }
             }
@@ -169,10 +190,13 @@ namespace MapAssist.Types
             {
                 foreach (var subrule in rule.SkillTrees)
                 {
-                    var (skillTreeName, skillTrees) = GetItemStatAddSkillTreeSkills(item, subrule.Key);
-                    if (skillTrees > 0)
+                    var (skillTrees, points) = GetItemStatAddSkillTreeSkills(item, subrule.Key);
+                    if (points > 0)
                     {
-                        itemSuffix += $" (+{skillTrees} {skillTreeName.Name()} skills)";
+                        foreach (var skillTree in skillTrees)
+                        {
+                            itemSuffix += $" (+{points} {skillTree.Name().Replace(" Skills", "")} skills)";
+                        }
                     }
                 }
             }
@@ -181,10 +205,13 @@ namespace MapAssist.Types
             {
                 foreach (var subrule in rule.Skills)
                 {
-                    var (skill, singleSkills) = GetItemStatAddSingleSkills(item, subrule.Key);
-                    if (singleSkills > 0)
+                    var (skills, points) = GetItemStatAddSingleSkills(item, subrule.Key);
+                    if (points > 0)
                     {
-                        itemSuffix += $" (+{singleSkills} {skill.Name()})";
+                        foreach (var skill in skills)
+                        {
+                            itemSuffix += $" (+{points} {skill.Name()})";
+                        }
                     }
                 }
             }
@@ -206,9 +233,10 @@ namespace MapAssist.Types
                 }
             }
 
-            foreach (var (stat, shift) in LootFilter.StatShifts.Select(x => (x.Key, x.Value)))
+            foreach (var (stat, shift) in Stats.StatShifts.Select(x => (x.Key, x.Value)))
             {
                 var property = rule.GetType().GetProperty(stat.ToString());
+                if (property == null) continue;
                 var propertyValue = property.GetValue(rule, null);
                 if (propertyValue == null) continue;
 
@@ -217,7 +245,7 @@ namespace MapAssist.Types
 
                 if (yamlAttribute != null) propName = yamlAttribute.NamedArguments.FirstOrDefault(x => x.MemberName == "Alias").TypedValue.Value.ToString();
 
-                var statValue = GetItemStatShifted(item, stat, shift);
+                var statValue = GetItemStatShifted(item, stat);
                 if (statValue > 0)
                 {
                     itemSuffix += $" ({statValue} {propName})";
@@ -232,7 +260,7 @@ namespace MapAssist.Types
 
                 if (yamlAttribute != null) propName = yamlAttribute.NamedArguments.FirstOrDefault(x => x.MemberName == "Alias").TypedValue.Value.ToString();
 
-                if (property.PropertyType == typeof(int?) && Enum.TryParse<Stat>(property.Name, out var stat))
+                if (property.PropertyType == typeof(int?) && Enum.TryParse<Stats.Stat>(property.Name, out var stat))
                 {
                     if (statsProcessed.Contains(stat)) continue;
 
@@ -258,13 +286,64 @@ namespace MapAssist.Types
                     break;
             }
 
-            return itemPrefix + itemSpecialName + itemBaseName + itemSuffix;
+            var itemFullName = itemPrefix + itemSpecialName + itemBaseName + itemSuffix;
+            ItemDisplayNames[processId].Add(cacheKey, itemFullName);
+            return itemFullName;
+        }
+
+        public static string ItemFullName(UnitItem item)
+        {
+            var itemFullName = item.ItemBaseName;
+
+            if (item.IsIdentified)
+            {
+                switch (item.ItemData.ItemQuality)
+                {
+                    case ItemQuality.UNIQUE:
+                        if (_UniqueFromId.TryGetValue(item.ItemData.uniqueOrSetId, out var foundFullUniqueName))
+                        {
+                            itemFullName = foundFullUniqueName;
+                        }
+                        break;
+
+                    case ItemQuality.SET:
+                        if (_SetFromId.TryGetValue(item.ItemData.uniqueOrSetId, out var foundFullSetName))
+                        {
+                            itemFullName = foundFullSetName;
+                        }
+                        break;
+                }
+            }
+
+            var localizedName = GetItemNameFromKey(itemFullName);
+            if (localizedName == "ItemNotFound") localizedName = itemFullName;
+
+            if (item.IsRuneWord)
+            {
+                return GetRunewordFromId(item.Prefixes[0]) + " " + localizedName;
+            }
+
+            return localizedName;
         }
 
         public static string GetItemNameFromKey(string key)
         {
             LocalizedObj localItem;
             if (!LocalizedItems.TryGetValue(key, out localItem))
+            {
+                return "ItemNotFound";
+            }
+
+            var lang = MapAssistConfiguration.Loaded.LanguageCode;
+            var prop = localItem.GetType().GetProperty(lang.ToString()).GetValue(localItem, null);
+
+            return prop.ToString();
+        }
+
+        public static string GetRunewordFromId(ushort id)
+        {
+            LocalizedObj localItem;
+            if (!LocalizedRunewords.TryGetValue(id, out localItem))
             {
                 return "ItemNotFound";
             }
@@ -309,7 +388,10 @@ namespace MapAssist.Types
                 return "ItemNotFound";
             }
 
-            return localItem.enUS;
+            var lang = MapAssistConfiguration.Loaded.LanguageCode;
+            var prop = localItem.GetType().GetProperty(lang.ToString()).GetValue(localItem, null);
+
+            return prop.ToString();
         }
 
         public static string GetUniqueName(UnitItem item)
@@ -362,46 +444,40 @@ namespace MapAssist.Types
             return prop.ToString();
         }
 
-        public static Color GetItemBaseColor(UnitItem unit)
+        public static int? GetQualityLevel(UnitItem item)
         {
-            Color fontColor;
-            if (unit == null || !ItemColors.TryGetValue(unit.ItemData.ItemQuality, out fontColor))
+            string itemCode;
+            if (!_ItemCodes.TryGetValue(item.TxtFileNo, out itemCode))
             {
-                // Invalid item quality
-                return Color.Empty;
+                return null;
             }
 
-            var isEth = (unit.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL;
-            if (isEth && fontColor == Color.White)
+            string namedCode;
+            switch (item.ItemData.ItemQuality)
             {
-                return ItemColors[ItemQuality.SUPERIOR];
+                case ItemQuality.UNIQUE:
+                    if (_UniqueFromCode.TryGetValue(itemCode, out namedCode) && namedCode != "Unique")
+                    {
+                        itemCode = namedCode;
+                    }
+
+                    break;
+
+                case ItemQuality.SET:
+                    if (_SetFromCode.TryGetValue(itemCode, out namedCode) && namedCode != "Set")
+                    {
+                        itemCode = namedCode;
+                    }
+                    break;
             }
 
-            if (unit.Stats.ContainsKey(Stat.NumSockets) && fontColor == Color.White)
+            QualityLevelsObj qualityLevel;
+            if (!QualityLevels.TryGetValue(itemCode, out qualityLevel))
             {
-                return ItemColors[ItemQuality.SUPERIOR];
+                return null;
             }
 
-            if (unit.TxtFileNo >= 610 && unit.TxtFileNo <= 642)
-            {
-                // Runes
-                return ItemColors[ItemQuality.CRAFT];
-            }
-
-            switch (unit.TxtFileNo)
-            {
-                case 647: // Key of Terror
-                case 648: // Key of Hate
-                case 649: // Key of Destruction
-                case 653: // Token of Absolution
-                case 654: // Twisted Essence of Suffering
-                case 655: // Charged Essense of Hatred
-                case 656: // Burning Essence of Terror
-                case 657: // Festering Essence of Destruction
-                    return ItemColors[ItemQuality.CRAFT];
-            }
-
-            return fontColor;
+            return qualityLevel.qlvl;
         }
 
         public static ItemTier GetItemTier(UnitItem item)
@@ -417,120 +493,136 @@ namespace MapAssist.Types
             var itemClass = itemClasses.First();
             if (itemClass.Key == Item.ClassCirclets) return ItemTier.NotApplicable;
 
-            return (ItemTier)(Array.IndexOf(itemClass.Value, item) * 3 / itemClass.Value.Length); // All items with each class (except circlets) come in equal amounts within each tier
+            return (ItemTier)(Array.IndexOf(itemClass.Value, item) * 3 / itemClass.Value.Length); // All items within each class (except circlets) come in equal amounts within each tier
         }
 
-        public static int GetItemStat(UnitItem item, Stat stat)
+        public static int GetItemStat(UnitItem item, Stats.Stat stat)
         {
-            return item.Stats.TryGetValue(stat, out var statValue) ? statValue : 0;
+            return item.Stats.TryGetValue(stat, out var statValue) ? statValue :
+                item.StatsAdded != null && item.StatsAdded.TryGetValue(stat, out var statAddedValue) ? statAddedValue :
+                item.StaffMods != null && item.StaffMods.TryGetValue(stat, out var staffModValue) ? staffModValue : 0;
         }
 
-        public static int GetItemStatShifted(UnitItem item, Stat stat, int shift)
+        public static int GetItemStatShifted(UnitItem item, Stats.Stat stat)
         {
-            return item.Stats.TryGetValue(stat, out var statValue) ? statValue >> shift : 0;
+            return item.Stats.TryGetValue(stat, out var statValue) && Stats.StatShifts.TryGetValue(stat, out var shift) ? statValue >> shift : 0;
+        }
+
+        public static double GetItemStatDecimal(UnitItem item, Stats.Stat stat)
+        {
+            return item.Stats.TryGetValue(stat, out var statValue) && Stats.StatDivisors.TryGetValue(stat, out var divisor) ? statValue / divisor :
+                Stats.StatInvertDivisors.TryGetValue(stat, out var invertDivisor) ? Math.Round(invertDivisor / statValue, 0) : 0;
         }
 
         public static int GetItemStatResists(UnitItem item, bool sumOfEach)
         {
-            item.Stats.TryGetValue(Stat.FireResist, out var fireRes);
-            item.Stats.TryGetValue(Stat.LightningResist, out var lightRes);
-            item.Stats.TryGetValue(Stat.ColdResist, out var coldRes);
-            item.Stats.TryGetValue(Stat.PoisonResist, out var psnRes);
+            item.Stats.TryGetValue(Stats.Stat.FireResist, out var fireRes);
+            item.Stats.TryGetValue(Stats.Stat.LightningResist, out var lightRes);
+            item.Stats.TryGetValue(Stats.Stat.ColdResist, out var coldRes);
+            item.Stats.TryGetValue(Stats.Stat.PoisonResist, out var psnRes);
             var resistances = new[] { fireRes, lightRes, coldRes, psnRes };
             return sumOfEach ? resistances.Sum() : resistances.Min();
         }
 
         public static int GetItemStatAllAttributes(UnitItem item)
         {
-            item.Stats.TryGetValue(Stat.Strength, out var strength);
-            item.Stats.TryGetValue(Stat.Dexterity, out var dexterity);
-            item.Stats.TryGetValue(Stat.Vitality, out var vitality);
-            item.Stats.TryGetValue(Stat.Energy, out var energy);
+            item.Stats.TryGetValue(Stats.Stat.Strength, out var strength);
+            item.Stats.TryGetValue(Stats.Stat.Dexterity, out var dexterity);
+            item.Stats.TryGetValue(Stats.Stat.Vitality, out var vitality);
+            item.Stats.TryGetValue(Stats.Stat.Energy, out var energy);
             return new[] { strength, dexterity, vitality, energy }.Min();
         }
 
-        public static (Structs.PlayerClass, int) GetItemStatAddClassSkills(UnitItem item, Structs.PlayerClass playerClass)
+        public static (Structs.PlayerClass[], int) GetItemStatAddClassSkills(UnitItem item, Structs.PlayerClass playerClass)
         {
-            var allSkills = GetItemStat(item, Stat.AllSkills);
+            var allSkills = GetItemStat(item, Stats.Stat.AllSkills);
 
             if (playerClass == Structs.PlayerClass.Any)
             {
                 var maxClassSkills = 0;
-                var maxClass = playerClass;
+                var maxClasses = new List<Structs.PlayerClass>();
 
                 for (var classId = Structs.PlayerClass.Amazon; classId <= Structs.PlayerClass.Assassin; classId++)
                 {
-                    if (item.StatLayers.TryGetValue(Stat.AddClassSkills, out var anyItemStats) &&
+                    if (item.StatLayers.TryGetValue(Stats.Stat.AddClassSkills, out var anyItemStats) &&
                         anyItemStats.TryGetValue((ushort)classId, out var anyClassSkills))
                     {
                         if (anyClassSkills > maxClassSkills)
                         {
+                            maxClasses = new List<Structs.PlayerClass>() { classId };
                             maxClassSkills = anyClassSkills;
-                            maxClass = classId;
+                        }
+                        else if (anyClassSkills == maxClassSkills)
+                        {
+                            maxClasses.Add(classId);
                         }
                     }
                 }
 
-                return (maxClass, allSkills + maxClassSkills);
+                return (maxClasses.ToArray(), allSkills + maxClassSkills);
             }
 
-            if (item.StatLayers.TryGetValue(Stat.AddClassSkills, out var itemStats) &&
+            if (item.StatLayers.TryGetValue(Stats.Stat.AddClassSkills, out var itemStats) &&
                 itemStats.TryGetValue((ushort)playerClass, out var addClassSkills))
             {
-                return (playerClass, allSkills + addClassSkills);
+                return (new Structs.PlayerClass[] { playerClass }, allSkills + addClassSkills);
             }
 
-            return (playerClass, allSkills);
+            return (new Structs.PlayerClass[] { playerClass }, allSkills);
         }
 
-        public static (SkillTree, int) GetItemStatAddSkillTreeSkills(UnitItem item, SkillTree skillTree)
+        public static (SkillTree[], int) GetItemStatAddSkillTreeSkills(UnitItem item, SkillTree skillTree, bool addClassSkills = true)
         {
             if (skillTree == SkillTree.Any)
             {
                 var maxSkillTreeQuantity = 0;
-                var maxSkillTree = skillTree;
+                var maxSkillTrees = new List<SkillTree>();
 
                 foreach (var skillTreeId in Enum.GetValues(typeof(SkillTree)).Cast<SkillTree>().Where(x => x != SkillTree.Any).ToList())
                 {
-                    if (item.StatLayers.TryGetValue(Stat.AddSkillTab, out var anyItemStats) &&
+                    if (item.StatLayers.TryGetValue(Stats.Stat.AddSkillTab, out var anyItemStats) &&
                         anyItemStats.TryGetValue((ushort)skillTreeId, out var anyTabSkills))
                     {
-                        anyTabSkills += GetItemStatAddClassSkills(item, skillTreeId.GetPlayerClass()).Item2; // This adds the +class skill points and +all skills points
+                        anyTabSkills += addClassSkills ? GetItemStatAddClassSkills(item, skillTreeId.GetPlayerClass()).Item2 : 0; // This adds the +class skill points and +all skills points
 
                         if (anyTabSkills > maxSkillTreeQuantity)
                         {
-                            maxSkillTree = skillTreeId;
+                            maxSkillTrees = new List<SkillTree>() { skillTreeId };
                             maxSkillTreeQuantity = anyTabSkills;
+                        }
+                        else if (anyTabSkills == maxSkillTreeQuantity)
+                        {
+                            maxSkillTrees.Add(skillTreeId);
                         }
                     }
                 }
 
-                return (maxSkillTree, maxSkillTreeQuantity);
+                return (maxSkillTrees.ToArray(), maxSkillTreeQuantity);
             }
 
-            var baseAddSkills = GetItemStatAddClassSkills(item, skillTree.GetPlayerClass()).Item2; // This adds the +class skill points and +all skills points
+            var baseAddSkills = addClassSkills ? GetItemStatAddClassSkills(item, skillTree.GetPlayerClass()).Item2 : 0; // This adds the +class skill points and +all skills points
 
-            if (item.StatLayers.TryGetValue(Stat.AddSkillTab, out var itemStats) &&
+            if (item.StatLayers.TryGetValue(Stats.Stat.AddSkillTab, out var itemStats) &&
                 itemStats.TryGetValue((ushort)skillTree, out var addSkillTab))
             {
-                return (skillTree, baseAddSkills + addSkillTab);
+                return (new SkillTree[] { skillTree }, baseAddSkills + addSkillTab);
             }
 
-            return (skillTree, baseAddSkills);
+            return (new SkillTree[] { skillTree }, baseAddSkills);
         }
 
-        public static (Skill, int) GetItemStatAddSingleSkills(UnitItem item, Skill skill)
+        public static (Skill[], int) GetItemStatAddSingleSkills(UnitItem item, Skill skill, bool addSkillTree = true)
         {
-            var itemSkillsStats = new List<Stat>()
+            var itemSkillsStats = new List<Stats.Stat>()
             {
-                Stat.SingleSkill,
-                Stat.NonClassSkill,
+                Stats.Stat.SingleSkill,
+                Stats.Stat.NonClassSkill,
             };
 
             if (skill == Skill.Any)
             {
                 var maxSkillQuantity = 0;
-                var maxSkill = skill;
+                var maxSkills = new List<Skill>();
 
                 foreach (var statType in itemSkillsStats)
                 {
@@ -539,37 +631,41 @@ namespace MapAssist.Types
                         if (item.StatLayers.TryGetValue(statType, out var anyItemStats) &&
                             anyItemStats.TryGetValue((ushort)skillId, out var anySkillLevel))
                         {
-                            anySkillLevel += (statType == Stat.SingleSkill ? GetItemStatAddSkillTreeSkills(item, skillId.GetSkillTree()).Item2 : 0); // This adds the +skill tree points, +class skill points and +all skills points
+                            anySkillLevel += (addSkillTree && statType == Stats.Stat.SingleSkill ? GetItemStatAddSkillTreeSkills(item, skillId.GetSkillTree()).Item2 : 0); // This adds the +skill tree points, +class skill points and +all skills points
 
                             if (anySkillLevel > maxSkillQuantity)
                             {
-                                maxSkill = skillId;
+                                maxSkills = new List<Skill>() { skillId };
                                 maxSkillQuantity = anySkillLevel;
+                            }
+                            else if (anySkillLevel == maxSkillQuantity)
+                            {
+                                maxSkills.Add(skillId);
                             }
                         }
                     }
                 }
 
-                return (maxSkill, maxSkillQuantity);
+                return (maxSkills.ToArray(), maxSkillQuantity);
             }
 
-            var baseAddSkills = GetItemStatAddSkillTreeSkills(item, skill.GetSkillTree()).Item2; // This adds the +skill tree points, +class skill points and +all skills points
+            var baseAddSkills = addSkillTree ? GetItemStatAddSkillTreeSkills(item, skill.GetSkillTree()).Item2 : 0; // This adds the +skill tree points, +class skill points and +all skills points
 
             foreach (var statType in itemSkillsStats)
             {
                 if (item.StatLayers.TryGetValue(statType, out var itemStats) &&
                     itemStats.TryGetValue((ushort)skill, out var skillLevel))
                 {
-                    return (skill, (statType == Stat.SingleSkill ? baseAddSkills : 0) + skillLevel);
+                    return (new Skill[] { skill }, (statType == Stats.Stat.SingleSkill ? baseAddSkills : 0) + skillLevel);
                 }
             }
 
-            return (skill, baseAddSkills);
+            return (new Skill[] { skill }, baseAddSkills);
         }
 
         public static (int, int, int) GetItemStatAddSkillCharges(UnitItem item, Skill skill)
         {
-            if (item.StatLayers.TryGetValue(Stat.ItemChargedSkill, out var itemStats))
+            if (item.StatLayers.TryGetValue(Stats.Stat.ItemChargedSkill, out var itemStats))
             {
                 foreach (var stat in itemStats)
                 {
@@ -588,16 +684,550 @@ namespace MapAssist.Types
             return (0, 0, 0);
         }
 
-        public static readonly Dictionary<ItemQuality, Color> ItemColors = new Dictionary<ItemQuality, Color>()
+        public static Item? ParseFromString(string text)
         {
-            {ItemQuality.INFERIOR, Color.White},
-            {ItemQuality.NORMAL, Color.White},
-            {ItemQuality.SUPERIOR, Color.Gray},
-            {ItemQuality.MAGIC, ColorTranslator.FromHtml("#4169E1")},
-            {ItemQuality.SET, ColorTranslator.FromHtml("#00FF00")},
-            {ItemQuality.RARE, ColorTranslator.FromHtml("#FFFF00")},
-            {ItemQuality.UNIQUE, ColorTranslator.FromHtml("#A59263")},
-            {ItemQuality.CRAFT, ColorTranslator.FromHtml("#FFAE00")},
+            if (Enum.TryParse("Class" + text.Replace(" ", "").Replace("-", ""), true, out Item itemClass))
+            {
+                return itemClass;
+            }
+            else if (Enum.TryParse(text.Replace(" ", "").Replace("-", ""), true, out Item item))
+            {
+                return item;
+            }
+
+            return null;
+        }
+
+        public static readonly Dictionary<uint, string> _SetFromId = new Dictionary<uint, string>()
+        {
+            {0, "Civerb's Ward"},
+            {1, "Civerb's Icon"},
+            {2, "Civerb's Cudgel"},
+            {3, "Hsarus' Iron Heel"},
+            {4, "Hsarus' Iron Fist"},
+            {5, "Hsarus' Iron Stay"},
+            {6, "Cleglaw's Tooth"},
+            {7, "Cleglaw's Claw"},
+            {8, "Cleglaw's Pincers"},
+            {9, "Iratha's Collar"},
+            {10, "Iratha's Cuff"},
+            {11, "Iratha's Coil"},
+            {12, "Iratha's Cord"},
+            {13, "Isenhart's Lightbrand"},
+            {14, "Isenhart's Parry"},
+            {15, "Isenhart's Case"},
+            {16, "Isenhart's Horns"},
+            {17, "Vidala's Barb"},
+            {18, "Vidala's Fetlock"},
+            {19, "Vidala's Ambush"},
+            {20, "Vidala's Snare"},
+            {21, "Milabrega's Orb"},
+            {22, "Milabrega's Rod"},
+            {23, "Milabrega's Diadem"},
+            {24, "Milabrega's Robe"},
+            {25, "Cathan's Rule"},
+            {26, "Cathan's Mesh"},
+            {27, "Cathan's Visage"},
+            {28, "Cathan's Sigil"},
+            {29, "Cathan's Seal"},
+            {30, "Tancred's Crowbill"},
+            {31, "Tancred's Spine"},
+            {32, "Tancred's Hobnails"},
+            {33, "Tancred's Weird"},
+            {34, "Tancred's Skull"},
+            {35, "Sigon's Gage"},
+            {36, "Sigon's Visor"},
+            {37, "Sigon's Shelter"},
+            {38, "Sigon's Sabot"},
+            {39, "Sigon's Wrap"},
+            {40, "Sigon's Guard"},
+            {41, "Infernal Cranium"},
+            {42, "Infernal Torch"},
+            {43, "Infernal Sign"},
+            {44, "Berserker's Headgear"},
+            {45, "Berserker's Hauberk"},
+            {46, "Berserker's Hatchet"},
+            {47, "Death's Hand"},
+            {48, "Death's Guard"},
+            {49, "Death's Touch"},
+            {50, "Angelic Sickle"},
+            {51, "Angelic Mantle"},
+            {52, "Angelic Halo"},
+            {53, "Angelic Wings"},
+            {54, "Arctic Horn"},
+            {55, "Arctic Furs"},
+            {56, "Arctic Binding"},
+            {57, "Arctic Mitts"},
+            {58, "Arcanna's Sign"},
+            {59, "Arcanna's Deathwand"},
+            {60, "Arcanna's Head"},
+            {61, "Arcanna's Flesh"},
+            {62, "Natalya's Totem"},
+            {63, "Natalya's Mark"},
+            {64, "Natalya's Shadow"},
+            {65, "Natalya's Soul"},
+            {66, "Aldur's Stony Gaze"},
+            {67, "Aldur's Deception"},
+            {68, "Aldur's Gauntlet"},
+            {69, "Aldur's Advance"},
+            {70, "Immortal King's Will"},
+            {71, "Immortal King's Soul Cage"},
+            {72, "Immortal King's Detail"},
+            {73, "Immortal King's Forge"},
+            {74, "Immortal King's Pillar"},
+            {75, "Immortal King's Stone Crusher"},
+            {76, "Tal Rasha's Fire-Spun Cloth"},
+            {77, "Tal Rasha's Adjudication"},
+            {78, "Tal Rasha's Lidless Eye"},
+            {79, "Tal Rasha's Howling Wind"},
+            {80, "Tal Rasha's Horadric Crest"},
+            {81, "Griswold's Valor"},
+            {82, "Griswold's Heart"},
+            {83, "Griswolds's Redemption"},
+            {84, "Griswold's Honor"},
+            {85, "Trang-Oul's Guise"},
+            {86, "Trang-Oul's Scales"},
+            {87, "Trang-Oul's Wing"},
+            {88, "Trang-Oul's Claws"},
+            {89, "Trang-Oul's Girth"},
+            {90, "M'avina's True Sight"},
+            {91, "M'avina's Embrace"},
+            {92, "M'avina's Icy Clutch"},
+            {93, "M'avina's Tenet"},
+            {94, "M'avina's Caster"},
+            {95, "Telling of Beads"},
+            {96, "Laying of Hands"},
+            {97, "Rite of Passage"},
+            {98, "Spiritual Custodian"},
+            {99, "Credendum"},
+            {100, "Dangoon's Teaching"},
+            {101, "Heaven's Taebaek"},
+            {102, "Haemosu's Adament"},
+            {103, "Ondal's Almighty"},
+            {104, "Guillaume's Face"},
+            {105, "Wilhelm's Pride"},
+            {106, "Magnus' Skin"},
+            {107, "Wihtstan's Guard"},
+            {108, "Hwanin's Splendor"},
+            {109, "Hwanin's Refuge"},
+            {110, "Hwanin's Seal"},
+            {111, "Hwanin's Justice"},
+            {112, "Sazabi's Cobalt Redeemer"},
+            {113, "Sazabi's Ghost Liberator"},
+            {114, "Sazabi's Mental Sheath"},
+            {115, "Bul-Kathos' Sacred Charge"},
+            {116, "Bul-Kathos' Tribal Guardian"},
+            {117, "Cow King's Horns"},
+            {118, "Cow King's Hide"},
+            {119, "Cow King's Hoofs"},
+            {120, "Naj's Puzzler"},
+            {121, "Naj's Light Plate"},
+            {122, "Naj's Circlet"},
+            {123, "McAuley's Paragon"},
+            {124, "McAuley's Riprap"},
+            {125, "McAuley's Taboo"},
+            {126, "McAuley's Superstition"}
+        };
+
+        public static readonly Dictionary<uint, string> _UniqueFromId = new Dictionary<uint, string>()
+        {
+            {0, "The Gnasher"},
+            {1, "Deathspade"},
+            {2, "Bladebone"},
+            {3, "Mindrend"},
+            {4, "Rakescar"},
+            {5, "Fechmars Axe"},
+            {6, "Goreshovel"},
+            {7, "The Chieftan"},
+            {8, "Brainhew"},
+            {9, "The Humongous"},
+            {10, "Iros Torch"},
+            {11, "Maelstromwrath"},
+            {12, "Gravenspine"},
+            {13, "Umes Lament"},
+            {14, "Felloak"},
+            {15, "Knell Striker"},
+            {16, "Rusthandle"},
+            {17, "Stormeye"},
+            {18, "Stoutnail"},
+            {19, "Crushflange"},
+            {20, "Bloodrise"},
+            {21, "The Generals Tan Do Li Ga"},
+            {22, "Ironstone"},
+            {23, "Bonesob"},
+            {24, "Steeldriver"},
+            {25, "Rixots Keen"},
+            {26, "Blood Crescent"},
+            {27, "Krintizs Skewer"},
+            {28, "Gleamscythe"},
+            {29, "Azurewrath"},
+            {30, "Griswolds Edge"},
+            {31, "Hellplague"},
+            {32, "Culwens Point"},
+            {33, "Shadowfang"},
+            {34, "Soulflay"},
+            {35, "Kinemils Awl"},
+            {36, "Blacktongue"},
+            {37, "Ripsaw"},
+            {38, "The Patriarch"},
+            {39, "Gull"},
+            {40, "The Diggler"},
+            {41, "The Jade Tan Do"},
+            {42, "Irices Shard"},
+            {43, "The Dragon Chang"},
+            {44, "Razortine"},
+            {45, "Bloodthief"},
+            {46, "Lance of Yaggai"},
+            {47, "The Tannr Gorerod"},
+            {48, "Dimoaks Hew"},
+            {49, "Steelgoad"},
+            {50, "Soul Harvest"},
+            {51, "The Battlebranch"},
+            {52, "Woestave"},
+            {53, "The Grim Reaper"},
+            {54, "Bane Ash"},
+            {55, "Serpent Lord"},
+            {56, "Lazarus Spire"},
+            {57, "The Salamander"},
+            {58, "The Iron Jang Bong"},
+            {59, "Pluckeye"},
+            {60, "Witherstring"},
+            {61, "Rimeraven"},
+            {62, "Piercerib"},
+            {63, "Pullspite"},
+            {64, "Wizendraw"},
+            {65, "Hellclap"},
+            {66, "Blastbark"},
+            {67, "Leadcrow"},
+            {68, "Ichorsting"},
+            {69, "Hellcast"},
+            {70, "Doomspittle"},
+            {71, "War Bonnet"},
+            {72, "Tarnhelm"},
+            {73, "Coif of Glory"},
+            {74, "Duskdeep"},
+            {75, "Wormskull"},
+            {76, "Howltusk"},
+            {77, "Undead Crown"},
+            {78, "The Face of Horror"},
+            {79, "Greyform"},
+            {80, "Blinkbats Form"},
+            {81, "The Centurion"},
+            {82, "Twitchthroe"},
+            {83, "Darkglow"},
+            {84, "Hawkmail"},
+            {85, "Sparking Mail"},
+            {86, "Venomsward"},
+            {87, "Iceblink"},
+            {88, "Boneflesh"},
+            {89, "Rockfleece"},
+            {90, "Rattlecage"},
+            {91, "Goldskin"},
+            {92, "Victors Silk"},
+            {93, "Heavenly Garb"},
+            {94, "Pelta Lunata"},
+            {95, "Umbral Disk"},
+            {96, "Stormguild"},
+            {97, "Wall of the Eyeless"},
+            {98, "Swordback Hold"},
+            {99, "Steelclash"},
+            {100, "Bverrit Keep"},
+            {101, "The Ward"},
+            {102, "The Hand of Broc"},
+            {103, "Bloodfist"},
+            {104, "Chance Guards"},
+            {105, "Magefist"},
+            {106, "Frostburn"},
+            {107, "Hotspur"},
+            {108, "Gorefoot"},
+            {109, "Treads of Cthon"},
+            {110, "Goblin Toe"},
+            {111, "Tearhaunch"},
+            {112, "Lenyms Cord"},
+            {113, "Snakecord"},
+            {114, "Nightsmoke"},
+            {115, "Goldwrap"},
+            {116, "Bladebuckle"},
+            {117, "Nokozan Relic"},
+            {118, "The Eye of Etlich"},
+            {119, "The Mahim-Oak Curio"},
+            {120, "Nagelring"},
+            {121, "Manald Heal"},
+            {122, "The Stone of Jordan"},
+            {123, "Amulet of the Viper"},
+            {124, "Staff of Kings"},
+            {125, "Horadric Staff"},
+            {126, "Hell Forge Hammer"},
+            {127, "KhalimFlail"},
+            {128, "SuperKhalimFlail"},
+            {129, "Coldkill"},
+            {130, "Butcher's Pupil"},
+            {131, "Islestrike"},
+            {132, "Pompe's Wrath"},
+            {133, "Guardian Naga"},
+            {134, "Warlord's Trust"},
+            {135, "Spellsteel"},
+            {136, "Stormrider"},
+            {137, "Boneslayer Blade"},
+            {138, "The Minataur"},
+            {139, "Suicide Branch"},
+            {140, "Carin Shard"},
+            {141, "Arm of King Leoric"},
+            {142, "Blackhand Key"},
+            {143, "Dark Clan Crusher"},
+            {144, "Zakarum's Hand"},
+            {145, "The Fetid Sprinkler"},
+            {146, "Hand of Blessed Light"},
+            {147, "Fleshrender"},
+            {148, "Sureshrill Frost"},
+            {149, "Moonfall"},
+            {150, "Baezil's Vortex"},
+            {151, "Earthshaker"},
+            {152, "Bloodtree Stump"},
+            {153, "The Gavel of Pain"},
+            {154, "Bloodletter"},
+            {155, "Coldsteel Eye"},
+            {156, "Hexfire"},
+            {157, "Blade of Ali Baba"},
+            {158, "Ginther's Rift"},
+            {159, "Headstriker"},
+            {160, "Plague Bearer"},
+            {161, "The Atlantian"},
+            {162, "Crainte Vomir"},
+            {163, "Bing Sz Wang"},
+            {164, "The Vile Husk"},
+            {165, "Cloudcrack"},
+            {166, "Todesfaelle Flamme"},
+            {167, "Swordguard"},
+            {168, "Spineripper"},
+            {169, "Heart Carver"},
+            {170, "Blackbog's Sharp"},
+            {171, "Stormspike"},
+            {172, "The Impaler"},
+            {173, "Kelpie Snare"},
+            {174, "Soulfeast Tine"},
+            {175, "Hone Sundan"},
+            {176, "Spire of Honor"},
+            {177, "The Meat Scraper"},
+            {178, "Blackleach Blade"},
+            {179, "Athena's Wrath"},
+            {180, "Pierre Tombale Couant"},
+            {181, "Husoldal Evo"},
+            {182, "Grim's Burning Dead"},
+            {183, "Razorswitch"},
+            {184, "Ribcracker"},
+            {185, "Chromatic Ire"},
+            {186, "Warpspear"},
+            {187, "Skullcollector"},
+            {188, "Skystrike"},
+            {189, "Riphook"},
+            {190, "Kuko Shakaku"},
+            {191, "Endlesshail"},
+            {192, "Whichwild String"},
+            {193, "Cliffkiller"},
+            {194, "Magewrath"},
+            {195, "Godstrike Arch"},
+            {196, "Langer Briser"},
+            {197, "Pus Spiter"},
+            {198, "Buriza-Do Kyanon"},
+            {199, "Demon Machine"},
+            {201, "Peasent Crown"},
+            {202, "Rockstopper"},
+            {203, "Stealskull"},
+            {204, "Darksight Helm"},
+            {205, "Valkiry Wing"},
+            {206, "Crown of Thieves"},
+            {207, "Blackhorn's Face"},
+            {208, "Vampiregaze"},
+            {209, "The Spirit Shroud"},
+            {210, "Skin of the Vipermagi"},
+            {211, "Skin of the Flayerd One"},
+            {212, "Ironpelt"},
+            {213, "Spiritforge"},
+            {214, "Crow Caw"},
+            {215, "Shaftstop"},
+            {216, "Duriel's Shell"},
+            {217, "Skullder's Ire"},
+            {218, "Guardian Angel"},
+            {219, "Toothrow"},
+            {220, "Atma's Wail"},
+            {221, "Black Hades"},
+            {222, "Corpsemourn"},
+            {223, "Que-Hegan's Wisdon"},
+            {224, "Visceratuant"},
+            {225, "Mosers Blessed Circle"},
+            {226, "Stormchaser"},
+            {227, "Tiamat's Rebuke"},
+            {228, "Kerke's Sanctuary"},
+            {229, "Radimant's Sphere"},
+            {230, "Lidless Wall"},
+            {231, "Lance Guard"},
+            {232, "Venom Grip"},
+            {233, "Gravepalm"},
+            {234, "Ghoulhide"},
+            {235, "Lavagout"},
+            {236, "Hellmouth"},
+            {237, "Infernostride"},
+            {238, "Waterwalk"},
+            {239, "Silkweave"},
+            {240, "Wartraveler"},
+            {241, "Gorerider"},
+            {242, "String of Ears"},
+            {243, "Razortail"},
+            {244, "Gloomstrap"},
+            {245, "Snowclash"},
+            {246, "Thudergod's Vigor"},
+            {248, "Harlequin Crest"},
+            {249, "Veil of Steel"},
+            {250, "The Gladiator's Bane"},
+            {251, "Arkaine's Valor"},
+            {252, "Blackoak Shield"},
+            {253, "Stormshield"},
+            {254, "Hellslayer"},
+            {255, "Messerschmidt's Reaver"},
+            {256, "Baranar's Star"},
+            {257, "Schaefer's Hammer"},
+            {258, "The Cranium Basher"},
+            {259, "Lightsabre"},
+            {260, "Doombringer"},
+            {261, "The Grandfather"},
+            {262, "Wizardspike"},
+            {263, "Constricting Ring"},
+            {264, "Stormspire"},
+            {265, "Eaglehorn"},
+            {266, "Windforce"},
+            {268, "Bul Katho's Wedding Band"},
+            {269, "The Cat's Eye"},
+            {270, "The Rising Sun"},
+            {271, "Crescent Moon"},
+            {272, "Mara's Kaleidoscope"},
+            {273, "Atma's Scarab"},
+            {274, "Dwarf Star"},
+            {275, "Raven Frost"},
+            {276, "Highlord's Wrath"},
+            {277, "Saracen's Chance"},
+            {279, "Arreat's Face"},
+            {280, "Homunculus"},
+            {281, "Titan's Revenge"},
+            {282, "Lycander's Aim"},
+            {283, "Lycander's Flank"},
+            {284, "The Oculus"},
+            {285, "Herald of Zakarum"},
+            {286, "Cutthroat1"},
+            {287, "Jalal's Mane"},
+            {288, "The Scalper"},
+            {289, "Bloodmoon"},
+            {290, "Djinnslayer"},
+            {291, "Deathbit"},
+            {292, "Warshrike"},
+            {293, "Gutsiphon"},
+            {294, "Razoredge"},
+            {295, "Gore Ripper"},
+            {296, "Demonlimb"},
+            {297, "Steelshade"},
+            {298, "Tomb Reaver"},
+            {299, "Deaths's Web"},
+            {300, "Nature's Peace"},
+            {301, "Azurewrath"},
+            {302, "Seraph's Hymn"},
+            {303, "Zakarum's Salvation"},
+            {304, "Fleshripper"},
+            {305, "Odium"},
+            {306, "Horizon's Tornado"},
+            {307, "Stone Crusher"},
+            {308, "Jadetalon"},
+            {309, "Shadowdancer"},
+            {310, "Cerebus"},
+            {311, "Tyrael's Might"},
+            {312, "Souldrain"},
+            {313, "Runemaster"},
+            {314, "Deathcleaver"},
+            {315, "Executioner's Justice"},
+            {316, "Stoneraven"},
+            {317, "Leviathan"},
+            {318, "Larzuk's Champion"},
+            {319, "Wisp"},
+            {320, "Gargoyle's Bite"},
+            {321, "Lacerator"},
+            {322, "Mang Song's Lesson"},
+            {323, "Viperfork"},
+            {324, "Ethereal Edge"},
+            {325, "Demonhorn's Edge"},
+            {326, "The Reaper's Toll"},
+            {327, "Spiritkeeper"},
+            {328, "Hellrack"},
+            {329, "Alma Negra"},
+            {330, "Darkforge Spawn"},
+            {331, "Widowmaker"},
+            {332, "Bloodraven's Charge"},
+            {333, "Ghostflame"},
+            {334, "Shadowkiller"},
+            {335, "Gimmershred"},
+            {336, "Griffon's Eye"},
+            {337, "Windhammer"},
+            {338, "Thunderstroke"},
+            {339, "Giantmaimer"},
+            {340, "Demon's Arch"},
+            {341, "Boneflame"},
+            {342, "Steelpillar"},
+            {343, "Nightwing's Veil"},
+            {344, "Crown of Ages"},
+            {345, "Andariel's Visage"},
+            {346, "Darkfear"},
+            {347, "Dragonscale"},
+            {348, "Steel Carapice"},
+            {349, "Medusa's Gaze"},
+            {350, "Ravenlore"},
+            {351, "Boneshade"},
+            {352, "Nethercrow"},
+            {353, "Flamebellow"},
+            {354, "Fathom"},
+            {355, "Wolfhowl"},
+            {356, "Spirit Ward"},
+            {357, "Kira's Guardian"},
+            {358, "Ormus' Robes"},
+            {359, "Gheed's Fortune"},
+            {360, "Stormlash"},
+            {361, "Halaberd's Reign"},
+            {362, "Warriv's Warder"},
+            {363, "Spike Thorn"},
+            {364, "Dracul's Grasp"},
+            {365, "Frostwind"},
+            {366, "Templar's Might"},
+            {367, "Eschuta's temper"},
+            {368, "Firelizard's Talons"},
+            {369, "Sandstorm Trek"},
+            {370, "Marrowwalk"},
+            {371, "Heaven's Light"},
+            {372, "Merman's Speed"},
+            {373, "Arachnid Mesh"},
+            {374, "Nosferatu's Coil"},
+            {375, "Metalgrid"},
+            {376, "Verdugo's Hearty Cord"},
+            {377, "Sigurd's Staunch"},
+            {378, "Carrion Wind"},
+            {379, "Giantskull"},
+            {380, "Ironward"},
+            {381, "Annihilus"},
+            {382, "Arioc's Needle"},
+            {383, "Cranebeak"},
+            {384, "Nord's Tenderizer"},
+            {385, "Earthshifter"},
+            {386, "Wraithflight"},
+            {387, "Bonehew"},
+            {388, "Ondal's Wisdom"},
+            {389, "The Reedeemer"},
+            {390, "Headhunter's Glory"},
+            {391, "Steelrend"},
+            {392, "Rainbow Facet"},
+            {393, "Rainbow Facet"},
+            {394, "Rainbow Facet"},
+            {395, "Rainbow Facet"},
+            {396, "Rainbow Facet"},
+            {397, "Rainbow Facet"},
+            {398, "Rainbow Facet"},
+            {399, "Rainbow Facet"},
+            {400, "Hellfire Torch"}
         };
 
         public static readonly Dictionary<string, string> _SetFromCode = new Dictionary<string, string>()
@@ -1777,14 +2407,25 @@ namespace MapAssist.Types
 
     public class ItemLogEntry
     {
-        public string Text { get; set; }
-        public Color Color { get; set; }
+        public string Text => Items.ItemLogDisplayName(UnitItem, Rule, ProcessId, LogDate);
         public DateTime LogDate { get; private set; } = DateTime.Now;
-        public bool ItemLogExpired { get => DateTime.Now.Subtract(LogDate).TotalSeconds > MapAssistConfiguration.Loaded.ItemLog.DisplayForSeconds; }
+        public bool ItemLogExpired => DateTime.Now.Subtract(LogDate).TotalSeconds > MapAssistConfiguration.Loaded.ItemLog.DisplayForSeconds;
         public string ItemHashString { get; set; }
-        public string ShowOnMap { get; set; }
         public UnitItem UnitItem { get; set; }
         public ItemFilter Rule { get; set; }
+        public Area Area { get; set; }
+        public int ProcessId { get; set; }
+    }
+
+    public static class ItemExtensions
+    {
+        public static bool IsHealthPotion(this Item item) => item >= Item.MinorHealingPotion && item <= Item.SuperHealingPotion;
+
+        public static bool IsManaPotion(this Item item) => item >= Item.MinorManaPotion && item <= Item.SuperManaPotion;
+
+        public static bool IsRejuvPotion(this Item item) => item >= Item.RejuvenationPotion && item <= Item.FullRejuvenationPotion;
+
+        public static bool IsTopTierPotion(this Item item) => new Item[] { Item.SuperHealingPotion, Item.SuperManaPotion, Item.FullRejuvenationPotion }.Contains(item);
     }
 
     [Flags]
@@ -1829,7 +2470,7 @@ namespace MapAssist.Types
         SET = 0x05, //0x05 Set
         RARE = 0x06, //0x06 Rare
         UNIQUE = 0x07, //0x07 Unique
-        CRAFT = 0x08, //0x08 Crafted
+        CRAFTED = 0x08, //0x08 Crafted
         TEMPERED = 0x09 //0x09 Tempered
     }
 
@@ -1894,6 +2535,7 @@ namespace MapAssist.Types
         Mercenary,
         Socket,
         Ground,
+        Selected,
         Unknown
     };
 
@@ -2606,5 +3248,14 @@ namespace MapAssist.Types
         Exceptional,
         Elite,
         NotApplicable
+    }
+
+    public enum StashTab
+    {
+        None,
+        Personal,
+        Shared1,
+        Shared2,
+        Shared3
     }
 }

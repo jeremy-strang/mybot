@@ -147,16 +147,6 @@ MyBot is memory-reading bot for Diablo 2 Resurrected. This is was originally bui
 | vigor          | Optional Hotkey for Vigor                                                           |
 | cleansing      | Optional Hotkey for Cleansing                                                       |
 
-| [trapsin]    | Descriptions                                                                          |
-| -------------- | ----------------------------------------------------------------------------------- |
-| teleport       | Optional Hotkey for teleport. If left empty trapsin will run instead of teleport.   |
-| skill_left     | Optional Hotkey for Left Skill                                                      |
-| burst_of_speed | Optional Hotkey for Burst of Speed                                                  |
-| fade           | Optional Hotkey for Fade                                                            |
-| shadow_warrior | Optional Hotkey for Shadow Warrior                                                  |
-| lightning_sentry | Required Hotkey for Lightning Sentry                                              |
-| death_sentry   | Required Hotkey for Death Sentry                                                    |
-
 | [barbarian]    | Descriptions                                                                        |
 | -------------- | ----------------------------------------------------------------------------------- |
 | teleport       | Optional Hotkey for teleport. If left empty barb will run instead of teleport.      |
@@ -165,23 +155,6 @@ MyBot is memory-reading bot for Diablo 2 Resurrected. This is was originally bui
 | war_cry        | Required Hotkey for War Cry                                                         |
 | find_item      | Optional Hotkey for Find Item                                                       |
 | cry_frequency  | Time in seconds between each cast of war_cry. Set to 0.0 if max fcr should be used  |
-
-| [Necro]        | Descriptions                                                                        |
-| -------------- | ----------------------------------------------------------------------------------- |
-| teleport       | leave this blank for now, teleport/static pathing is currently not supported        |
-| skill_left     | Required Hotkey for attack (bonespear/teeth)                                        |
-| bone_armor     | Required Hotkey for Bone Armor                                                      |
-| clay_golem     | Required Hotkey for Clay Golem                                                      |
-| raise_skeleton | Required Hotkey for Raise Skeleton                                                  |
-| amp_dmg        | Required Hotkey for Amplify Damage                                                  |
-| corpse_explosion | Required Hotkey Corpse Explosion                                                  |
-| raise_revive   | Required Hotkey revive                                                              |
-| clear_pindle_packs | clears mobs before pindle                                                       |
-
-| [dclone]             | Descriptions                                                          |
-| -------------------- | --------------------------------------------------------------------- |
-| region_ips           | Start of the region ip you want to filter for. e.g. EU Server = 37.244.11, 37.244.48 |
-| dclone_hotip         | Hot ip you are looking for. MyBot will stay in game and message you if a message_hook is set |
 
 | [advanced_options]   | Descriptions                                                          |
 | -------------------- | --------------------------------------------------------------------- |

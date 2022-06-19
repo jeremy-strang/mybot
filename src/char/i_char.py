@@ -38,6 +38,7 @@ class IChar:
                  old_pather: OldPather,
                  pather: Pather
                 ):
+        self.is_walking = True
         self._skill_hotkeys = skill_hotkeys
         self._char_config = Config().char
         self._template_finder = template_finder
@@ -54,19 +55,21 @@ class IChar:
         self._cast_duration = self._char_config["casting_frames"] * 0.04 + 0.02
         self._stats_with_weapon_tab1 = None
         self._stats_with_weapon_tab2 = None
-        self.can_tp = type(self._skill_hotkeys["teleport"]) is str and len(self._skill_hotkeys["teleport"]) > 0
+        self.can_tp = True if self._skill_hotkeys["teleport"] else False
         self.can_tp_with_charges = False
 
     def discover_capabilities(self):
         can_tp = self.can_tp
         can_tp_with_charges = False
         if self._skill_hotkeys["teleport"]:
-            if self.select_tp():
-                wait(0.1)
-                if self.skill_is_charged():
-                    can_tp_with_charges = True
-                else:
-                    can_tp = True
+            # TODO - update this to correctly detect charged TP
+            can_tp = True
+            # if self.select_tp():
+            #     wait(0.1)
+            #     if self.skill_is_charged():
+            #         can_tp_with_charges = True
+            #     else:
+            #         can_tp = True
         self.can_tp = can_tp
         self.can_tp_with_charges = can_tp_with_charges
         self._cast_duration = self.get_cast_frames() * 0.04 + 0.02
@@ -100,6 +103,7 @@ class IChar:
         return self._char_config["casting_frames"]
 
     def verify_active_weapon_tab(self) -> bool:
+        self._ui_manager.hide_legacy()
         active_weapon_tab = self.get_active_weapon_tab()
         if active_weapon_tab == -1:
             wait(0.3, 0.4)
@@ -120,7 +124,7 @@ class IChar:
             stats_dict = {}
             for stat_pair in data["player_stats"]:
                 key = stat_pair["key"]
-                if key in ["Strength", "Dexterity", "Vitality", "Energy"]:
+                if key in ["Strength", "Dexterity", "Vitality", "Energy", "FasterCastRate", "MagicFind"]:
                     stats_dict[key] = stat_pair["value"]
             return stats_dict
         return None
@@ -138,26 +142,32 @@ class IChar:
         data = self._api.get_data()
         if data is None or (not tab1_was_stored and not tab2_was_stored): return -1
         stats_dict = self._build_stats_dict_for_weapon_tab_detection()
-        strength = stats_dict["Strength"]
-        dexterity = stats_dict["Dexterity"]
-        energy = stats_dict["Energy"]
-        vitality = stats_dict["Vitality"]
+        strength = stats_dict["Strength"] if "Strength" in stats_dict else 0
+        dexterity = stats_dict["Dexterity"] if "Dexterity" in stats_dict else 0
+        energy = stats_dict["Energy"] if "Energy" in stats_dict else 0
+        vitality = stats_dict["Vitality"] if "Vitality" in stats_dict else 0
+        fcr = stats_dict["FasterCastRate"] if "FasterCastRate" in stats_dict else 0
+        mf = stats_dict["MagicFind"] if "MagicFind" in stats_dict else 0
         tab1_match = False
 
-        if tab1_was_stored and \
-            strength == self._stats_with_weapon_tab1["Strength"] and \
-            dexterity == self._stats_with_weapon_tab1["Dexterity"] and \
-            energy == self._stats_with_weapon_tab1["Energy"] and \
-            vitality == self._stats_with_weapon_tab1["Vitality"]:
+        if tab1_was_stored and self._stats_with_weapon_tab1 and \
+            strength == (self._stats_with_weapon_tab1["Strength"] if "Strength" in self._stats_with_weapon_tab1 else 0) and \
+            dexterity == (self._stats_with_weapon_tab1["Dexterity"] if "Dexterity" in self._stats_with_weapon_tab1 else 0) and \
+            energy == (self._stats_with_weapon_tab1["Energy"] if "Energy" in self._stats_with_weapon_tab1 else 0) and \
+            vitality == (self._stats_with_weapon_tab1["Vitality"] if "Vitality" in self._stats_with_weapon_tab1 else 0) and \
+            fcr == (self._stats_with_weapon_tab1["FasterCastRate"] if "FasterCastRate" in self._stats_with_weapon_tab1 else 0) and \
+            mf == (self._stats_with_weapon_tab1["MagicFind"] if "MagicFind" in self._stats_with_weapon_tab1 else 0):
             Logger.info(f"Detected weapon tab 1 based on stats in memory")
             tab1_match = True
         tab2_match = False
 
-        if tab2_was_stored and \
-            strength == self._stats_with_weapon_tab2["Strength"] and \
-            dexterity == self._stats_with_weapon_tab2["Dexterity"] and \
-            energy == self._stats_with_weapon_tab2["Energy"] and \
-            vitality == self._stats_with_weapon_tab2["Vitality"]:
+        if tab2_was_stored and self._stats_with_weapon_tab2 and \
+            strength == (self._stats_with_weapon_tab2["Strength"] if "Strength" in self._stats_with_weapon_tab2 else 0) and \
+            dexterity == (self._stats_with_weapon_tab2["Dexterity"] if "Dexterity" in self._stats_with_weapon_tab2 else 0) and \
+            energy == (self._stats_with_weapon_tab2["Energy"] if "Energy" in self._stats_with_weapon_tab2 else 0) and \
+            vitality == (self._stats_with_weapon_tab2["Vitality"] if "Vitality" in self._stats_with_weapon_tab2 else 0) and \
+            fcr == (self._stats_with_weapon_tab2["FasterCastRate"] if "FasterCastRate" in self._stats_with_weapon_tab2 else 0) and \
+            mf == (self._stats_with_weapon_tab2["MagicFind"] if "MagicFind" in self._stats_with_weapon_tab2 else 0):
             Logger.info(f"Detected weapon tab 2 based on stats in memory")
             tab2_match = True
 
@@ -172,9 +182,10 @@ class IChar:
         if active_slot != -1: return active_slot
 
         #Check to make sure we are on our main weapon set in slot 1, and not the secondary set in slot 2
+        wait(0.1)
         data = self._api.data
         if data and not data["inventory_open"]:
-            if data["any_menu_open"]:
+            if data["esc_menu_open"]:
                 keyboard.send("esc")
                 wait(0.15, 0.2)
             wait(0.06, 0.08)
@@ -228,14 +239,6 @@ class IChar:
         threshold: float = 0.68,
         telekinesis: bool = False
     ) -> bool:
-        """
-        Finds any template from the template finder and interacts with it
-        :param template_type: Strings or list of strings of the templates that should be searched for
-        :param success_func: Function that will return True if the interaction is successful e.g. return True when loading screen is reached, defaults to None
-        :param time_out: Timeout for the whole template selection, defaults to None
-        :param threshold: Threshold which determines if a template is found or not. None will use default form .ini files
-        :return: True if success. False otherwise
-        """
         if type(template_type) == list and "A5_STASH" in template_type:
             # sometimes waypoint is opened and stash not found because of that, check for that
             if self._template_finder.search("WAYPOINT_MENU", self._screen.grab()).valid:
@@ -257,13 +260,6 @@ class IChar:
         return False
 
     def skill_is_charged(self, img: np.ndarray = None) -> bool:
-        # if img is None:
-        #     img = self._screen.grab()
-        # skill_img = cut_roi(img, self._config.ui_roi["skill_right"])
-        # charge_mask, _ = color_filter(skill_img, self._config.colors["blue"])
-        # if np.sum(charge_mask) > 0:
-        #     return True
-        # return False
         data = self._api.data
         if data != None and "right_skill_data" in data:
             skill_data = data["right_skill_data"]
@@ -303,13 +299,9 @@ class IChar:
         return self._remap_skill_hotkey(skill_asset, hotkey, self._config.ui_roi["skill_right"], self._config.ui_roi["skill_right_expanded"])
 
     def select_tp(self):
-        # if self._skill_hotkeys["teleport"] and not self._ui_manager.is_right_skill_selected(["TELE_ACTIVE", "TELE_INACTIVE"]):
-        #     keyboard.send(self._skill_hotkeys["teleport"])
-        #     wait(0.1, 0.2)
-        # return self._ui_manager.is_right_skill_selected(["TELE_ACTIVE", "TELE_INACTIVE"])
-        if self._skill_hotkeys["teleport"] and not self._ui_manager.is_right_skill_selected(Skill.Teleport):
+        if self._skill_hotkeys["teleport"]: # and not self._ui_manager.is_right_skill_selected(Skill.Teleport):
             keyboard.send(self._skill_hotkeys["teleport"])
-            wait(0.2, 0.25)
+            wait(0.1, 0.15)
         return self._ui_manager.is_right_skill_selected(Skill.Teleport)
 
     def get_skill_charges(self, img: np.ndarray = None):
@@ -343,19 +335,21 @@ class IChar:
             return None
 
     def pre_move(self):
-        # if teleport hotkey is set and if teleport is not already selected
-        if self.can_tp:
-            self.select_tp()
+        pass
+        # if self.can_tp:
+        #     self.select_tp()
 
     def hold_move(self, pos_monitor: Tuple[float, float], force_tp: bool = False, force_move: bool = False):
         mouse.move(*pos_monitor, delay_factor = [.02,.04])
 
     def move(self, pos_monitor: Tuple[float, float], force_tp: bool = False, force_move: bool = True):
         factor = self._config.advanced_options["pathing_delay_factor"]
-        if self._skill_hotkeys["teleport"] and (force_tp or (self._ui_manager.is_right_skill_selected(Skill.Teleport) and self._ui_manager.is_right_skill_active())):
+
+        if self.can_tp and not self._api.in_town: # self._skill_hotkeys["teleport"] and (force_tp or (self._ui_manager.is_right_skill_selected(Skill.Teleport) and self._ui_manager.is_right_skill_active())):
             mouse.move(pos_monitor[0], pos_monitor[1], randomize=2, delay_factor=[0.01, 0.02])
             wait(0.02, 0.03)
-            mouse.click(button="right")
+            # mouse.click(button="right")
+            keyboard.send(self._skill_hotkeys["teleport"])
             wait(self._cast_duration, self._cast_duration + 0.01)
         else:
             # in case we want to walk we actually want to move a bit before the point cause d2r will always "overwalk"
@@ -394,7 +388,7 @@ class IChar:
             return False
         keyboard.send(self._config.char["tp"])
         wait(0.1, 0.15)
-        mouse.click(button="right")
+        # mouse.click(button="right")
         wait(self._cast_duration)
         return True
 
@@ -489,9 +483,10 @@ class IChar:
     def cast_aoe(self, skill_hotkey: str, button="right"):
         if button == "left":
             keyboard.send(self._char_config["stand_still"], do_release=False)
-        keyboard.send(self._skill_hotkeys[skill_hotkey])
-        wait(0.02, 0.03)
-        mouse.click(button=button)
+        else:
+            keyboard.send(self._skill_hotkeys[skill_hotkey])
+        # wait(0.02, 0.03)
+        # mouse.click(button=button)
         wait(self._cast_duration + 0.01)
         if button == "left":
             keyboard.release(self._char_config["stand_still"])
@@ -501,19 +496,20 @@ class IChar:
         mouse_pos_m = self._screen.convert_abs_to_monitor(abs_screen_pos)
         Logger.debug(f"Casting {skill_key} in the direction of ({round(mouse_pos_m[0], 2)}, {round(mouse_pos_m[0], 2)})")
         if self._skill_hotkeys[skill_key]:
-            keyboard.send(self._skill_hotkeys[skill_key])
-            wait(0.05)
+            # keyboard.send(self._skill_hotkeys[skill_key])
+            # wait(0.05)
             mouse.move(*mouse_pos_m, delay_factor=[0.2, 0.4])
             keyboard.send(self._char_config["stand_still"], do_release=False)
             start = time.time()
             while (time.time() - start) < time_in_s:
-                wait(0.06, 0.08)
-                mouse.press(button=mouse_button)
-                wait(0.1, 0.2)
-                mouse.release(button=mouse_button)
+                keyboard.send(self._skill_hotkeys[skill_key])
+                # wait(0.05, 0.06)
+                # mouse.press(button=mouse_button)
+                # wait(0.1, 0.2)
+                # mouse.release(button=mouse_button)
             keyboard.send(self._char_config["stand_still"], do_press=False)
     
-    def tele_stomp_monster(self,
+    def attack_melee_range(self,
                            skill_key: str,
                            time_in_s: float,
                            monster: dict,
@@ -527,16 +523,17 @@ class IChar:
                 mid = monster['id']
                 Logger.debug(f"    Attacking {monster['type']} monster '{monster['name']}' (ID: {mid}) with {skill_key}, distance: {round(monster['dist'], 1)}, pos: {point_str(monster['position_area'])}")
                 keyboard.send(self._char_config["stand_still"], do_release=False)
-                wait(0.04, 0.05)
-                keyboard.send(self._skill_hotkeys[skill_key])
-                wait(0.04, 0.05)
+                # wait(0.04, 0.05)
+                # keyboard.send(self._skill_hotkeys[skill_key])
+                # wait(0.04, 0.05)
                 start = time.time()
                 while (time.time() - start) < time_in_s:
                     monster = self._api.find_monster(mid)
                     if monster is None: break
                     self._pather.move_mouse_to_monster(monster)
                     wait(0.04, 0.05)
-                    mouse.press(button=mouse_button)
+                    # mouse.press(button=mouse_button)
+                    keyboard.send(self._skill_hotkeys[skill_key])
                     wait(0.04, 0.05)
                     monster = self._api.find_monster(mid)
                     mobs_to_finish = False
@@ -545,11 +542,11 @@ class IChar:
                         if len(monsters_nearby) > max_mobs_left:
                             mobs_to_finish = True
                     if not mobs_to_finish and time.time() - start >= min_attack_time and (monster is None or monster["dist"] > max_distance or \
-                        (monster["mode"] == 12 and stop_when_dead)):
+                        ((monster["mode"] == 12 or monster["heath_percentage"] <= 0.0) and stop_when_dead)):
                         break
-                wait(0.04, 0.05)
-                mouse.release(button=mouse_button)
-                wait(0.04, 0.05)
+                # wait(0.04, 0.05)
+                # mouse.release(button=mouse_button)
+                # wait(0.04, 0.05)
                 keyboard.release(self._config.char["stand_still"])
                 wait(0.04, 0.05)
                 return True
@@ -561,7 +558,8 @@ class IChar:
                    destination = None,
                    pickit_func = None,
                    poi_list: list[str] = None,
-                   poi_callback: Callable[[str], bool] = None) -> int:
+                   poi_callback: Callable[[str], bool] = None,
+                   jump_distance: int = 15) -> int:
         looted_uniques = set()
         picked_up_items = 0
         pf = PathFinder(self._api)
@@ -584,23 +582,25 @@ class IChar:
                     Logger.debug(f"        Replacing node at index {closest_index} with POI {poi['label']}")
                     nodes[closest_index] = poi["position_area"]
                     poi_indices[closest_index] = poi
-
+        wait(0.1)
         for i, node in enumerate(nodes):
             pf.update_map()
             dist = math.dist(pf.player_node, node)
             dest = [node]
-            if dist > 35:
-                route = make_path_bfs(pf.player_node, node, self._api.data["map"]) # pf.make_path_astar(pf.player_node, node, True)
+            if dist > 60:
+                route = pf.make_path_astar(pf.player_node, node, True)
                 split_size = math.floor(len(route) / 3)
                 dest = [route[split_size], route[split_size * 2], route[-1]]
             for n in dest:
-                self._pather.traverse(n, self, 0, do_pre_move=True, obj=False, kill=False, time_out=8.0)
+                Logger.debug(f"    Heading to area node {i} of {len(nodes)}: {point_str(node)}")
+                self._pather.traverse(n, self, 0, do_pre_move=True, obj=False, kill=False, time_out=8.0, slow_finish=False, jump_distance=jump_distance)
                 wait(0.1)
                 picked_up_items += self.kill_uniques(pickit_func, 16.0, looted_uniques, min_attack_time=2)
                 data = self._api.data
                 if data and poi_callback and i in poi_indices:
                     poi = poi_indices[i]
-                    self._pather.traverse(poi["position_area"], self)
+                    self._pather.traverse(poi["position_area"], self, slow_finish=False, jump_distance=jump_distance)
+                    wait(0.1)
                     self._pather.click_poi(poi["label"])
                     picked_up_items += self.kill_uniques(pickit_func, 25.0, looted_uniques, min_attack_time=2)
 
@@ -611,13 +611,13 @@ class IChar:
     def _pre_buff_cta(self, switch_back=True):
         self.switch_weapon()
         keyboard.send(self._char_config["battle_command"])
-        wait(0.04, 0.07)
-        mouse.click(button="right")
-        wait(self._cast_duration, self._cast_duration + 0.03)
+        # wait(0.04, 0.07)
+        # mouse.click(button="right")
+        wait(self._cast_duration, self._cast_duration + 0.02)
         keyboard.send(self._char_config["battle_orders"])
-        wait(0.04, 0.07)
-        mouse.click(button="right")
-        wait(self._cast_duration, self._cast_duration + 0.03)
+        # wait(0.04, 0.07)
+        # mouse.click(button="right")
+        wait(self._cast_duration, self._cast_duration + 0.02)
         # Make sure the switch back to the original weapon is good
         if switch_back:
             self.switch_weapon()
@@ -715,11 +715,48 @@ class IChar:
                 for m in unlooted:
                     if m["dist"] < 15:
                         looted_uniques.add(m["id"])
-                        print(f"Looted champ/unique monster with ID {m['id']}, type: {m['type']}")
+                        Logger.debug(f"Looted champ/unique monster with ID {m['id']}, type: {m['type']}")
                 unlooted = get_unlooted_monsters(self._api, CHAMPS_UNIQUES, looted_uniques, boundary, max_distance=60)
         return picked_up_items
+    
+    def toggle_run_walk(self, should_walk: bool, test_pos_abs=(-230, 180), skip_recursion: bool = False, skip_verification: bool = False) -> bool:
+        Logger.debug(f"toggle_run_walk(): should_walk={should_walk}")
+        wait(0.1)
+        velocity_before = self._api.get_player_stat("VelocityPercent")
+        Logger.debug(f"    toggle_run_walk(): velocity_before={velocity_before}")
+        if self._char_config["toggle_run_walk"]:
+            Logger.debug(f"    toggle_run_walk(): Sending keybind {self._char_config['toggle_run_walk']}")
+            keyboard.send(self._char_config["toggle_run_walk"])
+            wait(0.2)
+            if skip_verification:
+                return True
+        else:
+            Logger.debug("    toggle_run_walk(): keybind not set")
+            return False
+        mouse.move(*self._screen.convert_abs_to_monitor(test_pos_abs), delay_factor=(0.15, 0.2))
+        keyboard.send(self._char_config["force_move"])
+        wait(0.12)
+        velocity_after = self._api.get_player_stat("VelocityPercent")
+        keyboard.send(self._char_config["stand_still"])
+        wait(0.03, 0.05)
+        if velocity_before is not None and velocity_after is not None:
+            is_walking = velocity_after == velocity_before
+            self.is_walking = is_walking
+            if is_walking and should_walk:
+                Logger.debug(f"    toggle_run_walk(): Success! We are now walking")
+                return True
+            elif not is_walking and not should_walk:
+                Logger.debug(f"    toggle_run_walk(): Success! We are now running")
+                return True
+            elif is_walking and not should_walk and not skip_recursion:
+                Logger.debug(f"    toggle_run_walk(): We are now walking but wanted to be running, calling toggle_run_walk() again")
+                rev_x = -1*test_pos_abs[0]
+                rev_y = -1*test_pos_abs[1]
+                return self.toggle_run_walk(should_walk=should_walk, skip_recursion=True, test_pos_abs=(rev_x, rev_y))
+        Logger.debug(f"    toggle_run_walk(): Failed to confirm")
+        return False
 
-    def kill_uniques(self, pickit: FunctionType, time_out: float=9.0, looted_uniques: set=set(), min_attack_time: float = 1.5) -> bool:
+    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None, min_attack_time: float = 1.5) -> bool:
         raise ValueError("Kill uniques not implemented")
 
     def kill_pindleskin(self) -> bool:

@@ -45,7 +45,7 @@ class DiscordEmbeds(GenericApi):
         e = discord.Embed(
             title="Item Stashed!",
             description=f"{item}",
-            color=self._get_Item_Color(item),
+            color=self._get_item_Color(item),
         )
         e.set_image(url=f"attachment://{imgName}.png")
         self._send_embed(e, self._loot_webhook, file)
@@ -57,8 +57,8 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"Died at {location}")
         e.set_thumbnail(url=f"{self._psnURL}33L5e3600.png")
         e.set_image(url="attachment://death.png")
-        self._send_embed(e, self._webhook, file)
-
+        hook = self._error_webhook if self._error_webhook is not None else self._webhook
+        self._send_embed(e, hook, file)
 
     def send_chicken(self, location, image_path):
         file = self._add_file(image_path, "chicken.png")
@@ -67,7 +67,8 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"chickened at {location}")
         e.set_thumbnail(url=f"{self._psnURL}39Ldf113b.png")
         e.set_image(url="attachment://chicken.png")
-        self._send_embed(e, self._webhook, file)
+        hook = self._error_webhook if self._error_webhook is not None and self._config.general["send_chickens_as_errors"] else self._webhook
+        self._send_embed(e, hook, file)
 
     def send_stash(self):
         e = discord.Embed(title=f"{self._config.general['name']} has a full stash!", color=Color.dark_grey())
@@ -75,8 +76,17 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"{self._config.general['name']} has to quit. \n They cannot store anymore items!")
         e.set_thumbnail(url=f"{self._psnURL}35L63a9df.png")
         Logger.debug(f"Discord Embeds: Sending error - full stash")
-        self._send_embed(e, self._error_webhook)
+        hook = self._error_webhook if self._error_webhook is not None else self._webhook
+        self._send_embed(e, hook)
 
+    def send_wrong_character(self, name):
+        e = discord.Embed(title=f"Wrong character '{name}' selected! Quitting MyBot", color=Color.dark_grey())
+        e.title=(f"Wrong character '{name}' selected! Quitting MyBot")
+        e.description=(f"Wrong character name detected, expected {self._config.advanced_options['expected_character_names']} but got {name}")
+        e.set_thumbnail(url=f"{self._psnURL}35L63a9df.png")
+        Logger.debug(f"Discord Embeds: Sending error - wrong character")
+        hook = self._error_webhook if self._error_webhook is not None else self._webhook
+        self._send_embed(e, hook)
 
     def send_gold(self):
         e = discord.Embed(title=f"{self._config.general['name']} is rich!", color=Color.dark_grey())
@@ -84,18 +94,17 @@ class DiscordEmbeds(GenericApi):
         e.description=(f"{self._config.general['name']} can't store any more money!\n turning off gold pickup.")
         e.set_thumbnail(url=f"{self._psnURL}6L341955.png")
         Logger.debug(f"Discord Embeds: Sending error - full gold")
-        self._send_embed(e, self._error_webhook)
+        self._send_embed(e, self._webhook)
 
-
-    def send_message(self, msg: str, no_thumbnail=False):
+    def send_message(self, msg: str, is_error=False, no_thumbnail=False):
         player_summary = self._config.general['player_summary'] if 'player_summary' in self._config.general else 'Bot'
         msg = f"{player_summary} {msg}" if player_summary is not None else msg
         e = discord.Embed(title=self._config.general['name'], description=f"```{msg}```", color=Color.dark_teal())
         if not no_thumbnail and not self._config.general['discord_status_condensed']:
             e.set_thumbnail(url=f"{self._psnURL}36L4a4994.png")
-        Logger.debug(f"Discord Embeds: Sending message'{msg}'")
-        self._send_embed(e, self._webhook)
-
+        Logger.debug(f"Discord Embeds: Sending message")
+        hook = self._error_webhook if is_error and self._error_webhook is not None else self._webhook
+        self._send_embed(e, hook)
 
     def _send_embed(self, e, webhook, file = None):
         if self._config.active_branch:
@@ -108,7 +117,7 @@ class DiscordEmbeds(GenericApi):
         except BaseException as err:
             Logger.error("Error sending Discord embed: " + str(err))
 
-    def _get_Item_Color(self, item):
+    def _get_item_Color(self, item):
         if "magic_" in item:
             return Color.blue()
         elif "set_" in item:

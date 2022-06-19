@@ -76,58 +76,100 @@ class Pit:
             wait(0.1, 0.15)
         current_area = self._api.data["current_area"] if self._api.data else None
         return current_area
-        
-                # char.pre_travel(True)
-                # if not pather.traverse("Monastery Gate", char, dest_distance=12): return False
-                # if not pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=char): return False
+    
+    def _end_run(self, picked_up_items):
+        self._ui_manager.enable_no_pickup()
+        self._ui_manager.hide_map()
+        return (Location.A1_PIT_END, picked_up_items)
 
-                # if not pather.traverse("Tamoe Highland", char, dest_distance=10): return False
-                # if not pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=char): return False
     def battle(self, do_pre_buff: bool=True) -> Union[bool, tuple[Location, bool]]:
         current_area = self._api.wait_for_area("OuterCloister")
         self._char.pre_travel(do_pre_buff)
 
-        if not self._pather.traverse("Monastery Gate", self._char, dest_distance=12): return False
-        if not self._pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=self._char):
-            current_area = self._pather.wander_towards((-600, 300), self._char, "TamoeHighland")
-        wait(0.3)
+        self._ui_manager.show_map()
+
+        in_tamoe = False
+        if self._char.can_tp:
+            mouse.move(*self._screen.convert_abs_to_monitor((-540, 100)), delay_factor=[0.10, 0.15])
+            keyboard.send(self._char._skill_hotkeys["teleport"], do_release=False)
+            wait((self._char._cast_duration - 0.01) * 4 + 0.02)
+            mouse.move(*self._screen.convert_abs_to_monitor((-540, 300)), delay_factor=[0.10, 0.15])
+            keyboard.send(self._char._skill_hotkeys["teleport"], do_release=False)
+            wait((self._char._cast_duration - 0.01) * 4 + 0.02)
+            keyboard.release(self._char._skill_hotkeys["teleport"])
+            wait(0.3)
+            data = self._api.get_data()
+            current_area = data["current_area"] if data and data["current_area"] is not None else ""
+            if current_area.startswith("Tamoe"):
+                in_tamoe = True
         
-        if current_area == "MonasteryGate":
-            if not self._pather.traverse("Tamoe Highland", self._char, dest_distance=10): return False
-            if not self._pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=self._char):
+        Logger.debug(f"Initial tele result: {current_area}, in_tamoe: {in_tamoe}")
+
+        if not in_tamoe:
+            if "Cloister" in current_area:
+                Logger.debug(f"We are still in the Cloister")
+                self._pather.traverse("Monastery Gate", self._char, dest_distance=12, slow_finish=True)
+                if not self._pather.go_to_area("Monastery Gate", "MonasteryGate", entrance_in_wall=False, randomize=3, char=self._char):
+                    Logger.debug(f"    Didn't make it to the Monastery Gate, wandering there...")
+                    current_area = self._pather.wander_towards((-600, 300), self._char, "TamoeHighland")
+                wait(0.3)
+        
+            if current_area == "MonasteryGate":
+                Logger.debug(f"We are in the Monastery Gate")
+                self._pather.traverse("Tamoe Highland", self._char, dest_distance=10, slow_finish=True)
+                if not self._pather.go_to_area("Tamoe Highland", "TamoeHighland", entrance_in_wall=False, randomize=4, char=self._char):
+                    Logger.debug(f"    Didn't make it to the Tamoe Highland, wandering there...")
+                    current_area = self._pather.wander_towards((-600, 300), self._char, "TamoeHighland")
+                wait(0.3)
+            
+            if current_area != "TamoeHighland":
+                Logger.debug(f"    Stil didn't make it to the Tamoe Highland, wandering there again...")
                 current_area = self._pather.wander_towards((-600, 300), self._char, "TamoeHighland")
-            wait(0.3)
-        
-        if current_area != "TamoeHighland":
+                wait(0.3)
+
+        if not self._pather.traverse("Pit Level 1", self._char, verify_location=True, dest_distance=12, slow_finish=True):
+            Logger.debug(f"    Failed initial traverse to Pit Level 1, wandering...")
             current_area = self._pather.wander_towards((-600, 300), self._char, "TamoeHighland")
-            wait(0.3)
+            if not self._pather.traverse("Pit Level 1", self._char, verify_location=True, dest_distance=12, slow_finish=True): return False
 
-        if not self._pather.traverse("Pit Level 1", self._char, verify_location=True, dest_distance=12): return False
         if not self._pather.go_to_area("Pit Level 1", "PitLevel1", entrance_in_wall=False, randomize=4, char=self._char): return False
-        self._char.post_travel()
-
+        if not self._api.wait_for_area("PitLevel1"): return False
         picked_up_items = 0
         self._ui_manager.wait_for_loading_finish()
-        wait(0.1, 0.2)
+        wait(0.5, 0.6)
+        self._char.post_travel()
+
+        if self._config.char["enable_combat_walking"]:
+            self._char.toggle_run_walk(True, test_pos_abs=(-100, 150))
+
         self._ui_manager.disable_no_pickup()
         pickit_func = lambda: self._pickit.pick_up_items(self._char, skip_nopickup=True)
 
         pit_lvl2 = self._pather.get_entity_coords_from_str("Pit Level 2", "points_of_interest", False)
-        picked_up_items += self._char.clear_zone(pit_lvl2, pickit_func)
+        picked_up_items += self._char.clear_zone(pit_lvl2, pickit_func, jump_distance=12)
 
-        if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True): return picked_up_items
+        if not self._pather.traverse(pit_lvl2, self._char, kill=False, verify_location=True, slow_finish=True, jump_distance=12):
+            return self._end_run(picked_up_items)
         if do_pre_buff: self._char.pre_buff()
         
-        if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=25):
-            if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=25):
-                return picked_up_items
+        if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=True, randomize=2, time_out=15):
+            self._pather.walk_to_poi("Pit Level 2")
+            if not self._pather.go_to_area("Pit Level 2", "PitLevel2", entrance_in_wall=False, randomize=4, time_out=15):
+                return self._end_run(picked_up_items)
+        if not self._api.wait_for_area("PitLevel2"):
+            return self._end_run(picked_up_items)
+        self._ui_manager.wait_for_loading_finish()
+        wait(0.5, 0.6)
 
         coords = self._pather.get_entity_coords_from_str("SparklyChest", "points_of_interest", False)
-        picked_up_items += self._char.clear_zone(coords, pickit_func)
+        picked_up_items += self._char.clear_zone(coords, pickit_func, jump_distance=12)
 
-        self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=True, obj=True)
-        self._pather.activate_poi(coords, "PitLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False) 
+        self._pather.traverse("SparklyChest", self._char, kill=False, verify_location=False, obj=True, jump_distance=12)
+        self._pather.activate_poi(coords, "PitLevel2", char=self._char, offset=[9.5, 39.5], entrance_in_wall=False)
+        wait(1.0)
         picked_up_items = self._pickit.pick_up_items(self._char)
 
-        self._ui_manager.enable_no_pickup()
-        return (Location.A1_PIT_END, picked_up_items)
+        if self._config.char["enable_combat_walking"]:
+            self._char.toggle_run_walk(True, skip_verification=True)
+
+        return self._end_run(picked_up_items)

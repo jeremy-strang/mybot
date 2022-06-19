@@ -1,29 +1,11 @@
-﻿/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
-using MapAssist.Types;
+﻿using MapAssist.Types;
+using System;
 using System.Drawing;
 using YamlDotNet.Serialization;
 
 namespace MapAssist.Settings
 {
-    public class IconRendering
+    public class IconRendering : ICloneable
     {
         [YamlMember(Alias = "IconColor", ApplyNamingConventions = false)]
         public Color IconColor { get; set; }
@@ -40,9 +22,17 @@ namespace MapAssist.Settings
         [YamlMember(Alias = "IconThickness", ApplyNamingConventions = false)]
         public float IconThickness { get; set; }
 
+        [YamlMember(Alias = "IconOpacity", ApplyNamingConventions = false)]
+        public float IconOpacity { get; set; } = 1;
+
         public bool CanDrawIcon()
         {
-            return IconSize > 0 && (IconColor != Color.Transparent || IconOutlineColor != Color.Transparent);
+            return IconSize > 0 && IconOpacity > 0 && ((IconColor != Color.Transparent && IconColor != Color.Empty) || (IconOutlineColor != Color.Transparent && IconOutlineColor != Color.Empty));
+        }
+
+        public object Clone()
+        {
+            return (IconRendering)MemberwiseClone();
         }
     }
 
@@ -71,7 +61,7 @@ namespace MapAssist.Settings
 
         public bool CanDrawLine()
         {
-            return LineColor != Color.Transparent && LineThickness > 0;
+            return LineColor.A > 0 && LineThickness > 0;
         }
 
         public bool CanDrawArrowHead()
@@ -81,8 +71,32 @@ namespace MapAssist.Settings
 
         public bool CanDrawLabel()
         {
-            return LabelColor != Color.Transparent && !string.IsNullOrWhiteSpace(LabelFont) &&
-                LabelFontSize > 0;
+            return LabelColor.A > 0 && !string.IsNullOrWhiteSpace(LabelFont) && LabelFontSize > 0;
+        }
+
+        public void ToggleLine()
+        {
+            if (LineThickness != 0)
+            {
+                LineThickness = 0;
+                return;
+            }
+
+            LineThickness = 2;
+
+            if (ArrowHeadSize == 0)
+            {
+                ArrowHeadSize = 15;
+            }
+
+            if (LineColor.A == 0)
+            {
+                LineColor = IconColor.A > 0
+                    ? IconColor
+                    : IconOutlineColor.A > 0
+                        ? IconOutlineColor
+                        : Color.Red;
+            }
         }
     }
 
@@ -120,7 +134,6 @@ namespace MapAssist.Settings
         TopLeft,
         TopRight
     }
-
     public enum Shape
     {
         Square,
@@ -130,6 +143,9 @@ namespace MapAssist.Settings
         Portal,
         Dress,
         Kite,
+        Stick,
+        Leg,
+        Pentagram
     }
 
     public enum TextAlign

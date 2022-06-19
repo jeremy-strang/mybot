@@ -48,30 +48,28 @@ class Pindleskin:
         loc = self._town_manager.go_to_act(5, start_loc)
         if not loc: return False
         if not self._pather.walk_to_position((122, 120)): return False
-        self._pather.click_object("PermanentTownPortal", (0, -50))
-        if not self._ui_manager.wait_for_loading_screen(2.5):
+        wait(0.1)
+        self._pather.click_object("PermanentTownPortal", (50, -50))
+        if not self._api.wait_for_area("NihlathaksTemple"):
             if not self._pather.click_object("PermanentTownPortal"): return False
-            if not self._ui_manager.wait_for_loading_screen(2.5): return False
+            if not self._api.wait_for_area("NihlathaksTemple"): return False
         return Location.A5_PINDLE_START
 
     def battle(self, do_pre_buff: bool) -> Union[bool, tuple[Location, bool]]:
         if not self._api.wait_for_area("NihlathaksTemple"): return False
+        wait(1)
+        
+        Logger.info(f'do_pre_buff: {do_pre_buff}.')
         if do_pre_buff:
             self._char.pre_buff()
 
         # Move to Pindle
-        if self._char._char_config['type'] == 'necro':
-            game_state = StateMonitor(['DefiledWarrior'], self._api,super_unique=True)
-            self._char.kill_pindleskin_mem(game_state)
-            wait(0.1)
-            self._pather.traverse((game_state._area_pos[0], game_state._area_pos[1]), self._char)
-            game_state.stop()
+        self._char.pre_move()
+        if self._char.can_tp:
+            self._pather.traverse((61, 54), self._char)
         else:
-            if self._char.can_tp:
-                self._pather.traverse((61, 54), self._char)
-            else:
-                self._pather.walk_to_position((61, 54))
-            self._char.kill_pindleskin()
+            self._pather.walk_to_position((59, 59))
+        self._char.kill_pindleskin()
         wait(0.1)
 
         picked_up_items = self._pickit.pick_up_items(self._char)

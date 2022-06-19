@@ -28,7 +28,8 @@ namespace MapAssist.MyBot
         {
             if (_rawConfiguration.ContainsKey(section) && _rawConfiguration[section].ContainsKey(key))
             {
-                return (T)Convert.ChangeType(_rawConfiguration[section][key], typeof(T));
+                var val = (T)Convert.ChangeType(_rawConfiguration[section][key], typeof(T));
+                return val;
             }
             return defaultValue;
         }

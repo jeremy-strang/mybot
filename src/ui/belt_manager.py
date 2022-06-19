@@ -35,7 +35,7 @@ class BeltManager:
         return self._pot_needs
 
     def should_buy_pots(self):
-        return self._pot_needs["health"] > 2 or self._pot_needs["mana"] > 3
+        return self._pot_needs["health"] >= 2 or self._pot_needs["mana"] >= 3
 
     def _potion_type(self, img: np.ndarray) -> str:
         """

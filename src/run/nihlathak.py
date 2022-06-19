@@ -58,9 +58,9 @@ class Nihlathak:
     def _check_dangerous_monsters(self):
         if self._config.char["chicken_nihlathak_conviction"]:
             data = self._api.get_data()
-            for m in data["monsters"]:
-                if "Nihlathak" in m["name"] and "CONVICTION" in m["state_strings"]:
-                    Logger.info("Detected a Conviction on Nihlathak, will chicken...")
+            for  m in data["monsters"]:
+                if m["dist"] < 100 and "CONVICTION" in str(m["state_strings"]):
+                    Logger.info("Detected a Conviction at Nihlathak, will chicken...")
                     self._ui_manager.save_and_exit(does_chicken=True)
                     return True
         return False
@@ -76,17 +76,17 @@ class Nihlathak:
         
         self._char.pre_travel(do_pre_buff)
 
-        if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True):
-            if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True, jump_distance=8):
+        if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True, slow_finish=True):
+            if not self._pather.traverse("Halls of Vaught", self._char, verify_location=True, jump_distance=8, slow_finish=True):
                 return False
 
         self._char.post_travel()
 
-        self._pather.click_poi("Halls of Vaught", offset=(35, -39.5), time_out=5, target_area="HallsOfVaught")
-        if not self._api.wait_for_area("HallsOfVaught"):
+        if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=False, randomize=2, time_out=10, offset=[44, 0]):
             self._pather.click_poi("Halls of Vaught", offset=(35, -39.5), time_out=5, target_area="HallsOfVaught")
             if not self._api.wait_for_area("HallsOfVaught"):
-                if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=False, randomize=2, time_out=25, offset=[44, 0]):
+                self._pather.click_poi("Halls of Vaught", offset=(35, -39.5), time_out=5, target_area="HallsOfVaught")
+                if not self._api.wait_for_area("HallsOfVaught"):
                     if not self._pather.go_to_area("Halls of Vaught", "HallsOfVaught", entrance_in_wall=True, randomize=4, time_out=25, offset=[35, -39.5]):
                         return False
 

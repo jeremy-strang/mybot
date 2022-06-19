@@ -27,12 +27,15 @@ class Messenger:
 
     def send_stash(self):
         self._message_api.send_stash()
+    
+    def send_wrong_character(self, name):
+        self._message_api.send_wrong_character(name)
 
     def send_gold(self):
         self._message_api.send_gold()
 
-    def send_message(self, msg: str):
-        self._message_api.send_message(msg)
+    def send_message(self, msg: str, is_error=False):
+        self._message_api.send_message(msg, is_error=is_error)
 
 if __name__ == "__main__":
     messenger = Messenger()

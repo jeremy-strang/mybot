@@ -59,9 +59,11 @@ class Pickit:
                     Logger.debug(f"    {item['name']}, dist: {round(item['dist'], 1)}, quality: {item['quality']}, base: {item['type']}, position: {item['position']}")
         return items_found[0] if len(items_found) > 0 else None
 
-    def pick_up_items(self, time_out: float = 22.0, skip_nopickup: bool = False) -> bool:
+    def pick_up_items(self, time_out: float = 40.0, skip_nopickup: bool = False) -> bool:
+        self._ui_manager.hide_legacy()
+
         # Wait a bit for items to load
-        wait(0.3, 0.4)
+        wait(0.4)
         start = time.time()
         elapsed = 0
         attempts = 0

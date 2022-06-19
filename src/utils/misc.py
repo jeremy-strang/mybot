@@ -192,9 +192,11 @@ def rotate_vec(vec: np.ndarray, deg: float) -> np.ndarray:
 def unit_vector(vec: np.ndarray) -> np.ndarray:
     return vec / dist(vec, (0, 0))
 
-def clip_abs_point(point: Tuple[int, int]) -> Tuple[float, float]:
-    x = np.clip(point[0], -638, 638)
+def clip_abs_point(point: Tuple[int, int], legacy_mode: bool = False) -> Tuple[float, float]:
+    half_w = 638 if not legacy_mode else 475
+    x = np.clip(point[0], -half_w, half_w)
     y = np.clip(point[1], -350, 225)
+    # print(f"Clipped point: {point}, to {(x, y)}")
     return (x, y)
 
 def round_point(pos: Tuple[int, int], num_decimals = 0) -> Tuple[float, float]:
@@ -246,3 +248,6 @@ def get_next_incremental_offset(previous_x: int = 0, previous_y: int = 0, adjust
             adjust_x = True
             adjust_y = True
     return (previous_x, previous_y, adjust_x, adjust_y)
+
+def normalize_text(text: str) -> str:
+    return text.lower().replace(" ", "").replace("_", "").replace("-", "").replace("'", "") if type(text) is str else ""

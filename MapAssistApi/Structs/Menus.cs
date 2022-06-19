@@ -1,24 +1,4 @@
-﻿/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
-using MapAssist.Types;
-using System;
+﻿using MapAssist.Types;
 using System.Runtime.InteropServices;
 
 namespace MapAssist.Structs
@@ -46,10 +26,15 @@ namespace MapAssist.Structs
         [FieldOffset(0x0A)] public bool Map;
         [MarshalAs(UnmanagedType.U1)]
         [FieldOffset(0x0B)] public bool NpcShop;
-        //missing 2
+        [MarshalAs(UnmanagedType.U1)]
+        [FieldOffset(0x0C)] public bool GroundItems;
+        [MarshalAs(UnmanagedType.U1)]
+        [FieldOffset(0x0D)] public bool Anvil; // Imbue and sockets
         [MarshalAs(UnmanagedType.U1)]
         [FieldOffset(0x0E)] public bool QuestLog;
-        //missing 4
+        //missing 3
+        [MarshalAs(UnmanagedType.U1)]
+        [FieldOffset(0x12)] public bool HasMercenary;
         [MarshalAs(UnmanagedType.U1)]
         [FieldOffset(0x13)] public bool Waypoint;
         //missing 1
@@ -62,7 +47,11 @@ namespace MapAssist.Structs
         [FieldOffset(0x19)] public bool Cube;
         [MarshalAs(UnmanagedType.U1)]
         [FieldOffset(0x1A)] public bool PotionBelt;
-        //missing 3
+        [MarshalAs(UnmanagedType.U1)]
+        [FieldOffset(0x1B)] public bool Help;
+        //missing 1
+        [MarshalAs(UnmanagedType.U1)]
+        [FieldOffset(0x1D)] public bool Portraits;
         [MarshalAs(UnmanagedType.U1)]
         [FieldOffset(0x1E)] public bool MercenaryInventory;
     }
@@ -76,5 +65,33 @@ namespace MapAssist.Structs
         [FieldOffset(0x01)] public bool IsItemTooltip;
         [FieldOffset(0x04)] public UnitType UnitType;
         [FieldOffset(0x08)] public uint UnitId;
+    }
+
+    public static class MenuDataExtensions
+    {
+        public static bool IsLeftMenuOpen(this MenuData menuData) =>
+            menuData.Character ||
+            menuData.NpcShop ||
+            menuData.Anvil ||
+            menuData.QuestLog ||
+            menuData.Waypoint ||
+            menuData.Party ||
+            menuData.Stash ||
+            menuData.Cube ||
+            menuData.MercenaryInventory ||
+            // Menus that cover the whole screen
+            menuData.EscMenu ||
+            menuData.Help;
+
+        public static bool IsRightMenuOpen(this MenuData menuData) =>
+            menuData.Inventory ||
+            menuData.SkillTree ||
+            // Menus that cover the whole screen
+            menuData.EscMenu ||
+            menuData.Help;
+
+        public static bool IsAnyMenuOpen(this MenuData menuData) =>
+            menuData.IsLeftMenuOpen() ||
+            menuData.IsRightMenuOpen();
     }
 }

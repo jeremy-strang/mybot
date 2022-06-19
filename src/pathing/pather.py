@@ -1,5 +1,6 @@
 from ast import Tuple
 import cv2
+from d2r.d2r import TOWNS
 from pytest import skip
 from char.skill import Skill
 from utils.coordinates import world_to_abs
@@ -24,7 +25,7 @@ from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from utils.misc import unit_vector, clip_abs_point, get_next_incremental_offset
 from scipy.ndimage.filters import gaussian_filter
-from pathing.path_finder import make_path_bfs, PathFinder
+from pathing.path_finder import make_path_bfs, decimate_route, PathFinder
 
 class Pather:
     def __init__(self, screen: Screen, api: D2rApi):
@@ -35,15 +36,14 @@ class Pather:
                          7, self._config.ui_pos["center_x"] - 7]
         self._range_y = [-self._config.ui_pos["center_y"] + 7,
                          self._config.ui_pos["center_y"] - self._config.ui_pos["skill_bar_height"] - 33]
+        self._path_finder = PathFinder(self._api)
     
     def _should_abort_pathing(self) -> bool:
         if self._api.data:
             if self._api.data["should_chicken"]:
-                Logger.warning(f"    Aborting pathing because chicken life threshold was reached")
                 return True
 
             if self._api.data["inventory_open"]:
-                # Logger.warning(f"    Aborting pathing, inventory is open")
                 return True
         return False
 
@@ -183,7 +183,7 @@ class Pather:
     def click_object(self,
                      name: str,
                      offset: tuple[float, float] = None,
-                     time_out: float = 4,
+                     time_out: float = 3.0,
                      target_area: str = None,
                      target_menu: str = None,
                      on_monsters_blocking: Callable[[dict], bool] = None):
@@ -223,7 +223,7 @@ class Pather:
         # return is_hovered
         Logger.debug(f"Clicking object '{name}'...")
         obj = self._api.find_object(name)
-        update_obj = lambda o: self._api.find_object(o["name"])
+        update_obj = lambda o: self._api.find_object(name)
         return self.click_unit(
                    obj,
                    update_obj,
@@ -244,7 +244,7 @@ class Pather:
                   on_monsters_blocking: Callable[[dict], bool] = None):
         Logger.debug(f"Clicking POI '{label}'...")
         poi = self._api.find_poi(label)
-        update_poi = lambda p: self._api.find_poi(p["label"])
+        update_poi = lambda p: self._api.find_poi(label)
         # return self.click_unit(self, poi, update_poi, "points_of_interest", offset, time_out, target_area, target_menu, on_monsters_blocking)
         return self.click_unit(
                    poi,
@@ -339,27 +339,34 @@ class Pather:
             dist = math.dist(pos_world, data['player_pos_world'])
             pos_abs = world_to_abs(pos_world, data['player_pos_world'])
             self.move_mouse_to_abs_pos(pos_abs, dist)
-            char.pre_move()
-            mouse.click(button="right")
-            wait(char._cast_duration)
+            # char.pre_move()
+            # mouse.click(button="right")
+            keyboard.send(char._skill_hotkeys["teleport"])
+            wait(char._cast_duration + 0.01)
 
     def teleport_to_item(self, item, char):
         if item and char.can_tp:
             self.move_mouse_to_abs_pos(item["position_abs"], item["dist"])
-            char.pre_move()
-            mouse.click(button="right")
+            # char.pre_move()
+            # mouse.click(button="right")
+            keyboard.send(char._skill_hotkeys["teleport"])
             wait(char._cast_duration)
             item = self._api.find_item(item['id'])
 
-    def move_to_monster(self, char, monster: dict) -> bool:
+    def move_to_monster(self, char, monster: dict, do_pre_move: bool = True) -> bool:
         if self._should_abort_pathing(): return False
         monster = self._api.find_monster(monster["id"])
         if monster and type(monster) is dict:
+            # char.pre_move()
+            # Logger.debug(f"Moving to monster, distance: {round(monster['dist'], 2)}, position: {point_str(monster['position_area'])}...")
+            if monster["dist"] > 50:
+                if not char.can_tp or not self.traverse(monster["position_area"], char, do_pre_move=True, time_out=7, jump_distance=8):
+                    if not self.walk_to_position(monster["position_area"], time_out=7, char=char, do_pre_move=do_pre_move): return False
             self.move_mouse_to_abs_pos(monster["position_abs"], monster["dist"])
             if char.can_tp:
-                char.pre_move()
-                mouse.click(button="right")
-                wait(char._cast_duration + 0.02)
+                # mouse.click(button="right")
+                keyboard.send(char._skill_hotkeys["teleport"])
+                wait(char._cast_duration + 0.01)
             else:
                 keyboard.send(self._config.char["force_move"])
                 wait(0.5)
@@ -367,7 +374,7 @@ class Pather:
             return False
         return True
 
-    def walk_to_monster(self, monster_id: Union[int, str, dict], time_out=10.0, step_size=5):
+    def walk_to_monster(self, monster_id: Union[int, str, dict], time_out=12.0, step_size=6, char=None, do_pre_move=True):
         monster = None
         if type(monster_id) is str:
             monster = self._api.find_monster_by_name(monster_id)
@@ -376,75 +383,72 @@ class Pather:
         elif type(monster_id) is dict:
             monster = monster_id
         if monster:
-            self.walk_to_position(monster["position_area"], time_out, step_size)
+            self.walk_to_position(monster["position_area"], time_out, step_size, char=char, do_pre_move=do_pre_move)
             return True
         return False
 
-    def walk_to_npc(self, npc: Union[int, str, dict], time_out=10.0, step_size=5):
+    def walk_to_npc(self, npc: Union[int, str, dict], time_out=12.0, step_size=6, char=None, do_pre_move=True):
         target = None
         if type(npc) is str:
-            target = self._api.find_npc(npc)
+            target = self._api.find_monster_by_name(npc)
             if not target:
-                target = self._api.find_monster(npc)
+                target = self._api.find_npc(npc)
         elif type(npc) is int:
             target = self._api.find_monster(npc)
         elif type(npc) is dict:
             target = npc
         if target:
-            self.walk_to_position(target["position_area"], time_out, step_size)
-            return True
+            return self.walk_to_position(target["position_area"], time_out, step_size, char=char, do_pre_move=do_pre_move)
         return False
 
-    def walk_to_item(self, item_id: int, time_out=10.0, step_size=5):
+    def walk_to_item(self, item_id: int, time_out=12.0, step_size=6, char=None, do_pre_move=False):
         dest = self._api.find_item(item_id)
         if dest:
-            self.walk_to_position(dest["position_area"], time_out, step_size)
-            return True
+            return self.walk_to_position(dest["position_area"], time_out, step_size, char=char, do_pre_move=do_pre_move)
         return False
 
-    def walk_to_object(self, obj_name: str, time_out=10.0, step_size=5):
-        Logger.debug(f"Walking to object {obj_name}...")
-        dest = self._api.find_object(obj_name)
+    def walk_to_object(self, obj: Union[str, dict], time_out=12.0, step_size=6, char=None, do_pre_move=False):
+        dest = obj if type(obj) is dict else self._api.find_object(obj)
         if dest:
-            Logger.debug(f"    Found object {obj_name} at position {point_str(dest['position_area'])}")
-            self.walk_to_position(dest["position_area"], time_out, step_size)
-            return True
-        Logger.error(f"    No object found named {obj_name}")
+            Logger.debug(f"Walking to object {dest['name']}...")
+            Logger.debug(f"    Found object {obj} at position {point_str(dest['position_area'])}")
+            return self.walk_to_position(dest["position_area"], time_out, step_size, char=char, do_pre_move=do_pre_move)
+        Logger.error(f"    Object {obj} not found")
         return False
 
-    def walk_to_poi(self, poi_label: str, time_out=10.0, step_size=5):
-        Logger.debug(f"Walking to POI {poi_label}")
-        dest = self._api.find_poi(poi_label)
+    def walk_to_poi(self, poi: Union[str, dict], time_out=12.0, step_size=6, char=None, do_pre_move=True):
+        Logger.debug(f"Walking to POI {poi}")
+        dest = poi if type(poi) is dict else self._api.wait_for_poi(poi)
         if dest:
-            Logger.debug(f"    Found POI {poi_label} at position {point_str(dest['position_area'])}")
-            self.walk_to_position(dest["position_area"], time_out, step_size)
-            return True
+            Logger.debug(f"    Found POI {dest['label']} at position {point_str(dest['position_area'])}")
+            return self.walk_to_position(dest["position_area"], time_out, step_size, char=char, do_pre_move=do_pre_move)
         else:
-            Logger.error(f"    POI {poi_label} not found")
+            Logger.error(f"    POI {poi} not found")
         return False
 
-    def walk_to_position(self, dest_area, time_out=15.0, step_size=5, threshold=10) -> bool:
+    def walk_to_position(self, dest_area, time_out=15.0, step_size=6, threshold=10, char=None, do_pre_move=True) -> bool:
         Logger.debug(f"Walking to position {point_str(dest_area)}...")
         route = self.make_route_to_position(dest_area)
-        return self.walk_route(route, time_out, step_size)
+        if not route: return False
+        return self.walk_route(route, time_out, step_size, char=char, do_pre_move=do_pre_move)
 
-    def make_route_to_position(self, position_area: tuple[float, float], do_astar: bool = False):
+    def make_route_to_position(self, position_area: tuple[float, float], do_astar: bool = True):
         route = None
         data = self._api.data
         if data:
+            position_area = (int(position_area[0]), int(position_area[1]))
+            player_area = (int(data["player_pos_area"][0]), int(data["player_pos_area"][1]))
+            if position_area[0] < 0 or position_area[1] < 0 or position_area[0] >= data["map_width"] or position_area[1] >= data["map_height"]:
+                Logger.warning(f"Destination {point_str(position_area)} is outside the map bounds (w: {data['map_width']}, h: {data['map_width']}). Aborting routing.")
+                return False
             if do_astar:
-                position_area = (int(position_area[1]), int(position_area[0]))
-                player_area = (int(data["player_pos_area"][1]), int(data["player_pos_area"][0]))
-                pf = PathFinder(self._api)
-                route = pf.make_path_astar(player_area, position_area, False)
+                route = self._path_finder.make_path_astar(player_area, position_area, reverse_coords=True)
             else:
-                position_area = (int(position_area[0]), int(position_area[1]))
-                player_area = (int(data["player_pos_area"][0]), int(data["player_pos_area"][1]))
                 route = make_path_bfs(player_area, position_area, data["map"])
                 self._api._current_path = route
         return route
 
-    def _get_next_node(self, nodes, step_size=5, threshold=10) -> tuple[tuple[float, float], float]:
+    def _get_next_node(self, nodes, step_size=6, threshold=10) -> tuple[tuple[float, float], float]:
         if self._api.data and len(nodes) > 0:
             popped = 0
             node = nodes.pop(0)
@@ -456,12 +460,14 @@ class Pather:
             return (node, dist)
         return (None, 0)
 
-    def walk_route(self, route, time_out=15.0, step_size=5, threshold=10, final=3.0) -> bool:
+    def walk_route(self, route, time_out=15.0, step_size=6, threshold=10, final=3.0, char=None, do_pre_move=True) -> bool:
         Logger.debug(f"    Walking along route of length {len(route)} and step size {step_size}...")
         data = self._api.data
         steps = []
         end = route[-1]
         if route != None and len(route) > 0 and data != None:
+            if char and do_pre_move:
+                char.pre_move()
             self._api._current_path = route
             prev = data["player_pos_area"]
             next, distance = self._get_next_node(route, step_size)
@@ -473,8 +479,8 @@ class Pather:
                     continue
                 avg = ((next[0] + prev[0]) / 2, (next[1] + prev[1]) / 2) if len(steps) > 0 else next
                 move_pos_abs = world_to_abs(avg, data['player_pos_area'] + data['player_offset'])
-                move_pos_m = self._screen.convert_abs_to_monitor([move_pos_abs[0], move_pos_abs[1]], clip_input=True)
-                mouse.move(*move_pos_m)
+                mon_x, mon_y = self._screen.convert_abs_to_monitor([move_pos_abs[0], move_pos_abs[1]], clip_input=True)
+                mouse.move(mon_x - 9.5, mon_y - 39.5)
                 keyboard.send(self._config.char["force_move"], do_release=False)
                 steps.append(prev)
                 prev = next
@@ -490,12 +496,12 @@ class Pather:
     def wander_towards(self, abs_pos: tuple[float, float], char = None, target_area: str = None, iterations = 5, time_out: float = 7.0):
         Logger.debug(f"Wandering towards absolute pos {point_str(abs_pos)}...")
         start = time.time()
-        self._api.data["current_area"] if self._api.data else None
+        current_area = self._api.data["current_area"] if self._api.data else None
         for _ in range(iterations):
             pos = self._screen.convert_abs_to_monitor(abs_pos)
             mouse.move(pos[0], pos[1], randomize=20)
             wait(0.1, 0.15)
-            if char and char.can_tp:
+            if char and char.can_tp and current_area not in TOWNS:
                 keyboard.send(char._skill_hotkeys["teleport"], do_release=False)
                 wait(0.04, 0.05)
                 mouse.click(button="right")
@@ -827,10 +833,11 @@ class Pather:
                          obj: bool = False,
                          x: int = 0,
                          y: int = 0,
-                         threshold=4,
-                         static_npc=False,
-                         end_dist=19,
-                         time_out=50.0
+                         threshold = 4,
+                         static_npc = False,
+                         end_dist = 19,
+                         time_out = 50.0,
+                         slow_finish: bool = False,
                         ):
         """Slightly different traversal for moving in town/walking"""
         Logger.debug(f"Traverse (walking) to: {end}")
@@ -1030,14 +1037,9 @@ class Pather:
                  time_out=20.0,
                  dest_distance=15,
                  jump_distance=15,
+                 slow_finish: bool = False,
                 ):
-        """
-        Traverse to another location
-        :param end: Either world coordinates as tuple [x, y] or a string e.g. 'Worldstone Keep Level 3'
-        :param char
-        :return: bool if successfull
-        """
-        Logger.debug(f"Traversing to {end}")
+        Logger.debug(f"Traversing to {end}...")
         if do_pre_move:
             char.pre_move()
         # reduce casting frame duration since we can check for teleport skill used in memory
@@ -1050,7 +1052,7 @@ class Pather:
         hard_exit = 0
         start = time.time()
         while time.time() - start < time_out and not self._should_abort_pathing():
-            data = self._api.get_data()
+            data = self._api.data
             if data is None:
                 Logger.warning(f"    Couldnt get API, data retrying...")
                 wait(0.1)
@@ -1066,12 +1068,14 @@ class Pather:
                 if last_pos is not None and np.array_equal(player_pos_area, last_pos):
                     repeated_pos_count += 1
                     if repeated_pos_count == 2 and last_node_pos_abs is not None:
+                        jump_distance = min(jump_distance, 7)
+                    if repeated_pos_count == 3 and last_node_pos_abs is not None:
                         char.reposition(last_node_pos_abs)
-                    if repeated_pos_count == 4 and last_node_pos_abs is not None:
+                    if repeated_pos_count == 5 and last_node_pos_abs is not None:
                         char.reposition(last_node_pos_abs)
-                    if repeated_pos_count == 6 and last_node_pos_abs is not None:
+                    if repeated_pos_count == 7 and last_node_pos_abs is not None:
                         char.reposition(last_node_pos_abs)
-                    if repeated_pos_count == 8:
+                    if repeated_pos_count == 9:
                         Logger.debug("Increasing end point reached range")
                         reached_destination += 5
                     elif repeated_pos_count > 18:
@@ -1083,20 +1087,20 @@ class Pather:
                 last_pos = player_pos_area
 
                 # Get endpoint
-                area_pos = None
+                end_pos_area = None
                 if type(end) is str and obj is False:
                     for poi in data["points_of_interest"]:
                         if poi["label"].startswith(end):
-                            area_pos = poi["position"] - data["area_origin"]
+                            end_pos_area = poi["position_area"]
                 elif type(end) is str and obj is True:
                     for poi in data["objects"]:
                         if poi["name"].startswith(end):
-                            area_pos = poi["position"] - data["area_origin"]
+                            end_pos_area = poi["position_area"]
                 else:
-                    area_pos = end
-                if area_pos is None:
+                    end_pos_area = end
+                if end_pos_area is None:
                     if hard_exit < 10:
-                        data = self._api.get_data()
+                        data = self._api.data
                         hard_exit += 1
                         # seems like the data isnt loading in time here, just try again
                         Logger.warning(f"Couldnt find endpoint: {end} trying one more time...")
@@ -1107,38 +1111,28 @@ class Pather:
                     return False
 
                 # Calc route from player to entrance
-                weighted_map = deepcopy(data["map"])
-                weighted_map = weighted_map.astype(np.float32)
-                weighted_map[weighted_map == 0] = 999999
-                weighted_map[weighted_map == 1] = 1
-                start_pos = np.array([player_pos_area[1], player_pos_area[0]])
-                end_pos = np.array([area_pos[1], area_pos[0]])
-                weighted_map[end_pos[0]][end_pos[1]] = 1
-                route = pyastar2d.astar_path(weighted_map, start_pos, end_pos, allow_diagonal=False)
+                # weighted_map = deepcopy(data["map"])
+                # weighted_map = weighted_map.astype(np.float32)
+                # weighted_map[weighted_map == 0] = 999999
+                # weighted_map[weighted_map == 1] = 1
+                # start_reversed = np.array([player_pos_area[1], player_pos_area[0]])
+                # end_reversed = np.array([area_pos[1], area_pos[0]])
+                # weighted_map[end_pos[0]][end_pos[1]] = 1
+                # route = pyastar2d.astar_path(weighted_map, start_pos, end_pos, allow_diagonal=False)
+                data = self._api.get_data()
+                if end_pos_area[0] < 0 or end_pos_area[1] < 0 or end_pos_area[0] >= data['map_width'] or end_pos_area[1] >= data['map_height']:
+                    Logger.warning(f"Destination {point_str(end_pos_area)} is outside the map bounds (w: {data['map_width']}, h: {data['map_width']}). Aborting pathing.")
+                    return False
 
-                route_list = route.tolist()
-                decimation = []
-
-                prev_node = route_list[0]
-                for node in route_list:
-                    # manhattan distance from our current step to the next node
-                    d = cityblock(node, prev_node)
-                    if d > jump_distance:
-                        # if its greater than how far we can teleport save it
-                        decimation.append(node)
-                        prev_node = node
-
-                if len(decimation) == 0:
-                    decimation.append(end_pos)
-                route_list = decimation
-                route_list[-1] = end_pos
+                route = self._path_finder.make_path_astar(start=player_pos_area, end=end_pos_area, reverse_coords=True)
+                route = decimate_route(route, step_size=jump_distance)
 
                 self._api._current_path = None
-                self._api._astar_current_path = decimation
+                self._api._astar_current_path = route
 
-                for i in range(len(route_list)):
-                    node = np.array(route_list[i])
-                    node_pos_w = [node[1], node[0]]
+                for i in range(len(route)):
+                    node = np.array(route[i])
+                    node_pos_w = [node[0], node[1]]
                     data = self._api.get_data()
                     player_pos = data['player_pos_area']+data['player_offset']
                     node_pos_abs = last_node_pos_abs = world_to_abs(node_pos_w, player_pos)
@@ -1153,11 +1147,11 @@ class Pather:
 
                     char.move((node_pos_m[0], node_pos_m[1]), force_move=force, force_tp=(char is not None and char.can_tp))
 
-                    if i > len(route_list)-4:
-                        time.sleep(.4)
+                    if i > len(route) - 3 and slow_finish:
+                        time.sleep(.3)
                 data = self._api.get_data()
                 player_pos = data['player_pos_area'] + data['player_offset']
-                recalc_dist = math.dist(player_pos, area_pos)
+                recalc_dist = math.dist(player_pos, end_pos_area)
                 if recalc_dist < dest_distance and verify_location:
                     Logger.debug(f"Traverse to {end} completed ({round(recalc_dist, 2)} from destination)")
                     char._cast_duration = tmp_duration

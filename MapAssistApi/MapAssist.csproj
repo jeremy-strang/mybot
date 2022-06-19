@@ -48,13 +48,15 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>3DB9B26A33D3BC5805AF01B7BC6B71FE986ABD87</ManifestCertificateThumbprint>
@@ -107,9 +109,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MyBot\Api.cs" />
-    <Compile Include="MyBot\ApiHost.cs" />
-    <Compile Include="MyBot\IBotConfig.cs" />
     <Compile Include="Files\ConfigurationParser.cs" />
     <Compile Include="Files\CRC32.cs" />
     <Compile Include="Files\FileManager.cs" />
@@ -119,14 +118,23 @@
     <Compile Include="Files\Font\ResourceFontFileStream.cs" />
     <Compile Include="Files\Font\ResourceFontLoader.cs" />
     <Compile Include="Helpers\AudioPlayer.cs" />
+    <Compile Include="Helpers\ExcelDataLoader.cs" />
     <Compile Include="Helpers\GameDataReader.cs" />
     <Compile Include="Helpers\GameManager.cs" />
     <Compile Include="Helpers\Hotkey.cs" />
+    <Compile Include="Helpers\InvariantCultureLayoutRendererWrapper.cs" />
+    <Compile Include="Helpers\ItemExport.cs" />
     <Compile Include="Helpers\Localization.cs" />
     <Compile Include="Helpers\LootFilter.cs" />
+    <Compile Include="Helpers\Pattern.cs" />
     <Compile Include="Helpers\ProcessContext.cs" />
+    <Compile Include="Helpers\QualityLevels.cs" />
     <Compile Include="Helpers\YamlConverters.cs" />
     <Compile Include="Interfaces\IUpdatable.cs" />
+    <Compile Include="MyBot\Api.cs" />
+    <Compile Include="MyBot\ApiHost.cs" />
+    <Compile Include="MyBot\IBotConfig.cs" />
+    <Compile Include="Overlay.cs" />
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\PointOfInterestHandler.cs" />
     <Compile Include="Helpers\MapApi.cs" />
@@ -139,6 +147,7 @@
     </Compile>
     <Compile Include="Settings\LootLogConfiguration.cs" />
     <Compile Include="Settings\MapAssistConfiguration.cs" />
+    <Compile Include="Structs\MapSeed.cs" />
     <Compile Include="Structs\Act.cs" />
     <Compile Include="Structs\ActMisc.cs" />
     <Compile Include="Structs\Inventory.cs" />
@@ -147,6 +156,7 @@
     <Compile Include="Structs\Level.cs" />
     <Compile Include="Structs\MonsterData.cs" />
     <Compile Include="Structs\ObjectData.cs" />
+    <Compile Include="Structs\Pet.cs" />
     <Compile Include="Structs\PlayerInfo.cs" />
     <Compile Include="Structs\RosterMember.cs" />
     <Compile Include="Structs\Path.cs" />
@@ -157,10 +167,14 @@
     <Compile Include="Structs\UnitAny.cs" />
     <Compile Include="Structs\UnitHashTable.cs" />
     <Compile Include="Types\Chest.cs" />
+    <Compile Include="Types\ItemsExport.cs" />
     <Compile Include="Types\Locale.cs" />
     <Compile Include="Types\Items.cs" />
+    <Compile Include="Types\Missile.cs" />
+    <Compile Include="Types\Pets.cs" />
     <Compile Include="Types\Player.cs" />
     <Compile Include="Types\Roster.cs" />
+    <Compile Include="Types\MapSeed.cs" />
     <Compile Include="Types\Session.cs" />
     <Compile Include="Types\Shrine.cs" />
     <Compile Include="Types\Skill.cs" />
@@ -176,6 +190,7 @@
     <Compile Include="Types\GameObject.cs" />
     <Compile Include="Types\AreaData.cs" />
     <Compile Include="Helpers\GameMemory.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Types\Npc.cs" />
     <Compile Include="Types\Path.cs" />
@@ -183,6 +198,7 @@
     <Compile Include="Types\RawAreaData.cs" />
     <Compile Include="Settings\Rendering.cs" />
     <Compile Include="Types\UnitAny.cs" />
+    <Compile Include="Types\UnitMissile.cs" />
     <Compile Include="Types\UnitObject.cs" />
     <Compile Include="Types\UnitPlayer.cs" />
     <Compile Include="Types\UnitMonster.cs" />
@@ -207,17 +223,24 @@
     <PackageReference Include="GameOverlay.Net">
       <Version>4.3.1</Version>
     </PackageReference>
+    <PackageReference Include="HotkeyListener">
+      <Version>1.9.0</Version>
+    </PackageReference>
+    <PackageReference Include="MouseKeyHook">
+      <Version>5.6.0</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="NLog">
-      <Version>4.7.12</Version>
+      <Version>4.7.15</Version>
     </PackageReference>
     <PackageReference Include="YamlDotNet">
       <Version>11.2.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Build.cmd" />
     <None Include="Resources\Icon1.ico" />
     <None Include="Resources\Icon2.ico" />
     <None Include="ItemFilter.yaml">
@@ -537,13 +560,41 @@
     <None Include="Resources\Cold.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\TigerStrike.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BladesOfIce.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ClawsOfThunder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CobraStrike.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FistsOfFire.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PhoenixStrike.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="MAServer.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\Banner.png" />
+    <Content Include="Resources\BladeMastery.png" />
+    <Content Include="Resources\Frozen.png" />
+    <None Include="Resources\QualityLevels.json" />
+    <EmbeddedResource Include="Resources\SuperUniques.txt" />
+    <None Include="Resources\QualityLevels.json.bmp" />
+    <Content Include="Resources\Venom.png" />
+    <EmbeddedResource Include="Resources\InventoryExportTemplate.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)Config.yaml" "$(TargetDir)" /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>

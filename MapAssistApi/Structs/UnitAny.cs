@@ -1,23 +1,4 @@
-﻿/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
-using MapAssist.Types;
+﻿using MapAssist.Types;
 using System;
 using System.Runtime.InteropServices;
 
@@ -41,6 +22,7 @@ namespace MapAssist.Structs
         [FieldOffset(0xC4)] public ushort X;
 
         [FieldOffset(0xC6)] public ushort Y;
+        [FieldOffset(0xD8)] public readonly uint UnkSortStashesBy;
         [FieldOffset(0x100)] public IntPtr pSkills;
         [FieldOffset(0x150)] public IntPtr pListNext;
         [FieldOffset(0x158)] public IntPtr pRoomNext;
@@ -70,8 +52,15 @@ namespace MapAssist.Structs
     public readonly struct StatValue
     {
         [FieldOffset(0x0)] public readonly ushort Layer;
-        [FieldOffset(0x2)] public readonly Stat Stat;
+        [FieldOffset(0x2)] public readonly Stats.Stat Stat;
         [FieldOffset(0x4)] public readonly int Value;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    public readonly struct StatListStruct
+    {
+        [FieldOffset(0x1C)] public readonly uint Flags;
+        [FieldOffset(0x30)] public readonly StatArrayStruct Stats;
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -79,16 +68,15 @@ namespace MapAssist.Structs
     {
         [FieldOffset(0x0)] public readonly IntPtr pFirstStat;
         [FieldOffset(0x8)] public readonly ulong Size;
-        [FieldOffset(0x10)] public readonly ulong Capacity;
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public readonly struct StatListStruct
+    public readonly struct StatListExStruct
     {
-        [FieldOffset(0x8)] public readonly uint OwnerType;
-        [FieldOffset(0xC)] public readonly uint OwnerId;
-        [FieldOffset(0x1C)] public readonly uint Flags;
-        [FieldOffset(0x30)] public readonly StatArrayStruct BaseStats;
+        [FieldOffset(0x0)] public readonly StatListStruct BaseStats;
+        [FieldOffset(0x48)] public readonly IntPtr pPrevLink;
+        [FieldOffset(0x68)] public readonly IntPtr pLastList;
+        [FieldOffset(0x70)] public readonly IntPtr pMyStats;
         [FieldOffset(0x80)] public readonly StatArrayStruct Stats;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]

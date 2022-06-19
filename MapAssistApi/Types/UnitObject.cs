@@ -16,7 +16,7 @@ namespace MapAssist.Types
 
         public new UnitObject Update()
         {
-            if (base.Update())
+            if (base.Update() == UpdateResult.Updated)
             {
                 using (var processContext = GameManager.GetProcessContext())
                 {
@@ -48,6 +48,8 @@ namespace MapAssist.Types
         public bool IsWell => UnitType == UnitType.Object && ObjectData.pObjectTxt != IntPtr.Zero && ObjectText.ObjectType == "Well";
 
         public bool IsChest => UnitType == UnitType.Object && ObjectData.pObjectTxt != IntPtr.Zero && Struct.Mode == 0 && Chest.NormalChests.Contains(GameObject);
+
+        public bool IsArmorWeapRack => UnitType == UnitType.Object && ObjectData.pObjectTxt != IntPtr.Zero && Struct.Mode == 0 && Chest.ArmorWeapRacks.Contains(GameObject);
 
         public override string HashString => GameObject + "/" + Position.X + "/" + Position.Y;
     }

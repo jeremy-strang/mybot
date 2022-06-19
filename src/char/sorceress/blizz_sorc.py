@@ -1,8 +1,12 @@
+from distutils.log import Log
+import math
+import time
+from turtle import pos
 import keyboard
 from char.sorceress import Sorceress
 from utils.custom_mouse import mouse
 from logger import Logger
-from utils.misc import wait, rotate_vec, unit_vector
+from utils.misc import rotate_vec, unit_vector, wait, point_str
 import random
 from pathing import Location
 import numpy as np
@@ -15,7 +19,8 @@ from pathing import OldPather, Location
 
 from d2r.d2r_api import D2rApi
 from pathing import Pather
-from state_monitor import StateMonitor
+from monsters import sort_and_filter_monsters, CHAMPS_UNIQUES
+from monsters import MonsterRule, MonsterType
 from obs import ObsRecorder
 
 class BlizzSorc(Sorceress):
@@ -24,246 +29,143 @@ class BlizzSorc(Sorceress):
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, old_pather)
         self._old_pather = old_pather
         self._pather = pather
-        #Nihlathak Bottom Right
-        self._old_pather.offset_node(505, (50, 200))
-        self._old_pather.offset_node(506, (40, -10))
-        #Nihlathak Top Right
-        self._old_pather.offset_node(510, (700, -55))
-        self._old_pather.offset_node(511, (30, -25))
-        #Nihlathak Top Left
-        self._old_pather.offset_node(515, (-120, -100))
-        self._old_pather.offset_node(517, (-18, -58))
-        #Nihlathak Bottom Left
-        self._old_pather.offset_node(500, (-150, 200))
-        self._old_pather.offset_node(501, (10, -33))
 
-    def get_cast_frames(self):
-        fcr = self.get_fcr()
-        Logger.debug(f"Detected player FCR: {fcr}")
-        if fcr >= 200: return 7
-        if fcr >= 105: return 8
-        if fcr >= 63: return 9
-        if fcr >= 37: return 10
-        if fcr >= 20: return 11
-        if fcr >= 9: return 12
-        return 13
-
-    def _ice_blast(self, cast_pos_abs: tuple[float, float], delay: tuple[float, float] = (0.16, 0.23), spray: float = 10):
+    def _ice_blast(self, cast_pos_abs: tuple[float, float], dist: int = 0):
         keyboard.send(self._char_config["stand_still"], do_release=False)
         if self._skill_hotkeys["ice_blast"]:
             keyboard.send(self._skill_hotkeys["ice_blast"])
-        for _ in range(5):
-            x = cast_pos_abs[0] + (random.random() * 2*spray - spray)
-            y = cast_pos_abs[1] + (random.random() * 2*spray - spray)
-            cast_pos_monitor = self._screen.convert_abs_to_monitor((x, y))
-            mouse.move(*cast_pos_monitor)
+        for _ in range(2):
+            self._pather.move_mouse_to_abs_pos(cast_pos_abs, dist)
             mouse.press(button="left")
-            wait(delay[0], delay[1])
+            wait(0.16, 0.23)
             mouse.release(button="left")
         keyboard.send(self._char_config["stand_still"], do_press=False)
 
-    def _blizzard(self, cast_pos_abs: tuple[float, float], spray: float = 10):
+    def _blizzard(self, cast_pos_abs: tuple[float, float], dist: int = 0):
+        Logger.debug(f"Casting Blizzard in the direction of {point_str(cast_pos_abs)}...")
         if not self._skill_hotkeys["blizzard"]:
             raise ValueError("You did not set a hotkey for blizzard!")
         keyboard.send(self._skill_hotkeys["blizzard"])
-        x = cast_pos_abs[0] + (random.random() * 2 * spray - spray)
-        y = cast_pos_abs[1] + (random.random() * 2 * spray - spray)
-        cast_pos_monitor = self._screen.convert_abs_to_monitor((x, y))
-        mouse.move(*cast_pos_monitor)
-        click_tries = random.randint(2, 4)
-        for _ in range(click_tries):
-            mouse.press(button="right")
-            wait(0.09, 0.12)
-            mouse.release(button="right")
+        self._pather.move_mouse_to_abs_pos(cast_pos_abs, dist)
+        mouse.press(button="right")
+        wait(2, 3)
+        mouse.release(button="right")
+
+    def _kill_super_unique(self, name: str = None, radius: int = 20, reposition_pos: list[tuple[float, float]] = None, min_distance: int = 6):
+        center_pos = None
+        boss = self._api.find_monster_by_name(name) if name is not None else None
+        if not boss:
+            bosses = self._api.find_monsters_by_type(MonsterType.SUPER_UNIQUE)
+            if len(bosses) > 0:
+                boss = bosses[0]
+        if boss:
+            center_pos = boss["position_area"]
+            Logger.info(f"Killing super unique '{boss['name']}', id: {boss['id']}, position: {point_str(boss['position_area'])}")
+        elif self._api.data:
+            center_pos = self._api.data["player_pos_area"]
+        boundary = [center_pos[0] - radius, center_pos[1] - radius, radius * 2, radius * 2] if center_pos is not None else None
+        rules = [
+            MonsterRule(monster_types = [MonsterType.SUPER_UNIQUE]),
+            MonsterRule(monster_types = [MonsterType.UNIQUE]),
+        ]
+        if name is not None:
+            rules.append(MonsterRule(names = name))
+
+        return self._kill_mobs(rules, time_out=25, reposition_pos=reposition_pos, boundary=boundary, min_distance=min_distance)
+
+    def _kill_mobs(self,
+                  prioritize: list[MonsterRule],
+                  ignore: list[MonsterRule] = None,
+                  time_out: float = 40.0,
+                  boundary: tuple[float, float, float, float] = None,
+                  reposition_pos: list[tuple[float, float]] = None,
+                  min_distance: int = 10,
+                  tele_stomp: bool = False,
+                ) -> bool:
+        
+        start = time.time()
+        elapsed = 0
+        pos_idx = 0
+        blizz_time = None
+        last_target_pos = None
+        Logger.debug(f"boundary {boundary}...")
+        monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
+        if len(monsters) == 0: return True
+        Logger.debug(f"Beginning combat against {len(monsters)} monsters...")
+        while elapsed < time_out and len(monsters) > 0:
+            data = self._api.get_data()
+            if data:
+                for monster in monsters:
+                    data = self._api.get_data()
+                    monster = self._api.find_monster(monster["id"])
+                    if monster and monster["mode"] != 12:
+                        last_target_pos = monster["position_abs"]
+
+                        if tele_stomp and monster and monster["dist"] >= min_distance:
+                            self._pather.move_to_monster(self, monster, True)
+                            wait(0.07, 0.09)
+                            monster = self._api.find_monster(monster["id"])
+                            if monster and monster["dist"] <= min_distance:
+                                self._cast_static(self._cast_duration * 5)
+                                wait(0.05, 0.07)
+                        elif not tele_stomp and monster and monster["dist"] <= min_distance and reposition_pos is not None:
+                            Logger.debug(f"    Monster {monster['id']} distance is too close ({round(monster['dist'], 2)}), moving pos[{pos_idx}]={reposition_pos[pos_idx]}...")
+                            self._pather.traverse(reposition_pos[pos_idx], self, time_out = 3.0)
+                            pos_idx += 1
+                            if pos_idx >= len(reposition_pos): 
+                                pos_idx = 0
+                        else:
+                            Logger.debug(f"    Monster {monster['id']} distance just right ({round(monster['dist'], 2)}), attacking...")
+                            if blizz_time is not None: Logger.debug(f"{time.time() - blizz_time} > 1.8 = {time.time() - blizz_time > 1.8}")
+                            if blizz_time is None or time.time() - blizz_time > 1.8:
+                                self._blizzard(cast_pos_abs=monster['position_abs'], dist=monster['dist'])
+                                blizz_time = time.time()
+                            self._ice_blast(cast_pos_abs=monster['position_abs'], dist=monster['dist'])
+                            wait(0.05, 0.07)
+                        
+            wait(0.1)
+            monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
+            elapsed = time.time() - start
+            Logger.debug(f"    Continuing combat against {len(monsters)} monsters...")
+        self.post_attack()
+
+        if last_target_pos is not None:
+            self.move(self._screen.convert_abs_to_monitor(last_target_pos, True), force_tp=True)
+
+        Logger.debug(f"    Finished killing mobs, combat took {elapsed} sec")
+        return True
+
 
     def kill_pindleskin(self) -> bool:
-        pindle_pos_abs = self._screen.convert_screen_to_abs(self._config.path["pindle_end"][0])
-        cast_pos_abs = [pindle_pos_abs[0] * 0.9, pindle_pos_abs[1] * 0.9]
-        for _ in range(int(self._char_config["atk_len_pindle"])):
-            self._blizzard(cast_pos_abs, spray=11)
-            self._ice_blast(cast_pos_abs, spray=11)
-        # Move to items
-        wait(self._cast_duration, self._cast_duration + 0.2)
-        self._old_pather.traverse_nodes_fixed("pindle_end", self)
-        return True
+        radius = 20
+        name = "Pindleskin"
+        center_pos = None
+        boss = self._api.find_monster_by_name(name) if name is not None else None
+        if not boss:
+            bosses = self._api.find_monsters_by_type(MonsterType.SUPER_UNIQUE)
+            if len(bosses) > 0:
+                boss = bosses[0]
+        if boss:
+            center_pos = boss["position_area"]
+            Logger.info(f"Killing super unique '{boss['name']}', id: {boss['id']}, position: {point_str(boss['position_area'])}")
+        elif self._api.data:
+            center_pos = self._api.data["player_pos_area"]
+        boundary = [center_pos[0] - radius, center_pos[1] - radius, radius * 2, radius * 2] if center_pos is not None else None
+        rules = [
+            MonsterRule(names = "DefiledWarrior"),
+            MonsterRule(names = name),
+        ]
 
+        return self._kill_mobs(rules, time_out=25, boundary=boundary, min_distance=0)
+        
     def kill_eldritch(self) -> bool:
-        #move up
-        pos_m = self._screen.convert_abs_to_monitor((0, -175))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        self._blizzard((-50, -50), spray=10)
-        self._cast_static()
-        #move down
-        pos_m = self._screen.convert_abs_to_monitor((0, 85))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        wait(0.70)
-        self._blizzard((-170, -350), spray=10)
-        self._cast_static()
-        #move down
-        pos_m = self._screen.convert_abs_to_monitor((0, 75))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        self._blizzard((100, -300), spray=10)
-        self._cast_static()
-        pos_m = self._screen.convert_abs_to_monitor((0, 55))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        wait(1.0)
-        self._blizzard((-50, -130), spray=10)
-        self._cast_static()
-        wait(3.0)
-        self._old_pather.traverse_nodes_fixed("eldritch_end", self)
-        return True
-
-    def kill_shenk(self) -> bool:
-        pos_m = self._screen.convert_abs_to_monitor((100, 170))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        #lower left posistion
-        self._old_pather.traverse_nodes([151], self, time_out=2.5, force_tp=False)
-        self._cast_static()
-        self._blizzard((-250, 100), spray=10)
-        self._ice_blast((60, 70), spray=60)
-        self._blizzard((400, 200), spray=10)
-        self._cast_static()
-        self._ice_blast((-300, 100), spray=60)
-        self._blizzard((185, 200), spray=10)
-        pos_m = self._screen.convert_abs_to_monitor((-10, 10))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        self._cast_static()
-        self._blizzard((-300, -270), spray=10)
-        self._ice_blast((-20, 30), spray=60)
-        wait(1.0)
-        #teledance 2
-        pos_m = self._screen.convert_abs_to_monitor((150, -240))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        #teledance attack 2
-        self._cast_static()
-        self._blizzard((450, -250), spray=10)
-        self._ice_blast((150, -100), spray=60)
-        self._blizzard((0, -250), spray=10)
-        wait(0.3)
-        #Shenk Kill
-        self._cast_static()
-        self._blizzard((100, -50), spray=10)
-        # Move to items
-        self._old_pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.4, force_tp=True)
-        return True
-
-    def kill_council(self) -> bool:
-        # Move inside to the right
-        self._old_pather.traverse_nodes_fixed([(1110, 120)], self)
-        self._old_pather.offset_node(300, (80, -110))
-        self._old_pather.traverse_nodes([300], self, time_out=5.5, force_tp=True)
-        self._old_pather.offset_node(300, (-80, 110))
-        # Attack to the left
-        self._blizzard((-150, 10), spray=80)
-        self._ice_blast((-300, 50), spray=40)
-        # Tele back and attack
-        pos_m = self._screen.convert_abs_to_monitor((-50, 200))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        self._blizzard((-235, -230), spray=80)
-        wait(1.0)
-        pos_m = self._screen.convert_abs_to_monitor((-285, -320))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        wait(0.5)
-        # Move to far left
-        self._old_pather.offset_node(301, (-80, -50))
-        self._old_pather.traverse_nodes([301], self, time_out=2.5, force_tp=True)
-        self._old_pather.offset_node(301, (80, 50))
-        # Attack to RIGHT
-        self._blizzard((100, 150), spray=80)
-        self._ice_blast((230, 230), spray=20)
-        wait(0.5)
-        self._blizzard((310, 260), spray=80)
-        wait(1.0)
-        # Move to bottom of stairs
-        self.pre_move()
-        for p in [(450, 100), (-190, 200)]:
-            pos_m = self._screen.convert_abs_to_monitor(p)
-            self.move(pos_m, force_move=True)
-        self._old_pather.traverse_nodes([304], self, time_out=2.5, force_tp=True)
-        # Attack to center of stairs
-        self._blizzard((-175, -200), spray=30)
-        self._ice_blast((30, -60), spray=30)
-        wait(0.5)
-        self._blizzard((175, -270), spray=30)
-        wait(1.0)
-        # Move back inside
-        self._old_pather.traverse_nodes_fixed([(1110, 15)], self)
-        self._old_pather.traverse_nodes([300], self, time_out=2.5, force_tp=False)
-        # Attack to center
-        self._blizzard((-100, 0), spray=10)
-        self._cast_static()
-        self._ice_blast((-300, 30), spray=50)
-        self._blizzard((-175, 50), spray=10)
-        wait(1.0)
-        # Move back outside and attack
-        pos_m = self._screen.convert_abs_to_monitor((-430, 230))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        self._blizzard((-50, -150), spray=30)
-        self._cast_static()
-        wait(0.5)
-        # Move back inside and attack
-        pos_m = self._screen.convert_abs_to_monitor((150, -350))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        # Attack sequence center
-        self._blizzard((-100, 35), spray=30)
-        self._cast_static()
-        self._blizzard((-150, 20), spray=30)
-        wait(1.0)
-        # Move inside
-        pos_m = self._screen.convert_abs_to_monitor((100, -30))
-        self.pre_move()
-        self.move(pos_m, force_move=True)
-        # Attack sequence to center
-        self._blizzard((-50, 50), spray=30)
-        self._cast_static()
-        self._ice_blast((-30, 50), spray=10)
-        # Move outside since the trav.py expects to start searching for items there if char can teleport
-        self._old_pather.traverse_nodes([226], self, time_out=2.5, force_tp=True)
-        return True
-
-    def kill_nihlathak(self, end_nodes: list[int]) -> bool:
-        # Find nilhlatak position
-        atk_sequences = max(1, int(self._char_config["atk_len_nihlathak"]) - 1)
-        for i in range(atk_sequences):
-            nihlathak_pos_abs = self._old_pather.find_abs_node_pos(end_nodes[-1], self._screen.grab())
-            if nihlathak_pos_abs is not None:
-                cast_pos_abs = np.array([nihlathak_pos_abs[0] * 1.0, nihlathak_pos_abs[1] * 1.0])
-                wait(0.8)
-                self._blizzard(cast_pos_abs, spray=0)
-                wait(0.3)
-                is_nihl = self._template_finder.search(["NIHL_BAR"], self._screen.grab(), threshold=0.8, roi=self._config.ui_roi["enemy_info"]).valid
-                nihl_immune = self._template_finder.search(["COLD_IMMUNE","COLD_IMMUNES"], self._screen.grab(), threshold=0.8, roi=self._config.ui_roi["enemy_info"]).valid
-                if is_nihl:
-                    Logger.info("Found him!")
-                    if nihl_immune:
-                        Logger.info("Cold Immune! - Exiting")
-                        return True
-        wait(0.8)
-        self._cast_static()
-        self._blizzard(cast_pos_abs, spray=15)
-        # Move to items
-        wait(1.3)
-        self._old_pather.traverse_nodes(end_nodes, self, time_out=0.8)
-        return True
-
-    def kill_summoner(self) -> bool:
-        # Attack
-        cast_pos_abs = np.array([0, 0])
-        pos_m = self._screen.convert_abs_to_monitor((-20, 20))
-        mouse.move(*pos_m, randomize=80, delay_factor=[0.5, 0.7])
-        for _ in range(int(self._char_config["atk_len_arc"])):
-            self._blizzard(cast_pos_abs, spray=11)
-            self._ice_blast(cast_pos_abs, spray=11)
-        wait(self._cast_duration, self._cast_duration + 0.2)
-        return True
+        self._kill_super_unique("Eldritch", reposition_pos=[[278, 733], [296, 739]])
+        
+    def kill_mephisto(self) -> bool:
+        return self._kill_mobs([MonsterRule(names = "Mephisto")], reposition_pos=[[69, 82], [69, 54]], tele_stomp=True)
+        
+    def kill_andariel(self) -> bool:
+        return self._kill_mobs([MonsterRule(names = "Andariel")], reposition_pos=[[47, 20], [47, 6]], tele_stomp=True)
+        
+    def kill_countess(self) -> bool:
+        return self._kill_mobs([MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE])], reposition_pos=[[40, 85], [40, 65]])

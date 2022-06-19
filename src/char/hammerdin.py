@@ -1,5 +1,6 @@
 from ast import Tuple
 from sre_parse import State
+from d2r.d2r import TOWNS
 import keyboard
 from char.skill import Skill
 from utils.coordinates import world_to_abs
@@ -32,7 +33,7 @@ class Hammerdin(IChar):
         self._old_pather = old_pather
         self._pather = pather
         self._do_pre_move = True
-        if not self._skill_hotkeys["teleport"]:
+        if not self.can_tp:
             self._do_pre_move = False
 
     def get_cast_frames(self):
@@ -50,60 +51,46 @@ class Hammerdin(IChar):
     def _cast_hammers(self, time_in_s: float, aura: str = "concentration"):
         if aura in self._skill_hotkeys and self._skill_hotkeys[aura]:
             keyboard.send(self._skill_hotkeys[aura])
-            wait(0.05, 0.1)
+            wait(0.05, 0.07)
             keyboard.send(self._char_config["stand_still"], do_release=False)
-            wait(0.05, 0.1)
-            if self._skill_hotkeys["blessed_hammer"]:
+            wait(0.04, 0.05)
+            # keyboard.send(self._skill_hotkeys["blessed_hammer"])
+            # wait(0.05, 0.1)
+            start = time.time()
+            while (time.time() - start) < time_in_s:
                 keyboard.send(self._skill_hotkeys["blessed_hammer"])
-            wait(0.05, 0.1)
-            start = time.time()
-            while (time.time() - start) < time_in_s:
-                wait(0.06, 0.08)
-                mouse.press(button="left")
-                wait(0.1, 0.2)
-                mouse.release(button="left")
-            wait(0.01, 0.05)
-            keyboard.send(self._char_config["stand_still"], do_press=False)
-
-    def _cast_holy_bolt(self, time_in_s: float, abs_screen_pos: tuple[float, float]):
-        if self._skill_hotkeys["holy_bolt"]:
-            keyboard.send(self._skill_hotkeys["concentration"])
-            keyboard.send(self._skill_hotkeys["holy_bolt"])
-            wait(0.05)
-            m = self._screen.convert_abs_to_monitor(abs_screen_pos)
-            mouse.move(*m, delay_factor=[0.2, 0.4])
-            keyboard.send(self._char_config["stand_still"], do_release=False)
-            start = time.time()
-            while (time.time() - start) < time_in_s:
-                wait(0.06, 0.08)
-                mouse.press(button="left")
-                wait(0.1, 0.2)
-                mouse.release(button="left")
-            keyboard.send(self._char_config["stand_still"], do_press=False)
+                wait(0.05, 0.07)
+                # wait(0.06, 0.08)
+                # mouse.press(button="left")
+                # wait(0.1, 0.2)
+                # mouse.release(button="left")
+            keyboard.release(self._char_config["stand_still"])
 
     def pre_buff(self, switch_back=True):
         if self._char_config["cta_available"]:
             self._pre_buff_cta()
         keyboard.send(self._skill_hotkeys["holy_shield"])
-        wait(0.05, 0.1)
-        mouse.click(button="right")
-        wait(self._cast_duration + 0.04, self._cast_duration + 0.06)
+        # wait(0.05, 0.07)
+        # mouse.click(button="right")
+        wait(self._cast_duration + 0.01)
 
     def pre_move(self):
         # select teleport if available
         super().pre_move()
         # in case teleport hotkey is not set or teleport can not be used, use vigor if set
         should_cast_vigor = self._skill_hotkeys["vigor"] and not self._ui_manager.is_right_skill_selected(Skill.Vigor)
-        can_teleport = self.can_tp and self._ui_manager.is_right_skill_active()
+        can_teleport = self.can_tp and not self._api.in_town # self.can_tp and self._ui_manager.is_right_skill_active()
+        # if self._api.data and self._api.data["current_area"] in TOWNS:
+        #     can_teleport = False
         if should_cast_vigor and not can_teleport:
             keyboard.send(self._skill_hotkeys["vigor"])
-            wait(0.15, 0.25)
+            wait(0.15)
 
     def post_attack(self) -> bool:
         mouse.release(button="left")
-        wait(0.02, 0.4)
+        wait(0.03, 0.4)
         keyboard.release(self._char_config["stand_still"]) 
-        wait(0.02, 0.4)
+        wait(0.03, 0.4)
         return True
 
     def _move_and_attack(self, abs_move: tuple[int, int], atk_len: float):
@@ -112,7 +99,8 @@ class Hammerdin(IChar):
         self.move(pos_m, force_move=True)
         self._cast_hammers(atk_len)
 
-    def _kill_super_unique(self, name: str = None, radius: int = 20, min_attack_time: float = 0):
+    def _kill_super_unique(self, name: str = None, ignore = None, radius: int = 20, min_attack_time: float = 0) -> bool:
+        success = True
         center_pos = None
         boss = self._api.find_monster_by_name(name) if name is not None else None
         if not boss:
@@ -130,20 +118,25 @@ class Hammerdin(IChar):
             MonsterRule(monster_types = [MonsterType.UNIQUE]),
         ]
         if name is not None:
-            rules.append(MonsterRule(names = name))
+            rules.insert(0,MonsterRule(names = name))
+
         if self.can_tp:
-            return self._kill_mobs(rules, time_out=25, boundary=boundary, min_attack_time=min_attack_time)
+            success = self._kill_mobs(rules, ignore, time_out=25, boundary=boundary, min_attack_time=min_attack_time)
         else:
-            return self._kill_mobs_walking(rules, time_out=25, boundary=boundary, min_attack_time=min_attack_time)
+            success = self._kill_mobs_walking(rules, ignore, time_out=25, boundary=boundary, min_attack_time=min_attack_time)
+        
+        # Wait a little for hammers to clean stuff up and for loot data to load
+        wait(0.5)
+        return success
 
     def kill_pindleskin(self) -> bool:
-        return self._kill_super_unique("Pindleskin", self._cast_duration * 7)
+        return self._kill_super_unique("Pindleskin", min_attack_time=self._cast_duration * 9)
 
     def kill_eldritch(self) -> bool:
-        return self._kill_super_unique("Eldritch", self._cast_duration * 7)
+        return self._kill_super_unique("Eldritch", min_attack_time=self._cast_duration * 9)
 
     def kill_shenk(self):
-        return self._kill_super_unique("Shenk", self._cast_duration * 7)
+        return self._kill_super_unique("Shenk", min_attack_time=self._cast_duration * 9)
 
     def kill_council(self) -> bool:
         if not self._do_pre_move:
@@ -153,14 +146,13 @@ class Hammerdin(IChar):
         atk_len = self._char_config["atk_len_trav"]
         # Here we have two different attack sequences depending if tele is available or not
         if self.can_tp:
-            self._kill_council_with_tp()
+            self._kill_council_teleporting()
         else:
             self._kill_council_walking()
         keyboard.send(self._skill_hotkeys["concentration"])
         wait(0.05, 0.08)
         return True
 
-    # Chaos Sanctuary, Seal Bosses (a = Vizier, b = De Seis, c = Infector) & Diablo
     def kill_cs_trash(self) -> bool:
         # move mouse to center, otherwise hammers sometimes dont fly, not sure why
         pos_m = self._screen.convert_abs_to_monitor((0, 0))
@@ -281,11 +273,11 @@ class Hammerdin(IChar):
         if aura in self._skill_hotkeys and self._skill_hotkeys[aura]:
             keyboard.send(self._skill_hotkeys[aura])
         start = time.time()
-        while time.time() - start < 50:
+        while time.time() - start < 20:
             data = self._api.get_data()
             if data is not None:
                  for m in data["monsters"]:
-                    if m['mode'] != 12:
+                     if m["mode"] != 12:
                         area_pos = m["position"] - data["area_origin"]
                         proceed = True
                         if monster_filter is not None:
@@ -302,83 +294,100 @@ class Hammerdin(IChar):
                 if not hammer_thread.is_alive():
                     hammer_thread.start()
             time.sleep(0.1)
-        return False, found_monsters
+        return True, found_monsters
 
     def clear_throne(self, full = False, monster_filter = None, baal_wave = 0) -> bool:
         throne_area = [70, 0, 50, 95 if full else 65]
-
-        def _should_focus_mummies(monsters):
-            return baal_wave == 2 and any(x["name"].startswith("BaalSubjectMummy") and x["mode"] != 12 for x in monsters)
-
-        aura_after_battle = "redemption"
-        success = False
-        start = time.time()
-        prev_position = None
-        prev_pos_counter = time.time()
-        num_repositions = 0
-        time_out = 100 if baal_wave == 2 else 80
-        while time.time() - start < time_out:
-            data = self._api.get_data()
-            found_a_monster = False
-            if data is not None: 
-                monsters = data["monsters"]
-                focus_mummies = _should_focus_mummies(monsters)
-                for i in range(len(monsters)):
-                    m = monsters[i]
-                    if m['mode'] != 12:
-                        if i > 0:
-                            fresh_data = self._api.get_data()
-                            fresh_m = next(filter(lambda x: x["id"] == m["id"], fresh_data["monsters"]), m)
-                            if fresh_m is not None:
-                                m = fresh_m
-                                focus_mummies = _should_focus_mummies(fresh_data["monsters"])
-                        area_pos = m["position"] - data["area_origin"]
-                        proceed = True
-                        if monster_filter is not None:
-                            proceed = any(m["name"].startswith(startstr) for startstr in monster_filter)
-                        if is_in_roi(throne_area, area_pos) and proceed:
-                            m_is_mummy = m["name"].startswith("BaalSubjectMummy")
-                            dist = math.dist(area_pos, data["player_pos_area"])
-                            if m_is_mummy:
-                                Logger.debug("Fighting mummy: {0}, id: {1}, distance: {2}".format(m["name"], m["id"], dist))
-                                if dist >= 5:
-                                    self._pather.traverse(area_pos, self, randomize=12)
-                                    dist = math.dist(area_pos, data["player_pos_area"])
-                                if dist < 5:
-                                    self.tele_stomp_monster("holy_bolt", self._cast_duration * 5, m)
-                                aura_after_battle = "cleansing"
-                                num_repositions = 0
-                            elif not focus_mummies:
-                                if dist >= 5:
-                                    self._pather.traverse(area_pos, self, randomize=12)
-                                    dist = math.dist(area_pos, data["player_pos_area"])
-                                if dist < 5:
-                                    self.tele_stomp_monster("blessed_hammer", self._cast_duration * 5, m)
-                                num_repositions = 0
-                            found_a_monster = True
-                            break
-                if prev_position is None or not np.array_equal(prev_position, data["player_pos_area"]):
-                    prev_pos_counter = time.time()
-                if time.time() - prev_pos_counter > (3.8 if baal_wave != 2 else 6):
-                    Logger.debug("Reposition for next attack (" + str(num_repositions) + ")")
-                    if baal_wave == 2 and num_repositions == 2:
-                        self._pather.traverse((95, 55), self)
-                    elif baal_wave == 2 and num_repositions == 3:
-                        self._pather.traverse((101, 3), self)
-                    elif baal_wave == 2 and num_repositions == 4:
-                        self._pather.traverse((86, 3), self)
-                    else:
-                        m_pos = self._screen.convert_abs_to_monitor((random.randint(-100, 100), random.randint(-100, 100)))
-                        self.pre_move()
-                        self.move(m_pos)
-                    num_repositions += 1
-                prev_position = data["player_pos_area"]
-            if not found_a_monster:
-                success = True
-                break
-        if aura_after_battle in self._skill_hotkeys and self._skill_hotkeys[aura_after_battle]:
-            keyboard.send(self._skill_hotkeys[aura_after_battle])
-        return success
+        if baal_wave == 1:
+            prio = [MonsterRule(names=["WarpedShaman"]), MonsterRule(names=["WarpedFallen"])]
+            self._kill_mobs(prio, time_out=60, boundary=throne_area, reposition_pos=(95, 42))
+        elif baal_wave == 2:
+            self._kill_mobs([MonsterRule(names=["BaalSubjectMummy"])], time_out=60, boundary=throne_area, reposition_pos=(95, 42))
+            self._kill_mobs([MonsterRule(names=["BaalSubjectMummy"]), MonsterRule("BaalColdMage")], time_out=40, boundary=throne_area, reposition_pos=(95, 42))
+        elif baal_wave == 3:
+            self._kill_mobs([MonsterRule(names=["CouncilMember"])], time_out=60, boundary=throne_area, reposition_pos=(95, 42))
+        elif baal_wave == 4:
+            self._kill_mobs([MonsterRule(names=["VenomLord"])], time_out=60, boundary=throne_area, reposition_pos=(95, 42))
+        elif baal_wave == 5:
+            self._kill_mobs([MonsterRule(names=["BaalsMinion"])], time_out=60, boundary=throne_area, reposition_pos=(95, 42))
+        else:
+            prio = [MonsterRule(monster_types=[MonsterType.SUPER_UNIQUE, MonsterType.MINION])]
+            self._kill_mobs(prio, time_out=60, boundary=throne_area, reposition_pos=(95, 42))
+            self._kill_mobs(None, time_out=40, boundary=throne_area, reposition_pos=(95, 42))
+        
+        # Clean up anything left
+        self._kill_mobs(None, None, time_out=40, boundary=throne_area, reposition_pos=(95, 42))
+        
+        # aura_after_battle = "redemption"
+        # success = False
+        # start = time.time()
+        # prev_position = None
+        # prev_pos_counter = time.time()
+        # num_repositions = 0
+        # time_out = 100 if baal_wave == 2 else 80
+        # while time.time() - start < time_out:
+        #     data = self._api.get_data()
+        #     found_a_monster = False
+        #     if data is not None: 
+        #         monsters = data["monsters"]
+        #         focus_mummies = _should_focus_mummies(monsters)
+        #         for i in range(len(monsters)):
+        #             m = monsters[i]
+        #             if m['mode'] != 12:
+        #                 if i > 0:
+        #                     fresh_data = self._api.get_data()
+        #                     fresh_m = next(filter(lambda x: x["id"] == m["id"], fresh_data["monsters"]), m)
+        #                     if fresh_m is not None:
+        #                         m = fresh_m
+        #                         focus_mummies = _should_focus_mummies(fresh_data["monsters"])
+        #                 area_pos = m["position"] - data["area_origin"]
+        #                 proceed = True
+        #                 if monster_filter is not None:
+        #                     proceed = any(m["name"].startswith(startstr) for startstr in monster_filter)
+        #                 if is_in_roi(throne_area, area_pos) and proceed:
+        #                     m_is_mummy = m["name"].startswith("BaalSubjectMummy")
+        #                     dist = math.dist(area_pos, data["player_pos_area"])
+        #                     if m_is_mummy:
+        #                         Logger.debug("Fighting mummy: {0}, id: {1}, distance: {2}".format(m["name"], m["id"], dist))
+        #                         if dist >= 5:
+        #                             self._pather.traverse(area_pos, self, randomize=12)
+        #                             dist = math.dist(area_pos, data["player_pos_area"])
+        #                         if dist < 5:
+        #                             self.attack_melee_range("blessed_hammer", self._cast_duration * 5, m)
+        #                         aura_after_battle = "cleansing"
+        #                         num_repositions = 0
+        #                     elif not focus_mummies:
+        #                         if dist >= 5:
+        #                             self._pather.traverse(area_pos, self, randomize=12)
+        #                             dist = math.dist(area_pos, data["player_pos_area"])
+        #                         if dist < 5:
+        #                             self.attack_melee_range("blessed_hammer", self._cast_duration * 5, m)
+        #                         num_repositions = 0
+        #                     found_a_monster = True
+        #                     break
+        #         if prev_position is None or not np.array_equal(prev_position, data["player_pos_area"]):
+        #             prev_pos_counter = time.time()
+        #         if time.time() - prev_pos_counter > (3.8 if baal_wave != 2 else 6):
+        #             Logger.debug("Reposition for next attack (" + str(num_repositions) + ")")
+        #             if baal_wave == 2 and num_repositions == 2:
+        #                 self._pather.traverse((95, 55), self)
+        #             elif baal_wave == 2 and num_repositions == 3:
+        #                 self._pather.traverse((101, 3), self)
+        #             elif baal_wave == 2 and num_repositions == 4:
+        #                 self._pather.traverse((86, 3), self)
+        #             else:
+        #                 m_pos = self._screen.convert_abs_to_monitor((random.randint(-100, 100), random.randint(-100, 100)))
+        #                 self.pre_move()
+        #                 self.move(m_pos)
+        #             num_repositions += 1
+        #         prev_position = data["player_pos_area"]
+        #     if not found_a_monster:
+        #         success = True
+        #         break
+        # if aura_after_battle in self._skill_hotkeys and self._skill_hotkeys[aura_after_battle]:
+        #     keyboard.send(self._skill_hotkeys[aura_after_battle])
+        # return success
+        return True
 
     def kill_baal(self) -> bool:
         rules = [
@@ -398,15 +407,15 @@ class Hammerdin(IChar):
         return self._kill_super_unique("Andariel", radius=25)
 
     def kill_summoner(self) -> bool:
-        return self._kill_super_unique("Summoner", radius=15)
+        return self._kill_super_unique("Summoner",  ignore=[MonsterRule(names = ["Specter"])], radius=15, min_attack_time=2.0)
 
     def kill_nihlathak(self) -> bool:
         return self._kill_super_unique("Nihlathak", radius=20)
 
     def kill_countess(self) -> bool:
-        return self._kill_super_unique("Countess", radius=20)
+        return self._kill_super_unique("Countess", radius=20, min_attack_time=2.5)
 
-    def _kill_council_with_tp(self):
+    def _kill_council_teleporting(self):
         sequence = [
             (10, [MonsterRule(auras = ["CONVICTION"])]),
             (10, [MonsterRule(auras = ["HOLYFREEZE", "HOLY_FREEZE"])]),
@@ -425,17 +434,20 @@ class Hammerdin(IChar):
             MonsterRule(names = ["CouncilMember"]),
         ]
         roi_tups = [
-            ((157, 113), Roi.TRAV_STAIRS), 
-            ((141, 115), Roi.TRAV_PATIO), 
-            ((124, 109), Roi.TRAV_CORNER),
-            ((142,  92), Roi.TRAV_FULL)
+            ((157, 100), "stairs", Roi.TRAV_STAIRS),
+            ((144, 113), "patio-left", Roi.TRAV_PATIO_LEFT),
+            ((157, 100), "inner-mid", Roi.TRAV_INNER_MID), 
+            ((144,  94), "inner-left", Roi.TRAV_INNER_LEFT),
+            ((157, 100), "full", Roi.TRAV_FULL),
         ]
-        for pos_area, roi in roi_tups:
+
+        self._cast_hammers(self._cast_duration * 15)
+        for pos_area, section, roi in roi_tups:
             monsters = sort_and_filter_monsters(self._api.data, rules, None, roi, ignore_dead=True)
             if len(monsters) > 0:
                 self._pather.walk_to_position(pos_area, time_out=4)
                 self._cast_hammers((self._cast_duration - 0.01) * 4)
-                self._kill_mobs_walking(rules, time_out=10, boundary=roi)
+                self._kill_mobs_walking(rules, time_out=12, boundary=roi)
                 self.post_attack()
         self._pather.walk_to_position((157, 98), 3.0)
         return True
@@ -462,11 +474,7 @@ class Hammerdin(IChar):
         elapsed = 0
         monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
         if len(monsters) == 0: return True
-        # for m in monsters:
-        #     if "conviction" in m["type"] or "cursed" in m["type"]:
-        #         self._api.write_data_to_file(file_prefix="monster_type_check")
-        #         break
-        Logger.debug(f"Beginning combat against {len(monsters)} monsters...")
+        Logger.debug(f"Focusing {len(monsters)} monsters...")
         while elapsed < time_out and len(monsters) > 0:
             data = self._api.get_data()
             if data:
@@ -479,15 +487,15 @@ class Hammerdin(IChar):
                             self._pather.traverse(reposition_pos, self, time_out = 3.0)
                             last_move = time.time()
                         else:
-                            while monster and monster["dist"] > 3 and time.time() - monster_start < 5.0:
-                                Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
+                            while monster and monster["dist"] > 5 and time.time() - monster_start < 5.0:
+                                # Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
                                 self._pather.move_to_monster(self, monster)
                                 last_move = time.time()
                                 monster = self._api.find_monster(monster["id"])
-                            if monster and monster["dist"] <= 3:
+                            if monster and (monster["dist"] <= 7 or time.time() - monster_start > 3.0):
                                 keyboard.send(self._skill_hotkeys["concentration"])
                                 wait(0.05, 0.07)
-                                if not self.tele_stomp_monster("blessed_hammer", 3.0, monster, max_distance=5, min_attack_time=min_attack_time):
+                                if not self.attack_melee_range("blessed_hammer", 2.0, monster, max_distance=5, min_attack_time=min_attack_time):
                                     wait(0.1)
             wait(0.1)
             monsters = sort_and_filter_monsters(self._api.data, prioritize, ignore, boundary, ignore_dead=True)
@@ -502,7 +510,7 @@ class Hammerdin(IChar):
                   time_out: float = 40.0,
                   boundary: Tuple = None,
                   reposition_pos = None,
-                  reposition_time: float = 7.0,
+                  reposition_time: float = 5.0,
                   min_attack_time: float = 0,
                 ) -> bool:
         start = time.time()
@@ -516,13 +524,16 @@ class Hammerdin(IChar):
                 monster = self._api.find_monster(monster["id"])
                 if monster:
                     monster_start = time.time()
-                    if time.time() - last_move > reposition_time and reposition_pos is not None:
+                    if time.time() - last_move > reposition_time:
                         Logger.debug("    Stood in one place too long, repositioning")
-                        self._pather.walk_to_position(reposition_pos, time_out = 2)
+                        if reposition_pos is not None:
+                            self._pather.walk_to_position(reposition_pos, time_out = 2)
+                        else:
+                            self.reposition(monster["position_abs"])
                         last_move = time.time()
                     else:
-                        while monster and monster["dist"] > 6 and time.time() - monster_start < 5.0:
-                            Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
+                        while monster and monster["dist"] > 7 and time.time() - monster_start < 3.5:
+                            # Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
                             self._pather.move_to_monster(self, monster)
                             last_move = time.time()
                             wait(0.1, 0.15)
@@ -538,7 +549,8 @@ class Hammerdin(IChar):
         Logger.debug(f"    Finished killing mobs, combat took {elapsed} sec")
         return True
 
-    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None, min_attack_time: float = 1.5):
+    def kill_uniques(self, pickit=None, time_out: float=15.0, looted_uniques: set=set(), boundary=None, min_attack_time: float = 1.5, do_minions: bool = False) -> int:
+        wait(0.1)
         start = time.time()
         rules = [
             MonsterRule(auras = ["CONVICTION"]),
@@ -546,11 +558,13 @@ class Hammerdin(IChar):
             MonsterRule(monster_types = [MonsterType.UNIQUE]),
             MonsterRule(monster_types = [MonsterType.CHAMPION, MonsterType.GHOSTLY, MonsterType.POSSESSED]),
         ]
+
         last_move = start
         elapsed = 0
         picked_up_items = 0
         monsters = sort_and_filter_monsters(self._api.data, rules, None, boundary, ignore_dead=True)
         Logger.debug(f"Beginning combat (tele stomping) against {len(monsters)} monsters...")
+        if len(monsters) == 0: return 0
         while elapsed < time_out and len(monsters) > 0:
             if self._api.data:
                 for monster in monsters:
@@ -559,21 +573,20 @@ class Hammerdin(IChar):
                         monster_start = time.time()
                         if time.time() - last_move > 6.0:
                             Logger.debug("    Stood in one place too long, repositioning")
-                            self.reposition()
+                            self.reposition(monster["position_abs"])
                             last_move = time.time()
                         else:
-                            while monster and monster["dist"] > 3 and time.time() - monster_start < 5.0:
-                                Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
+                            while monster and monster["dist"] > 8 and time.time() - monster_start < 5.0:
+                                # Logger.debug(f"    Monster {monster['id']} distance is too far ({round(monster['dist'], 2)}), moving closer...")
                                 self._pather.move_to_monster(self, monster)
+                                wait(0.15, 0.2)
                                 last_move = time.time()
                                 monster = self._api.find_monster(monster["id"])
-                            if monster and monster["dist"] <= 4:
-                                Logger.debug(f"        Using concentration")
+                            if monster and (monster["dist"] <= 8 or time.time() - monster_start > 3.0):
                                 keyboard.send(self._skill_hotkeys["concentration"])
-                                wait(0.07, 0.09)
-                                Logger.debug(f"            Right skill: {self._api.data['right_skill']}")
-                                nearby = len(list(filter(lambda m: m["dist"] < 15, self._api.data["monsters"])))
-                                if self.tele_stomp_monster("blessed_hammer", self._cast_duration * 8, monster, max_distance=5, stop_when_dead=nearby < 5, min_attack_time=3):
+                                wait(0.08)
+                                nearby = len(list(filter(lambda m: m["dist"] < 25, self._api.data["monsters"])))
+                                if self.attack_melee_range("blessed_hammer", self._cast_duration * 5, monster, max_distance=10, stop_when_dead=nearby < 5, min_attack_time=1):
                                     picked_up_items += self.loot_uniques(pickit, time_out, looted_uniques, boundary)
                                 wait(0.1)
                                 last_move = time.time()

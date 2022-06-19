@@ -1,5 +1,6 @@
 import keyboard
 from typing import Dict, Tuple, Union, List, Callable
+from logger import Logger
 from utils.custom_mouse import mouse
 from char import IChar
 from template_finder import TemplateFinder
@@ -21,6 +22,18 @@ class Sorceress(IChar):
         super().__init__(skill_hotkeys, screen, template_finder, ui_manager, api, obs_recorder, pather, old_pather)
         self._old_pather = old_pather
         self._pather = pather
+        
+    def get_cast_frames(self):
+        fcr = self.get_fcr()
+        frames = 13
+        if fcr >= 200: frames = 7
+        if fcr >= 105: frames = 8
+        elif fcr >= 63: frames = 9
+        elif fcr >= 37: frames = 10
+        elif fcr >= 20: frames = 11
+        elif fcr >= 9: frames = 12
+        Logger.debug(f"FCR recalculated to be FCR: {fcr} ({frames} frames)")
+        return frames
 
     def pick_up_item(self, pos: Tuple[float, float], item_name: str = None, prev_cast_start: float = 0):
         if self._skill_hotkeys["telekinesis"] and any(x in item_name for x in ['potion', 'misc_gold', 'tp_scroll']):

@@ -1,25 +1,7 @@
-/**
-*   Copyright (C) 2021 okaygo
-*
-*   https://github.com/misterokaygo/MapAssist/
-*
-*  This program is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  (at your option) any later version.
-*
-*  This program is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-**/
-
 using MapAssist.Helpers;
 using MapAssist.Settings;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MapAssist.Types
 {
@@ -49,10 +31,10 @@ namespace MapAssist.Types
             { 283, Npc.Larva },
             { 293, Npc.Familiar },
             { 294, Npc.Act3Male },
-            //{ 289, Npc.ClayGolem },
-            //{ 290, Npc.BloodGolem },
-            //{ 291, Npc.IronGolem },
-            //{ 292, Npc.FireGolem },
+            { 289, Npc.ClayGolem },
+            { 290, Npc.BloodGolem },
+            { 291, Npc.IronGolem },
+            { 292, Npc.FireGolem },
             { 296, Npc.Act3Female },
             { 318, Npc.Snake },
             { 319, Npc.Parrot },
@@ -75,10 +57,11 @@ namespace MapAssist.Types
             { 352, Npc.Hydra2 },
             { 353, Npc.Hydra3 },
             { 355, Npc.SevenTombs },
+            { 356, Npc.Decoy },
             { 357, Npc.Valkyrie },
             { 359, Npc.IronWolf },
-            //{ 363, Npc.NecroSkeleton },
-            //{ 364, Npc.NecroMage },
+            { 363, Npc.NecroSkeleton },
+            { 364, Npc.NecroMage },
             { 366, Npc.CompellingOrbNpc },
             { 370, Npc.SpiritMummy },
             { 377, Npc.Act2Guard4 },
@@ -89,6 +72,7 @@ namespace MapAssist.Types
             { 410, Npc.WakeOfDestruction },
             { 411, Npc.ChargedBoltSentry },
             { 412, Npc.LightningSentry },
+            { 413, Npc.BladeCreeper },
             { 414, Npc.InvisiblePet },
             { 415, Npc.InfernoSentry },
             { 416, Npc.DeathSentry },
@@ -97,10 +81,14 @@ namespace MapAssist.Types
             { 419, Npc.DruidHawk },
             { 420, Npc.DruidSpiritWolf },
             { 421, Npc.DruidFenris },
+            { 422, Npc.SpiritOfBarbs },
             { 423, Npc.HeartOfWolverine },
             { 424, Npc.OakSage },
+            { 425, Npc.DruidPlaguePoppy },
             { 428, Npc.DruidBear },
             { 543, Npc.BaalThrone },
+            { 560, Npc.Act5Hireling1Hand },
+            { 561, Npc.Act5Hireling2Hand },
             { 567, Npc.InjuredBarbarian },
             { 568, Npc.InjuredBarbarian2 },
             { 569, Npc.InjuredBarbarian3 },
@@ -113,77 +101,16 @@ namespace MapAssist.Types
             Npc.Mephisto,
             Npc.Diablo,
             Npc.BaalCrab,
+            Npc.DiabloClone,
+            Npc.UberMephisto,
+            Npc.UberDiablo,
+            Npc.UberIzual,
+            Npc.Lilith,
+            Npc.UberDuriel,
+            Npc.UberBaal,
         };
 
-        public static Dictionary<string, string> SuperUniques = new Dictionary<string, string>()
-        {
-            { "Corpsefire", "zombie1" },
-            { "Bishibosh", "fallenshaman1" },
-            { "Coldcrow", "cr_archer1" },
-            { "Bonebreak", "skeleton1" },
-            { "Rakanishu", "fallen2" },
-            { "Treehead WoodFist", "brute2" },
-            { "Griswold", "griswold" },
-            { "The Countess", "corruptrogue3" },
-            { "Pitspawn Fouldog", "bighead2" },
-            { "Flamespike the Crawler", "quillrat4" },
-            { "Boneash", "skmage_pois3" },
-            { "Radament", "radament" },
-            { "Bloodwitch the Wild", "pantherwoman1" },
-            { "Fangskin", "clawviper3" },
-            { "Beetleburst", "scarab2" },
-            { "Leatherarm", "mummy2" },
-            { "Coldworm the Burrower", "maggotqueen1" },
-            { "Fire Eye", "sandraider3" },
-            { "Dark Elder", "darkelder" },
-            { "The Summoner", "summoner" },
-            { "Ancient Kaa the Soulless", "unraveler3" },
-            { "The Smith", "smith" },
-            { "Web Mage the Burning", "arach4" },
-            { "Witch Doctor Endugu", "fetishshaman4" },
-            { "Stormtree", "thornhulk3" },
-            { "Sarina the Battlemaid", "corruptrogue5" },
-            { "Icehawk Riftwing", "batdemon3" },
-            //{ "Ismail Vilehand", "councilmember1" },
-            //{ "Geleb Flamefinger", "councilmember2" },
-            //{ "Bremm Sparkfist", "councilmember3" },
-            //{ "Toorc Icefist", "councilmember1" },
-            //{ "Wyand Voidfinger", "councilmember2" },
-            //{ "Maffer Dragonhand", "councilmember3" },
-            //{ "Winged Death", "megademon3" },
-            { "The Tormentor", "willowisp3" },
-            { "Taintbreeder", "vilemother2" },
-            { "Riftwraith the Cannibal", "regurgitator2" },
-            { "Infector of Souls", "megademon3" },
-            { "Lord De Seis", "doomknight3" },
-            { "Grand Vizier of Chaos", "fingermage3" },
-            { "The Cow King", "cowking" },
-            { "The Feature Creep", "hephasto" },
-            { "Siege Boss", "overseer1" },
-            { "Ancient Barbarian 1", "ancientbarb1" },
-            { "Ancient Barbarian 2", "ancientbarb2" },
-            { "Ancient Barbarian 3", "ancientbarb3" },
-            { "Axe Dweller", "bloodlord3" },
-            { "Bonesaw Breaker", "reanimatedhorde2" },
-            { "Dac Farren", "imp3" },
-            { "Megaflow Rectifier", "minion1" },
-            { "Eyeback Unleashed", "deathmauler1" },
-            { "Threash Socket", "siegebeast3" },
-            { "Pindleskin", "reanimatedhorde" },
-            { "Snapchip Shatter", "frozenhorror1" },
-            { "Anodized Elite", "succubus4" },
-            { "Vinvear Molech", "succubuswitch2" },
-            { "Sharp Tooth Sayer", "overseer3" },
-            { "Magma Torquer", "imp5" },
-            { "Blaze Ripper", "deathmauler5" },
-            { "Frozenstein", "snowyeti4" },
-            { "Nihlathak", "nihlathakboss" },
-            { "Baal Subject 1", "fallenshaman5" },
-            { "Baal Subject 2", "unraveler5" },
-            { "Baal Subject 3", "baalhighpriest" },
-            { "Baal Subject 4", "venomlord" },
-            { "Baal Subject 5", "baalminion1" },
-        };
+        public static Dictionary<int, string> SuperUniques = ExcelDataLoader.Parse(Properties.Resources.SuperUniques).ToDictionary(x => int.Parse(x["hcIdx"]), x => x["Name"]);
     }
 
     public enum Npc : ushort
@@ -956,7 +883,6 @@ namespace MapAssist.Types
             [Npc.Navi] = "navi",
             [Npc.Izual2] = "Izual",
             [Npc.BaalCrab] = "Baal",
-            [Npc.DarkStalker] = "TheCountess"
         };
 
         public static readonly HashSet<Npc> _npcTownsfolk = new HashSet<Npc>()
@@ -980,6 +906,7 @@ namespace MapAssist.Types
             Npc.Atma,
             Npc.Geglash,
             Npc.Kaelan,
+            Npc.Jerhyn,
             // Act 3 Npcs
             Npc.DeckardCain3,
             Npc.Meshif2,
@@ -1013,7 +940,7 @@ namespace MapAssist.Types
 
         public static string Name(this Npc npc)
         {
-            var key = _npcLocalizationKeys.TryGetValue(npc, out var label) ? label : npc.ToString();
+            var key = _npcLocalizationKeys.TryGetValue(npc, out var label) ? label : npc.ToString().Replace("Uber", "").Replace("Clone", "");
 
             return LocalizedName(key);
         }

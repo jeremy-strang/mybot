@@ -11,7 +11,7 @@ namespace MapAssist.Types
         public MonStats MonsterStats { get; private set; }
         public List<Resist> Immunities { get; set; }
         public Npc Npc => (Npc)TxtFileNo;
-
+        public PetEntry PetEntry { get; set; }
 
         public UnitMonster(IntPtr ptrUnit) : base(ptrUnit)
         {
@@ -19,13 +19,14 @@ namespace MapAssist.Types
 
         public new UnitMonster Update()
         {
-            if (base.Update())
+            if (base.Update() == UpdateResult.Updated)
             {
                 using (var processContext = GameManager.GetProcessContext())
                 {
                     MonsterData = processContext.Read<MonsterData>(Struct.pUnitData);
                     MonsterStats = processContext.Read<MonStats>(MonsterData.pMonStats);
                     Immunities = GetImmunities();
+                    StateList = GetStateList();
                 }
 
                 return this;
@@ -34,18 +35,27 @@ namespace MapAssist.Types
             return null;
         }
 
+        public bool IsSuperUnique => (MonsterData.MonsterType & MonsterTypeFlags.SuperUnique) == MonsterTypeFlags.SuperUnique || Npc == Npc.Summoner; // Summoner seems to be an odd exception
+
+        public string SuperUniqueName => Npc == Npc.Summoner ? "The Summoner" : NPC.SuperUniques[MonsterData.BossLineID];
+
+        public bool IsMerc => PetEntry != null && PetEntry.IsMerc;
+
+        public bool IsSummon => PetEntry != null && !PetEntry.IsMerc;
+
+        public bool IsPlayerOwned => PetEntry != null && PetEntry.IsPlayerOwned;
+
         private List<Resist> GetImmunities()
         {
-            var immunities = new List<Resist>();
-
+            List<Resist> immunities = null;
             if (Stats != null)
             {
-                Stats.TryGetValue(Stat.DamageReduced, out var resistanceDamage);
-                Stats.TryGetValue(Stat.MagicResist, out var resistanceMagic);
-                Stats.TryGetValue(Stat.FireResist, out var resistanceFire);
-                Stats.TryGetValue(Stat.LightningResist, out var resistanceLightning);
-                Stats.TryGetValue(Stat.ColdResist, out var resistanceCold);
-                Stats.TryGetValue(Stat.PoisonResist, out var resistancePoison);
+                Stats.TryGetValue(Types.Stats.Stat.DamageReduced, out var resistanceDamage);
+                Stats.TryGetValue(Types.Stats.Stat.MagicResist, out var resistanceMagic);
+                Stats.TryGetValue(Types.Stats.Stat.FireResist, out var resistanceFire);
+                Stats.TryGetValue(Types.Stats.Stat.LightningResist, out var resistanceLightning);
+                Stats.TryGetValue(Types.Stats.Stat.ColdResist, out var resistanceCold);
+                Stats.TryGetValue(Types.Stats.Stat.PoisonResist, out var resistancePoison);
 
                 var resists = new List<int>
                 {
@@ -57,6 +67,8 @@ namespace MapAssist.Types
                     resistancePoison
                 };
 
+                immunities = new List<Resist>();
+
                 for (var i = 0; i < 6; i++)
                 {
                     if (resists[i] >= 100)
@@ -65,7 +77,11 @@ namespace MapAssist.Types
                     }
                 }
             }
-            
+            else
+            {
+                immunities = new List<Resist>();
+            }
+        
             return immunities;
         }
 
@@ -73,8 +89,8 @@ namespace MapAssist.Types
         {
             get
             {
-                if (Stats.TryGetValue(Stat.Life, out var health) &&
-                    Stats.TryGetValue(Stat.MaxLife, out var maxHp) && maxHp > 0)
+                if (Stats.TryGetValue(Types.Stats.Stat.Life, out var health) &&
+                    Stats.TryGetValue(Types.Stats.Stat.MaxLife, out var maxHp) && maxHp > 0)
                 {
                     return (float)health / maxHp;
                 }
@@ -102,20 +118,6 @@ namespace MapAssist.Types
                 }
 
                 return MonsterTypeFlags.Other;
-            }
-        }
-
-        public bool IsTargetableCorpse
-        {
-            get
-            {
-                return IsCorpse &&
-                    !GetState(State.STATE_FREEZE) &&
-                    !GetState(State.STATE_REVIVE) &&
-                    !GetState(State.STATE_REDEEMED) &&
-                    !GetState(State.STATE_CORPSE_NODRAW) &&
-                    !GetState(State.STATE_SHATTER) &&
-                    !GetState(State.STATE_CORPSE_NOSELECT);
             }
         }
 

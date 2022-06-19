@@ -1,23 +1,4 @@
-﻿/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
-using MapAssist.Settings;
+﻿using MapAssist.Settings;
 using MapAssist.Types;
 using System;
 using System.Collections.Generic;
@@ -27,21 +8,7 @@ namespace MapAssist.Helpers
 {
     public static class LootFilter
     {
-        public static Dictionary<Stat, int> StatShifts = new Dictionary<Stat, int>()
-        {
-            [Stat.MaxLife] = 8,
-            [Stat.MaxMana] = 8,
-        };
-
-        public static List<Stat> NegativeValueStats = new List<Stat>()
-        {
-            Stat.EnemyFireResist,
-            Stat.EnemyLightningResist,
-            Stat.EnemyColdResist,
-            Stat.EnemyPoisonResist,
-        };
-
-        public static (bool, ItemFilter) Filter(UnitItem item)
+        public static (bool, ItemFilter) Filter(UnitItem item, int areaLevel, int playerLevel)
         {
             // Skip low quality items
             var lowQuality = (item.ItemData.ItemFlags & ItemFlags.IFLAG_LOWQUALITY) == ItemFlags.IFLAG_LOWQUALITY;
@@ -62,15 +29,23 @@ namespace MapAssist.Helpers
             // Scan the list of rules
             foreach (var rule in matches.SelectMany(kv => kv.Value))
             {
-                // Skip generic unid rules for identified items
-                if (item.IsIdentified && rule.TargetsUnidItem()) continue;
+                // Skip generic unid rules for identified items on ground or in inventory
+                if (item.IsIdentified && (item.IsDropped || item.IsAnyPlayerHolding) && rule.TargetsUnidItem()) continue;
+
+                if (item.IsInStore && !rule.CheckVendor) continue;
 
                 // Requirement check functions
                 var requirementsFunctions = new Dictionary<string, Func<bool>>()
                 {
                     ["Qualities"] = () => rule.Qualities.Contains(item.ItemData.ItemQuality),
-                    ["Sockets"] = () => rule.Sockets.Contains(Items.GetItemStat(item, Stat.NumSockets)),
-                    ["Ethereal"] = () => ((item.ItemData.ItemFlags & ItemFlags.IFLAG_ETHEREAL) == ItemFlags.IFLAG_ETHEREAL) == rule.Ethereal,
+                    ["Sockets"] = () => rule.Sockets.Contains(Items.GetItemStat(item, Stats.Stat.NumSockets)),
+                    ["Ethereal"] = () => item.IsEthereal == rule.Ethereal,
+                    ["MinAreaLevel"] = () => areaLevel >= rule.MinAreaLevel,
+                    ["MaxAreaLevel"] = () => areaLevel <= rule.MaxAreaLevel,
+                    ["MinPlayerLevel"] = () => playerLevel >= rule.MinPlayerLevel,
+                    ["MaxPlayerLevel"] = () => playerLevel <= rule.MaxPlayerLevel,
+                    ["MinQualityLevel"] = () => Items.GetQualityLevel(item) >= rule.MinQualityLevel,
+                    ["MaxQualityLevel"] = () => Items.GetQualityLevel(item) <= rule.MaxQualityLevel,
                     ["AllAttributes"] = () => Items.GetItemStatAllAttributes(item) >= rule.AllAttributes,
                     ["AllResist"] = () => Items.GetItemStatResists(item, false) >= rule.AllResist,
                     ["SumResist"] = () => Items.GetItemStatResists(item, true) >= rule.SumResist,
@@ -96,9 +71,9 @@ namespace MapAssist.Helpers
                     },
                 };
 
-                foreach (var (stat, shift) in StatShifts.Select(x => (x.Key, x.Value)))
+                foreach (var (stat, shift) in Stats.StatShifts.Select(x => (x.Key, x.Value)))
                 {
-                    requirementsFunctions.Add(stat.ToString(), () => Items.GetItemStatShifted(item, stat, shift) >= (int)rule[stat]);
+                    requirementsFunctions.Add(stat.ToString(), () => Items.GetItemStatShifted(item, stat) >= (int)rule[stat]);
                 }
 
                 var requirementMet = true;
@@ -113,9 +88,9 @@ namespace MapAssist.Helpers
                     {
                         requirementMet &= requirementFunc();
                     }
-                    else if (Enum.TryParse<Stat>(property.Name, out var stat))
+                    else if (Enum.TryParse<Stats.Stat>(property.Name, out var stat))
                     {
-                        requirementMet &= NegativeValueStats.Contains(stat)
+                        requirementMet &= Stats.NegativeValueStats.Contains(stat)
                             ? (int)propertyValue < 0 && Items.GetItemStat(item, stat) <= (int)propertyValue
                             : Items.GetItemStat(item, stat) >= (int)propertyValue;
                     }

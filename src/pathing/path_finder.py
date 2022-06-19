@@ -18,7 +18,7 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.distance import cityblock
 from scipy.cluster.vq import kmeans
 from scipy.ndimage.filters import gaussian_filter
-from utils.misc import unit_vector, clip_abs_point
+from utils.misc import point_str, unit_vector, clip_abs_point
 from python_tsp.heuristics import solve_tsp_simulated_annealing, solve_tsp_local_search
 from python_tsp.exact import solve_tsp_dynamic_programming
 
@@ -38,7 +38,7 @@ def cluster_nodes(nodes, max_cluster_ct = None, min_cluster_ct = None):
         x = 0
         y += 1
     features[0, 0:-1, ...] = features[0, 1:, ...]
-    cluster_count = int(features.size / 6000)
+    cluster_count = int(features.size / 5500)
     if max_cluster_ct is not None:
         cluster_count = min(max_cluster_ct, cluster_count)
     if min_cluster_ct is not None:
@@ -84,6 +84,23 @@ def make_path_bfs(start, end, grid):
                 seen.add((x2, y2))
     return path
 
+def decimate_route(route, step_size: int = 5):
+    decimation = []
+    prev_node = route[0]
+    end = route[len(route) - 1]
+    for node in route:
+        # manhattan distance from our current step to the next node
+        d = cityblock(node, prev_node)
+        if d > step_size:
+            # if its greater than how far we can teleport save it
+            decimation.append(node)
+            prev_node = node
+
+    if len(decimation) == 0:
+        decimation.append(end)
+    decimation[-1] = end
+    return decimation
+
 class PathFinder:
     def __init__(self, api: D2rApi, max_cluster_ct=25):
         self._api = api
@@ -103,9 +120,9 @@ class PathFinder:
             player_y_local = data['player_pos_world'][1] - data['area_origin'][1]
             self.player_node = (int(player_x_local + 1), int(player_y_local + 1))
             if data['current_area'] != self._current_area or data['map_changed']:
+                start = time.time()
                 self._map = data["map"]
                 self._current_area = data["current_area"]
-                self._clusters = cluster_nodes(self._map, self._max_cluster_ct)
                 float_map = self._map.astype(np.float32)
                 float_map[float_map == 0] = 999999.0
                 float_map[float_map == 1] = 0.0
@@ -118,14 +135,16 @@ class PathFinder:
             start = (start[1], start[0])
             end = (end[1], end[0])
         weighted = self._weighted_map.astype(np.float32)
+        Logger.debug(f"Making a path using A*, start: {point_str(start)}, end: {point_str(end)}")
         path = pyastar2d.astar_path(weighted, start, end, allow_diagonal=True)
         path = np.flip(path, 1)
         path = path.tolist()
         return path
     
-    def solve_tsp(self, end=None, exact=False):
+    def solve_tsp(self, end=None, exact=True):
         start = time.time()
         self.update_map()
+        self._clusters = cluster_nodes(self._map, self._max_cluster_ct)
         queue = deque(self._clusters)
         queue.appendleft(self.player_node)
 
@@ -153,7 +172,6 @@ class PathFinder:
                             dist = 99999
                 dist_matrix[i, j] = dist
 
-        # if end_given: dist_matrix[0, N-1] = 0
         elapsed = time.time() - start
         permutation = None
         distance = 0
@@ -166,6 +184,7 @@ class PathFinder:
             if not end_given or (end_given and i != N-1):
                 path.append(nodes[i])
         elapsed = time.time() - start
+        Logger.debug(f"Generated sequence to visit {len(path)} nodes with a total distance: {distance}, (processing took {round(elapsed, 2)} seconds)")
         return path if end_given else path
     
     

@@ -102,7 +102,7 @@ class GameStats:
     def log_start_game(self):
         if self._game_counter > 0:
             self._save_stats_to_file()
-            if self._config.general["discord_status_count"] and (self._game_counter == 1 and self._game_counter % self._config.general["discord_status_count"] == 0):
+            if self._config.general["discord_status_count"] and (self._game_counter == 1 or self._game_counter % self._config.general["discord_status_count"] == 0):
                 # every discord_status_count game send a message update about current status
                 self._send_status_update()
         self._game_counter += 1
@@ -173,21 +173,26 @@ class GameStats:
         msg += f'\nGames: {self._game_counter}'
         msg += f'\nAvg Game Length: {avg_length_str}'
 
-        if self._config.general['discord_experience_report']:
-            gained_exp = self._current_exp - self._starting_exp
-            if self._config.general["player_level"] and self._config.general["player_level"] < 99 and gained_exp > 0:
-                curr_lvl = get_level(self._config.general["player_level"])
-                exp_gained = self._current_exp - curr_lvl['exp']
-                exp_per_second = gained_exp / (good_games_time if good_games_time != 0 else 1)
-                exp_per_hour = round(exp_per_second * 3600, 1)
-                exp_per_game = round(gained_exp / float(good_games_count) if good_games_count != 0 else 1, 1)
-                exp_needed = curr_lvl['xp_to_next'] - exp_gained
-                time_to_lvl = exp_needed / (exp_per_second if exp_per_second != 0 else 1)
-                games_to_lvl = exp_needed / (exp_per_game if exp_per_game != 0 else 1)
+        gained_exp = self._current_exp - self._starting_exp
+        if self._config.general["player_level"] and self._config.general["player_level"] < 99: # and gained_exp > 0:
+            curr_lvl = get_level(self._config.general["player_level"])
+            exp_gained = self._current_exp - curr_lvl['exp']
+            exp_per_second = gained_exp / (good_games_time if good_games_time != 0 else 1)
+            exp_per_hour = round(exp_per_second * 3600, 1)
+            exp_per_game = round(gained_exp / int(good_games_count) if good_games_count != 0 else 1, 1)
+            exp_needed = curr_lvl['xp_to_next'] - exp_gained
+            time_to_lvl = exp_needed / (exp_per_second if exp_per_second != 0 else 1)
+            games_to_lvl = exp_needed / (exp_per_game if exp_per_game != 0 else 1)
+            pct_to_lvl = round(self._config.general["player_level_progress"], 2) # round(exp_gained / curr_lvl["xp_to_next"] * 100)
+            
+            if self._config.general['discord_experience_report']:
                 msg += f'\nXP Per Hour: {exp_per_hour:,}'
                 msg += f'\nXP Per Game: {exp_per_game:,}'
                 msg += f'\nTime Needed To Level: {hms(time_to_lvl)}'
                 msg += f'\nGames Needed To Level: {math.ceil(games_to_lvl):,}'
+
+            if self._config.general["player_level"] < 99: 
+                msg += f'\nPercent to level: {pct_to_lvl}%'
 
         table = BeautifulTable()
         table.set_style(BeautifulTable.STYLE_BOX_ROUNDED)
@@ -208,7 +213,7 @@ class GameStats:
         ])
 
         if self._config.general['discord_status_condensed']:
-            table.columns.header = ["Run", "I", "J", "C", "D", "MD", "F"]
+            table.columns.header = ["Run", "I", "J", "C", "D", "M", "F"]
         else:
             table.columns.header = ["Run", "Items", "Junk", "Chicken", "Death", "Merc Death", "Failed Runs"]
 

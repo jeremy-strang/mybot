@@ -61,14 +61,29 @@ class Countess:
         self._char.pre_travel(do_pre_buff)
         jump_dist = 15
         for destination in ["Forgotten Tower", *map(lambda x: f"Tower Cellar Level {x}", [1, 2, 3, 4, 5])]:
-            if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=jump_dist):
-                if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=8): return False
+            if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=jump_dist, slow_finish=True):
+                if not self._pather.traverse(destination, self._char, verify_location=True, jump_distance=8, slow_finish=True): return False
             if not self._pather.go_to_area(destination, destination, entrance_in_wall=False, randomize=4, char=self._char): return False
             jump_dist = 10
         self._char.post_travel()
 
+        self._api.start_timer()
+
         if not self._pather.traverse("GoodChest", self._char, verify_location=True): return False
+
+        data = self._api.wait_for_data()
+        countess = None
+        if data:
+            for m in data["monsters"]:
+                if "superunique" in str(m["type"]).lower():
+                    countess = m
+                    break
+        if countess is not None:
+            Logger.debug(f"\n\n---\nCountess pos: {countess['position_area']}, player pos: {data['player_pos_area']}\n")
+
         self._char.kill_countess()
         picked_up_items = self._pickit.pick_up_items(self._char)
         Logger.debug(f"Picked up {picked_up_items} items")
+        
+        self._api.get_metrics()
         return (Location.A1_TOWER_END, picked_up_items)

@@ -316,4 +316,3 @@ class NpcManager:
             wait(0.3, 0.4)
         else:
             Logger.error(f"Could not find {action_btn_key} btn. Should not happen! Continue...")
-            keyboard.send("esc")

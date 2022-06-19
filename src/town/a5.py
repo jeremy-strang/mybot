@@ -20,45 +20,32 @@ class A5(IAct):
     def can_buy_pots(self) -> bool: return True
     def can_resurrect(self) -> bool: return True
     def can_identify(self) -> bool: return True
+    def can_gamble(self) -> bool: return False
     def can_stash(self) -> bool: return True
-    def can_trade_and_repair(self) -> bool: return True
+    def can_trade_and_repair(self) -> bool: return False
 
-    def heal(self, curr_loc: Location) -> Union[Location, bool]:
-        malah = self._api.find_monster_by_name("Malah")
-        if malah and not self._pather.walk_to_monster(malah["id"]):
-            self._pather.traverse_walking("Malah", self._char, obj=False, threshold=16, static_npc=True)
-        self.interact_with_npc(Npc.MALAH, None)
-        if self._api.wait_for_menu("npc_interact"):
-            keyboard.send("esc")
-        return Location.A5_MALAH
+    def heal(self, curr_loc: Location = Location.A5_TOWN_START) -> Union[Location, bool]:
+        self._pather.walk_to_position((73, 22), char=self._char, do_pre_move=True)
+        success = self.find_vendor_and_open_trade(Npc.MALAH, menu_selection=None, confirm_menu=None)
+        return Location.A5_MALAH if success else False
 
-    def open_trade_menu(self, curr_loc: Location) -> Union[Location, bool]:
-        malah = self._api.find_monster_by_name("Malah")
-        if malah and not self._pather.walk_to_monster(malah["id"]):
-            self._pather.traverse_walking("Malah", self._char, obj=False, threshold=16, static_npc=True)
-        if not self.interact_with_npc(Npc.MALAH):
-            if self._npc_manager.open_npc_menu(Npc.MALAH):
-                self._npc_manager.press_npc_btn(Npc.MALAH, "trade")
-        return Location.A5_MALAH
+    def open_trade_menu(self, curr_loc: Location = Location.A5_TOWN_START) -> Union[Location, bool]:
+        self._pather.walk_to_position((73, 22), char=self._char, do_pre_move=True)
+        success = self.find_vendor_and_open_trade(Npc.MALAH)
+        return Location.A5_MALAH if success else False
 
-    def resurrect(self, curr_loc: Location) -> Union[Location, bool]:
-        self._pather.walk_to_poi("Harrogath", time_out=3)
-        qual = self._api.find_monster_by_name("QualKehk")
-        if qual and not self.interact_with_npc(Npc.QUAL_KEHK):
-            if self._npc_manager.open_npc_menu(Npc.QUAL_KEHK):
-                self._npc_manager.press_npc_btn(Npc.QUAL_KEHK, "resurrect")
-            return Location.A5_QUAL_KEHK
-        return False
+    def resurrect(self, curr_loc: Location = Location.A5_TOWN_START) -> Union[Location, bool]:
+        self._pather.walk_to_position((78, 83), char=self._char, do_pre_move=True)
+        success = self.find_vendor_and_open_trade(Npc.QUAL_KEHK, menu_selection="resurrect", confirm_menu=None)
+        return Location.A5_QUAL_KEHK if success else False
 
-    def identify(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.traverse_walking("QualKehk",self._char, obj=False,threshold=10,static_npc=True): return False
-        if self._npc_manager.open_npc_menu(Npc.CAIN):
-            self._npc_manager.press_npc_btn(Npc.CAIN, "identify")
-            return Location.A5_QUAL_KEHK
-        return False
+    def identify(self, curr_loc: Location = Location.A5_TOWN_START) -> Union[Location, bool]:
+        self._pather.walk_to_position((78, 83), char=self._char, do_pre_move=True)
+        success = self.find_vendor_and_open_trade(Npc.CAIN, menu_selection="identify", confirm_menu=None)
+        return Location.A5_QUAL_KEHK if success else False
 
-    def open_stash(self, curr_loc: Location) -> Union[Location, bool]:
-        self._pather.walk_to_poi("Harrogath", time_out=3)
+    def open_stash(self, curr_loc: Location = Location.A5_TOWN_START) -> Union[Location, bool]:
+        self._pather.walk_to_poi("Harrogath", time_out=3, char=self._char, do_pre_move=True)
         bank = self._api.find_object("Bank")
         if bank and not self._pather.click_object("Bank"):
             if not self._pather.traverse_walking([119, 60],self._char, obj=False,threshold=10,static_npc=False,end_dist=10): return False
@@ -66,18 +53,20 @@ class A5(IAct):
             return Location.A5_LARZUK
         return Location.A5_LARZUK
 
-    def open_trade_and_repair_menu(self, curr_loc: Location) -> Union[Location, bool]:
-        if not self._pather.walk_to_position([141, 43]): return False
-        if not self.interact_with_npc(Npc.LARZUK, "trade_repair"):
-            self._npc_manager.open_npc_menu(Npc.LARZUK)
-            self._npc_manager.press_npc_btn(Npc.LARZUK, "trade_repair")
-        return Location.A5_LARZUK
+    def open_trade_and_repair_menu(self, curr_loc: Location = Location.A5_TOWN_START) -> Union[Location, bool]:
+        self._pather.walk_to_position((136, 43), char=self._char, do_pre_move=True)
+        success = self.find_vendor_and_open_trade(Npc.LARZUK, "trade_repair", confirm_menu=D2rMenu.NpcShop, y_offset=0)
+        return Location.A5_LARZUK if success else False
 
-    def open_wp(self, curr_loc: Location) -> bool:
-        self._pather.walk_to_poi("Harrogath")
-        wait(0.7)
-        self._pather.click_object("ExpansionWaypoint", (9.5, 0))
-        return self._api.wait_for_menu("waypoint")
+    def open_wp(self, curr_loc: Location = Location.A5_TOWN_START) -> bool:
+        success = False
+        self._pather.walk_to_position((114, 71))
+        wp = self._api.find_object("ExpansionWaypoint")
+        if wp:
+            self._pather.walk_to_object("ExpansionWaypoint")
+            self._pather.click_object("ExpansionWaypoint", (9.5, 0))
+            success = self._api.wait_for_menu("waypoint")
+        return success
 
     def wait_for_tp(self) -> Union[Location, bool]:
         return Location.A5_TOWN_START

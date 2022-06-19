@@ -21,7 +21,7 @@ class A1(IAct):
     def can_buy_pots(self) -> bool: return True
     def can_identify(self) -> bool: return True
     def can_heal(self) -> bool: return True
-    def can_stash(self) -> bool: return True
+    def can_stash(self) -> bool: return False # Temporary
     def can_trade_and_repair(self) -> bool: return True
 
     def resurrect(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
@@ -35,13 +35,19 @@ class A1(IAct):
         return Location.A1_KASHYA_CAIN
 
     def open_wp(self, curr_loc: Location = Location.A1_TOWN_START) -> bool:
+        Logger.debug("Opening Act 1 waypoint...")
         success = False
-        if self._pather.walk_to_poi("Rogue Encampment", time_out=15):
+        self._pather.walk_to_poi("Rogue Encampment", time_out=15)
+        obj = self._api.find_object("WaypointPortal")
+        if obj:
+            self._pather.walk_to_object(obj)
+            success = self._pather.click_object("WaypointPortal", offset=(0, -20), target_menu=D2rMenu.Waypoint)
+        if not success:
+            Logger.warning("    Failed the first attempt at opening the waypoint, trying again...")
+            wait(0.7)
+            self._pather.walk_to_poi("Rogue Encampment", time_out=15)
+            self._pather.click_poi("Rogue Encampment", offset=(0, -20), target_menu=D2rMenu.Waypoint)
             success = self._api.wait_for_menu(D2rMenu.Waypoint)
-            if not success:
-                wait(0.7)
-                self._pather.click_poi("Rogue Encampment", offset=(0, -20), target_menu=D2rMenu.Waypoint)
-                success = self._api.wait_for_menu(D2rMenu.Waypoint)
         return success
 
     def wait_for_tp(self) -> Union[Location, bool]:
@@ -56,28 +62,40 @@ class A1(IAct):
                 self._npc_manager.press_npc_btn(npc, menu)
         return Location.A1_KASHYA_CAIN
 
-    def open_trade_menu(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        npc = self._api.find_npc(Npc.AKARA)
+    def _go_to_akara(self):
+        npc = self._api.find_monster_by_name(Npc.AKARA)
+        wander_pos = (200, 10)
+        if not npc:
+            self._pather.wander_towards(wander_pos, self._char, time_out = 5, iterations = 5)
+            wait(0.1, 0.15)
+            npc = self._api.find_monster_by_name(Npc.AKARA)
+        if not npc:
+            self._pather.wander_towards(wander_pos, self._char, time_out = 5, iterations = 5)
+            wait(0.1, 0.15)
+            npc = self._api.find_monster_by_name(Npc.AKARA)
         if npc:
-            print(npc)
-            self._pather.walk_to_position(npc["position_area"])
-            wait(0.4, 0.5)
+            try:
+                self._pather.walk_to_position(npc["position_area"], step_size=4)
+                wait(0.4, 0.5)
+            except:
+                return False
+        return True if npc else False
+
+    def open_trade_menu(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
+        self._go_to_akara()
         if not self.interact_with_npc(Npc.AKARA, "trade"):
             self._npc_manager.open_npc_menu(Npc.AKARA)
             self._npc_manager.press_npc_btn(Npc.AKARA, "trade")
         return Location.A1_AKARA
 
     def open_stash(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        if not self._pather.walk_to_position((133, 122)): return False
+        self._pather.walk_to_position((152, 66))
         wait(0.4, 0.5)
         self._pather.click_object("Bank", target_menu="stash")    
         return Location.A3_STASH_WP
 
     def heal(self, curr_loc: Location = Location.A1_TOWN_START) -> Union[Location, bool]:
-        npc = self._api.find_npc(Npc.AKARA)
-        if npc:
-            self._pather.walk_to_position(npc["position_area"])
-            wait(0.4, 0.5)
+        self._go_to_akara()
         self.interact_with_npc(Npc.AKARA, "trade")
         if self._api.wait_for_menu(D2rMenu.NpcInteract):
             keyboard.send("esc")

@@ -9,7 +9,7 @@ from ui import UiManager
 from pathing import OldPather
 from logger import Logger
 from screen import Screen
-from utils.misc import wait, is_in_roi, points_equal
+from utils.misc import normalize_text, wait, is_in_roi, points_equal
 from monsters import CHAMPS_UNIQUES
 import time
 from pathing import OldPather, Location
@@ -60,7 +60,7 @@ class Barbarian(IChar):
         result = None
         data = self._api.data
         if data is None or "monsters" not in data or type(data["monsters"]) is not list: return None
-        monsters = sorted(data["monsters"], key = lambda m: (math.dist(data["player_pos_area"], m["position"] - data["area_origin"])))
+        monsters = sorted(data["monsters"], key = lambda m: (math.dist(data["player_pos_area"], m["position_area"])))
         for m in monsters:
             if unique_only:
                 proceed = m["mode"] == 12 and m["is_targetable_corpse"] and m["id"] not in skip_ids and any(m["type"] in typ.monster_types for typ in CHAMPS_UNIQUES)
@@ -71,10 +71,12 @@ class Barbarian(IChar):
                 for name in names:
                     proceed = proceed or m["name"].startswith(name)
             if proceed and boundary is not None:
-                proceed = is_in_roi(boundary, m["position"] - data["area_origin"])
+                proceed = is_in_roi(boundary, m["position_area"])
             if proceed:
                 result = m
                 break
+        if result is not None:
+            Logger.debug(f"    Next hork target in ROI {boundary} located at {result['position_area']}, player location: {data['player_pos_area']}")
         
         # Find how many monsters are nearby, use this to decide if we wanna hold down the button long enough to double hork or stand still
         nearby = 0
@@ -88,16 +90,25 @@ class Barbarian(IChar):
         mouse_pos_m = self._screen.convert_abs_to_monitor(abs_screen_pos)
         Logger.debug(f"Casting hork in the direction of ({round(mouse_pos_m[0], 2)}, {round(mouse_pos_m[1], 2)})")
         if self._skill_hotkeys["find_item"]:
-            keyboard.send(self._skill_hotkeys["find_item"])
-            wait(0.03)
+            # keyboard.send(self._skill_hotkeys["find_item"])
+            # wait(0.03)
             if stand_still:
                 keyboard.send(self._char_config["stand_still"], do_release=False)
                 wait(0.03)
             mouse.move(*mouse_pos_m, delay_factor=[0.07, 0.1])
-            wait(0.03)
-            mouse.press(button="right")
+            wait(0.07)
+            hovered, hovered_type = self._api.get_hovered_unit()
+            if hovered_type == "object" and hovered and "stairs" in normalize_text(hovered["name"]):
+                stand_still = True
+                keyboard.send(self._char_config["stand_still"], do_release=False)
+                wait(0.05)
+            # mouse.press(button="right")
+            # wait(press_len)
+            # mouse.release(button="right")
+            # wait(0.03)
+            keyboard.send(self._skill_hotkeys["find_item"], do_release=False)
             wait(press_len)
-            mouse.release(button="right")
+            keyboard.release(self._skill_hotkeys["find_item"])
             wait(0.03)
             if stand_still:
                 keyboard.send(self._char_config["stand_still"], do_press=False)
@@ -114,17 +125,17 @@ class Barbarian(IChar):
         last_monster_id = 0
         attempts = 0
         while monster is not None and time.time() - start < time_out:
-            data = self._api.get_data()
-            distance = math.dist(data["player_pos_area"], monster["position"] - data["area_origin"])
+            data = self._api.data
+            distance = math.dist(data["player_pos_area"], monster["position_area"])
             m_id = monster["id"]
             if distance > 3 or attempts > 0:
                 move_pos_m = self._screen.convert_player_target_world_to_monitor(monster["position"], data["player_pos_world"])
                 self.pre_move()
-                self.move(move_pos_m, force_tp=True, force_move=True)
-                wait(0.1, 0.15)
-                data = self._api.get_data()
+                self.move(move_pos_m, force_tp=self.can_tp, force_move=True)
+                wait(0.1)
+                data = self._api.data
                 # Recalculate distance after moving
-                distance = math.dist(data["player_pos_area"], monster["position"] - data["area_origin"])
+                distance = math.dist(data["player_pos_area"], monster["position_area"])
                 # If we're in the same spot and targeting the same monster after moving, skip it
                 if m_id == last_monster_id:
                     attempts += 1
@@ -157,17 +168,17 @@ class Barbarian(IChar):
     def pre_buff_swap(self, switch_back=True):
         self.switch_weapon()
         keyboard.send(self._char_config["battle_command"])
-        wait(0.04, 0.07)
-        mouse.click(button="right")
-        wait(self._cast_duration, self._cast_duration + 0.03)
+        # wait(0.04, 0.07)
+        # mouse.click(button="right")
+        wait(self._cast_duration + 0.04, self._cast_duration + 0.06)
         keyboard.send(self._char_config["battle_orders"])
-        wait(0.04, 0.07)
-        mouse.click(button="right")
-        wait(self._cast_duration, self._cast_duration + 0.03)
+        # wait(0.04, 0.07)
+        # mouse.click(button="right")
+        wait(self._cast_duration + 0.04, self._cast_duration + 0.06)
         keyboard.send(self._skill_hotkeys["shout"])
-        wait(0.04, 0.07)
-        mouse.click(button="right")
-        wait(self._cast_duration, self._cast_duration + 0.03)
+        # wait(0.04, 0.07)
+        # mouse.click(button="right")
+        wait(self._cast_duration + 0.04, self._cast_duration + 0.06)
         # Make sure the switch back to the original weapon is good
         if switch_back:
             self.switch_weapon()

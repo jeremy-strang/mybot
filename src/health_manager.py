@@ -163,14 +163,13 @@ class HealthManager:
                 if not success_drink_rejuv:
                     # check health
                     last_drink = time.time() - self._last_health
-                    if health_percentage < self._config.char["take_health_potion"] and last_drink > 3.5:
-                        self._belt_manager.drink_potion("health", stats=[health_percentage, mana_percentage])
-                        self._last_health = time.time()
-                    # give the chicken a 6 sec delay to give time for a healing pot and avoid endless loop of chicken
-                    elif should_chicken or health_percentage < self._config.char["chicken"] and (time.time() - start) > 6:
+                    if should_chicken or health_percentage < self._config.char["chicken"] and (time.time() - start) > 6:
                         Logger.warning(f"Trying to chicken, player HP {(health_percentage*100):.1f}%!")
                         img = self._screen.grab()
                         self._do_chicken(img)
+                    elif health_percentage < self._config.char["take_health_potion"] and last_drink > 3.5 and not should_chicken:
+                        self._belt_manager.drink_potion("health", stats=[health_percentage, mana_percentage])
+                        self._last_health = time.time()
                     # check mana
                     last_drink = time.time() - self._last_mana
                     if mana_percentage < self._config.char["take_mana_potion"] and last_drink > 4:

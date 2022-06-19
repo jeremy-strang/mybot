@@ -14,6 +14,7 @@ from pickit.item_types import Action, Stat
 import obs
 from obs import obs_recorder
 from char.skill import Skill
+from ui.char_selector import CharSelector
 
 from utils.custom_mouse import mouse
 from utils.misc import wait, cut_roi, color_filter
@@ -39,17 +40,22 @@ pp = pprint.PrettyPrinter(indent=4)
 class UiManager():
     """Everything that is clicking on some static 2D UI or is checking anything in regard to it should be placed here."""
 
-    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: D2rApi, game_stats: GameStats = None):
+    def __init__(self, screen: Screen, template_finder: TemplateFinder, obs_recorder: ObsRecorder, api: D2rApi, char_selector: CharSelector = None, game_stats: GameStats = None):
         self._config = Config()
         self._template_finder = template_finder
         self._messenger = Messenger()
         self._obs_recorder = obs_recorder
         self._api = api
+        self._char_selector = char_selector
         self._game_stats = game_stats
         self._screen = screen
         self._gold_full = False
         self._gambling_round = 1
         self._map_showing = False
+        self._minimap_key = self._config.advanced_options["toggle_minimap_key"]
+        self._legacy_key = self._config.advanced_options["toggle_legacy_mode_key"]
+        self._legacy_enabled = True if self._legacy_key else False
+        self._legacy_showing = False
         self._curr_stash = {
             "items": 3 if self._config.char["fill_shared_stash_first"] else 0,
             "gold": 0
@@ -61,6 +67,7 @@ class UiManager():
         :param act: Index of the desired act starting at 1 [A1 = 1, A2 = 2, A3 = 3, ...]
         :param idx: Index of the waypoint from top. Note that it start at 0!
         """
+        self.hide_legacy()
         str_to_idx_map = {"WP_A1_ACTIVE": 1, "WP_A2_ACTIVE": 2, "WP_A3_ACTIVE": 3, "WP_A4_ACTIVE": 4, "WP_A5_ACTIVE": 5}
         template_match = self._template_finder.search([*str_to_idx_map], self._screen.grab(), threshold=0.7, best_match=True, roi=self._config.ui_roi["wp_act_roi"])
         curr_active_act = str_to_idx_map[template_match.name] if template_match.valid else -1
@@ -75,12 +82,13 @@ class UiManager():
         mouse.move(x, y, randomize=[60, 9], delay_factor=[0.9, 1.4])
         wait(0.4, 0.5)
         mouse.click(button="left")
+        return True
         # wait till loading screen is over
-        if self.wait_for_loading_screen(5):
-            while 1:
-                if not self.wait_for_loading_screen(0.2):
-                    return True
-        return False
+        # if self.wait_for_loading_screen(5):
+        #     while 1:
+        #         if not self.wait_for_loading_screen(0.2):
+        #             return True
+        # return False
 
     def is_right_skill_active(self) -> bool:
         """
@@ -114,10 +122,7 @@ class UiManager():
         #         return True
         # return False
         data = self._api.data
-        if data != None:
-            if data["right_skill"] == skill:
-                return True
-        return False
+        return data and skill.lower() in data["right_skill"].lower()
 
     def is_left_skill_selected(self, skill: Skill) -> bool:
         """
@@ -140,16 +145,6 @@ class UiManager():
             if free_column_count <= 2:
                 return True
         return False
-        # img = cut_roi(self._screen.grab(), self._config.ui_roi["is_overburdened"])
-        # _, filtered_img = color_filter(img, self._config.colors["gold"])
-        # templates = [cv2.imread("assets/templates/inventory_full_msg_0.png"), cv2.imread("assets/templates/inventory_full_msg_1.png")]
-        # for template in templates:
-        #     _, filtered_template = color_filter(template, self._config.colors["gold"])
-        #     res = cv2.matchTemplate(filtered_img, filtered_template, cv2.TM_CCOEFF_NORMED)
-        #     _, max_val, _, _ = cv2.minMaxLoc(res)
-        #     if max_val > 0.8:
-        #         return True
-        # return False
 
     def wait_for_loading_screen(self, time_out: float = None) -> bool:
         """
@@ -180,57 +175,79 @@ class UiManager():
             else: return False
         return True
 
-    def save_and_exit(self, does_chicken: bool = False) -> bool:
+    def _save_and_exit_mem(self) -> bool:
+        try_mem_start = time.time()
+        wait(0.06)
+        esc_menu_open = False
+        data = self._api.wait_for_data() if self._api is not None else None
+        if not data: return False
+
+        if data:
+            if data["esc_menu_open"]:
+                esc_menu_open = True
+                Logger.debug("    Escape menu detected already open from memory")
+            elif not data["in_game"]:
+                Logger.debug("    Not in game anymore")
+                return True
+            elif data["inventory_open"] or \
+                    data["character_open"] or \
+                    data["skill_select_open"] or \
+                    data["skill_tree_open"] or \
+                    data["npc_interact_open"] or \
+                    data["npc_shop_open"] or \
+                    data["quest_log_open"] or \
+                    data["waypoint_open"] or \
+                    data["party_open"] or \
+                    data["mercenary_inventory_open"]:
+                Logger.debug("    Some other menu detected already open from memory, closing it...")
+                keyboard.send("esc")
+                wait(0.25)
+
+        if not data or not self._api: return False
+
+        if not esc_menu_open:
+            Logger.debug("    Opening escape menu...")
+            keyboard.send("esc")
+            esc_menu_open = self._api.wait_for_menu(D2rMenu.EscMenu, 0.5)
+        
+        if not data or not self._api: return False
+
+        if esc_menu_open:
+            Logger.debug(f"    Escape menu detected from memory, skipping template search")
+            exit_btn_pos = (self._config.ui_pos["save_and_exit_x"], self._config.ui_pos["save_and_exit_y"])
+            mouse.move(*self._screen.convert_screen_to_monitor(exit_btn_pos))
+            mouse.click(button="left")
+            wait(0.3)
+            data = self._api.data if self._api is not None else None
+            if not self._api.data["in_game"]:
+                Logger.debug(f"Confirmed not in game")
+                return True
+        return False
+
+    def save_and_exit(self, does_chicken: bool = False, message=None) -> bool:
         """
-        Performes save and exit action from within game
+        Performs save and exit action from within game
         :return: Bool if action was successful
         """
         self._map_showing = False
+        self._legacy_showing = False
         start = time.time()
         while (time.time() - start) < 15:
             Logger.debug(f"Saving and exiting (chicken: {does_chicken})")
-            esc_menu_open = False
             templates = ["SAVE_AND_EXIT_NO_HIGHLIGHT", "SAVE_AND_EXIT_HIGHLIGHT"]
+            
+            if self._save_and_exit_mem():
+                return True
 
-            try_api_start = time.time()
-            data = None
-            while data is None and time.time() - try_api_start < 1.0:
-                if self._api is not None:
-                    data = self._api.get_data()
-                wait(0.5)
+            if self._save_and_exit_mem():
+                return True
+            
+            esc_menu_open = self._api.wait_for_menu(D2rMenu.EscMenu, 0.5) if self._api is not None else False
 
-            if data is not None:
-                if data["esc_menu_open"]:
-                    esc_menu_open = True
-                    Logger.debug("    Escape menu detected already open from memory")
-                elif data["inventory_open"] or \
-                        data["character_open"] or \
-                        data["skill_select_open"] or \
-                        data["skill_tree_open"] or \
-                        data["npc_interact_open"] or \
-                        data["npc_shop_open"] or \
-                        data["quest_log_open"] or \
-                        data["waypoint_open"] or \
-                        data["party_open"] or \
-                        data["mercenary_inventory_open"]:
-                    Logger.debug("    Some other menu detected already open from memory, closing it...")
-                    keyboard.send("esc")
-                    wait(0.25)
-
-            if not esc_menu_open:
-                Logger.debug("    Opening escape menu...")
+            if not esc_menu_open and not self._template_finder.search(templates, self._screen.grab(), roi=self._config.ui_roi["save_and_exit"], threshold=0.85).valid:
                 keyboard.send("esc")
                 wait(0.3)
-                if self._api is not None:
-                    data = self._api.get_data()
-                    if data is not None and data["esc_menu_open"]:
-                        esc_menu_open = True
-            if esc_menu_open:
-                Logger.debug(f"    Escape menu detected from memory, skipping template search")
-            else:
-                if not self._template_finder.search(templates, self._screen.grab(), roi=self._config.ui_roi["save_and_exit"], threshold=0.85).valid:
-                    keyboard.send("esc")
-                    wait(0.3)
+
             exit_btn_pos = (self._config.ui_pos["save_and_exit_x"], self._config.ui_pos["save_and_exit_y"])
             x_m, y_m = self._screen.convert_screen_to_monitor(exit_btn_pos)
             away_x_m, away_y_m = self._screen.convert_abs_to_monitor((-167, 0))
@@ -240,9 +257,8 @@ class UiManager():
                     delay = [0.3, 0.4]
                 mouse.move(x_m, y_m, randomize=[38, 7], delay_factor=delay)
                 wait(0.03, 0.06)
-                mouse.press(button="left")
-                wait(0.06, 0.1)
-                mouse.release(button="left")
+                mouse.click(button="left")
+                wait(0.03, 0.06)
                 if does_chicken:
                     # lets just try again just in case
                     wait(0.05, 0.08)
@@ -313,7 +329,7 @@ class UiManager():
                 mouse.click(button="left")
                 break
         return True
-                 
+
     def start_game(self) -> bool:
         """
         Starting a game. Will wait and retry on server connection issue.
@@ -321,27 +337,34 @@ class UiManager():
         """
         Logger.debug("Wait for Play button")
         self._map_showing = False
+        self._legacy_showing = False
         start = time.time()
         while 1:
+            if self._char_selector is not None:
+                self._char_selector.confirm_battle_net()
+                wait(0.3)
             img = self._screen.grab()
             found_btn_off = self._template_finder.search(["PLAY_BTN", "PLAY_BTN_GRAY"], img, roi=self._config.ui_roi["offline_btn"], threshold=0.8, best_match=True, normalize_monitor=True)
             found_btn_on = self._template_finder.search(["PLAY_BTN", "PLAY_BTN_GRAY"], img, roi=self._config.ui_roi["online_btn"], threshold=0.8, best_match=True, normalize_monitor=True)
             found_btn = found_btn_off if found_btn_off.valid else found_btn_on
+
             if found_btn.name == "PLAY_BTN":
-                Logger.debug(f"Found Play Btn")
+                Logger.debug(f"Found Play button")
                 mouse.move(*found_btn.center, randomize=[35, 7], delay_factor=[0.2, 0.3])
                 wait(0.1, 0.15)
                 mouse.click(button="left")
                 break
-            wait_time = 1.5 if time.time() - start > 20 else 0.2
+            wait_time = 2 if time.time() - start > 20 else 0.5
             wait(wait_time, wait_time + 0.2)
 
         difficulty=self._config.general["difficulty"].upper()
         difficulty_key="r" if difficulty == "NORMAL" else "n" if difficulty == "NIGHTMARE" else "h"
         while 1:
-            template_match = self._template_finder.search_and_wait(["LOADING", f"{difficulty}_BTN"], time_out=8, roi=self._config.ui_roi["difficulty_select"], threshold=0.9, normalize_monitor=True)
+            template_match = self._template_finder.search_and_wait(["LOADING", f"{difficulty}_BTN"], time_out=5, roi=self._config.ui_roi["difficulty_select"], threshold=0.9, normalize_monitor=True)
             if not template_match.valid:
                 Logger.debug(f"Could not find {difficulty}_BTN, try from start again")
+                if self._api is not None and self._api.data and self._api.data["in_game"]:
+                    return True
                 return self.start_game()
             if template_match.name == "LOADING":
                 Logger.debug(f"Found {template_match.name} screen")
@@ -353,7 +376,7 @@ class UiManager():
             break
 
         # check for server issue
-        wait(2.0)
+        wait(1.0)
         server_issue = self._template_finder.search("SERVER_ISSUES", self._screen.grab()).valid
         if server_issue:
             Logger.warning("Server connection issue. waiting 20s")
@@ -496,7 +519,10 @@ class UiManager():
                     if action >= Action.Keep and not "Potion" in item["name"]:
                         pickit_item = PickitItem(item, action)
                         keep = True
-                        if not item["is_identified"] and (item["type"], item["quality"]) in self._config.pickit_config.IdentifiedItems:
+                        should_identify = not item["is_identified"] and (item["type"], item["quality"]) in self._config.pickit_config.IdentifiedItems
+                        if pickit_item.item_class is not None:
+                            should_identify = should_identify or (not item["is_identified"] and (pickit_item.item_class, item["quality"]) in self._config.pickit_config.IdentifiedItems)
+                        if should_identify:
                             self._identify_inventory_item(item)
                             loaded_item = self._api.wait_for_item_stats(item, time_out=4)
                             pickit_item = None
@@ -716,8 +742,8 @@ class UiManager():
                         found_items = self._keep_item(inv_pos=(column, row), center=center_m)
                         mouse.move(x_m, y_m, randomize=10, delay_factor=[1.0, 1.3])
                         wait(0.4, 0.5)
-                        inv_open = self._api.data != None and self._api.data["inventory_open"]
                         vendor_open = self._api.data != None and self._api.data["npc_shop_open"]
+                        inv_open = self._api.data != None and self._api.data["inventory_open"] or vendor_open
                         if len(found_items) == 0 and inv_open:
                             Logger.debug(f"   {msg} item '{item['name']}' found at position {column}, {row}...")
                             keyboard.send("ctrl", do_release=False)
@@ -761,15 +787,22 @@ class UiManager():
                     wait (0.1, 0.15)
         self._gambling_round += 1
 
-    def should_stash(self) -> bool:
+    def should_stash(self, min_free = 2) -> bool:
+        wait(0.1)
         looted_items = self._api.find_looted_items(self._config.char["num_loot_columns"])
-        if looted_items != None and len(looted_items) > 0:
+        data = self._api.get_data()
+        free_slot_count, free_column_count = get_free_inventory_space(self._api.data["inventory_items"], self._config.char["num_loot_columns"]) if data else (0, 0)
+        if looted_items != None and len(looted_items) > 0 and free_column_count <= min_free:
             looted_items = list(filter(lambda item: item != None and "Potion" not in item["name"], looted_items))
             return len(looted_items) > 0
         return False
 
     def close_vendor_screen(self):
-        keyboard.send("esc")
+        wait(0.1)
+        data = self._api.wait_for_data()
+        if data and (data["npc_shop_open"] or self._api.data["any_menu_open"]):
+            keyboard.send("esc")
+            wait(0.2, 0.3)
 
     def repair_and_fill_up_tp(self) -> bool:
         repair_btn = self._template_finder.search_and_wait("REPAIR_BTN", roi=self._config.ui_roi["repair_btn"], time_out=4, normalize_monitor=True)
@@ -879,6 +912,7 @@ class UiManager():
         self._gambling_round = 1
 
     def gamble(self, item_finder: ItemFinder):
+        self.hide_legacy()
         gold = True
         gamble_on = True
         if self._config.char["num_loot_columns"]%2==0:
@@ -939,6 +973,7 @@ class UiManager():
         Checks the best match between enabled and disabled an retrys if already set.
         :return: Returns True if we succesfully set the nopickup option
         """
+        self.hide_legacy()
         wait(0.03, 0.05)
         keyboard.send('enter')
         wait(0.17, 0.20)
@@ -964,6 +999,7 @@ class UiManager():
         Checks the best match between enabled and disabled an retrys if already set.
         :return: Returns True if we succesfully set the nopickup option
         """
+        self.hide_legacy()
         wait(0.03, 0.05)
         keyboard.send('enter')
         wait(0.17, 0.20)
@@ -990,6 +1026,7 @@ class UiManager():
         :param healing_pots: Number of healing pots to buy
         :param mana_pots: Number of mana pots to buy
         """
+        self.hide_legacy()
         self.throw_out_junk(keep_open=True)
         h_pot = self._template_finder.search_and_wait("SUPER_HEALING_POTION", roi=self._config.ui_roi["left_inventory"], time_out=3, normalize_monitor=True)
         if h_pot.valid is False:  # If not available in shop, try to shop next best potion.
@@ -1013,14 +1050,25 @@ class UiManager():
         self.fill_tome_of("Town Portal")
     
     def show_map(self):
-        if not self._map_showing:
-            keyboard.send(self._config.char["toggle_minimap_key"])
+        if self._minimap_key and not self._map_showing:
+            keyboard.send(self._minimap_key)
             wait(0.03, 0.5)
             self._map_showing = True
             
     def hide_map(self):
-        if self._map_showing:
-            keyboard.send(self._config.char["toggle_minimap_key"])
+        if self._minimap_key and self._map_showing:
+            keyboard.send(self._minimap_key)
             wait(0.03, 0.5)
             self._map_showing = False
-            
+    
+    def show_legacy(self):
+        if self._legacy_enabled and not self._legacy_showing:
+            keyboard.send(self._legacy_key)
+            wait(0.2)
+            self._legacy_showing = True
+    
+    def hide_legacy(self):
+        if self._legacy_enabled and self._legacy_showing:
+            keyboard.send(self._legacy_key)
+            wait(0.2)
+            self._legacy_showing = False

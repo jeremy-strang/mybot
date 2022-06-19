@@ -1,28 +1,10 @@
-﻿/**
- *   Copyright (C) 2021 okaygo
- *
- *   https://github.com/misterokaygo/MapAssist/
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- **/
-
-using System;
-using System.Collections.Generic;
-using GameOverlay.Drawing;
+﻿using GameOverlay.Drawing;
 using MapAssist.Helpers;
 using MapAssist.Interfaces;
 using MapAssist.Structs;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace MapAssist.Types
 {
@@ -40,7 +22,57 @@ namespace MapAssist.Types
         public uint FirstHostileUnitId;
         public HostileInfo HostileInfo;
         public IntPtr pNext;
+
+        public bool InParty { get; private set; }
+        public bool IsHostile { get; private set; } // Is this player hostile to me
+        public bool IsHostileTo { get; private set; } // Am I hostile to this player
+
+        public RosterEntry UpdateParties(RosterEntry player)
+        {
+            if (player != null)
+            {
+                if (player.PartyID != ushort.MaxValue && PartyID == player.PartyID)
+                {
+                    InParty = true;
+                    IsHostile = false;
+                    IsHostileTo = false;
+                }
+                else
+                {
+                    InParty = false;
+                    IsHostile = GetIsHostileTo(player);
+                    IsHostileTo = player.GetIsHostileTo(this);
+                }
+            }
+
+            return this;
+        }
+
+        private bool GetIsHostileTo(RosterEntry otherUnit)
+        {
+            if (UnitId == otherUnit.UnitId)
+            {
+                return false;
+            }
+
+            using (var processContext = GameManager.GetProcessContext())
+            {
+                while (true)
+                {
+                    if (HostileInfo.UnitId == otherUnit.UnitId)
+                    {
+                        return HostileInfo.HostileFlag > 0;
+                    }
+
+                    if (HostileInfo.NextHostileInfo == IntPtr.Zero) break;
+                    HostileInfo = processContext.Read<HostileInfo>(HostileInfo.NextHostileInfo);
+                }
+            }
+
+            return false;
+        }
     }
+
     public class Roster : IUpdatable<Roster>
     {
         private readonly IntPtr _pFirst;
@@ -52,6 +84,7 @@ namespace MapAssist.Types
             _pFirst = pFirst;
             Update();
         }
+
         public Roster Update()
         {
             using (var processContext = GameManager.GetProcessContext())
@@ -69,6 +102,7 @@ namespace MapAssist.Types
             }
             return this;
         }
+
         private RosterEntry GetNewEntry(IntPtr pAddress)
         {
             using (var processContext = GameManager.GetProcessContext())
@@ -78,7 +112,7 @@ namespace MapAssist.Types
                 var hostileInfo = processContext.Read<HostileInfo>(hostilePtr);
                 var entry = new RosterEntry
                 {
-                    Name = member.Name,
+                    Name = Encoding.UTF8.GetString(member.Name).TrimEnd((char)0),
                     UnitId = member.UnitId,
                     PlayerClass = member.PlayerClass,
                     PlayerLevel = member.PlayerLevel,
@@ -94,6 +128,7 @@ namespace MapAssist.Types
                 return entry;
             }
         }
+
         public List<RosterEntry> List => _list;
         public Dictionary<uint, RosterEntry> EntriesByUnitId => _entriesByUnitId;
     }

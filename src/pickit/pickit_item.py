@@ -27,6 +27,7 @@ class PickitItem:
         self.is_ethereal = self.stats["is_ethereal"] = Flag.Ethereal in item["flags"]
         self.action = Action(action)
         self.item_class = self.stats["item_class"] = ITEM_CLASSES[self.type] if self.type in ITEM_CLASSES else None
+        self.defense = item["defense"] if "defense" in item else 0
 
         if item["stats"]:
             fr = 0
@@ -102,3 +103,8 @@ class PickitItem:
             elif operator == "<":
                 result = val < value
         return result
+
+    def get(self, stat: Stat, default=0):
+        if stat in self.stats:
+            return self.stats[stat]
+        return default

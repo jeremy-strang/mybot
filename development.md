@@ -6,8 +6,9 @@
 
 ## Getting started
 ```bash
-git clone https://github.com/pokzcodes/mybot.git
+git clone https://github.com/pokzcodes/mybot2.git
 cd mybot
+pip install git+https://github.com/pythonnet/pythonnet
 conda env create environment.yml
 conda activate mybot
 python src/main.py

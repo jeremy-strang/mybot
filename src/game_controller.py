@@ -3,7 +3,10 @@ import threading
 import time
 import cv2
 import traceback
+
+import packaging
 from obs import obs_recorder
+from multiprocessing import Process, Queue, Value
 
 from template_finder import TemplateFinder
 from utils.auto_settings import check_settings
@@ -22,8 +25,9 @@ from d2r import D2rApi, D2rMenu
 from obs import ObsRecorder
 
 from item_manager import ItemManager
+from window_manager import WindowManager
 
-
+global _FINISH
 
 class GameController:
     def __init__(self):
@@ -47,6 +51,8 @@ class GameController:
         self.item_manater_thread = None
         self.overlay_thread = None
         self.overlay = None
+        self.fg_proc = None
+        self.fg_proc_queue = None
 
     def run_bot(self, pick_corpse: bool = False):
         try:
@@ -75,6 +81,8 @@ class GameController:
                         Logger.info(f"Max game length reached. Attempting to restart {self.config.general['name']}!")
                         if self.config.general["info_screenshots"]:
                             cv2.imwrite("./info_screenshots/info_max_game_length_reached_" + time.strftime("%Y%m%d_%H%M%S") + ".png", self.screen.grab())
+                        # # Dirty fix to stuck on max game length reached
+                        # self.safe_exit(1)
                     elif self.death_manager.died():
                         self.game_stats.log_death(self.death_manager._last_death_screenshot)
                     elif self.health_manager.did_chicken():
@@ -86,15 +94,18 @@ class GameController:
                         msg = f"Consecutive fails {self.game_stats.get_consecutive_runs_failed()} >= Max {self.config.general['max_consecutive_fails']}. Quitting MyBot."
                         Logger.error(msg)
                         if self.config.general["custom_message_hook"]:
-                            messenger.send_message(msg)
+                            messenger.send_message(msg, is_error=True)
                         self.safe_exit(1)
+                        
                     else:
                         do_restart = self.game_recovery.go_to_hero_selection()
                     break
                 time.sleep(0.5)
             self.bot_thread.join()
+            Logger.debug(f"GameController: Bot loop exited, do_restart: {do_restart}")
             if do_restart:
                 # Reset flags before running a new bot
+                Logger.debug("GameController: Restarting bot...")
                 self.death_manager.reset_death_flag()
                 self.health_manager.reset_chicken_flag()
                 self.game_stats.log_end_game(failed=max_game_length_reached)
@@ -105,21 +116,23 @@ class GameController:
                 if self.config.general['restart_d2r_when_stuck']:
                     Logger.error("Could not recover from a max game length violation. Restarting the Game.")
                     if self.config.general["custom_message_hook"]:
-                        messenger.send_message("Got stuck and will now restart D2R")
+                        messenger.send_message("Got stuck and will now restart D2R", is_error=True)
                     if restart_game(self.config.general["d2r_path"]):
                         self.game_stats.log_end_game(failed=max_game_length_reached)
-                        if self.setup_screen():
-                            self.template_finder = TemplateFinder(self.screen)
-                            self.start_health_manager_thread()
-                            self.start_death_manager_thread()
-                            self.game_recovery = GameRecovery(self.screen, self.death_manager, self.template_finder, obs_recorder=self.obs_recorder, api = self.api)
-                            return self.run_bot(True)
+                        # if self.setup_screen():
+                        #     self.template_finder = TemplateFinder(self.screen)
+                        #     self.start_health_manager_thread()
+                        #     self.start_death_manager_thread()
+                        #     self.game_recovery = GameRecovery(self.screen, self.death_manager, self.template_finder, obs_recorder=self.obs_recorder, api = self.api)
+                        #     return self.run_bot(True)
+                        self.restart()
+                        self.obs_recorder.save_replay_if_enabled()
                     Logger.error("Could not restart the game. Quitting.")
-                    messenger.send_message("Got stuck and could not restart the game. Quitting.")
+                    messenger.send_message("Got stuck and could not restart the game. Quitting.", is_error=True)
                 else:
                     Logger.error("Could not recover from a max game length violation. Quitting MyBot.")
                     if self.config.general["custom_message_hook"]:
-                        messenger.send_message("Got stuck and will now quit MyBot")
+                        messenger.send_message("Got stuck and will now quit MyBot", is_error=True)
                 self.safe_exit(1)
         except BaseException as err:
             if self.config.general['kill_d2r_on_bot_exception']:
@@ -133,7 +146,9 @@ class GameController:
             Logger.warning("Your D2R settings differ from the required ones. Please use Auto Settings to adjust them. The differences are:")
             Logger.warning(f"{diff}")
         set_d2r_always_on_top()
+        self.start_foreground_process()
         self.setup_screen()
+        self.screen.activate_d2r_window()
         self.template_finder = TemplateFinder(self.screen)
         self.start_health_manager_thread()
         self.start_death_manager_thread()
@@ -152,7 +167,19 @@ class GameController:
         if self.item_manager_thread: kill_thread(self.item_manager_thread)
         if self.api_thread: kill_thread(self.api_thread)
         self.api.stop()
+        if self.fg_proc:
+            self.fg_proc_queue.put("exit")
+            self.fg_proc.terminate()
+            self.fg_proc.join()
         self.is_running = False
+
+    def restart(self):
+        if self.setup_screen():
+            self.template_finder = TemplateFinder(self.screen)
+            self.start_health_manager_thread()
+            self.start_death_manager_thread()
+            self.game_recovery = GameRecovery(self.screen, self.death_manager, self.template_finder, obs_recorder=self.obs_recorder, api = self.api)
+            return self.run_bot(True)
        
     def setup_screen(self):
         self.screen = Screen()
@@ -191,8 +218,9 @@ class GameController:
 
     def start_api_thread(self):
         # run map assist
-        self.api = D2rApi(self.config.custom_files)
-        self.api.start()
+        if self.api is None:
+            self.api = D2rApi(self.config.custom_files)
+            self.api.start()
 
     def start_game_controller_thread(self):
         # Run game controller thread
@@ -211,3 +239,27 @@ class GameController:
     def save_d2r_data_to_file(self, pickle: bool = False):
         if self.api is not None:
             self.api.write_data_to_file(pickle=pickle)
+
+    @staticmethod
+    def _keep_d2r_in_forground(queue):
+        mgr = WindowManager()
+        while True:
+            if queue is not None:
+                msg = queue.get()
+                print(f"data from queue: {msg}, type: {msg}")
+            if mgr is not None:
+                try:
+                    if not mgr.set_foreground():
+                        Logger.error(f"Failed to set D2R window in the foreground")
+                except BaseException as err:
+                    Logger.error(f"Error activating D2R window: {err}")
+                if mgr.handle is None:
+                    Logger.error(f"No D2R window was found")
+            time.sleep(10)
+
+    def start_foreground_process(self):
+        fg_proc_kill = Queue()
+        p = Process(target=self._keep_d2r_in_forground, args=(fg_proc_kill,))
+        p.daemon = True
+        p.start()
+        self.fg_proc = packaging

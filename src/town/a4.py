@@ -31,7 +31,8 @@ class A4(IAct):
         menu = "resurrect"
         self._pather.walk_to_position((27, 41), time_out=5)
         self._pather.walk_to_monster(npc)
-        if not self.interact_with_npc(npc, menu):
+        success = self.find_vendor_and_open_trade(Npc.TYRAEL, menu_selection="resurrect", confirm_menu=None, y_offset=15)
+        if not success and not self.interact_with_npc(npc, menu):
             if self._npc_manager.open_npc_menu(npc):
                 self._npc_manager.press_npc_btn(npc, menu)
         return Location.A4_TYRAEL_STASH

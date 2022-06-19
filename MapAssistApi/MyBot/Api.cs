@@ -25,12 +25,15 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using static MapAssist.Types.Stats;
 
 namespace MapAssist.MyBot
 {
     public class Api : IDisposable
     {
+        private const string API_VERSION = "1.0.3";
         private static readonly Logger _log = LogManager.GetCurrentClassLogger();
         private static readonly object _lock = new object();
         private readonly GameDataReader _gameDataReader;
@@ -42,8 +45,9 @@ namespace MapAssist.MyBot
         private string _currentArea = "";
         private int _currentMapHeight = 0;
         private int _currentMapWidth = 0;
-        private double _chicken = 0.5;
-        private double _mercChicken = 0.0;
+        private float _chicken = 0.5F;
+        private float _emergencyChicken = 0.0F;
+        private float _mercChicken = 0.0F;
         private bool _disposed;
         private IBotConfig _config;
         private HashSet<string> _townNames = new HashSet<string>()
@@ -71,7 +75,7 @@ namespace MapAssist.MyBot
             Stat.AttackRate,
             Stat.Durability,
             Stat.MaxDurability,
-            Stat.MaxHPPercent,
+            Stat.LastSentHPPercent,
             Stat.MaxManaPercent,
             Stat.FasterCastRate,
             Stat.AllSkills,
@@ -80,13 +84,32 @@ namespace MapAssist.MyBot
             Stat.LightningResist,
             Stat.ColdResist,
             Stat.PoisonResist,
+            Stat.MagicFind,
+            Stat.GoldFind,
         };
-        
+
+        private HashSet<Types.Item> _magicItemsToUpdate = new HashSet<Types.Item>() {
+            //Types.Item.AssaultHelmet,
+            //Types.Item.AvengerGuard,
+            //Types.Item.SavageHelmet,
+            //Types.Item.SlayerGuard,
+        };
+
+        private HashSet<Types.Item> _rareItemsToUpdate = new HashSet<Types.Item>() {
+            //Types.Item.AssaultHelmet,
+            //Types.Item.AvengerGuard,
+            //Types.Item.SavageHelmet,
+            //Types.Item.SlayerGuard,
+            Types.Item.Ring,
+            Types.Item.Amulet,
+        };
+
         public Api(IBotConfig config = null)
         {
             _config = config;
-            _chicken = config.GetValue("char", "chicken", 0.5);
-            _mercChicken = config.GetValue("char", "merc_chicken", 0.0);
+            _chicken = config.GetValue("char", "chicken", 0.5F);
+            _emergencyChicken = config.GetValue("char", "emergency_chicken", 0.0F);
+            _mercChicken = config.GetValue("char", "merc_chicken", 0.0F);
             _gameDataReader = new GameDataReader();
             TimerService.EnableHighPrecisionTimers();
         }
@@ -106,10 +129,23 @@ namespace MapAssist.MyBot
             }
         }
 
+        private void KillD2r()
+        {
+            var id = Process.GetCurrentProcess().SessionId;
+            var procs = Process.GetProcessesByName("D2R");
+            foreach (var proc in procs)
+            {
+                if (proc.SessionId == id)
+                {
+                    try { proc.Kill(); } catch (Exception) { }
+                }
+            }
+        }
+
         private struct StatKeyValuePair
         {
             public string key { get; set; }
-            public int value { get; set; }
+            public double value { get; set; }
         }
 
         private bool IsInTown(string currentArea)
@@ -117,17 +153,18 @@ namespace MapAssist.MyBot
             return _townNames.Contains(currentArea);
         }
 
-        private bool ShouldUpdate(UnitItem item)
+        private bool ShouldUpdateItem(UnitItem item)
         {
             var result = false;
             if (item != null && item.ItemModeMapped == ItemModeMapped.Ground)
             {
                 result = item.ItemData.ItemQuality == ItemQuality.UNIQUE ||
                     item.ItemData.ItemQuality == ItemQuality.SET ||
+                    (item.ItemData.ItemQuality == ItemQuality.RARE && _rareItemsToUpdate.Contains(item.Item)) ||
+                    (item.ItemData.ItemQuality == ItemQuality.MAGIC && _magicItemsToUpdate.Contains(item.Item)) ||
                     item.Item == Types.Item.Jewel ||
                     item.Item == Types.Item.SmallCharm ||
                     item.Item == Types.Item.GrandCharm ||
-                    item.Item == Types.Item.Jewel ||
                     item.Item.ToString().Contains("Rune");
             }
             return result;
@@ -135,64 +172,85 @@ namespace MapAssist.MyBot
 
         private List<StatKeyValuePair> GetItemStats(UnitItem item, PlayerClass playerClass)
         {
-            List<StatKeyValuePair> istats = null;
-            if (item != null && item.Stats != null)
+            var istats = new List<StatKeyValuePair>();
+            if (item != null && item.StatLayers != null)
             {
-                istats = item.Stats.Select(it =>
+                foreach (var (stat, values) in item.StatLayers.Select(x => (x.Key, x.Value)))
                 {
-                    Stat key = it.Key;
-                    var keyStr = key.ToString();
-                    var value = it.Value;
-                    if (key == Stat.AddSkillTab)
+                    var name = stat.ToString();
+
+                    foreach (var (layer, value) in values.Select(x => (x.Key, x.Value)))
                     {
-                        value = (int)Items.GetItemStatAddSkillTreeSkills(item, SkillTree.Any).Item1;
-                    }
-                    else if (key == Stat.Life || key == Stat.MaxLife || key == Stat.Mana || key == Stat.MaxMana)
-                    {
-                        value = value >> 8;
-                    }
-                    else if (key == Stat.AddClassSkills)
-                    {
-                        var tup = Items.GetItemStatAddClassSkills(item, PlayerClass.Any);
-                        switch (tup.Item1)
+                        var cleanedValue = (double)value;
+
+                        if (Stats.StatShifts.ContainsKey(stat))
                         {
-                            case PlayerClass.Druid:
-                                keyStr = "AddDruidSkills";
-                                value = tup.Item2;
-                                break;
-                            case PlayerClass.Barbarian:
-                                keyStr = "AddBarbarianSkills";
-                                value = tup.Item2;
-                                break;
-                            case PlayerClass.Amazon:
-                                keyStr = "AddAmazonSkills";
-                                value = tup.Item2;
-                                break;
-                            case PlayerClass.Paladin:
-                                keyStr = "AddPaladinSkills";
-                                value = tup.Item2;
-                                break;
-                            case PlayerClass.Sorceress:
-                                keyStr = "AddSorceressSkills";
-                                value = tup.Item2;
-                                break;
-                            case PlayerClass.Assassin:
-                                keyStr = "AddAssassinSkills";
-                                value = tup.Item2;
-                                break;
-                            case PlayerClass.Necromancer:
-                                keyStr = "AddNecromancerSkills";
-                                value = tup.Item2;
-                                break;
-                            default:
-                                break;
+                            cleanedValue = (double)Items.GetItemStatShifted(item, stat);
                         }
+                        else if (Stats.StatDivisors.ContainsKey(stat))
+                        {
+                            cleanedValue = Items.GetItemStatDecimal(item, stat);
+                        }
+                        else if (stat == Stats.Stat.AddClassSkills)
+                        {
+                            var (classSkills, points) = Items.GetItemStatAddClassSkills(item, (PlayerClass)layer);
+                            name = classSkills[0].ToString();
+                            cleanedValue = points;
+                        }
+                        else if (stat == Stats.Stat.AddSkillTab)
+                        {
+                            var (skillTrees, points) = Items.GetItemStatAddSkillTreeSkills(item, (SkillTree)layer);
+                            name = skillTrees[0].ToString();
+                            cleanedValue = (double)points;
+                        }
+                        else if (stat == Stats.Stat.SingleSkill || stat == Stats.Stat.NonClassSkill)
+                        {
+                            var (skills, points) = Items.GetItemStatAddSingleSkills(item, (Skill)layer);
+                            name = skills[0].ToString();
+                            cleanedValue = (double)points;
+                        }
+                        else if (stat == Stats.Stat.ItemChargedSkill)
+                        {
+                            var skill = (Skill)(layer >> 6);
+
+                            var (skillLevel, currentCharges, maxCharges) = Items.GetItemStatAddSkillCharges(item, skill);
+                            name = skill.ToString() + "Charges";
+
+                            var chargesText = "";
+                            if (currentCharges > 0 && maxCharges > 0)
+                            {
+                                chargesText = $"{currentCharges}/{maxCharges}";
+                            }
+
+                            cleanedValue = (double)skillLevel;
+                        }
+                        else if (stat.ToString().StartsWith("SkillOn"))
+                        {
+                            var skill = (Skill)(layer >> 6);
+                            var chance = layer % (1 << 6);
+
+                            name = skill.ToString() + "Chance";
+
+                            cleanedValue = (double)chance;
+                        }
+                        else if (stat == Stats.Stat.Aura)
+                        {
+                            var skill = (Skill)layer;
+
+                            name = skill.ToString() + "Aura";
+
+                            cleanedValue = (double)value;
+                        }
+
+                        var thisAffix = new StatKeyValuePair()
+                        {
+                            key = name,
+                            value = cleanedValue
+                        };
+                        istats.Add(thisAffix);
                     }
-
-                    return new StatKeyValuePair { key = keyStr, value = value };
-                }).ToList();
+                }
             }
-
             return istats;
         }
 
@@ -230,8 +288,8 @@ namespace MapAssist.MyBot
                 id = item.UnitId,
                 quality = item.ItemData.ItemQuality,
                 name = Items.GetItemName(item),
-                //hash_str = item.HashString ?? "",
-                //base_name = item.ItemBaseName ?? "",
+                stash_tab = item.StashTab,
+                vendor_owner = item.VendorOwner.ToString(),
                 is_hovered = item.IsHovered,
                 mode = item.ItemMode.ToString(),
                 mode_mapped = item.ItemModeMapped.ToString(),
@@ -246,11 +304,15 @@ namespace MapAssist.MyBot
                 unique_name,
                 is_ethereal,
                 is_identified = item.IsIdentified,
+                //item,
             };
         }
 
         public string RetrieveDataFromMemory(bool forceMap = true, Formatting formatting = Formatting.None)
         {
+            var error = "";
+            var error_trace = "";
+            var success = false;
             try
             {
                 lock (_lock)
@@ -269,6 +331,7 @@ namespace MapAssist.MyBot
                         var player_mana_pct = player_max_mana > 0 ? (double)player_mana / player_max_mana : 1.0;
                         var player_level = stats.ContainsKey(Stat.Level) ? stats[Stat.Level] : int.MaxValue;
                         var player_experience = stats.ContainsKey(Stat.Experience) ? stats[Stat.Experience] : int.MaxValue;
+                        var player_level_progress = playerUnit.LevelProgress;
                         var player_gold = stats.ContainsKey(Stat.Gold) ? stats[Stat.Gold] : int.MaxValue;
 
                         var player_stats = stats.Where(item => _relevantPlayerStats.Contains(item.Key)).Select(item =>
@@ -307,7 +370,8 @@ namespace MapAssist.MyBot
                                     belt_rejuv_pots++;
                                 }
 
-                                if (item.Position.X == 0) {
+                                if (item.Position.X == 0)
+                                {
                                     belt0 = new
                                     {
                                         name = "" + item.ItemBaseName,
@@ -341,7 +405,7 @@ namespace MapAssist.MyBot
                             }
                         }
                         var flattened_belt = new List<dynamic>() { belt0, belt1, belt2, belt3 };
-                        
+
                         var merc = _gameData.Mercs.Where(a => a.IsPlayerOwned).FirstOrDefault();
                         var merc_health_pct = 1.0;
                         dynamic player_merc = null;
@@ -412,6 +476,14 @@ namespace MapAssist.MyBot
                             (player_health_pct < _chicken) ||
                             (merc_health_pct < _mercChicken));
 
+                        var should_emergency_chicken = in_game && !in_town && _areaData.Area != Area.None && player_health_pct < _emergencyChicken && player_health > 0;
+
+                        if (should_emergency_chicken)
+                        {
+                            KillD2r();
+                            throw new Exception("Killed D2R due to emergency chicken threshold of " + _emergencyChicken + " being met (player life: " + player_health_pct + ")");
+                        }
+
                         var inventory_open = _gameData.MenuOpen.Inventory;
                         var stash_open = _gameData.MenuOpen.Stash;
                         var shop_open = _gameData.MenuOpen.NpcShop;
@@ -432,14 +504,17 @@ namespace MapAssist.MyBot
                                 item_on_cursor = true;
                             }
 
-                            if (ShouldUpdate(item))
+                            if (ShouldUpdateItem(item))
                             {
                                 item.Update();
                             }
 
                             if (item.ItemModeMapped == ItemModeMapped.Ground)
                             {
-                                items.Add(CleanItem(item, playerUnit.Struct.playerClass));
+                                if (item.Item != Types.Item.Gold || (item.Stats != null && item.Stats.TryGetValue(Stat.Gold, out var goldAmount) && goldAmount > 2000))
+                                {
+                                    items.Add(CleanItem(item, playerUnit.Struct.playerClass));
+                                }
                             }
                             else if (item.ItemModeMapped == ItemModeMapped.Inventory)
                             {
@@ -485,24 +560,29 @@ namespace MapAssist.MyBot
                         {
                             if (m.UnitType == UnitType.Monster)
                             {
-                                monsters.Add(new
+                                var area_x = m.Position.X - _areaData.Origin.X;
+                                var area_y = m.Position.Y - _areaData.Origin.Y;
+                                if (area_x > 0 && area_y > 0 && area_x < _currentMapWidth && area_y < _currentMapHeight)
                                 {
-                                    id = m.UnitId,
-                                    boss_id = m.MonsterData.BossLineID,
-                                    npc = m.Npc,
-                                    position = m.Position,
-                                    immunities = m.Immunities != null ? m.Immunities.Select(a => a.ToString()).ToList() : new List<string>(),
-                                    unit_type = m.UnitType.ToString(),
-                                    type = m.MonsterData.MonsterType.ToString(),
-                                    name = ((Npc)m.TxtFileNo).ToString(),
-                                    mode = m.Struct.Mode,
-                                    is_targetable_corpse = m.IsTargetableCorpse,
-                                    number = m.TxtFileNo,
-                                    heath_percentage = m.HealthPercentage,
-                                    corpse = m.IsCorpse,
-                                    state_strings = m.StateStrings,
-                                    is_hovered = m.IsHovered,
-                                });
+                                    monsters.Add(new
+                                    {
+                                        id = m.UnitId,
+                                        boss_id = m.MonsterData.BossLineID,
+                                        npc = m.Npc,
+                                        position = m.Position,
+                                        immunities = m.Immunities != null ? m.Immunities.Select(a => a.ToString()).ToList() : new List<string>(),
+                                        unit_type = m.UnitType.ToString(),
+                                        type = m.MonsterData.MonsterType.ToString(),
+                                        name = ((Npc)m.TxtFileNo).ToString(),
+                                        mode = m.Struct.Mode,
+                                        is_targetable_corpse = m.IsTargetableCorpse,
+                                        number = m.TxtFileNo,
+                                        heath_percentage = m.HealthPercentage,
+                                        corpse = m.IsCorpse,
+                                        state_strings = m.StateStrings,
+                                        is_hovered = m.IsHovered,
+                                    });
+                                }
                             }
                         }
 
@@ -553,10 +633,14 @@ namespace MapAssist.MyBot
                             }
                         }
 
+                        success = true;
                         var msg = new
                         {
+                            API_VERSION,
                             map_changed = map_changed || forceMap,
-                            success = true,
+                            success,
+                            error,
+                            error_trace,
                             in_game,
                             in_town,
                             should_chicken,
@@ -594,6 +678,7 @@ namespace MapAssist.MyBot
                             player_max_mana,
                             player_mana_pct,
                             player_experience,
+                            player_level_progress,
                             player_gold,
                             player_stats,
                             player_state_strings = playerUnit.StateStrings,
@@ -628,15 +713,28 @@ namespace MapAssist.MyBot
 
                         return JsonConvert.SerializeObject(msg, formatting);
                     }
+                    else
+                    {
+                        _currentMapHeight = 0;
+                        _currentMapWidth = 0;
+                        _currentArea = "";
+                        success = false;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                //_log.Error(ex);
-                //_log.Error(ex.StackTrace);
+                error = ex.ToString();
+                error_trace = ex.StackTrace;
+                success = false;
             }
 
-            return JsonConvert.SerializeObject(new { success = false }, formatting);
+            return JsonConvert.SerializeObject(new {
+                API_VERSION,
+                success,
+                error,
+                error_trace,
+            }, formatting);
         }
 
         ~Api()

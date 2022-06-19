@@ -1,57 +1,63 @@
 # Change these settings from the Config GUI provided in MapAssist
 HotkeyConfiguration:
   ToggleKey: '|'
-  AreaLevelKey: '['
+  HideMapKey: ''
+  MapPositionsKey: ''
   ZoomInKey: Num +
   ZoomOutKey: Num -
+  ExportItemsKey: F9
+  ToggleConfigKey: F12
 HiddenAreas:
-- Rogue Encampment
-- Lut Gholein
-- Kurast Docktown
-- Pandemonium Fortress
-- Harrogath
 - Forgotten Tower
-- Nihlathaks Temple
+AuthorizedWindowTitles: []
 RenderingConfiguration:
-  Opacity: 0.5
+  Opacity: 0.3
   IconOpacity: 0.9
   OverlayMode: true
   Position: Center
   MonsterHealthBar: true
   ToggleViaInGameMap: false
   ToggleViaInGamePanels: true
-  StickToLastGameWindow: false
+  StickToLastGameWindow: true
   Size: 800
   ZoomLevel: 1
-  BuffPosition: Bottom
   BuffSize: 1
-  LinesMode: All
+  ShowBuffBarBuffs: true
+  ShowBuffBarAuras: true
+  ShowBuffBarPassives: true
+  ShowBuffBarDebuffs: true
+  BuffAlertLowRes: true
+  BuffPosition: Bottom
+  ShowLife: false
+  ShowLifePerc: true
+  ShowMana: false
+  ShowManaPerc: true
+  ShowCurrentLevel: false
+  ShowExpProgress: true
+  ShowPotionBelt: true
+  ShowResistances: false
 MapConfiguration:
   SuperUniqueMonster:
-    IconOutlineColor: Yellow
+    IconColor: Yellow
     IconShape: Cross
-    IconSize: 6
-    IconThickness: 2
+    IconSize: 7
   UniqueMonster:
-    IconOutlineColor: DarkOrange
+    IconColor: DarkOrange
     IconShape: Cross
-    IconSize: 6
-    IconThickness: 2
+    IconSize: 7
   ChampionMonster:
-    IconOutlineColor: DarkRed
+    IconColor: MidnightBlue
     IconShape: Cross
-    IconSize: 6
-    IconThickness: 2
+    IconSize: 7
   MinionMonster:
-    IconOutlineColor: 255, 150, 150
-    IconShape: Cross
-    IconSize: 6
-    IconThickness: 1
+    IconColor: DarkOrange
+    IconShape: Ellipse
+    IconSize: 5
   NormalMonster:
-    IconOutlineColor: Gray
-    IconShape: Cross
-    IconSize: 6
-    IconThickness: 1
+    IconOutlineColor: 214, 190, 143
+    IconShape: Ellipse
+    IconSize: 4
+    IconThickness: 2
   Npc:
     IconOutlineColor: 196, 196, 196
     IconShape: Cross
@@ -141,6 +147,16 @@ MapConfiguration:
     IconShape: Cross
     IconSize: 6
     IconThickness: 1
+  MySummons:
+    IconOutlineColor: 77, 120, 124
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 0
+  OtherSummons:
+    IconOutlineColor: 81, 167, 60
+    IconShape: Cross
+    IconSize: 6
+    IconThickness: 0
   Corpse:
     IconOutlineColor: Magenta
     IconShape: Cross
@@ -153,12 +169,39 @@ MapConfiguration:
     LabelFontSize: 14
     LabelFont: Formal 436
     LabelTextShadow: true
-  Portal:
+  MyPortal:
     IconOutlineColor: Yellow
     IconShape: Portal
     IconSize: 3
     IconThickness: 2
     LabelColor: Yellow
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
+  PartyPortal:
+    IconOutlineColor: Yellow
+    IconShape: Portal
+    IconSize: 3
+    IconThickness: 2
+    LabelColor: Yellow
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
+  NonPartyPortal:
+    IconOutlineColor: Orange
+    IconShape: Portal
+    IconSize: 3
+    IconThickness: 2
+    LabelColor: Orange
+    LabelFontSize: 14
+    LabelFont: Formal 436
+    LabelTextShadow: true
+  GamePortal:
+    IconOutlineColor: 225, 30, 30
+    IconShape: Portal
+    IconSize: 3
+    IconThickness: 2
+    LabelColor: 225, 30, 30
     LabelFontSize: 14
     LabelFont: Formal 436
     LabelTextShadow: true
@@ -190,6 +233,10 @@ MapConfiguration:
     IconColor: 132, 132, 132
     IconShape: Square
     IconSize: 4
+  Door:
+    IconColor: 132, 132, 132
+    IconShape: Kite
+    IconSize: 3
   Item:
     IconColor: DarkOrange
     IconShape: Ellipse
@@ -197,6 +244,54 @@ MapConfiguration:
     LabelFontSize: 16
     LabelFont: Exocet Blizzard Mixed Caps
     LabelTextShadow: true
+  MissilePhysicalLarge:
+    IconColor: 255, 194, 194
+    IconShape: Ellipse
+    IconSize: 0
+  MissilePhysicalSmall:
+    IconColor: 201, 157, 157
+    IconShape: Ellipse
+    IconSize: 0
+  MissileFireLarge:
+    IconColor: Red
+    IconShape: Ellipse
+    IconSize: 0
+  MissileFireSmall:
+    IconColor: 194, 0, 0
+    IconShape: Ellipse
+    IconSize: 0
+  MissileIceLarge:
+    IconColor: 0, 208, 255
+    IconShape: Ellipse
+    IconSize: 0
+  MissileIceSmall:
+    IconColor: 0, 208, 255
+    IconShape: Ellipse
+    IconSize: 0
+  MissileLightLarge:
+    IconColor: Yellow
+    IconShape: Ellipse
+    IconSize: 0
+  MissileLightSmall:
+    IconColor: 163, 163, 0
+    IconShape: Ellipse
+    IconSize: 0
+  MissilePoisonLarge:
+    IconColor: Lime
+    IconShape: Ellipse
+    IconSize: 0
+  MissilePoisonSmall:
+    IconColor: 0, 156, 0
+    IconShape: Ellipse
+    IconSize: 0
+  MissileMagicLarge:
+    IconColor: 255, 115, 0
+    IconShape: Ellipse
+    IconSize: 0
+  MissileMagicSmall:
+    IconColor: 179, 80, 0
+    IconShape: Ellipse
+    IconSize: 0
 ItemLog:
   Enabled: true
   Position: TopLeft
@@ -204,25 +299,34 @@ ItemLog:
   CheckVendorItems: true
   CheckItemOnIdentify: true
   PlaySoundOnDrop: true
-  SoundFile: ''
+  ShowDistanceToItem: true
+  ShowDirectionToItem: true
+  SoundFile: 'Ching.wav'
   SoundVolume: 100
   DisplayForSeconds: 45
   LabelFont: Exocet Blizzard Mixed Caps
   LabelFontSize: 16
   LabelTextShadow: true
+  SuperiorColor: Gray
+  MagicColor: RoyalBlue
+  RareColor: Yellow
+  SetColor: Lime
+  UniqueColor: 165, 146, 99
+  CraftedColor: 255, 174, 0
 MapColorConfiguration:
-  Border: 255, 255, 255
+  Border: White
 GameInfo:
   Position: TopLeft
   ShowGameName: true
-  ShowDifficulty: true
-  ShowGameIP: true
-  HuntingIP: 0.0.0.0
   ShowArea: true
   ShowAreaLevel: true
+  ShowDifficulty: true
   ShowOverlayFPS: false
+  ShowGameTimer: true
+  ShowAreaTimer: true
   LabelFont: Exocet Blizzard Mixed Caps
   LabelFontSize: 16
   LabelTextShadow: true
 D2Path: ''
 LanguageCode: enUS
+DPIAware: false
