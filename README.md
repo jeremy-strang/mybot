@@ -3,7 +3,9 @@
 
 ### Now that Blizzard has (rightfully) shifted their policy to aggressively banning bots, I am retiring this project. I decided to transfer the repository from my alt account (PokzCodes), to my personal account, and to make the bot public for educational purposes. 
 
-### The bot should still work, but you will get almost certainly get banned. I got ten D2R accounts banned, but it was all worth it. This was a ton of fun to code, I learned a ton, met some good friends, and generated a ton of powerful pixels in the process :)
+### The bot should still work, but you will almost certainly get banned. For obvious reasons, I won't be maintaining this or reviewing any PRs going forward.
+
+### I may have gotten ten D2R accounts banned, but it was all worth it. This was a ton of fun to code, I learned a ton, met some good friends, and generated a ton of pixels along the way :)
 
 MyBot ~~is~~ was a memory-reading bot for Diablo 2 Resurrected. It was built by integrating MapAssist into Botty, and using the strangler pattern to re-write the pixel-based Botty code.
 
