@@ -7,6 +7,8 @@
 
 ### I may have gotten ten D2R accounts banned, but it was all worth it. This was a ton of fun to code, I learned a ton, met some good friends, and generated a ton of pixels along the way :)
 
+---
+
 MyBot ~~is~~ was a memory-reading bot for Diablo 2 Resurrected. It was built by integrating MapAssist into Botty. Specifically, by building MapAssist as a .dll, loading it into Python with PythonNet, and implementing the strangler pattern to re-write the pixel-based Botty code to read memory instead.
 
 [CHANGELOG.md](CHANGELOG.md) 
