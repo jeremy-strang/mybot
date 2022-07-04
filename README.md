@@ -1,6 +1,11 @@
+
 # <img src="assets/docs/header.png" width="370">
 
-MyBot is memory-reading bot for Diablo 2 Resurrected. This is was originally built by integrating MapAssist with Botty, however most of the original pixel-based Botty code has been removed/rewritten, or is in the process of being removed.
+### Now that Blizzard has (rightfully) shifted their policy to aggressively banning bots, I am retiring this project. I decided to transfer the repository from my alt account (PokzCodes), to my personal account, and to make the bot public for educational purposes. 
+
+### The bot should still work, but you will get almost certainly get banned. I got ten D2R accounts banned, but it was all worth it. This was a ton of fun to code, I learned a ton, met some good friends, and generated a ton of powerful pixels in the process :)
+
+MyBot ~~is~~ was a memory-reading bot for Diablo 2 Resurrected. It was built by integrating MapAssist into Botty, and using the strangler pattern to re-write the pixel-based Botty code.
 
 [CHANGELOG.md](CHANGELOG.md) 
 
